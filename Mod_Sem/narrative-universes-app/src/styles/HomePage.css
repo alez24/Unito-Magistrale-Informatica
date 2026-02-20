@@ -1,0 +1,202 @@
+.home-page {
+    animation: fadeIn 0.45s ease-out;
+    padding: 4rem 1.5rem;
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+/* HERO */
+.hero {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.hero-title {
+    font-size: 2.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.04em;
+    margin-bottom: 1rem;
+}
+
+.hero-title span {
+    color: var(--primary);
+}
+
+.hero-subtitle {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+/* GRID UNIVERSI */
+.universes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    gap: 2rem;
+}
+
+/* CARD UNIVERSO */
+.universe-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2.25rem 2rem;
+    box-shadow: 0 6px 18px var(--shadow);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.universe-card:hover {
+    box-shadow: 0 8px 22px var(--shadow);
+    border-color: var(--primary);
+}
+
+/* ICONA */
+.universe-icon {
+    font-size: 2.4rem;
+    margin-bottom: 0.75rem;
+}
+
+/* TITOLO UNIVERSO */
+.universe-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+/* DESCRIZIONE */
+.universe-description {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.8rem;
+    line-height: 1.6;
+}
+
+/* STATISTICHE */
+.universe-stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-top: auto;
+    margin-bottom: 0.75rem;
+}
+
+.stat {
+    text-align: left;
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* BOTTONE */
+.explore-button {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 0;
+}
+
+.explore-button:hover {
+    background: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(63, 81, 181, 0.25);
+}
+
+.explore-button:active {
+    transform: scale(0.98);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.2rem;
+    }
+
+    .universes-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.home-footer {
+    margin-top: 2.5rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.footer-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+}
+
+.footer-authors {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.footer-course-link {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-course-link:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.footer-bottom-icon {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+    padding: 0.5rem;
+    border-radius: 50%;
+}
+
+.github-link:hover {
+    color: var(--primary);
+    background: rgba(0, 0, 0, 0.04);
+}
+

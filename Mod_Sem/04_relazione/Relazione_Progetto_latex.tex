@@ -1,0 +1,551 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{tcolorbox}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+\begin{center}
+    {\large \textsc{Università degli Studi di Torino}}\\
+    {\large \textsc{Dipartimento di Informatica}}\\[0.8cm]
+    {\textcolor{gray}{\large\href{https://informatica.i-learn.unito.it/course/view.php?id=3571}
+    {Modellazione Concettuale del Web Semantico — a.a.\ 2025/2026}}}\\[2.2cm]
+    {\Huge \textbf{Relazione del Progetto}}\\[0.8cm]
+    {\LARGE \textbf{Narrative Universes}}\\[1.4cm]
+
+    {\textcolor{gray}{\large Alessandro Olivero (matricola: 915069)\\
+    Giovanni Grillo (matricola: 989819)}}
+\end{center}
+
+\vfill
+
+\begin{center}
+    {\textcolor{gray}{Gennaio 2026}}
+\end{center}
+
+\newpage
+
+\section*{Introduzione}
+
+Il presente progetto nasce all'interno del corso di \textit{Modellazione Concettuale del Web Semantico} e ha come obiettivo la progettazione, realizzazione e interrogazione di un'ontologia complessa, capace di rappresentare in modo formale e strutturato un insieme di universi narrativi. L'idea alla base del lavoro è quella di costruire un modello semantico che permetta di descrivere personaggi, luoghi, organizzazioni, opere e relazioni interne a uno o più universi, mantenendo al tempo stesso un elevato livello di generalità e riusabilità.
+
+L'ontologia è stata sviluppata seguendo i principi del Web Semantico e utilizzando gli standard W3C, in particolare RDF, RDFS e OWL. La modellazione è accompagnata da un insieme di query SPARQL, progettate per esplorare la struttura del grafo, verificare la correttezza del modello e dimostrare la capacità dell'ontologia di rispondere a interrogazioni complesse. Una parte del progetto è inoltre dedicata all'integrazione con fonti esterne, come Wikidata, tramite federated queries.
+
+\vspace{0.5cm}
+
+\section*{Obiettivi del Progetto}
+
+\begin{itemize}
+    \item Progettare un'ontologia modulare e scalabile, capace di rappresentare universi narrativi differenti.
+    \item Definire classi, proprietà e individui in modo coerente, evitando ridondanze e garantendo consistenza semantica.
+    \item Modellare relazioni significative tra personaggi, luoghi, organizzazioni e opere.
+    \item Implementare un insieme di query SPARQL in grado di esplorare il grafo e dimostrare la correttezza del modello.
+    \item Integrare l'ontologia con risorse esterne tramite federated queries.
+    \item Produrre una documentazione chiara, leggibile e strutturata.
+\end{itemize}
+
+\vspace{0.5cm}
+
+\begin{tcolorbox}[
+  colback=white,
+  colframe=black,
+  title=\textbf{Box 1: Descrizione Generale dell'Ontologia},
+  fonttitle=\bfseries,
+  arc=2mm,
+  boxrule=0.8pt
+]
+L'ontologia rappresenta uno o più universi narrativi attraverso classi, proprietà e individui. Include entità come personaggi, luoghi, organizzazioni, opere e universi, collegate tramite relazioni semantiche significative. Il modello è estensibile, coerente e interrogabile tramite SPARQL, e costituisce la base per analisi semantiche e integrazioni con risorse esterne come Wikidata.
+\end{tcolorbox}
+
+\vspace{0.5cm}
+
+\section*{Struttura Concettuale}
+
+La struttura concettuale dell'ontologia è stata definita seguendo un approccio top-down: si è partiti dall'identificazione delle entità fondamentali e delle loro relazioni, per poi procedere alla definizione delle classi e delle proprietà. Il risultato è un modello gerarchico, in cui le classi principali sono organizzate in modo da garantire coerenza semantica e facilità di estensione.
+
+La classe \texttt{Character} è una delle più centrali, poiché rappresenta gli attori principali delle narrazioni. Essa è collegata a luoghi, opere e organizzazioni tramite proprietà specifiche, permettendo di ricostruire percorsi narrativi, appartenenze e ruoli.
+
+La classe \texttt{Location} permette di modellare ambienti fisici o concettuali, mentre \texttt{Organization} rappresenta gruppi, ordini o istituzioni. La classe \texttt{Work} consente di collegare entità narrative alle opere in cui compaiono, mentre \texttt{Universe} funge da contenitore semantico per raggruppare entità coerenti.
+
+\vspace{0.5cm}
+
+\begin{tcolorbox}[
+  colback=white,
+  colframe=black,
+  title=\textbf{Box 2: Classi Principali},
+  fonttitle=\bfseries,
+  arc=2mm,
+  boxrule=0.8pt
+]
+\begin{itemize}
+    \item \textbf{Character}: individui che rappresentano personaggi appartenenti a uno o più universi.
+    \item \textbf{Location}: luoghi fisici o concettuali rilevanti all'interno della narrazione.
+    \item \textbf{Organization}: gruppi, istituzioni o entità a cui i personaggi possono appartenere.
+    \item \textbf{Work}: opere letterarie, cinematografiche o artistiche.
+    \item \textbf{Universe}: macro-strutture narrative che raggruppano entità coerenti.
+\end{itemize}
+\end{tcolorbox}
+
+\vspace{0.5cm}
+
+\begin{tcolorbox}[
+  colback=white,
+  colframe=black,
+  title=\textbf{Box 3: Proprietà Principali},
+  fonttitle=\bfseries,
+  arc=2mm,
+  boxrule=0.8pt
+]
+\begin{itemize}
+    \item \texttt{appearsIn}: collega un personaggio o un luogo a un'opera.
+    \item \texttt{belongsToUniverse}: collega un'entità all'universo narrativo di riferimento.
+    \item \texttt{memberOf}: collega un personaggio a un'organizzazione.
+    \item \texttt{mentors}: rappresenta relazioni di mentoring tra personaggi.
+    \item \texttt{description}: fornisce una descrizione testuale dell'entità.
+\end{itemize}
+\end{tcolorbox}
+
+\vspace{0.5cm}
+
+\section*{Utilizzo di Protégé per la Modellazione}
+
+La costruzione dell'ontologia è stata realizzata utilizzando \textbf{Protégé}, uno strumento fondamentale per la modellazione OWL. Protégé ha permesso di definire in modo visuale e strutturato le classi, le proprietà e gli individui che compongono l'ontologia degli universi narrativi.
+
+Le principali attività svolte in Protégé includono:
+
+\begin{itemize}
+    \item \textbf{Definizione delle classi}: creazione delle classi principali e organizzazione della gerarchia.
+    \item \textbf{Creazione delle proprietà}: definizione di proprietà oggetto e dato, con dominio e codominio.
+    \item \textbf{Inserimento degli individui}: popolamento dell'ontologia con personaggi, luoghi, opere e organizzazioni.
+    \item \textbf{Verifica con reasoner}: utilizzo di HermiT per controllare la consistenza del modello.
+    \item \textbf{Esportazione RDF/XML}: esportazione dell'ontologia per l'importazione in GraphDB.
+\end{itemize}
+
+Protégé ha garantito una modellazione chiara, coerente e facilmente estendibile, facilitando la gestione dell'intero ciclo di sviluppo dell'ontologia.
+
+\vspace{0.5cm}
+
+\section*{Modellazione OWL}
+
+La modellazione OWL ha permesso di definire formalmente le relazioni tra le entità. Le proprietà sono state arricchite con dominio, codominio e caratteristiche semantiche, permettendo inferenze automatiche tramite reasoner.
+
+\vspace{0.5cm}
+
+\begin{tcolorbox}[
+  colback=white,
+  colframe=black,
+  title=\textbf{Box 4: Esempio di Proprietà OWL},
+  fonttitle=\bfseries,
+  arc=2mm,
+  boxrule=0.8pt
+]
+La proprietà \texttt{memberOf} è stata modellata come \textit{ObjectProperty} con:
+\begin{itemize}
+    \item \textbf{Dominio}: \texttt{Character}
+    \item \textbf{Codominio}: \texttt{Organization}
+\end{itemize}
+Essa rappresenta l'appartenenza di un personaggio a un gruppo o istituzione.
+\end{tcolorbox}
+
+\vspace{0.5cm}
+
+\section*{Query SPARQL}
+
+Le query SPARQL sono state utilizzate per esplorare il grafo e verificare la correttezza del modello.
+
+\begin{tcolorbox}[
+  colback=white,
+  colframe=black,
+  title=\textbf{Box 5: Query SPARQL -- Individui e Classi},
+  fonttitle=\bfseries,
+  arc=2mm,
+  boxrule=0.8pt
+]
+\begin{verbatim}
+SELECT DISTINCT ?individual ?label ?class
+WHERE {
+  ?individual rdf:type ?class ;
+              rdfs:label ?label .
+  FILTER(isIRI(?individual))
+  FILTER(isIRI(?class))
+}
+ORDER BY ?class ?label
+\end{verbatim}
+\end{tcolorbox}
+
+\vspace{0.5cm}
+
+\section*{Integrazione con il Web Semantico}
+
+L'integrazione con Wikidata tramite federated queries permette di arricchire il grafo locale con informazioni esterne, come descrizioni, date e collegamenti a entità globali.
+
+\vspace{0.5cm}
+
+\begin{tcolorbox}[
+  colback=white,
+  colframe=black,
+  title=\textbf{Box 6: Integrazione con Wikidata},
+  fonttitle=\bfseries,
+  arc=2mm,
+  boxrule=0.8pt
+]
+L'integrazione con Wikidata consente di estendere il grafo locale con dati provenienti dal Web Semantico, migliorando la ricchezza informativa dell'ontologia senza duplicare informazioni.
+\end{tcolorbox}
+
+\vspace{0.5cm}
+
+\section*{Conclusioni}
+
+Il progetto ha permesso di progettare e realizzare un'ontologia per la rappresentazione di universi narrativi, dimostrando come gli strumenti del Web Semantico possano essere utilizzati per modellare domini complessi in modo formale e interrogabile. L'integrazione con Wikidata evidenzia il potenziale del Web Semantico come infrastruttura distribuita di conoscenza. Il modello sviluppato costituisce una base solida per future estensioni e arricchimenti.
+
+\newpage
+
+\section{Query SPARQL e Applicazione Client}
+
+\subsection{Flusso di Interazione Utente}
+
+L'applicazione web sviluppata permette agli utenti di esplorare gli universi narrativi modellati nell'ontologia attraverso un'interfaccia intuitiva e interattiva. Il sistema è stato progettato per supportare tre tipologie di utenti:
+
+\begin{itemize}
+    \item \textbf{Appassionati di narrativa fantasy}: utenti interessati a esplorare personaggi, luoghi e opere di universi narrativi come Harry Potter, Percy Jackson e Il Signore degli Anelli.
+    \item \textbf{Studenti e ricercatori}: utenti che necessitano di consultare informazioni strutturate e semanticamente arricchite per scopi accademici.
+    \item \textbf{Sviluppatori e data scientist}: utenti che vogliono interrogare il knowledge graph tramite query SPARQL e integrare dati esterni.
+\end{itemize}
+
+\subsubsection{Task Principali}
+
+\begin{enumerate}
+    \item \textbf{Esplorazione degli universi narrativi}: visualizzare gli universi disponibili con statistiche aggregate (numero di personaggi, luoghi, opere).
+    \item \textbf{Consultazione di entità}: navigare tra personaggi, luoghi e opere con possibilità di filtraggio per tipo.
+    \item \textbf{Visualizzazione dettagli}: accedere a informazioni dettagliate su singole entità, incluse relazioni con altre entità (alleati, nemici, organizzazioni, abilità).
+    \item \textbf{Arricchimento dati}: integrare informazioni da Wikidata tramite query federate per arricchire il knowledge graph locale.
+\end{enumerate}
+
+\subsection{Flow Chart dell'Interazione}
+
+La Figura~\ref{fig:flowchart} illustra il flusso completo di navigazione nell'applicazione. L'utente parte dalla homepage, seleziona un universo narrativo, esplora le diverse sezioni tramite tab (Personaggi, Luoghi, Opere, Dati Esterni), e può arricchire i dati locali con informazioni da Wikidata tramite query federate.
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\textwidth,height=0.95\textheight,keepaspectratio]{ui_webapp.pdf}
+    \caption{Flow chart dell'interazione utente con l'applicazione web}
+    \label{fig:flowchart}
+\end{figure}
+
+Il diagramma mostra chiaramente i percorsi di navigazione disponibili e le query SPARQL eseguite in ciascuna fase dell'interazione.
+
+\clearpage
+
+\subsection{Interfaccia Applicazione}
+
+\subsubsection{Homepage}
+
+La Figura~\ref{fig:homepage} mostra la pagina iniziale dell'applicazione, dove vengono visualizzati i tre universi narrativi disponibili (Harry Potter, Percy Jackson, Terra di Mezzo). Per ogni universo vengono mostrate statistiche aggregate ottenute tramite la query \texttt{getUniverses}, che utilizza \texttt{COUNT} e \texttt{GROUP BY} per contare personaggi, luoghi e opere.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{Homepage_with_3_Universes.png}
+    \caption{Homepage con lista degli universi narrativi}
+    \label{fig:homepage}
+\end{figure}
+
+\clearpage
+
+\subsubsection{Dashboard Universo}
+
+La Figura~\ref{fig:dashboard} mostra la dashboard di un universo (Harry Potter), con quattro tab di navigazione: Personaggi, Luoghi, Opere e Dati Esterni. La dashboard viene popolata tramite la query \texttt{getUniverseDetails}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{Universe_Dashboard_HarryPotter.png}
+    \caption{Dashboard dell'universo Harry Potter con 4 tab}
+    \label{fig:dashboard}
+\end{figure}
+
+\clearpage
+
+\subsubsection{Tab Opere}
+
+La Figura~\ref{fig:works} mostra il tab delle opere narrative dell'universo Harry Potter. La query \texttt{getWorksByUniverse} utilizza \texttt{BIND}, \texttt{IF} ed \texttt{EXISTS} per recuperare le opere con informazioni su anno di pubblicazione e tipo (libro, film, ecc.).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{narrativeWork_pane.png}
+    \caption{Tab Opere con lista delle opere narrative}
+    \label{fig:works}
+\end{figure}
+
+\clearpage
+
+\subsubsection{Dettagli Entità}
+
+La Figura~\ref{fig:details} mostra la pagina di dettaglio di un personaggio (Harry Potter), con informazioni su alleati, nemici, oggetti posseduti, abilità e opere in cui appare. Le informazioni vengono recuperate tramite le query \texttt{getEntityDetails} e \texttt{getCharacterRelations}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{Character_Details_Page.png}
+    \caption{Pagina dettagli di un personaggio con relazioni}
+    \label{fig:details}
+\end{figure}
+
+\clearpage
+
+\subsubsection{Dati Esterni da Wikidata}
+
+La Figura~\ref{fig:wikidata} mostra il tab "Dati Esterni" con i risultati delle query federate verso Wikidata. I film vengono mostrati con un badge che indica la fonte: "Locale" (verde) per i dati dal GraphDB locale, "Wikidata" (blu) per i dati ottenuti tramite query federata.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{External_Data_Wikidata_Badge.png}
+    \caption{Tab Dati Esterni con badge Locale/Wikidata}
+    \label{fig:wikidata}
+\end{figure}
+
+Questo dimostra l'integrazione tra dati locali e dati esterni, uno dei requisiti fondamentali del progetto.
+
+\clearpage
+
+\subsection{Query SPARQL Implementate}
+
+Sono state implementate 12 query SPARQL, di cui 3 query federate verso Wikidata. La Tabella~\ref{tab:queries} riassume le query principali con descrizione e caratteristiche.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|p{4cm}|p{6cm}|p{3cm}|}
+\hline
+\textbf{Nome Query} & \textbf{Descrizione} & \textbf{Caratteristiche} \\
+\hline
+\texttt{getUniverses} & Recupera tutti gli universi con statistiche aggregate & COUNT, GROUP BY \\
+\hline
+\texttt{getUniverseDetails} & Dettagli di un universo specifico & COUNT, OPTIONAL \\
+\hline
+\texttt{getCharactersByUniverse} & Lista personaggi con tipi & FILTER, OPTIONAL \\
+\hline
+\texttt{getWorksByUniverse} & Lista opere con anno e tipo & BIND, IF, EXISTS \\
+\hline
+\texttt{getLocationsByUniverse} & Lista luoghi con funzioni narrative & OPTIONAL, FILTER \\
+\hline
+\texttt{getEntityDetails} & Dettagli completi di un'entità & COALESCE, OPTIONAL \\
+\hline
+\texttt{getCharacterRelations} & Relazioni di un personaggio & OPTIONAL multipli \\
+\hline
+\texttt{getLocationRelations} & Relazioni di un luogo & OPTIONAL multipli \\
+\hline
+\texttt{getObjectRelations} & Relazioni di un oggetto & OPTIONAL multipli \\
+\hline
+\texttt{getWorkRelations} & Relazioni di un'opera & OPTIONAL multipli \\
+\hline
+\textbf{getMoviesFromWikidata} & \textbf{Query federata film Harry Potter} & \textbf{SERVICE, UNION, GROUP BY} \\
+\hline
+\textbf{getLotrMoviesFromWikidata} & \textbf{Query federata film LOTR} & \textbf{SERVICE, UNION} \\
+\hline
+\textbf{getPercyMoviesFromWikidata} & \textbf{Query federata film Percy Jackson} & \textbf{SERVICE, UNION} \\
+\hline
+\end{tabular}
+\caption{Query SPARQL implementate nell'applicazione}
+\label{tab:queries}
+\end{table}
+
+\newpage
+
+\subsection{Query Federate verso Wikidata}
+
+Sono state implementate 3 query federate che interrogano l'endpoint SPARQL pubblico di Wikidata per arricchire i dati locali con informazioni esterne su film e registi.
+
+\subsubsection{Architettura delle Query Federate}
+
+Le query federate utilizzano la clausola \texttt{SERVICE} di SPARQL per interrogare Wikidata. La struttura delle query combina:
+
+\begin{itemize}
+    \item \textbf{Dati locali}: film presenti nel knowledge graph locale (GraphDB)
+    \item \textbf{Dati esterni}: film recuperati da Wikidata tramite ID specifici (Q-codes)
+    \item \textbf{Unione}: \texttt{UNION} per combinare i due set di dati
+    \item \textbf{Aggregazione}: \texttt{GROUP BY} per eliminare duplicati
+\end{itemize}
+
+\subsubsection{Esempio: Query Federata Film Harry Potter}
+
+La query \texttt{getMoviesFromWikidata} combina i film di Harry Potter presenti localmente con quelli recuperati da Wikidata:
+
+\begin{tcolorbox}[
+  colback=white,
+  colframe=black,
+  title=\textbf{Query Federata: Film Harry Potter},
+  fonttitle=\bfseries,
+  arc=2mm,
+  boxrule=0.8pt
+]
+\begin{verbatim}
+PREFIX ontology: <http://www.narrative-universes.org/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+
+SELECT ?film ?title (MIN(?year) AS ?releaseYear) 
+       (SAMPLE(?directorName) AS ?director) 
+       (SAMPLE(?runtime) AS ?duration) ?source
+WHERE {
+  {
+    ?film a ontology:Movie ;
+          rdfs:label ?title ;
+          ontology:belongsToUniverse <UNIVERSE_URI> .
+    OPTIONAL { ?film ontology:publicationYear ?year }
+    OPTIONAL { ?film ontology:runtime ?runtime }
+    BIND("Locale" AS ?source)
+    BIND("" AS ?directorName)
+  }
+  UNION
+  {
+    SERVICE <https://query.wikidata.org/sparql> {
+      VALUES ?wikidataFilm {
+        wd:Q102244 wd:Q102448 wd:Q102225 
+        wd:Q102235 wd:Q161687 wd:Q161678 wd:Q232009
+      }
+      ?wikidataFilm rdfs:label ?title ;
+                    wdt:P577 ?releaseDate ;
+                    wdt:P57 ?directorEntity .
+      OPTIONAL { ?wikidataFilm wdt:P2047 ?runtime }
+      ?directorEntity rdfs:label ?directorName .
+      FILTER(LANG(?title) = "en")
+      FILTER(LANG(?directorName) = "en")
+      BIND(YEAR(?releaseDate) AS ?year)
+      BIND(?wikidataFilm AS ?film)
+      BIND("Wikidata" AS ?source)
+    }
+  }
+}
+GROUP BY ?film ?title ?source
+ORDER BY ?releaseYear
+\end{verbatim}
+\end{tcolorbox}
+
+\subsubsection{Risultati delle Query Federate}
+
+Le query federate restituiscono 8 film per Harry Potter (1 locale + 7 da Wikidata), 6 film per Il Signore degli Anelli (1 locale + 5 da Wikidata), e 2 film per Percy Jackson (1 locale + 1 da Wikidata).
+
+Ogni risultato include:
+\begin{itemize}
+    \item Titolo del film
+    \item Anno di uscita
+    \item Regista (solo per film da Wikidata)
+    \item Durata in minuti
+    \item Fonte (badge "Locale" o "Wikidata")
+\end{itemize}
+
+\newpage
+
+\subsection{Esempio di Interazione Completa}
+
+\textbf{Scenario:} Un utente vuole esplorare i personaggi dell'universo Harry Potter e arricchire le informazioni con dati esterni da Wikidata.
+
+\subsubsection{Passi dell'Interazione}
+
+\begin{enumerate}
+    \item L'utente apre l'applicazione all'indirizzo \texttt{http://localhost:3000}
+    \item Viene visualizzata la homepage con 3 card degli universi (query: \texttt{getUniverses})
+    \item L'utente clicca su "Esplora Universo" di Harry Potter
+    \item Si apre la dashboard con 4 tab e statistiche dell'universo (query: \texttt{getUniverseDetails})
+    \item L'utente seleziona il tab "Personaggi"
+    \item Viene eseguita la query \texttt{getCharactersByUniverse} che restituisce 17 personaggi
+    \item Sono visibili filtri per tipo: Protagonisti (3), Alleati (5), Antagonisti (4), Mentori (2)
+    \item L'utente clicca sul filtro "Protagonisti"
+    \item Vengono mostrati solo Harry Potter, Hermione Granger e Ron Weasley
+    \item L'utente clicca su "Harry Potter"
+    \item Viene eseguita la query \texttt{getEntityDetails} seguita da \texttt{getCharacterRelations}
+    \item Vengono visualizzati:
+    \begin{itemize}
+        \item Alleati: Ron Weasley, Hermione Granger, Albus Dumbledore
+        \item Nemici: Lord Voldemort, Draco Malfoy
+        \item Oggetti posseduti: Bacchetta di agrifoglio, Mantello dell'invisibilità
+        \item Abilità: Patronus (cervo), Parseltongue
+        \item Opere: Harry Potter e la Pietra Filosofale, Harry Potter e la Camera dei Segreti, ecc.
+    \end{itemize}
+    \item L'utente clicca sul pulsante "Torna indietro"
+    \item Torna alla dashboard
+    \item L'utente seleziona il tab "Dati Esterni"
+    \item Clicca sul pulsante "Carica dati da Wikidata"
+    \item Vengono eseguite in parallelo le query federate \texttt{getMoviesFromWikidata} e \texttt{getCharactersFromWikidata}
+    \item Dopo 3-5 secondi, vengono visualizzati:
+    \begin{itemize}
+        \item \textbf{Sezione Film}: 8 film totali
+        \begin{itemize}
+            \item 1 film con badge verde "Locale": Harry Potter e la Pietra Filosofale (152 min, 2001)
+            \item 7 film con badge blu "Wikidata": Camera dei Segreti (Chris Columbus, 2002), Prigioniero di Azkaban (Alfonso Cuarón, 2004), Calice di Fuoco (Mike Newell, 2005), ecc.
+        \end{itemize}
+        \item \textbf{Sezione Personaggi}: personaggi arricchiti con descrizioni da Wikidata (quando disponibili)
+    \end{itemize}
+\end{enumerate}
+
+Questo esempio dimostra il flusso completo di interazione e l'integrazione tra dati locali e dati esterni tramite query federate.
+
+\newpage
+
+\subsection{Architettura Applicazione}
+
+L'applicazione è strutturata su tre livelli:
+
+\begin{itemize}
+    \item \textbf{Frontend}: React.js per l'interfaccia utente
+    \item \textbf{Proxy Server}: Node.js Express per gestire le richieste SPARQL e risolvere problemi CORS
+    \item \textbf{Backend}: GraphDB come Linked Data Platform per memorizzare e interrogare l'ontologia
+\end{itemize}
+
+\subsubsection{Flusso delle Richieste}
+
+\begin{enumerate}
+    \item L'utente interagisce con l'interfaccia React
+    \item React invia richieste HTTP al proxy Node.js (porta 3001)
+    \item Il proxy inoltra le query SPARQL a GraphDB (porta 7200)
+    \item Per le query federate, GraphDB interroga Wikidata tramite la clausola SERVICE
+    \item I risultati vengono restituiti al proxy, poi a React
+    \item React renderizza i dati nell'interfaccia
+\end{enumerate}
+
+\subsection{Tecnologie Utilizzate}
+
+\begin{itemize}
+    \item \textbf{Protégé 5.6}: modellazione ontologia OWL
+    \item \textbf{GraphDB Free 10.7}: Linked Data Platform e SPARQL endpoint
+    \item \textbf{React 18}: framework frontend
+    \item \textbf{Node.js + Express}: proxy server
+    \item \textbf{SPARQL 1.1}: linguaggio di query con supporto query federate
+    \item \textbf{Wikidata Query Service}: endpoint pubblico per dati esterni
+\end{itemize}
+
+\newpage
+
+\section*{Conclusioni Finali}
+
+Il progetto ha permesso di progettare e realizzare un sistema completo per la rappresentazione semantica di universi narrativi, dimostrando come gli strumenti del Web Semantico possano essere utilizzati per modellare domini complessi in modo formale, interrogabile e interoperabile.
+
+\textbf{Risultati principali:}
+\begin{itemize}
+    \item Ontologia OWL completa con 16+ classi, 8+ proprietà oggetto, 4+ data properties
+    \item Knowledge graph popolato con 50+ individui di 3 universi narrativi
+    \item 12 query SPARQL, di cui 3 query federate verso Wikidata
+    \item Applicazione web React funzionante con interfaccia intuitiva
+    \item Integrazione dati locali + dati esterni tramite SERVICE clause
+\end{itemize}
+
+\textbf{Competenze dimostrate:}
+\begin{itemize}
+    \item Modellazione concettuale con OWL e Protégé
+    \item Progettazione query SPARQL con aggregazioni (COUNT, GROUP BY, SAMPLE, MIN)
+    \item Query federate verso endpoint pubblici (Wikidata)
+    \item Sviluppo applicazione client con Linked Data Platform
+    \item Integrazione frontend-backend per sistemi semantici
+\end{itemize}
+
+Il modello sviluppato costituisce una base solida per future estensioni, come l'aggiunta di nuovi universi narrativi, l'arricchimento con dati da altre fonti LOD (DBpedia, VIAF), e l'implementazione di funzionalità di reasoning avanzate.
+
+L'integrazione con Wikidata evidenzia il potenziale del Web Semantico come infrastruttura distribuita di conoscenza, dove dati locali e globali possono coesistere e arricchirsi reciprocamente attraverso standard aperti e interoperabili.
+
+\end{document}
