@@ -1,0 +1,150 @@
+═══════════════════════════════════════════════════════════
+REQUIREMENTS ANALYSIS - UNIVERSI NARRATIVI CROSSMEDIA
+═══════════════════════════════════════════════════════════
+
+1. CONTESTO E DOMINIO
+═══════════════════════════════════════════════════════════
+
+DOMINIO:
+Universi narrativi crossmedia (che attraversano libri, film, serie TV, 
+videogiochi, teatro).
+
+Un universo narrativo è un mondo fittizio coerente che viene raccontato 
+attraverso multiple opere su diversi media. Esempi: Harry Potter (libri, 
+film, teatro), Il Signore degli Anelli (libri, film, serie), Percy Jackson 
+(libri, film, serie TV).
+
+RILEVANZA:
+- CULTURALE: Gli universi narrativi sono fenomeni centrali nella cultura pop 
+  contemporanea, generando community di milioni di fan
+- ECONOMICA: Franchise come Harry Potter generano miliardi di dollari
+- ACCADEMICA: Narratologia, media studies, analisi transmediale
+
+PERCHÉ UN'ONTOLOGIA?
+Attualmente i dati su universi narrativi sono sparsi (wiki separate, IMDb, 
+libri, fan database). Un'ontologia permette:
+- Rappresentazione formale e interoperabile
+- Confronti strutturali tra universi
+- Query complesse cross-universo
+- Integrazione con Linked Open Data
+
+
+2. FINALITÀ E OBIETTIVI
+═══════════════════════════════════════════════════════════
+
+FINALITÀ GENERALI:
+1. Fornire un vocabolario riusabile per descrivere universi narrativi
+2. Permettere classificazione automatica di personaggi, luoghi, oggetti
+3. Supportare analisi comparative tra universi diversi
+4. Facilitare integrazione dati da fonti multiple
+
+TASK SPECIFICI:
+1. CONSULTAZIONE: Permettere ricerca di personaggi, luoghi, eventi
+2. CLASSIFICAZIONE: Classificare automaticamente ruoli narrativi
+3. ANALISI: Confrontare strutture narrative tra universi
+4. RACCOMANDAZIONE: Suggerire universi simili in base a caratteristiche
+
+COSA DEVE FARE IL REASONER:
+- Classificare personaggi come "Protagonist", "Mentor", "Antagonist"
+- Identificare luoghi come "SafePlace", "DangerZone", "LiminalSpace"
+- Riconoscere oggetti come "PowerArtifact"
+- Classificare opere come "TransmediaWork"
+
+REQUISITI SODDISFATTI: (UPDATE 13/01/2026)
+- Definizione di una gerarchia concettuale multi-livello
+- Modellazione di ruoli narrativi come entità riusabili
+- Supporto a inferenze automatiche tramite restrizioni OWL
+- Supporto alla descrizione di universi transmediali
+- Interoperabilità con Linked Open Data
+
+
+3. UTENTI TARGET
+═══════════════════════════════════════════════════════════
+
+PRIMARI:
+- Fan e contributori wiki (Fandom, Wikia)
+- Ricercatori in narratologia e media studies
+- Curatori di database culturali
+
+SECONDARI:
+- Sviluppatori di app/siti su narrativa
+- Educatori (analisi letteraria)
+- Giornalisti culturali
+
+
+4. CONTESTO D'USO
+═══════════════════════════════════════════════════════════
+
+SCENARIO 1: Ricercatore analizza ruoli narrativi
+Un ricercatore vuole confrontare come funziona il "mentore" in diversi 
+universi fantasy. Query: "Quali personaggi hanno ruolo di mentore?"
+Output: Dumbledore (HP), Gandalf (LOTR), Chirone (Percy Jackson)
+
+SCENARIO 2: Fan cerca universi simili
+Un fan di Harry Potter cerca universi con caratteristiche simili.
+Query: "Universi con scuola magica + protagonista giovane + mentore anziano"
+Output: Percy Jackson (Camp Half-Blood, protagonista 12enne, mentore Chirone)
+
+SCENARIO 3: Analisi strutturale
+Studioso analizza "passaggi tra mondi" nel fantasy.
+Query: "Quali universi hanno spazi liminali?"
+Output: Binario 9¾ (HP), Armadio (Narnia), Porte (LOTR)
+
+
+5. UNIVERSI MODELLATI
+═══════════════════════════════════════════════════════════
+
+1. HARRY POTTER (esempio principale - dettagliato)
+   Opere: 7 libri, 8 film, The Cursed Child (teatro), Fantastic Beasts
+   Fonte: harrypotter.fandom.com (40.000+ pagine)
+
+2. PERCY JACKSON (esempio secondario - medio)
+   Opere: 5 libri serie principale, 2 film, serie Disney+ (2023-2024)
+   Fonte: riordan.fandom.com
+
+3. IL SIGNORE DEGLI ANELLI (esempio terziario - base)
+   Opere: 3 libri + Lo Hobbit, 6 film, serie Rings of Power
+   Fonte: lotr.fandom.com
+
+
+6. COPERTURA DOMINIO
+═══════════════════════════════════════════════════════════
+
+L'ontologia modella:
+
+PERSONAGGI:
+- Umani, non-umani, ibridi
+- Ruoli narrativi (protagonist, antagonist, mentor, ally, trickster)
+- Affiliazioni (organizzazioni, casate, fazioni)
+- Poteri e abilità
+
+LUOGHI:
+- Luoghi fisici (castelli, città, regni)
+- Spazi liminali (passaggi tra mondi)
+- Classificazione sicurezza (safe/dangerous)
+
+OGGETTI:
+- Oggetti ordinari vs oggetti di potere
+- Armi, artefatti, strumenti magici
+
+OPERE:
+- Libri, film, serie TV, videogiochi, teatro
+- Relazioni (sequel, prequel, spin-off, adattamento)
+
+EVENTI:
+- Eventi narrativi principali
+- Battaglie, cerimonie, scoperte
+
+CREATURE/RAZZE:
+- Esseri magici, mitologici, fantastici
+- Razze fantasy (elfi, nani, hobbit)
+
+
+7. ELEMENTI NON MODELLATI (fuori scope)
+═══════════════════════════════════════════════════════════
+
+- Trame dettagliate capitolo per capitolo
+- Dialoghi completi
+- Autori e case editrici (focus su contenuto narrativo)
+- Merchandising e aspetti commerciali
+- Community e fandom (focus su narrativa)

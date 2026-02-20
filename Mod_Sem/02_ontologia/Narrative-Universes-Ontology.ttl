@@ -1,0 +1,3007 @@
+@prefix : <http://www.narrative-universes.org/ontology#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@base <http://www.narrative-universes.org/ontology#> .
+
+<http://www.narrative-universes.org/ontology> rdf:type owl:Ontology ;
+                                               owl:versionIRI <http://www.narrative-universes.org/ontology/1.0> ;
+                                               owl:imports <http://www.w3.org/2004/02/skos/core> ;
+                                               <http://purl.org/dc/elements/1.1/creator> "Alessandro Olivero" ,
+                                                                                         "Giovanni Grillo" ;
+                                               <http://purl.org/dc/elements/1.1/date> "2026-01-10T00:00:00"^^xsd:dateTime ;
+                                               <http://purl.org/dc/elements/1.1/description> "An ontology for representing crossmedia narrative universes including characters, locations, objects, works, and narrative roles"@en ;
+                                               <http://purl.org/dc/elements/1.1/title> "Ontologia degli universi narrativi"@it ;
+                                               <http://purl.org/vocab/vann/preferredNamespacePrefix> "\"nuo\"" ;
+                                               <http://purl.org/vocab/vann/preferredNamespaceUri> "\"http://www.narrative-universes.org/ontology#\"" ;
+                                               rdfs:label "Narrative Universes Ontology"@en .
+
+#################################################################
+#    Annotation properties
+#################################################################
+
+###  http://purl.org/dc/elements/1.1/creator
+<http://purl.org/dc/elements/1.1/creator> rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/dc/elements/1.1/date
+<http://purl.org/dc/elements/1.1/date> rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/dc/elements/1.1/description
+<http://purl.org/dc/elements/1.1/description> rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/dc/elements/1.1/title
+<http://purl.org/dc/elements/1.1/title> rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/vocab/vann/preferredNamespacePrefix
+<http://purl.org/vocab/vann/preferredNamespacePrefix> rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/vocab/vann/preferredNamespaceUri
+<http://purl.org/vocab/vann/preferredNamespaceUri> rdf:type owl:AnnotationProperty .
+
+
+###  http://swrl.stanford.edu/ontologies/3.3/swrla.owl#isRuleEnabled
+<http://swrl.stanford.edu/ontologies/3.3/swrla.owl#isRuleEnabled> rdf:type owl:AnnotationProperty .
+
+
+###  http://www.w3.org/2004/02/skos/core#closeMatch
+skos:closeMatch rdf:type owl:AnnotationProperty .
+
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith
+<http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> rdf:type owl:ObjectProperty ;
+                                                              rdfs:subPropertyOf :alliedWith ;
+                                                              rdf:type owl:SymmetricProperty ;
+                                                              rdfs:domain :Character ;
+                                                              rdfs:range :Character ;
+                                                              rdfs:comment "Relazione di alleanza indiretta tra due personaggi"@it ;
+                                                              rdfs:label "IndirettamenteAlleatoCon"@it .
+
+
+###  http://www.narrative-universes.org/ontology#adaptationOf
+:adaptationOf rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf owl:topObjectProperty ;
+              rdfs:domain :NarrativeWork ;
+              rdfs:range :NarrativeWork ;
+              rdfs:comment "Collega un'opera (tipicamente film) all'opera originale (libro) da cui è adattata"@it ;
+              rdfs:label "adattamento di"@it .
+
+
+###  http://www.narrative-universes.org/ontology#alliedWith
+:alliedWith rdf:type owl:ObjectProperty ;
+            rdfs:subPropertyOf owl:topObjectProperty ;
+            rdf:type owl:SymmetricProperty ;
+            rdfs:domain :Character ;
+            rdfs:range :Character ;
+            rdfs:comment "Collega due personaggi che sono alleati o compagni"@it ;
+            rdfs:label "AlleatoCon"@it .
+
+
+###  http://www.narrative-universes.org/ontology#appearsIn
+:appearsIn rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf owl:topObjectProperty ;
+           owl:inverseOf :features ;
+           rdfs:domain :Character ;
+           rdfs:range :NarrativeWork ;
+           rdfs:comment "Collega un personaggio a un'opera narrativa in cui appare"@it ;
+           rdfs:label "appare in"@it .
+
+
+###  http://www.narrative-universes.org/ontology#belongsToUniverse
+:belongsToUniverse rdf:type owl:ObjectProperty ;
+                   rdfs:subPropertyOf owl:topObjectProperty ;
+                   rdfs:domain owl:Thing ;
+                   rdfs:range :NarrativeUniverse ;
+                   rdfs:comment "Collega un'entità (personaggio, luogo, oggetto, creatura) all'universo narrativo a cui appartiene"@it ;
+                   rdfs:label "appartiene a universo"@it .
+
+
+###  http://www.narrative-universes.org/ontology#enemyOf
+:enemyOf rdf:type owl:ObjectProperty ;
+         rdfs:subPropertyOf owl:topObjectProperty ;
+         rdf:type owl:SymmetricProperty ;
+         rdfs:domain :Character ;
+         rdfs:range :Character ;
+         rdfs:comment "Collega due personaggi che sono nemici dichiarati"@it ;
+         rdfs:label "nemico di"@it .
+
+
+###  http://www.narrative-universes.org/ontology#features
+:features rdf:type owl:ObjectProperty ;
+          rdfs:domain :NarrativeWork ;
+          rdfs:range :Character ;
+          rdfs:comment "Indica quali personaggi appaiono in un'opera narrativa"@it ;
+          rdfs:label "presente"@it .
+
+
+###  http://www.narrative-universes.org/ontology#grantsAbility
+:grantsAbility rdf:type owl:ObjectProperty ;
+               rdfs:subPropertyOf owl:topObjectProperty ;
+               rdfs:range :Ability ;
+               rdfs:comment "Collega un artefatto di potere all'abilità che concede"@it ;
+               rdfs:label "concede abilità"@it .
+
+
+###  http://www.narrative-universes.org/ontology#hasAbility
+:hasAbility rdf:type owl:ObjectProperty ;
+            rdfs:subPropertyOf owl:topObjectProperty ;
+            rdfs:domain :Character ;
+            rdfs:range :Ability ;
+            rdfs:comment "Collega un personaggio a un'abilità che possiede naturalmente (senza artefatti)"@it ;
+            rdfs:label "ha abilità"@it .
+
+
+###  http://www.narrative-universes.org/ontology#hasMainProtagonist
+:hasMainProtagonist rdf:type owl:ObjectProperty ;
+                    rdfs:subPropertyOf :features ;
+                    rdf:type owl:FunctionalProperty ;
+                    rdfs:domain :NarrativeWork ;
+                    rdfs:range :Character ,
+                               :Protagonist ;
+                    rdfs:comment "Collega un'opera al suo protagonista principale (uno solo per opera)"@it ;
+                    rdfs:label "ha protagonista principale"@it .
+
+
+###  http://www.narrative-universes.org/ontology#hasMember
+:hasMember rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf owl:topObjectProperty ;
+           owl:inverseOf :memberOf ;
+           rdfs:domain :Organization ;
+           rdfs:range :Character ;
+           rdfs:comment "Indica i membri di un'organizzazione"@it .
+
+
+###  http://www.narrative-universes.org/ontology#hasOriginType
+:hasOriginType rdf:type owl:ObjectProperty ;
+               rdfs:subPropertyOf owl:topObjectProperty ;
+               rdfs:domain :Character ,
+                           :HybridCharacter ,
+                           [ owl:intersectionOf ( :Character
+                                                  [ rdf:type owl:Restriction ;
+                                                    owl:onProperty :hasOriginType ;
+                                                    owl:minCardinality "2"^^xsd:nonNegativeInteger
+                                                  ]
+                                                ) ;
+                             rdf:type owl:Class
+                           ] ,
+                           [ rdf:type owl:Restriction ;
+                             owl:onProperty :hasOriginType ;
+                             owl:minCardinality "2"^^xsd:nonNegativeInteger
+                           ] ;
+               rdfs:range :OriginType ,
+                          [ rdf:type owl:Class ;
+                            owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#ElvenOrigin>
+                                        <http://www.co-ode.org/ontologies/ont.owl#GiantOrigin>
+                                        <http://www.co-ode.org/ontologies/ont.owl#HumanOrigin>
+                                        <http://www.co-ode.org/ontologies/ont.owl#SpiritOrigin>
+                                        :DivineOrigin
+                                      )
+                          ] ;
+               rdfs:comment "Collega un personaggio ibrido ai suoi tipi di origine (es: umano + divino)"@it ;
+               rdfs:label "ha tipo di origine"@it .
+
+
+###  http://www.narrative-universes.org/ontology#hasPowerTypeEnum
+:hasPowerTypeEnum rdf:type owl:ObjectProperty ;
+                  rdfs:domain :Object ;
+                  rdfs:range :PowerType ,
+                             [ rdf:type owl:Class ;
+                               owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                           :CorruptivePower
+                                           :DivinePower
+                                           :MagicalPower
+                                           :SymbolicPower
+                                         )
+                             ] ;
+                  rdfs:comment "Collega un oggetto magico al suo tipo di potere tramite la classe enumerata PowerType"@it ;
+                  rdfs:label "ha tipo di potere"@it .
+
+
+###  http://www.narrative-universes.org/ontology#hosts
+:hosts rdf:type owl:ObjectProperty ;
+       owl:inverseOf :locatedAt ;
+       rdfs:domain :Location ;
+       rdfs:range :Organization ;
+       rdfs:comment "Indica quali organizzazioni si trovano in un luogo"@it ;
+       rdfs:label "ospita"@it .
+
+
+###  http://www.narrative-universes.org/ontology#indirectlyMentors
+:indirectlyMentors rdf:type owl:ObjectProperty ;
+                   rdfs:subPropertyOf owl:topObjectProperty ;
+                   rdfs:domain :Character ;
+                   rdfs:range :Character ;
+                   owl:propertyChainAxiom ( :mentors
+                                            :alliedWith
+                                          ) ;
+                   rdfs:comment "Indica una relazione di mentoring indiretta attraverso alleanze"@it ;
+                   rdfs:label "fa da mentore indirettamente"@it .
+
+
+###  http://www.narrative-universes.org/ontology#indirectlySetIn
+:indirectlySetIn rdf:type owl:ObjectProperty ;
+                 rdfs:subPropertyOf owl:topObjectProperty ;
+                 owl:propertyChainAxiom ( :partOf
+                                        ) ,
+                                        ( :setIn
+                                        ) ;
+                 rdfs:comment "Usata per rappresentare legami indiretti tra entità narrative e ambientazioni"@it ;
+                 rdfs:label "Impostato indirettamente"@it .
+
+
+###  http://www.narrative-universes.org/ontology#locatedAt
+:locatedAt rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf owl:topObjectProperty ;
+           rdfs:domain :Organization ;
+           rdfs:range :Location ;
+           rdfs:comment "Collega un'organizzazione al luogo fisico dove si trova"@it ;
+           rdfs:label "situato in"@it .
+
+
+###  http://www.narrative-universes.org/ontology#memberOf
+:memberOf rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf owl:topObjectProperty ;
+          rdfs:domain :Character ;
+          rdfs:range :Organization ;
+          rdfs:comment "Collega un personaggio a un'organizzazione di cui fa parte"@it ;
+          rdfs:label "membro di"@it .
+
+
+###  http://www.narrative-universes.org/ontology#mentors
+:mentors rdf:type owl:ObjectProperty ;
+         rdfs:subPropertyOf owl:topObjectProperty ;
+         rdfs:domain :Character ;
+         rdfs:range :Character ;
+         rdfs:comment "Collega un personaggio mentore al personaggio che guida e insegna"@it ;
+         rdfs:label "fa da mentore a"@it .
+
+
+###  http://www.narrative-universes.org/ontology#partOf
+:partOf rdf:type owl:ObjectProperty ;
+        rdfs:subPropertyOf owl:topObjectProperty ;
+        rdf:type owl:TransitiveProperty ;
+        rdfs:domain :Location ;
+        rdfs:range :Location ;
+        rdfs:comment "Collega un luogo a un luogo più grande che lo contiene"@it ;
+        rdfs:label "parte di"@it .
+
+
+###  http://www.narrative-universes.org/ontology#possesses
+:possesses rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf owl:topObjectProperty ;
+           rdfs:domain :Character ;
+           rdfs:range :Object ;
+           rdfs:comment "Collega un personaggio a un oggetto che possiede o controlla"@it ;
+           rdfs:label "possiede"@it .
+
+
+###  http://www.narrative-universes.org/ontology#prequelOf
+:prequelOf rdf:type owl:ObjectProperty ;
+           owl:inverseOf :sequelOf ;
+           rdfs:comment "Indica che un'opera narrativa è il prequel (storia precedente) di un'altra opera"@it ;
+           rdfs:label "prequel di"@it .
+
+
+###  http://www.narrative-universes.org/ontology#sequelOf
+:sequelOf rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf owl:topObjectProperty ;
+          rdf:type owl:TransitiveProperty ;
+          rdfs:domain :NarrativeWork ;
+          rdfs:range :NarrativeWork ;
+          rdfs:comment "Collega un'opera all'opera precedente di cui è il seguito"@it ;
+          rdfs:label "seguito di"@it .
+
+
+###  http://www.narrative-universes.org/ontology#setIn
+:setIn rdf:type owl:ObjectProperty ;
+       rdfs:subPropertyOf owl:topObjectProperty ;
+       rdfs:domain :NarrativeWork ;
+       rdfs:range :Location ;
+       rdfs:comment "Collega un'opera narrativa al luogo in cui è ambientata"@it ;
+       rdfs:label "ambientato in"@it .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://www.co-ode.org/ontologies/ont.owl#hasSeasons
+<http://www.co-ode.org/ontologies/ont.owl#hasSeasons> rdf:type owl:DatatypeProperty ;
+                                                      rdfs:domain :NarrativeWork ;
+                                                      rdfs:range xsd:integer ;
+                                                      rdfs:comment "Il numero di stagioni che una serie televisiva possiede"@it ;
+                                                      rdfs:label "ha stagioni"@it .
+
+
+###  http://www.narrative-universes.org/ontology#birthYear
+:birthYear rdf:type owl:DatatypeProperty ,
+                    owl:FunctionalProperty ;
+           rdfs:domain :Character ;
+           rdfs:range xsd:integer ;
+           rdfs:comment "L'anno di nascita di un personaggio"@it ;
+           rdfs:label "AnnoDiNascita"@it .
+
+
+###  http://www.narrative-universes.org/ontology#canBeDestroyed
+:canBeDestroyed rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf owl:topDataProperty ;
+                rdfs:range xsd:boolean ;
+                rdfs:comment "Indica se un artefatto può essere distrutto"@it ;
+                rdfs:label "può essere distrutto"@it .
+
+
+###  http://www.narrative-universes.org/ontology#description
+:description rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf owl:topDataProperty ;
+             rdfs:range xsd:string ;
+             rdfs:comment "Una descrizione testuale dell'entità"@it ;
+             rdfs:label "descrizione"@it .
+
+
+###  http://www.narrative-universes.org/ontology#hasNarrativeFunction
+:hasNarrativeFunction rdf:type owl:DatatypeProperty ;
+                      rdfs:subPropertyOf owl:topDataProperty ;
+                      rdfs:domain :Location ;
+                      rdfs:range xsd:string ;
+                      rdfs:comment "La funzione narrativa di un elemento (es: Transizione, Rifugio, Conflitto)"@it ;
+                      rdfs:label "ha funzione narrativa"@it .
+
+
+###  http://www.narrative-universes.org/ontology#isOngoing
+:isOngoing rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf owl:topDataProperty ;
+           rdfs:domain :NarrativeWork ,
+                       :TVSeries ,
+                       [ owl:intersectionOf ( :NarrativeWork
+                                              [ rdf:type owl:Restriction ;
+                                                owl:onProperty <http://www.co-ode.org/ontologies/ont.owl#hasSeasons> ;
+                                                owl:someValuesFrom xsd:integer
+                                              ]
+                                            ) ;
+                         rdf:type owl:Class
+                       ] ,
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty <http://www.co-ode.org/ontologies/ont.owl#hasSeasons> ;
+                         owl:someValuesFrom xsd:integer
+                       ] ;
+           rdfs:range xsd:boolean ;
+           rdfs:comment "Indica se una serie TV è ancora in produzione"@it ;
+           rdfs:label "in corso"@it .
+
+
+###  http://www.narrative-universes.org/ontology#numberOfPages
+:numberOfPages rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Book ,
+                           :NarrativeWork ,
+                           [ owl:intersectionOf ( :NarrativeWork
+                                                  [ rdf:type owl:Restriction ;
+                                                    owl:onProperty :numberOfPages ;
+                                                    owl:someValuesFrom xsd:integer
+                                                  ]
+                                                ) ;
+                             rdf:type owl:Class
+                           ] ,
+                           [ rdf:type owl:Restriction ;
+                             owl:onProperty :numberOfPages ;
+                             owl:someValuesFrom xsd:integer
+                           ] ;
+               rdfs:range xsd:integer ;
+               rdfs:comment "Il numero di pagine di un libro"@it ;
+               rdfs:label "numero di pagine"@it .
+
+
+###  http://www.narrative-universes.org/ontology#publicationYear
+:publicationYear rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf owl:topDataProperty ;
+                 rdfs:domain :NarrativeWork ;
+                 rdfs:range xsd:integer ;
+                 rdfs:comment "L'anno in cui un'opera è stata pubblicata"@it ;
+                 rdfs:label "AnnoDiPubblicazione"@it .
+
+
+###  http://www.narrative-universes.org/ontology#rating
+:rating rdf:type owl:DatatypeProperty ;
+        rdfs:subPropertyOf owl:topDataProperty ;
+        rdfs:domain :NarrativeWork ;
+        rdfs:range xsd:float ;
+        rdfs:comment "La valutazione media di un'opera su scala 0-10"@it ;
+        rdfs:label "valutazione"@it .
+
+
+###  http://www.narrative-universes.org/ontology#runtime
+:runtime rdf:type owl:DatatypeProperty ;
+         rdfs:subPropertyOf owl:topDataProperty ;
+         rdfs:domain :NarrativeWork ;
+         rdfs:range xsd:integer ;
+         rdfs:comment "La durata in minuti di un film o episodio"@it ;
+         rdfs:label "durata"@it .
+
+
+###  http://www.narrative-universes.org/ontology#title
+:title rdf:type owl:DatatypeProperty ;
+       rdfs:subPropertyOf owl:topDataProperty ;
+       rdfs:domain :NarrativeWork ;
+       rdfs:range xsd:string ;
+       rdfs:comment "Il titolo di un'opera narrativa"@it ;
+       rdfs:label "titolo"@it .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://www.co-ode.org/ontologies/ont.owl#AncientCharacter
+<http://www.co-ode.org/ontologies/ont.owl#AncientCharacter> rdf:type owl:Class ;
+                                                            rdfs:subClassOf :Character ;
+                                                            rdfs:comment "Personaggio nato prima del 1900"@it ;
+                                                            rdfs:label "PersonaggioAntico"@it .
+
+
+###  http://www.co-ode.org/ontologies/ont.owl#HighlyRatedWork
+<http://www.co-ode.org/ontologies/ont.owl#HighlyRatedWork> rdf:type owl:Class ;
+                                                           rdfs:subClassOf :NarrativeWork ;
+                                                           rdfs:comment "Opera con valutazione superiore a 9.0f"@it ;
+                                                           rdfs:label "OperaMaggiore"@it .
+
+
+###  http://www.co-ode.org/ontologies/ont.owl#ModernWork
+<http://www.co-ode.org/ontologies/ont.owl#ModernWork> rdf:type owl:Class ;
+                                                      rdfs:subClassOf :NarrativeWork ;
+                                                      rdfs:comment "Opera pubblicata dopo il 2000"@it ;
+                                                      rdfs:label "OperaModerna"@it .
+
+
+###  http://www.co-ode.org/ontologies/ont.owl#PowerArtifact
+<http://www.co-ode.org/ontologies/ont.owl#PowerArtifact> rdf:type owl:Class ;
+                                                         owl:equivalentClass [ owl:intersectionOf ( :Object
+                                                                                                    [ rdf:type owl:Restriction ;
+                                                                                                      owl:onProperty :grantsAbility ;
+                                                                                                      owl:someValuesFrom :Ability
+                                                                                                    ]
+                                                                                                  ) ;
+                                                                               rdf:type owl:Class
+                                                                             ] ;
+                                                         rdfs:subClassOf :Object ,
+                                                                         [ owl:intersectionOf ( :Object
+                                                                                                [ rdf:type owl:Restriction ;
+                                                                                                  owl:onProperty :grantsAbility ;
+                                                                                                  owl:someValuesFrom :Ability
+                                                                                                ]
+                                                                                              ) ;
+                                                                           rdf:type owl:Class
+                                                                         ] ;
+                                                         owl:disjointWith :Weapon ;
+                                                         rdfs:comment "Un oggetto magico di grande potere, non necessariamente un'arma da combattimento. Include anelli, mantelli, bacchette e altri artefatti leggendari"@it ;
+                                                         rdfs:label "ArtefattoDiPotere"@it .
+
+
+###  http://www.co-ode.org/ontologies/ont.owl#PowerfulProtagonist
+<http://www.co-ode.org/ontologies/ont.owl#PowerfulProtagonist> rdf:type owl:Class ;
+                                                               rdfs:subClassOf :Character ,
+                                                                               :Protagonist ;
+                                                               rdfs:comment "Protagonista che possiede un Artefatto di Potere"@it ;
+                                                               rdfs:label "ProtagonistaPotente"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Ability
+:Ability rdf:type owl:Class ;
+         rdfs:comment "Un'abilità o potere che può essere concesso da un artefatto o posseduto da un personaggio"@it ;
+         rdfs:label "Abilità"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Alleato
+:Alleato rdf:type owl:Class ;
+         owl:equivalentClass [ owl:intersectionOf ( :Character
+                                                    [ rdf:type owl:Restriction ;
+                                                      owl:onProperty :alliedWith ;
+                                                      owl:someValuesFrom :Character
+                                                    ]
+                                                  ) ;
+                               rdf:type owl:Class
+                             ] ;
+         rdfs:subClassOf [ owl:intersectionOf ( :Character
+                                                [ rdf:type owl:Restriction ;
+                                                  owl:onProperty :alliedWith ;
+                                                  owl:someValuesFrom :Character
+                                                ]
+                                              ) ;
+                           rdf:type owl:Class
+                         ] ;
+         rdfs:comment "Amico o compagno che aiuta il protagonista"@it ;
+         rdfs:label "Alleato"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Antagonist
+:Antagonist rdf:type owl:Class ;
+            owl:equivalentClass [ owl:intersectionOf ( :Character
+                                                       [ rdf:type owl:Restriction ;
+                                                         owl:onProperty :enemyOf ;
+                                                         owl:someValuesFrom :Protagonist
+                                                       ]
+                                                     ) ;
+                                  rdf:type owl:Class
+                                ] ;
+            rdfs:subClassOf [ owl:intersectionOf ( :Character
+                                                   [ rdf:type owl:Restriction ;
+                                                     owl:onProperty :enemyOf ;
+                                                     owl:someValuesFrom :Protagonist
+                                                   ]
+                                                 ) ;
+                              rdf:type owl:Class
+                            ] ;
+            owl:disjointWith :Protagonist ;
+            rdfs:comment "Villain principale o forza oppositrice"@it ;
+            rdfs:label "Antagonista"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Book
+:Book rdf:type owl:Class ;
+      owl:equivalentClass [ owl:intersectionOf ( :NarrativeWork
+                                                 [ rdf:type owl:Restriction ;
+                                                   owl:onProperty :numberOfPages ;
+                                                   owl:someValuesFrom xsd:integer
+                                                 ]
+                                               ) ;
+                            rdf:type owl:Class
+                          ] ;
+      rdfs:subClassOf :NarrativeWork ,
+                      [ owl:intersectionOf ( :NarrativeWork
+                                             [ rdf:type owl:Restriction ;
+                                               owl:onProperty :numberOfPages ;
+                                               owl:someValuesFrom xsd:integer
+                                             ]
+                                           ) ;
+                        rdf:type owl:Class
+                      ] ;
+      rdfs:comment "Un'opera letteraria scritta, tipicamente un romanzo o una serie di libri"@it ;
+      rdfs:label "Libro"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Character
+:Character rdf:type owl:Class ;
+           rdfs:comment "Un personaggio fittizio che appare in una o più opere narrative"@it ;
+           rdfs:label "Personaggio"@it ;
+           skos:closeMatch "http://www.wikidata.org/entity/Q95074" .
+
+
+###  http://www.narrative-universes.org/ontology#DangerZone
+:DangerZone rdf:type owl:Class ;
+            owl:equivalentClass [ owl:intersectionOf ( :Location
+                                                       [ rdf:type owl:Restriction ;
+                                                         owl:onProperty :hasNarrativeFunction ;
+                                                         owl:hasValue "Conflitto"
+                                                       ]
+                                                     ) ;
+                                  rdf:type owl:Class
+                                ] ;
+            rdfs:subClassOf :Location ,
+                            [ owl:intersectionOf ( :Location
+                                                   [ rdf:type owl:Restriction ;
+                                                     owl:onProperty :hasNarrativeFunction ;
+                                                     owl:hasValue "Conflitto"
+                                                   ]
+                                                 ) ;
+                              rdf:type owl:Class
+                            ] ;
+            rdfs:comment "Un luogo pericoloso o ostile"@it ;
+            rdfs:label "Zona Pericolosa"@it .
+
+
+###  http://www.narrative-universes.org/ontology#DivineAbility
+:DivineAbility rdf:type owl:Class ;
+               rdfs:subClassOf :Ability ;
+               owl:disjointWith :MagicalAbility ;
+               rdfs:comment "Un'abilità di origine divina"@it ;
+               rdfs:label "Abilità Divina"@it .
+
+
+###  http://www.narrative-universes.org/ontology#HumanCharacter
+:HumanCharacter rdf:type owl:Class ;
+                rdfs:subClassOf :Character ;
+                owl:disjointWith :HybridCharacter ,
+                                 :NonHumanCharacter ;
+                rdfs:comment "Un personaggio completamente umano"@it ;
+                rdfs:label "Personaggio Umano"@it .
+
+
+###  http://www.narrative-universes.org/ontology#HybridCharacter
+:HybridCharacter rdf:type owl:Class ;
+                 owl:equivalentClass [ owl:intersectionOf ( :Character
+                                                            [ rdf:type owl:Restriction ;
+                                                              owl:onProperty :hasOriginType ;
+                                                              owl:minCardinality "2"^^xsd:nonNegativeInteger
+                                                            ]
+                                                          ) ;
+                                       rdf:type owl:Class
+                                     ] ;
+                 rdfs:subClassOf :Character ,
+                                 [ owl:intersectionOf ( :Character
+                                                        [ rdf:type owl:Restriction ;
+                                                          owl:onProperty :hasOriginType ;
+                                                          owl:minCardinality "2"^^xsd:nonNegativeInteger
+                                                        ]
+                                                      ) ;
+                                   rdf:type owl:Class
+                                 ] ;
+                 owl:disjointWith :NonHumanCharacter ;
+                 rdfs:comment "Un personaggio di eredità mista (semidio, mezzo gigante, ecc.)"@it ;
+                 rdfs:label "Personaggio Ibrido"@it .
+
+
+###  http://www.narrative-universes.org/ontology#LiminalSpace
+:LiminalSpace rdf:type owl:Class ;
+              owl:equivalentClass [ owl:intersectionOf ( :Location
+                                                         [ rdf:type owl:Restriction ;
+                                                           owl:onProperty :hasNarrativeFunction ;
+                                                           owl:hasValue "Transizione"
+                                                         ]
+                                                       ) ;
+                                    rdf:type owl:Class
+                                  ] ;
+              rdfs:subClassOf :Location ,
+                              [ owl:intersectionOf ( :Location
+                                                     [ rdf:type owl:Restriction ;
+                                                       owl:onProperty :hasNarrativeFunction ;
+                                                       owl:hasValue "Transizione"
+                                                     ]
+                                                   ) ;
+                                rdf:type owl:Class
+                              ] ;
+              rdfs:comment "Una soglia o passaggio tra mondi o dimensioni"@it ;
+              rdfs:label "Spazio Liminale"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Location
+:Location rdf:type owl:Class ;
+          rdfs:comment "Un luogo o location all'interno di un universo narrativo"@it ;
+          rdfs:label "Luogo"@it ;
+          skos:closeMatch "http://www.wikidata.org/entity/Q17334923" .
+
+
+###  http://www.narrative-universes.org/ontology#MagicalAbility
+:MagicalAbility rdf:type owl:Class ;
+                rdfs:subClassOf :Ability ;
+                rdfs:comment "Un'abilità di natura magica"@it ;
+                rdfs:label "Abilità Magica"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Mentor
+:Mentor rdf:type owl:Class ;
+        owl:equivalentClass [ owl:intersectionOf ( :Character
+                                                   [ rdf:type owl:Restriction ;
+                                                     owl:onProperty :mentors ;
+                                                     owl:someValuesFrom :Character
+                                                   ]
+                                                 ) ;
+                              rdf:type owl:Class
+                            ] ;
+        rdfs:subClassOf [ owl:intersectionOf ( :Character
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty :mentors ;
+                                                 owl:someValuesFrom :Character
+                                               ]
+                                             ) ;
+                          rdf:type owl:Class
+                        ] ;
+        rdfs:comment "Guida saggia che insegna e supporta il protagonista"@it ;
+        rdfs:label "Mentore"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Movie
+:Movie rdf:type owl:Class ;
+       owl:equivalentClass [ owl:intersectionOf ( :NarrativeWork
+                                                  [ rdf:type owl:Class ;
+                                                    owl:complementOf [ rdf:type owl:Restriction ;
+                                                                       owl:onProperty :isOngoing ;
+                                                                       owl:hasValue "true"^^xsd:boolean
+                                                                     ]
+                                                  ]
+                                                  [ rdf:type owl:Restriction ;
+                                                    owl:onProperty :runtime ;
+                                                    owl:someValuesFrom xsd:integer
+                                                  ]
+                                                ) ;
+                             rdf:type owl:Class
+                           ] ;
+       rdfs:subClassOf :NarrativeWork ,
+                       [ owl:intersectionOf ( :NarrativeWork
+                                              [ rdf:type owl:Class ;
+                                                owl:complementOf [ rdf:type owl:Restriction ;
+                                                                   owl:onProperty :isOngoing ;
+                                                                   owl:hasValue "true"^^xsd:boolean
+                                                                 ]
+                                              ]
+                                              [ rdf:type owl:Restriction ;
+                                                owl:onProperty :runtime ;
+                                                owl:someValuesFrom xsd:integer
+                                              ]
+                                            ) ;
+                         rdf:type owl:Class
+                       ] ;
+       rdfs:comment "Un film cinematografico"@it ;
+       rdfs:label "Film"@it ;
+       skos:closeMatch "http://www.wikidata.org/entity/Q11424" .
+
+
+###  http://www.narrative-universes.org/ontology#NarrativeUniverse
+:NarrativeUniverse rdf:type owl:Class ;
+                   rdfs:comment "Un universo fittizio che si estende attraverso molteplici opere narrative su diversi media (libri, film, serie TV, videogiochi, teatro)"@it ;
+                   rdfs:label "Universo Narrativo"@it .
+
+
+###  http://www.narrative-universes.org/ontology#NarrativeWork
+:NarrativeWork rdf:type owl:Class ;
+               rdfs:comment "Una singola opera creativa (libro, film, episodio) che fa parte di un universo narrativo"@it ;
+               rdfs:label "OperaNarrativa"@it .
+
+
+###  http://www.narrative-universes.org/ontology#NonHumanCharacter
+:NonHumanCharacter rdf:type owl:Class ;
+                   rdfs:subClassOf :Character ;
+                   rdfs:comment "Un personaggio non umano (elfo, nano, satiro, ecc.)"@it ;
+                   rdfs:label "Personaggio Non Umano"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Object
+:Object rdf:type owl:Class ;
+        rdfs:comment "Un oggetto fisico o magico all'interno di un universo narrativo"@it ;
+        rdfs:label "Oggetto"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Organization
+:Organization rdf:type owl:Class ;
+              rdfs:comment "Un gruppo, istituzione o fazione all'interno di un universo narrativo"@it ;
+              rdfs:label "Organizzazione"@it .
+
+
+###  http://www.narrative-universes.org/ontology#OriginType
+:OriginType rdf:type owl:Class ;
+            owl:equivalentClass [ rdf:type owl:Class ;
+                                  owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#ElvenOrigin>
+                                              <http://www.co-ode.org/ontologies/ont.owl#GiantOrigin>
+                                              <http://www.co-ode.org/ontologies/ont.owl#HumanOrigin>
+                                              <http://www.co-ode.org/ontologies/ont.owl#SpiritOrigin>
+                                              :DivineOrigin
+                                            )
+                                ] ;
+            rdfs:subClassOf [ rdf:type owl:Class ;
+                              owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#ElvenOrigin>
+                                          <http://www.co-ode.org/ontologies/ont.owl#GiantOrigin>
+                                          <http://www.co-ode.org/ontologies/ont.owl#HumanOrigin>
+                                          <http://www.co-ode.org/ontologies/ont.owl#SpiritOrigin>
+                                          :DivineOrigin
+                                        )
+                            ] ;
+            rdfs:label "Il tipo di origine di un personaggio ibrido (umano, divino, gigante, spirito)"@it ,
+                       "Tipo di Origine"@it .
+
+
+###  http://www.narrative-universes.org/ontology#PowerType
+:PowerType rdf:type owl:Class ;
+           owl:equivalentClass [ rdf:type owl:Class ;
+                                 owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                             :CorruptivePower
+                                             :DivinePower
+                                             :MagicalPower
+                                             :SymbolicPower
+                                           )
+                               ] ;
+           rdfs:subClassOf [ rdf:type owl:Class ;
+                             owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                         :CorruptivePower
+                                         :DivinePower
+                                         :MagicalPower
+                                         :SymbolicPower
+                                       )
+                           ] ;
+           rdfs:comment "Il tipo di potere di un artefatto magico. Può essere solo uno tra: Magico, Divino, Corruttivo o Simbolico"@it ;
+           rdfs:label "Tipo di Potere"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Protagonist
+:Protagonist rdf:type owl:Class ;
+             rdfs:subClassOf :Character ;
+             rdfs:comment "Eroe principale o personaggio centrale della narrazione"@it ;
+             rdfs:label "Protagonista"@it .
+
+
+###  http://www.narrative-universes.org/ontology#SafePlace
+:SafePlace rdf:type owl:Class ;
+           owl:equivalentClass [ owl:intersectionOf ( :Location
+                                                      [ rdf:type owl:Restriction ;
+                                                        owl:onProperty :hasNarrativeFunction ;
+                                                        owl:hasValue "Rifugio"
+                                                      ]
+                                                    ) ;
+                                 rdf:type owl:Class
+                               ] ;
+           rdfs:subClassOf :Location ,
+                           [ owl:intersectionOf ( :Location
+                                                  [ rdf:type owl:Restriction ;
+                                                    owl:onProperty :hasNarrativeFunction ;
+                                                    owl:hasValue "Rifugio"
+                                                  ]
+                                                ) ;
+                             rdf:type owl:Class
+                           ] ;
+           rdfs:comment "Un luogo considerato sicuro, un rifugio o santuario"@it ;
+           rdfs:label "Luogo Sicuro"@it .
+
+
+###  http://www.narrative-universes.org/ontology#School
+:School rdf:type owl:Class ;
+        rdfs:subClassOf :Organization ;
+        rdfs:comment "Un'istituzione educativa all'interno dell'universo narrativo"@it ;
+        rdfs:label "Scuola"@it .
+
+
+###  http://www.narrative-universes.org/ontology#TVSeries
+:TVSeries rdf:type owl:Class ;
+          owl:equivalentClass [ owl:intersectionOf ( :NarrativeWork
+                                                     [ rdf:type owl:Restriction ;
+                                                       owl:onProperty <http://www.co-ode.org/ontologies/ont.owl#hasSeasons> ;
+                                                       owl:someValuesFrom xsd:integer
+                                                     ]
+                                                   ) ;
+                                rdf:type owl:Class
+                              ] ;
+          rdfs:subClassOf :NarrativeWork ,
+                          [ owl:intersectionOf ( :NarrativeWork
+                                                 [ rdf:type owl:Restriction ;
+                                                   owl:onProperty <http://www.co-ode.org/ontologies/ont.owl#hasSeasons> ;
+                                                   owl:someValuesFrom xsd:integer
+                                                 ]
+                                               ) ;
+                            rdf:type owl:Class
+                          ] ;
+          rdfs:comment "Una serie televisiva con episodi multipli"@it ;
+          rdfs:label "Serie TV"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Weapon
+:Weapon rdf:type owl:Class ;
+        owl:equivalentClass [ owl:intersectionOf ( :Object
+                                                   [ rdf:type owl:Restriction ;
+                                                     owl:onProperty :hasPowerTypeEnum ;
+                                                     owl:hasValue <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                                   ]
+                                                 ) ;
+                              rdf:type owl:Class
+                            ] ;
+        rdfs:subClassOf :Object ,
+                        [ owl:intersectionOf ( :Object
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty :hasPowerTypeEnum ;
+                                                 owl:hasValue <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                               ]
+                                             ) ;
+                          rdf:type owl:Class
+                        ] ;
+        rdfs:comment "Un'arma usata dai personaggi"@it ;
+        rdfs:label "Arma"@it .
+
+
+#################################################################
+#    Individuals
+#################################################################
+
+###  http://www.co-ode.org/ontologies/ont.owl#ElvenOrigin
+<http://www.co-ode.org/ontologies/ont.owl#ElvenOrigin> rdf:type owl:NamedIndividual ,
+                                                                :OriginType ,
+                                                                [ rdf:type owl:Class ;
+                                                                  owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#ElvenOrigin>
+                                                                              <http://www.co-ode.org/ontologies/ont.owl#GiantOrigin>
+                                                                              <http://www.co-ode.org/ontologies/ont.owl#HumanOrigin>
+                                                                              <http://www.co-ode.org/ontologies/ont.owl#SpiritOrigin>
+                                                                              :DivineOrigin
+                                                                            )
+                                                                ] ;
+                                                       rdfs:comment "Origine da stirpe elfica o fatata"@it ;
+                                                       rdfs:label "Origine Elfica"@it .
+
+
+###  http://www.co-ode.org/ontologies/ont.owl#GiantOrigin
+<http://www.co-ode.org/ontologies/ont.owl#GiantOrigin> rdf:type owl:NamedIndividual ,
+                                                                :OriginType ,
+                                                                [ rdf:type owl:Class ;
+                                                                  owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#ElvenOrigin>
+                                                                              <http://www.co-ode.org/ontologies/ont.owl#GiantOrigin>
+                                                                              <http://www.co-ode.org/ontologies/ont.owl#HumanOrigin>
+                                                                              <http://www.co-ode.org/ontologies/ont.owl#SpiritOrigin>
+                                                                              :DivineOrigin
+                                                                            )
+                                                                ] ;
+                                                       rdfs:comment "Origine da stirpe di giganti"@it ;
+                                                       rdfs:label "Origine Gigante"@it .
+
+
+###  http://www.co-ode.org/ontologies/ont.owl#GondorSoldier
+<http://www.co-ode.org/ontologies/ont.owl#GondorSoldier> rdf:type owl:NamedIndividual ,
+                                                                  :Character ,
+                                                                  :HumanCharacter ;
+                                                         :belongsToUniverse :MiddleEarthUniverse ;
+                                                         :possesses <http://www.co-ode.org/ontologies/ont.owl#GondorianSword> ;
+                                                         :description "Personaggio generico dell’universo narrativo della Terra di Mezzo, utilizzato per testare relazioni di possesso con armi comuni" ;
+                                                         rdfs:comment "Guerriero umano dell’esercito di Gondor, privo di poteri speciali, usato come esempio di personaggio non magico"@it ;
+                                                         rdfs:label "Soldato di Gondor"@it .
+
+
+###  http://www.co-ode.org/ontologies/ont.owl#GondorianSword
+<http://www.co-ode.org/ontologies/ont.owl#GondorianSword> rdf:type owl:NamedIndividual ,
+                                                                   :Object ,
+                                                                   :Weapon ,
+                                                                   [ owl:intersectionOf ( :Object
+                                                                                          [ rdf:type owl:Restriction ;
+                                                                                            owl:onProperty :hasPowerTypeEnum ;
+                                                                                            owl:hasValue <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                                                                          ]
+                                                                                        ) ;
+                                                                     rdf:type owl:Class
+                                                                   ] ,
+                                                                   [ rdf:type owl:Restriction ;
+                                                                     owl:onProperty :hasPowerTypeEnum ;
+                                                                     owl:hasValue <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                                                   ] ;
+                                                          :belongsToUniverse :MiddleEarthUniverse ;
+                                                          :hasPowerTypeEnum <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower> ;
+                                                          :indirectlySetIn :MiddleEarthUniverse ;
+                                                          rdfs:comment "Spada comune utilizzata da un soldato di Gondor; non possiede poteri magici o abilità speciali."@it ;
+                                                          rdfs:label "Spada Gondoriana"@it .
+
+
+###  http://www.co-ode.org/ontologies/ont.owl#HumanOrigin
+<http://www.co-ode.org/ontologies/ont.owl#HumanOrigin> rdf:type owl:NamedIndividual ,
+                                                                :OriginType ,
+                                                                [ rdf:type owl:Class ;
+                                                                  owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#ElvenOrigin>
+                                                                              <http://www.co-ode.org/ontologies/ont.owl#GiantOrigin>
+                                                                              <http://www.co-ode.org/ontologies/ont.owl#HumanOrigin>
+                                                                              <http://www.co-ode.org/ontologies/ont.owl#SpiritOrigin>
+                                                                              :DivineOrigin
+                                                                            )
+                                                                ] ;
+                                                       rdfs:comment "Origine completamente umana"@it ;
+                                                       rdfs:label "Origine Umana"@it .
+
+
+###  http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower
+<http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower> rdf:type owl:NamedIndividual ,
+                                                                  :PowerType ,
+                                                                  [ rdf:type owl:Class ;
+                                                                    owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                                                                :CorruptivePower
+                                                                                :DivinePower
+                                                                                :MagicalPower
+                                                                                :SymbolicPower
+                                                                              )
+                                                                  ] ;
+                                                         rdfs:comment "Rappresenta un tipo di potere comune o umano, che non è magico, divino o simbolico. Può essere usato per oggetti o personaggi ordinari"@it ;
+                                                         rdfs:label "Potere Ordinario"@it .
+
+
+###  http://www.co-ode.org/ontologies/ont.owl#PercyJackson_TVSeries
+<http://www.co-ode.org/ontologies/ont.owl#PercyJackson_TVSeries> rdf:type owl:NamedIndividual ,
+                                                                          <http://www.co-ode.org/ontologies/ont.owl#ModernWork> ,
+                                                                          :NarrativeWork ,
+                                                                          :TVSeries ,
+                                                                          [ owl:intersectionOf ( :NarrativeWork
+                                                                                                 [ rdf:type owl:Restriction ;
+                                                                                                   owl:onProperty <http://www.co-ode.org/ontologies/ont.owl#hasSeasons> ;
+                                                                                                   owl:someValuesFrom xsd:integer
+                                                                                                 ]
+                                                                                               ) ;
+                                                                            rdf:type owl:Class
+                                                                          ] ,
+                                                                          [ rdf:type owl:Restriction ;
+                                                                            owl:onProperty <http://www.co-ode.org/ontologies/ont.owl#hasSeasons> ;
+                                                                            owl:someValuesFrom xsd:integer
+                                                                          ] ,
+                                                                          [ rdf:type owl:Restriction ;
+                                                                            owl:onProperty :isOngoing ;
+                                                                            owl:hasValue "true"^^xsd:boolean
+                                                                          ] ;
+                                                                 :indirectlySetIn :CampHalfBlood ;
+                                                                 <http://www.co-ode.org/ontologies/ont.owl#hasSeasons> 1 ;
+                                                                 :description "Adattamento televisivo dei libri Percy Jackson & the Olympians, prodotto da Disney" ;
+                                                                 :isOngoing "true"^^xsd:boolean ;
+                                                                 :publicationYear 2023 ;
+                                                                 :rating "7.0"^^xsd:float ;
+                                                                 :title "Percy Jackson and the Olympians (TV Series)" ;
+                                                                 rdfs:comment "Serie TV fantasy basata sui romanzi di Rick Riordan, che segue le avventure del semidio Percy Jackson"@it ;
+                                                                 rdfs:label "Percy Jackson e gli dei dell'Olimpo (serie TV)"@it .
+
+
+###  http://www.co-ode.org/ontologies/ont.owl#SpiritOrigin
+<http://www.co-ode.org/ontologies/ont.owl#SpiritOrigin> rdf:type owl:NamedIndividual ,
+                                                                 :OriginType ,
+                                                                 [ rdf:type owl:Class ;
+                                                                   owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#ElvenOrigin>
+                                                                               <http://www.co-ode.org/ontologies/ont.owl#GiantOrigin>
+                                                                               <http://www.co-ode.org/ontologies/ont.owl#HumanOrigin>
+                                                                               <http://www.co-ode.org/ontologies/ont.owl#SpiritOrigin>
+                                                                               :DivineOrigin
+                                                                             )
+                                                                 ] ;
+                                                        rdfs:comment "Origine da entità spirituali o soprannaturali"@it ;
+                                                        rdfs:label "Origine Spirituale"@it .
+
+
+###  http://www.narrative-universes.org/ontology#AberforthDumbledore
+:AberforthDumbledore rdf:type owl:NamedIndividual ,
+                              <http://www.co-ode.org/ontologies/ont.owl#AncientCharacter> ,
+                              :Character ,
+                              :HumanCharacter ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty :alliedWith ;
+                                owl:someValuesFrom :Character
+                              ] ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty :mentors ;
+                                owl:someValuesFrom :Character
+                              ] ;
+                     <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :AberforthDumbledore ,
+                                                                                   :AlbusDumbledore ,
+                                                                                   :HarryPotter ,
+                                                                                   :HermioneGranger ,
+                                                                                   :RonWeasley ;
+                     :alliedWith :AberforthDumbledore ,
+                                 :AlbusDumbledore ,
+                                 :HarryPotter ,
+                                 :HermioneGranger ,
+                                 :RonWeasley ;
+                     :appearsIn :HarryPotterAndTheDeathlyHallows_Book ,
+                                :PhilosophersStone_Book ,
+                                :PhilosophersStone_Movie ;
+                     :belongsToUniverse :HarryPotterUniverse ;
+                     :memberOf :HogwartsSchool ;
+                     :mentors :HarryPotter ;
+                     :birthYear 1884 ;
+                     :description "Fratello di Albus Silente, gestore del Paiolo Magico e un po’ burbero, aiuta Harry e i suoi amici nell’ultimo libro" ;
+                     rdfs:comment "Fratello minore di Albus Silente, gestore del Paiolo Magico, compare principalmente nell'ultimo libro della saga"@it ;
+                     rdfs:label "Aberforth Silente"@it .
+
+
+###  http://www.narrative-universes.org/ontology#AlbusDumbledore
+:AlbusDumbledore rdf:type owl:NamedIndividual ,
+                          <http://www.co-ode.org/ontologies/ont.owl#AncientCharacter> ,
+                          :Character ,
+                          :HumanCharacter ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty :alliedWith ;
+                            owl:someValuesFrom :Character
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty :mentors ;
+                            owl:someValuesFrom :Character
+                          ] ;
+                 <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :AberforthDumbledore ,
+                                                                               :AlbusDumbledore ,
+                                                                               :HarryPotter ,
+                                                                               :HermioneGranger ,
+                                                                               :RonWeasley ;
+                 :alliedWith :AberforthDumbledore ,
+                             :AlbusDumbledore ,
+                             :HarryPotter ,
+                             :HermioneGranger ,
+                             :RonWeasley ;
+                 :appearsIn :PhilosophersStone_Book ,
+                            :PhilosophersStone_Movie ;
+                 :belongsToUniverse :HarryPotterUniverse ;
+                 :enemyOf :LordVoldemort ;
+                 :memberOf :HogwartsSchool ;
+                 :mentors :HarryPotter ;
+                 :possesses :ElderWand ;
+                 :birthYear 1881 ;
+                 :description "Preside di Hogwarts, mago più potente del suo tempo, mentore di Harry Potter" ;
+                 rdfs:comment "Preside di Hogwarts e mentore di Harry"@it ;
+                 rdfs:label "Albus Silente"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Anduril
+:Anduril rdf:type owl:NamedIndividual ,
+                  <http://www.co-ode.org/ontologies/ont.owl#PowerArtifact> ,
+                  :Object ,
+                  [ owl:intersectionOf ( :Object
+                                         [ rdf:type owl:Restriction ;
+                                           owl:onProperty :grantsAbility ;
+                                           owl:someValuesFrom :Ability
+                                         ]
+                                       ) ;
+                    rdf:type owl:Class
+                  ] ,
+                  [ rdf:type owl:Restriction ;
+                    owl:onProperty :grantsAbility ;
+                    owl:someValuesFrom :Ability
+                  ] ;
+         :belongsToUniverse :MiddleEarthUniverse ;
+         :grantsAbility :KinglyAuthority ;
+         :hasPowerTypeEnum :SymbolicPower ;
+         :canBeDestroyed "true"^^xsd:boolean ;
+         :description """È la spada leggendaria di Aragorn, forgiata dalle lame spezzate di Narsil.
+Appartiene alla categoria Armi Magiche e possiede la proprietà di simboleggiare legittimità regale e leadership, oltre a possedere un potere superiore nella battaglia contro le forze del male""" ;
+         rdfs:comment "Spada riforgiata di Aragorn, precedentemente Narsil"@it ;
+         rdfs:label "Andúril"@it .
+
+
+###  http://www.narrative-universes.org/ontology#AnnabethChase
+:AnnabethChase rdf:type owl:NamedIndividual ,
+                        :Character ,
+                        :HybridCharacter ,
+                        [ owl:intersectionOf ( :Character
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty :hasOriginType ;
+                                                 owl:minCardinality "2"^^xsd:nonNegativeInteger
+                                               ]
+                                             ) ;
+                          rdf:type owl:Class
+                        ] ,
+                        [ rdf:type owl:Restriction ;
+                          owl:onProperty :alliedWith ;
+                          owl:someValuesFrom :Character
+                        ] ,
+                        [ rdf:type owl:Restriction ;
+                          owl:onProperty :hasOriginType ;
+                          owl:minCardinality "2"^^xsd:nonNegativeInteger
+                        ] ;
+               <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :AnnabethChase ,
+                                                                             :GroverUnderwood ,
+                                                                             :PercyJackson ;
+               :alliedWith :AnnabethChase ,
+                           :GroverUnderwood ,
+                           :PercyJackson ;
+               :appearsIn :LightningThief_Book ,
+                          :LightningThief_Movie ,
+                          :SeaOfMonsters_Book ;
+               :belongsToUniverse :PercyJacksonUniverse ;
+               :hasOriginType :DivineOrigin ;
+               :memberOf :CampHalfBloodOrganization ;
+               :possesses :YankeeCap ;
+               :birthYear 1993 ;
+               :description "Figlia di Atena, dea della saggezza, brillante stratega con talento per l'architettura e il combattimento" ;
+               rdfs:comment "Semidea figlia di Atena, architetta e stratega della squadra"@it ;
+               rdfs:label "Annabeth Chase"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Aragorn
+:Aragorn rdf:type owl:NamedIndividual ,
+                  :Character ,
+                  :HumanCharacter ,
+                  [ rdf:type owl:Restriction ;
+                    owl:onProperty :alliedWith ;
+                    owl:someValuesFrom :Character
+                  ] ;
+         <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :Aragorn ,
+                                                                       :FrodoBaggins ,
+                                                                       :Gandalf ,
+                                                                       :Legolas ;
+         :alliedWith :Aragorn ,
+                     :FrodoBaggins ,
+                     :Gandalf ,
+                     :Legolas ;
+         :appearsIn :FellowshipOfTheRing_Book ,
+                    :FellowshipOfTheRing_Movie ;
+         :belongsToUniverse :MiddleEarthUniverse ;
+         :memberOf :FellowshipOfTheRing ;
+         :possesses :Anduril ;
+         :description "Discendente di Isildur, ranger dei Dunedain, destinato a diventare Re di Gondor" ;
+         rdfs:comment "Ramingo del Nord, erede al trono di Gondor, futuro Re"@it ;
+         rdfs:label "Aragorn"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Binario9e3Quarti
+:Binario9e3Quarti rdf:type owl:NamedIndividual ,
+                           :LiminalSpace ,
+                           :Location ,
+                           [ owl:intersectionOf ( :Location
+                                                  [ rdf:type owl:Restriction ;
+                                                    owl:onProperty :hasNarrativeFunction ;
+                                                    owl:hasValue "Transizione"
+                                                  ]
+                                                ) ;
+                             rdf:type owl:Class
+                           ] ,
+                           [ rdf:type owl:Restriction ;
+                             owl:onProperty :hasNarrativeFunction ;
+                             owl:hasValue "Transizione"
+                           ] ;
+                  :belongsToUniverse :HarryPotterUniverse ;
+                  :description "Piattaforma magica nascosta nella stazione di King's Cross a Londra, accessibile attraversando il muro tra i binari 9 e 10. Da qui parte l'Hogwarts Express" ;
+                  :hasNarrativeFunction "Transizione" ;
+                  rdfs:comment "È uno spazio di transizione tra il mondo babbano e quello magico. Perfetto come spazio liminale."@it ;
+                  rdfs:label "Binario 9 e ¾"@it .
+
+
+###  http://www.narrative-universes.org/ontology#CampHalfBlood
+:CampHalfBlood rdf:type owl:NamedIndividual ,
+                        :Location ,
+                        :SafePlace ,
+                        [ owl:intersectionOf ( :Location
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty :hasNarrativeFunction ;
+                                                 owl:hasValue "Rifugio"
+                                               ]
+                                             ) ;
+                          rdf:type owl:Class
+                        ] ,
+                        [ rdf:type owl:Restriction ;
+                          owl:onProperty :hasNarrativeFunction ;
+                          owl:hasValue "Rifugio"
+                        ] ;
+               :belongsToUniverse :PercyJacksonUniverse ;
+               :hosts :CampHalfBloodOrganization ;
+               :description "Campo estivo sulla costa di Long Island, unico rifugio sicuro per i semidei dove possono allenarsi e essere al sicuro dai mostri" ;
+               :hasNarrativeFunction "Rifugio" ;
+               rdfs:comment "Campo di addestramento per semidei, protetto da barriere magiche"@it ;
+               rdfs:label "Campo Mezzosangue"@it .
+
+
+###  http://www.narrative-universes.org/ontology#CampHalfBloodOrganization
+:CampHalfBloodOrganization rdf:type owl:NamedIndividual ,
+                                    :Organization ,
+                                    :School ;
+                           :belongsToUniverse :PercyJacksonUniverse ;
+                           :hasMember :AnnabethChase ,
+                                      :Chiron ,
+                                      :GroverUnderwood ,
+                                      :PercyJackson ;
+                           :locatedAt :CampHalfBlood ;
+                           :description "Organizzazione diretta da Chirone e Mr. D (Dioniso), dedica all'addestramento e protezione dei figli degli dei" ;
+                           rdfs:comment "Istituzione che gestisce e protegge i semidei al campo"@it ;
+                           rdfs:label "Organizzazione Campo Mezzosangue"@it .
+
+
+###  http://www.narrative-universes.org/ontology#CelestialBronzePower
+:CelestialBronzePower rdf:type owl:NamedIndividual ,
+                               :Ability ,
+                               :MagicalAbility ;
+                      rdfs:comment "Capacità di ferire creature mitologiche e ritornare al proprietario"@it ;
+                      rdfs:label "Potere del Bronzo Celestiale"@it .
+
+
+###  http://www.narrative-universes.org/ontology#ChamberOfSecrets_Book
+:ChamberOfSecrets_Book rdf:type owl:NamedIndividual ,
+                                <http://www.co-ode.org/ontologies/ont.owl#HighlyRatedWork> ,
+                                :Book ,
+                                :NarrativeWork ,
+                                [ owl:intersectionOf ( :NarrativeWork
+                                                       [ rdf:type owl:Restriction ;
+                                                         owl:onProperty :numberOfPages ;
+                                                         owl:someValuesFrom xsd:integer
+                                                       ]
+                                                     ) ;
+                                  rdf:type owl:Class
+                                ] ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty :numberOfPages ;
+                                  owl:someValuesFrom xsd:integer
+                                ] ;
+                       :features :HarryPotter ,
+                                 :HermioneGranger ,
+                                 :RonWeasley ;
+                       :sequelOf :PhilosophersStone_Book ;
+                       :setIn :Hogwarts ;
+                       :description "Il secondo libro, in cui Harry scopre la Camera dei Segreti e affronta il Basilisco" ;
+                       :numberOfPages 251 ;
+                       :publicationYear 1998 ;
+                       :rating "9.3"^^xsd:float ;
+                       :title "Harry Potter and the Chamber of Secrets" ;
+                       rdfs:comment "Il secondo libro della saga"@it ;
+                       rdfs:label "Harry Potter e la Camera dei Segreti"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Chiron
+:Chiron rdf:type owl:NamedIndividual ,
+                 :Character ,
+                 :NonHumanCharacter ,
+                 [ rdf:type owl:Restriction ;
+                   owl:onProperty :mentors ;
+                   owl:someValuesFrom :Character
+                 ] ;
+        :belongsToUniverse :PercyJacksonUniverse ;
+        :memberOf :CampHalfBloodOrganization ;
+        :mentors :AnnabethChase ,
+                 :PercyJackson ;
+        :description "Antico centauro figlio di Crono, addestra eroi da millenni, ora direttore delle attività al Campo Mezzosangue" ;
+        rdfs:comment "Centauro immortale, direttore delle attività del Campo Mezzosangue e mentore dei semidei"@it ;
+        rdfs:label "Chirone"@it .
+
+
+###  http://www.narrative-universes.org/ontology#CorruptivePower
+:CorruptivePower rdf:type owl:NamedIndividual ,
+                          :PowerType ,
+                          [ rdf:type owl:Class ;
+                            owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                        :CorruptivePower
+                                        :DivinePower
+                                        :MagicalPower
+                                        :SymbolicPower
+                                      )
+                          ] ;
+                 rdfs:comment "Potere che corrompe e influenza negativamente chi lo usa"@it ;
+                 rdfs:label "Potere Corruttivo"@it .
+
+
+###  http://www.narrative-universes.org/ontology#DiagonAlley
+:DiagonAlley rdf:type owl:NamedIndividual ,
+                      :Location ,
+                      :SafePlace ,
+                      [ owl:intersectionOf ( :Location
+                                             [ rdf:type owl:Restriction ;
+                                               owl:onProperty :hasNarrativeFunction ;
+                                               owl:hasValue "Rifugio"
+                                             ]
+                                           ) ;
+                        rdf:type owl:Class
+                      ] ,
+                      [ rdf:type owl:Restriction ;
+                        owl:onProperty :hasNarrativeFunction ;
+                        owl:hasValue "Rifugio"
+                      ] ;
+             :belongsToUniverse :HarryPotterUniverse ;
+             :description "Via commerciale magica nascosta a Londra, dove i maghi acquistano bacchette, libri e altri oggetti magici" ;
+             :hasNarrativeFunction "Rifugio" ;
+             rdfs:comment "La via commerciale magica di Londra"@it ;
+             rdfs:label "Diagon Alley"@it .
+
+
+###  http://www.narrative-universes.org/ontology#DivineOrigin
+:DivineOrigin rdf:type owl:NamedIndividual ,
+                       :OriginType ,
+                       [ rdf:type owl:Class ;
+                         owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#ElvenOrigin>
+                                     <http://www.co-ode.org/ontologies/ont.owl#GiantOrigin>
+                                     <http://www.co-ode.org/ontologies/ont.owl#HumanOrigin>
+                                     <http://www.co-ode.org/ontologies/ont.owl#SpiritOrigin>
+                                     :DivineOrigin
+                                   )
+                       ] ;
+              rdfs:comment "Indica che un personaggioc che ha un’origine legata a una divinità, cioè deriva direttamente dal mondo degli dèi"@it ;
+              rdfs:label "Origine Divina"@it .
+
+
+###  http://www.narrative-universes.org/ontology#DivinePower
+:DivinePower rdf:type owl:NamedIndividual ,
+                      :PowerType ,
+                      [ rdf:type owl:Class ;
+                        owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                    :CorruptivePower
+                                    :DivinePower
+                                    :MagicalPower
+                                    :SymbolicPower
+                                  )
+                      ] ;
+             rdfs:comment "Potere di origine divina o soprannaturale"@it ;
+             rdfs:label "Potere Divino"@it .
+
+
+###  http://www.narrative-universes.org/ontology#DominationPower
+:DominationPower rdf:type owl:NamedIndividual ,
+                          :Ability ,
+                          :MagicalAbility ;
+                 rdfs:comment "Capacità di controllare le menti e corrompere chi lo possiede"@it ;
+                 rdfs:label "Potere di Dominazione"@it .
+
+
+###  http://www.narrative-universes.org/ontology#ElderWand
+:ElderWand rdf:type owl:NamedIndividual ,
+                    <http://www.co-ode.org/ontologies/ont.owl#PowerArtifact> ,
+                    :Object ,
+                    [ owl:intersectionOf ( :Object
+                                           [ rdf:type owl:Restriction ;
+                                             owl:onProperty :grantsAbility ;
+                                             owl:someValuesFrom :Ability
+                                           ]
+                                         ) ;
+                      rdf:type owl:Class
+                    ] ,
+                    [ rdf:type owl:Restriction ;
+                      owl:onProperty :grantsAbility ;
+                      owl:someValuesFrom :Ability
+                    ] ;
+           :belongsToUniverse :HarryPotterUniverse ;
+           :grantsAbility :UnbeatableMagic ;
+           :hasPowerTypeEnum :MagicalPower ;
+           :canBeDestroyed "true"^^xsd:boolean ;
+           :description """È una delle bacchette magiche più potenti mai create, conferisce al suo possessore un potere magico superiore a qualsiasi altra bacchetta, rendendo i suoi incantesimi estremamente efficaci.
+Appartiene alla categoria degli Artefatti Magici e possiede la proprietà di amplificare la magia del mago che la utilizza, riconoscendo come padrone colui che sconfigge il precedente possessore""" ;
+           rdfs:comment "La bacchetta più potente, uno di Doni della Morte"@it ;
+           rdfs:label "Bacchetta di Sambuco"@it .
+
+
+###  http://www.narrative-universes.org/ontology#FellowshipOfTheRing
+:FellowshipOfTheRing rdf:type owl:NamedIndividual ,
+                              :Organization ;
+                     :belongsToUniverse :MiddleEarthUniverse ;
+                     :hasMember :Aragorn ,
+                                :FrodoBaggins ,
+                                :Gandalf ,
+                                :Legolas ;
+                     :locatedAt :Rivendell ;
+                     :description "Nove compagni scelti per accompagnare Frodo nella missione di distruggere l'Anello: 4 hobbit, 2 umani, 1 elfo, 1 nano, 1 stregone" ;
+                     rdfs:comment "Gruppo formato a Gran Burrone per aiutare Frodo a distruggere l'Anello"@it ;
+                     rdfs:label "Compagnia dell'Anello"@it .
+
+
+###  http://www.narrative-universes.org/ontology#FellowshipOfTheRing_Book
+:FellowshipOfTheRing_Book rdf:type owl:NamedIndividual ,
+                                   <http://www.co-ode.org/ontologies/ont.owl#HighlyRatedWork> ,
+                                   :Book ,
+                                   :NarrativeWork ,
+                                   [ owl:intersectionOf ( :NarrativeWork
+                                                          [ rdf:type owl:Restriction ;
+                                                            owl:onProperty :numberOfPages ;
+                                                            owl:someValuesFrom xsd:integer
+                                                          ]
+                                                        ) ;
+                                     rdf:type owl:Class
+                                   ] ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty :numberOfPages ;
+                                     owl:someValuesFrom xsd:integer
+                                   ] ;
+                          :belongsToUniverse :MiddleEarthUniverse ;
+                          :features :Aragorn ,
+                                    :FrodoBaggins ,
+                                    :Gandalf ;
+                          :setIn :TheShire ;
+                          :description "Primo volume della trilogia, narra la formazione della Compagnia e l'inizio del viaggio per distruggere l'Anello" ;
+                          :numberOfPages 423 ;
+                          :publicationYear 1954 ;
+                          :rating "9.8"^^xsd:float ;
+                          :title "The Fellowship of the Ring" ;
+                          rdfs:comment "Primo libro della trilogia del Signore degli Anelli"@it ;
+                          rdfs:label "La Compagnia dell'Anello"@it .
+
+
+###  http://www.narrative-universes.org/ontology#FellowshipOfTheRing_Movie
+:FellowshipOfTheRing_Movie rdf:type owl:NamedIndividual ,
+                                    <http://www.co-ode.org/ontologies/ont.owl#ModernWork> ,
+                                    :Movie ,
+                                    :NarrativeWork ,
+                                    [ owl:intersectionOf ( :NarrativeWork
+                                                           [ rdf:type owl:Class ;
+                                                             owl:complementOf [ rdf:type owl:Restriction ;
+                                                                                owl:onProperty :isOngoing ;
+                                                                                owl:hasValue "true"^^xsd:boolean
+                                                                              ]
+                                                           ]
+                                                           [ rdf:type owl:Restriction ;
+                                                             owl:onProperty :runtime ;
+                                                             owl:someValuesFrom xsd:integer
+                                                           ]
+                                                         ) ;
+                                      rdf:type owl:Class
+                                    ] ,
+                                    [ rdf:type owl:Class ;
+                                      owl:complementOf [ rdf:type owl:Restriction ;
+                                                         owl:onProperty :isOngoing ;
+                                                         owl:hasValue "true"^^xsd:boolean
+                                                       ]
+                                    ] ,
+                                    [ rdf:type owl:Restriction ;
+                                      owl:onProperty :runtime ;
+                                      owl:someValuesFrom xsd:integer
+                                    ] ;
+                           :adaptationOf :FellowshipOfTheRing_Book ;
+                           :belongsToUniverse :MiddleEarthUniverse ;
+                           :features :Aragorn ,
+                                     :FrodoBaggins ,
+                                     :Gandalf ;
+                           :setIn :TheShire ;
+                           :description "Primo film della trilogia diretta da Peter Jackson, vincitore di 4 Oscar" ;
+                           :publicationYear 2001 ;
+                           :rating "8.9"^^xsd:float ;
+                           :runtime 178 ;
+                           :title "The Lord of the Rings: The Fellowship of the Ring" ;
+                           rdfs:comment "Adattamento cinematografico del primo libro, diretto da Peter Jackson"@it ;
+                           rdfs:label "La Compagnia dell'Anello (Film)"@it .
+
+
+###  http://www.narrative-universes.org/ontology#ForbiddenForest
+:ForbiddenForest rdf:type owl:NamedIndividual ,
+                          :DangerZone ,
+                          :Location ,
+                          [ owl:intersectionOf ( :Location
+                                                 [ rdf:type owl:Restriction ;
+                                                   owl:onProperty :hasNarrativeFunction ;
+                                                   owl:hasValue "Conflitto"
+                                                 ]
+                                               ) ;
+                            rdf:type owl:Class
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty :hasNarrativeFunction ;
+                            owl:hasValue "Conflitto"
+                          ] ;
+                 :belongsToUniverse :HarryPotterUniverse ;
+                 :partOf :Hogwarts ;
+                 :description "Foresta pericolosa nei pressi di Hogwarts, abitata da creature magiche e off-limits per gli studenti" ;
+                 :hasNarrativeFunction "Conflitto" ;
+                 rdfs:comment "La foresta pericolosa vicino a Hogwarts"@it ;
+                 rdfs:label "Foresta Proibita"@it .
+
+
+###  http://www.narrative-universes.org/ontology#FrodoBaggins
+:FrodoBaggins rdf:type owl:NamedIndividual ,
+                       <http://www.co-ode.org/ontologies/ont.owl#PowerfulProtagonist> ,
+                       :Character ,
+                       :HumanCharacter ,
+                       :Protagonist ,
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :alliedWith ;
+                         owl:someValuesFrom :Character
+                       ] ;
+              <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :Aragorn ,
+                                                                            :FrodoBaggins ,
+                                                                            :Gandalf ,
+                                                                            :Legolas ;
+              :alliedWith :Aragorn ,
+                          :FrodoBaggins ,
+                          :Gandalf ,
+                          :Legolas ;
+              :appearsIn :FellowshipOfTheRing_Book ,
+                         :FellowshipOfTheRing_Movie ;
+              :belongsToUniverse :MiddleEarthUniverse ;
+              :enemyOf :Sauron ;
+              :memberOf :FellowshipOfTheRing ;
+              :possesses :OneRing ;
+              :description "Hobbit della Contea, nipote di Bilbo, scelto per portare l'Anello Unico a Monte Fato per distruggerlo" ;
+              rdfs:comment "Hobbit portatore dell'Anello, protagonista della missione per distruggere l'Unico Anello"@it ;
+              rdfs:label "Frodo Baggins"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Gandalf
+:Gandalf rdf:type owl:NamedIndividual ,
+                  :Character ,
+                  :NonHumanCharacter ,
+                  [ rdf:type owl:Restriction ;
+                    owl:onProperty :alliedWith ;
+                    owl:someValuesFrom :Character
+                  ] ,
+                  [ rdf:type owl:Restriction ;
+                    owl:onProperty :mentors ;
+                    owl:someValuesFrom :Character
+                  ] ;
+         <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :Aragorn ,
+                                                                       :FrodoBaggins ,
+                                                                       :Gandalf ,
+                                                                       :Legolas ;
+         :alliedWith :Aragorn ,
+                     :FrodoBaggins ,
+                     :Gandalf ,
+                     :Legolas ;
+         :appearsIn :FellowshipOfTheRing_Book ,
+                    :FellowshipOfTheRing_Movie ;
+         :belongsToUniverse :MiddleEarthUniverse ;
+         :memberOf :FellowshipOfTheRing ;
+         :mentors :FrodoBaggins ;
+         :description "Stregone immortale inviato nella Terra di Mezzo per guidare i Popoli Liberi contro Sauron" ;
+         rdfs:comment "Stregone istari, guida e mentore della Compagnia dell'Anello"@it ;
+         rdfs:label "Gandalf il Grigio"@it .
+
+
+###  http://www.narrative-universes.org/ontology#GroverUnderwood
+:GroverUnderwood rdf:type owl:NamedIndividual ,
+                          :Character ,
+                          :NonHumanCharacter ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty :alliedWith ;
+                            owl:someValuesFrom :Character
+                          ] ;
+                 <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :AnnabethChase ,
+                                                                               :GroverUnderwood ,
+                                                                               :PercyJackson ;
+                 :alliedWith :AnnabethChase ,
+                             :GroverUnderwood ,
+                             :PercyJackson ;
+                 :belongsToUniverse :PercyJacksonUniverse ;
+                 :memberOf :CampHalfBloodOrganization ;
+                 :description "Satiro (metà capra, metà umano), cercatore di semidei e protettore di Percy, dedito alla ricerca del dio Pan" ;
+                 rdfs:comment "Satiro protettore e migliore amico di Percy"@it ;
+                 rdfs:label "Grover Underwood"@it .
+
+
+###  http://www.narrative-universes.org/ontology#HarryPotter
+:HarryPotter rdf:type owl:NamedIndividual ,
+                      <http://www.co-ode.org/ontologies/ont.owl#PowerfulProtagonist> ,
+                      :Character ,
+                      :HumanCharacter ,
+                      :Protagonist ,
+                      [ rdf:type owl:Restriction ;
+                        owl:onProperty :alliedWith ;
+                        owl:someValuesFrom :Character
+                      ] ;
+             <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :AberforthDumbledore ,
+                                                                           :AlbusDumbledore ,
+                                                                           :HarryPotter ,
+                                                                           :HermioneGranger ,
+                                                                           :RonWeasley ;
+             :alliedWith :AberforthDumbledore ,
+                         :AlbusDumbledore ,
+                         :HarryPotter ,
+                         :HermioneGranger ,
+                         :RonWeasley ;
+             :appearsIn :ChamberOfSecrets_Book ,
+                        :PhilosophersStone_Book ,
+                        :PhilosophersStone_Movie ;
+             :belongsToUniverse :HarryPotterUniverse ;
+             :enemyOf :LordVoldemort ;
+             :hasAbility :Parseltongue ;
+             :memberOf :HogwartsSchool ;
+             :possesses :InvisibilityCloak ;
+             :birthYear 1980 ;
+             :description "Il ragazzo che è sopravvissuto, protagonista della saga, con una cicatrice a forma di fulmine sulla fronte" ;
+             rdfs:comment "Il protagonista della saga, il ragazzo che è sopravvissuto"@it ;
+             rdfs:label "Harry Potter"@it .
+
+
+###  http://www.narrative-universes.org/ontology#HarryPotterAndTheDeathlyHallows_Book
+:HarryPotterAndTheDeathlyHallows_Book rdf:type owl:NamedIndividual ,
+                                               <http://www.co-ode.org/ontologies/ont.owl#ModernWork> ,
+                                               :Book ,
+                                               :NarrativeWork ,
+                                               [ owl:intersectionOf ( :NarrativeWork
+                                                                      [ rdf:type owl:Restriction ;
+                                                                        owl:onProperty :numberOfPages ;
+                                                                        owl:someValuesFrom xsd:integer
+                                                                      ]
+                                                                    ) ;
+                                                 rdf:type owl:Class
+                                               ] ,
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty :numberOfPages ;
+                                                 owl:someValuesFrom xsd:integer
+                                               ] ;
+                                      :belongsToUniverse :HarryPotterUniverse ;
+                                      :features :AberforthDumbledore ;
+                                      :setIn :Hogwarts ;
+                                      :numberOfPages 759 ;
+                                      :publicationYear 2007 ;
+                                      :rating "4.8"^^xsd:float ;
+                                      :title "Harry Potter e i Doni della Morte" ;
+                                      rdfs:comment "Ultimo libro della saga di Harry Potter, pubblicato nel 2007, che conclude le avventure di Harry e dei suoi amici a Hogwarts"@it ;
+                                      rdfs:label "Harry Potter e i Doni della Morte"@it .
+
+
+###  http://www.narrative-universes.org/ontology#HarryPotterUniverse
+:HarryPotterUniverse rdf:type owl:NamedIndividual ,
+                              :NarrativeUniverse ;
+                     :description "L'universo narrativo fantasy creato da J.K. Rowling, ambientato in un mondo magico parallelo al nostro" ;
+                     rdfs:comment "L'universo narrativo fantasy creato da J.K. Rowling"@it ;
+                     rdfs:label "Universo di Harry Potter"@it .
+
+
+###  http://www.narrative-universes.org/ontology#HermioneGranger
+:HermioneGranger rdf:type owl:NamedIndividual ,
+                          :Character ,
+                          :HumanCharacter ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty :alliedWith ;
+                            owl:someValuesFrom :Character
+                          ] ;
+                 <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :AberforthDumbledore ,
+                                                                               :AlbusDumbledore ,
+                                                                               :HarryPotter ,
+                                                                               :HermioneGranger ,
+                                                                               :RonWeasley ;
+                 :alliedWith :AberforthDumbledore ,
+                             :AlbusDumbledore ,
+                             :HarryPotter ,
+                             :HermioneGranger ,
+                             :RonWeasley ;
+                 :appearsIn :ChamberOfSecrets_Book ,
+                            :PhilosophersStone_Book ,
+                            :PhilosophersStone_Movie ;
+                 :belongsToUniverse :HarryPotterUniverse ;
+                 :memberOf :HogwartsSchool ;
+                 :birthYear 1979 ;
+                 :description "Migliore amica di Harry, strega brillante e studiosa" ;
+                 rdfs:comment "Migliore amica di Harry, la più intelligente della sua generazione"@it ;
+                 rdfs:label "Hermione Granger"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Hogwarts
+:Hogwarts rdf:type owl:NamedIndividual ,
+                   :Location ,
+                   :SafePlace ,
+                   [ owl:intersectionOf ( :Location
+                                          [ rdf:type owl:Restriction ;
+                                            owl:onProperty :hasNarrativeFunction ;
+                                            owl:hasValue "Rifugio"
+                                          ]
+                                        ) ;
+                     rdf:type owl:Class
+                   ] ,
+                   [ rdf:type owl:Restriction ;
+                     owl:onProperty :hasNarrativeFunction ;
+                     owl:hasValue "Rifugio"
+                   ] ;
+          :belongsToUniverse :HarryPotterUniverse ;
+          :hosts :HogwartsSchool ;
+          :description "Castello magico in Scozia, scuola di magia e stregoneria fondata dai quattro fondatori: Godric Grifondoro, Tosca Tassorosso, Corinna Corvonero e Salazar Serpeverde" ;
+          :hasNarrativeFunction "Rifugio" ;
+          rdfs:comment "La scuola di Magia e Stregoneria di Hogwarts"@it ;
+          rdfs:label "Hogwarts"@it .
+
+
+###  http://www.narrative-universes.org/ontology#HogwartsSchool
+:HogwartsSchool rdf:type owl:NamedIndividual ,
+                         :Organization ,
+                         :School ;
+                :belongsToUniverse :HarryPotterUniverse ;
+                :hasMember :AberforthDumbledore ,
+                           :AlbusDumbledore ,
+                           :HarryPotter ,
+                           :HermioneGranger ,
+                           :RonWeasley ;
+                :locatedAt :Hogwarts ;
+                :description "La Scuola di Magia e Stregoneria di Hogwarts, fondata oltre mille anni fa dai quattro maghi più potenti dell'epoca" ;
+                rdfs:comment "L'istituzione educativa magica principale"@it ;
+                rdfs:label "Scuola di Hogwarts"@it .
+
+
+###  http://www.narrative-universes.org/ontology#IngressoCampoMezzosangue
+:IngressoCampoMezzosangue rdf:type owl:NamedIndividual ,
+                                   :LiminalSpace ,
+                                   :Location ,
+                                   [ owl:intersectionOf ( :Location
+                                                          [ rdf:type owl:Restriction ;
+                                                            owl:onProperty :hasNarrativeFunction ;
+                                                            owl:hasValue "Transizione"
+                                                          ]
+                                                        ) ;
+                                     rdf:type owl:Class
+                                   ] ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty :hasNarrativeFunction ;
+                                     owl:hasValue "Transizione"
+                                   ] ;
+                          :belongsToUniverse :PercyJacksonUniverse ;
+                          :description "Ingresso sorvegliato del Campo Mezzosangue, protetto da barriere magiche che impediscono ai mostri di entrare. Solo i semidei possono attraversarlo" ;
+                          :hasNarrativeFunction "Transizione" ;
+                          rdfs:comment "Segna il passaggio dal mondo umano a quello mitologico degli dei greci."@it .
+
+
+###  http://www.narrative-universes.org/ontology#InvisibilityCloak
+:InvisibilityCloak rdf:type owl:NamedIndividual ,
+                            <http://www.co-ode.org/ontologies/ont.owl#PowerArtifact> ,
+                            :Object ,
+                            [ owl:intersectionOf ( :Object
+                                                   [ rdf:type owl:Restriction ;
+                                                     owl:onProperty :grantsAbility ;
+                                                     owl:someValuesFrom :Ability
+                                                   ]
+                                                 ) ;
+                              rdf:type owl:Class
+                            ] ,
+                            [ rdf:type owl:Restriction ;
+                              owl:onProperty :grantsAbility ;
+                              owl:someValuesFrom :Ability
+                            ] ;
+                   :belongsToUniverse :HarryPotterUniverse ;
+                   :grantsAbility :TrueInvisibility ;
+                   :hasPowerTypeEnum :MagicalPower ;
+                   :canBeDestroyed "false"^^xsd:boolean ;
+                   :description """È un oggetto magico che, quando indossato, rende invisibile chi lo utilizza.
+Appartiene alla categoria degli Artefatti Magici e possiede la proprietà di conferire invisibilità temporanea al portatore.
+Viene spesso associato a personaggi che desiderano muoversi senza essere visti o eludere l’osservazione""" ;
+                   rdfs:comment "Il mantello magico che rende invisibili"@it ;
+                   rdfs:label "Mantello dell'Invisibilità"@it .
+
+
+###  http://www.narrative-universes.org/ontology#KinglyAuthority
+:KinglyAuthority rdf:type owl:NamedIndividual ,
+                          :Ability ,
+                          :MagicalAbility ;
+                 rdfs:comment "Simbolo della legittimità del Re di Gondor"@it ;
+                 rdfs:label "Autorità Regale"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Legolas
+:Legolas rdf:type owl:NamedIndividual ,
+                  :Character ,
+                  :NonHumanCharacter ,
+                  [ rdf:type owl:Restriction ;
+                    owl:onProperty :alliedWith ;
+                    owl:someValuesFrom :Character
+                  ] ;
+         <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :Aragorn ,
+                                                                       :FrodoBaggins ,
+                                                                       :Gandalf ,
+                                                                       :Legolas ;
+         :alliedWith :Aragorn ,
+                     :FrodoBaggins ,
+                     :Gandalf ,
+                     :Legolas ;
+         :belongsToUniverse :MiddleEarthUniverse ;
+         :memberOf :FellowshipOfTheRing ;
+         :description "Elfo silvan, figlio di Thranduil, maestro arciere dalla vista acuta e agilità straordinaria" ;
+         rdfs:comment "Principe elfico del Regno Boscuro, arciere esperto e membro della Compagnia"@it ;
+         rdfs:label "Legolas"@it .
+
+
+###  http://www.narrative-universes.org/ontology#LightningThief_Book
+:LightningThief_Book rdf:type owl:NamedIndividual ,
+                              <http://www.co-ode.org/ontologies/ont.owl#HighlyRatedWork> ,
+                              <http://www.co-ode.org/ontologies/ont.owl#ModernWork> ,
+                              :Book ,
+                              :NarrativeWork ,
+                              [ owl:intersectionOf ( :NarrativeWork
+                                                     [ rdf:type owl:Restriction ;
+                                                       owl:onProperty :numberOfPages ;
+                                                       owl:someValuesFrom xsd:integer
+                                                     ]
+                                                   ) ;
+                                rdf:type owl:Class
+                              ] ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty :numberOfPages ;
+                                owl:someValuesFrom xsd:integer
+                              ] ;
+                     :belongsToUniverse :PercyJacksonUniverse ;
+                     :features :AnnabethChase ,
+                               :PercyJackson ;
+                     :prequelOf :SeaOfMonsters_Book ;
+                     :setIn :CampHalfBlood ;
+                     :description "Percy scopre di essere un semidio e parte in una missione per impedire una guerra tra gli dei recuperando il fulmine di Zeus" ;
+                     :numberOfPages 377 ;
+                     :publicationYear 2005 ;
+                     :rating "9.2"^^xsd:float ;
+                     :title "The Lightning Thief" ;
+                     rdfs:comment "Primo libro della saga di Percy Jackson"@it ;
+                     rdfs:label "Il Ladro di Fulmini"@it .
+
+
+###  http://www.narrative-universes.org/ontology#LightningThief_Movie
+:LightningThief_Movie rdf:type owl:NamedIndividual ,
+                               <http://www.co-ode.org/ontologies/ont.owl#ModernWork> ,
+                               :Movie ,
+                               :NarrativeWork ,
+                               [ owl:intersectionOf ( :NarrativeWork
+                                                      [ rdf:type owl:Class ;
+                                                        owl:complementOf [ rdf:type owl:Restriction ;
+                                                                           owl:onProperty :isOngoing ;
+                                                                           owl:hasValue "true"^^xsd:boolean
+                                                                         ]
+                                                      ]
+                                                      [ rdf:type owl:Restriction ;
+                                                        owl:onProperty :runtime ;
+                                                        owl:someValuesFrom xsd:integer
+                                                      ]
+                                                    ) ;
+                                 rdf:type owl:Class
+                               ] ,
+                               [ rdf:type owl:Class ;
+                                 owl:complementOf [ rdf:type owl:Restriction ;
+                                                    owl:onProperty :isOngoing ;
+                                                    owl:hasValue "true"^^xsd:boolean
+                                                  ]
+                               ] ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty :runtime ;
+                                 owl:someValuesFrom xsd:integer
+                               ] ;
+                      :adaptationOf :LightningThief_Book ;
+                      :belongsToUniverse :PercyJacksonUniverse ;
+                      :features :AnnabethChase ,
+                                :PercyJackson ;
+                      :setIn :CampHalfBlood ;
+                      :description "Adattamento cinematografico della storia di Percy, diretto da Chris Columbus" ;
+                      :publicationYear 2010 ;
+                      :rating "5.9"^^xsd:float ;
+                      :runtime 118 ;
+                      :title "Percy Jackson & the Olympians: The Lightning Thief" ;
+                      rdfs:comment "Adattamento cinematografico del primo libro"@it ;
+                      rdfs:label "Il Ladro di Fulmini (Film)"@it .
+
+
+###  http://www.narrative-universes.org/ontology#LordVoldemort
+:LordVoldemort rdf:type owl:NamedIndividual ,
+                        :Character ,
+                        :HumanCharacter ,
+                        [ rdf:type owl:Restriction ;
+                          owl:onProperty :enemyOf ;
+                          owl:someValuesFrom :Protagonist
+                        ] ;
+               :appearsIn :PhilosophersStone_Book ,
+                          :PhilosophersStone_Movie ;
+               :belongsToUniverse :HarryPotterUniverse ;
+               :enemyOf :AlbusDumbledore ,
+                        :HarryPotter ;
+               :birthYear 1926 ;
+               :description "Mago oscuro più potente e pericoloso di tutti i tempi, nemico principale di Harry Potter" ;
+               rdfs:comment "L'antagonista principale, il mago oscuro"@it ;
+               rdfs:label "Lord Voldemort"@it .
+
+
+###  http://www.narrative-universes.org/ontology#LukeCastellan
+:LukeCastellan rdf:type owl:NamedIndividual ,
+                        :Character ,
+                        :HybridCharacter ,
+                        [ owl:intersectionOf ( :Character
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty :hasOriginType ;
+                                                 owl:minCardinality "2"^^xsd:nonNegativeInteger
+                                               ]
+                                             ) ;
+                          rdf:type owl:Class
+                        ] ,
+                        [ rdf:type owl:Restriction ;
+                          owl:onProperty :hasOriginType ;
+                          owl:minCardinality "2"^^xsd:nonNegativeInteger
+                        ] ;
+               :belongsToUniverse :PercyJacksonUniverse ;
+               :hasOriginType :DivineOrigin ;
+               :birthYear 1985 ;
+               :description "Figlio di Hermes, ex campista esemplare corrotto dal rancore verso gli dei, diventa servitore di Crono" ;
+               rdfs:comment "Semidio figlio di Hermes, antagonista che tradisce il campo per servire Crono"@it ;
+               rdfs:label "Luke Castellan"@it .
+
+
+###  http://www.narrative-universes.org/ontology#MagicalInvisibility
+:MagicalInvisibility rdf:type owl:NamedIndividual ,
+                              :Ability ,
+                              :MagicalAbility ;
+                     rdfs:comment "Capacità di diventare invisibile indossando il berretto"@it ;
+                     rdfs:label "Invisibilità Magica"@it .
+
+
+###  http://www.narrative-universes.org/ontology#MagicalPower
+:MagicalPower rdf:type owl:NamedIndividual ,
+                       :PowerType ,
+                       [ rdf:type owl:Class ;
+                         owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                     :CorruptivePower
+                                     :DivinePower
+                                     :MagicalPower
+                                     :SymbolicPower
+                                   )
+                       ] ;
+              rdfs:comment "Potere di natura magica tradizionale"@it ;
+              rdfs:label "Potere Magico"@it .
+
+
+###  http://www.narrative-universes.org/ontology#MiddleEarthUniverse
+:MiddleEarthUniverse rdf:type owl:NamedIndividual ,
+                              :NarrativeUniverse ;
+                     :description "Mondo fantasy epico creato da Tolkien, caratterizzato da una mitologia complessa con elfi, nani, hobbit e la lotta contro il Signore Oscuro Sauron" ;
+                     rdfs:comment "Universo narrativo fantasy creato da J.R.R. Tolkien, ambientato nella Terra di Mezzo"@it ;
+                     rdfs:label "Universo della Terra di Mezzo"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Mordor
+:Mordor rdf:type owl:NamedIndividual ,
+                 :DangerZone ,
+                 :Location ,
+                 [ owl:intersectionOf ( :Location
+                                        [ rdf:type owl:Restriction ;
+                                          owl:onProperty :hasNarrativeFunction ;
+                                          owl:hasValue "Conflitto"
+                                        ]
+                                      ) ;
+                   rdf:type owl:Class
+                 ] ,
+                 [ rdf:type owl:Restriction ;
+                   owl:onProperty :hasNarrativeFunction ;
+                   owl:hasValue "Conflitto"
+                 ] ;
+        :belongsToUniverse :MiddleEarthUniverse ;
+        :description "Regno oscuro nel sud-est della Terra di Mezzo, dominato dalla torre di Barad-dur e dal Monte Fato" ;
+        :hasNarrativeFunction "Conflitto" ;
+        rdfs:comment "Terra desolata di Sauron, destinazione finale di Frodo per distruggere l'Anello"@it ;
+        rdfs:label "Mordor"@it .
+
+
+###  http://www.narrative-universes.org/ontology#MountDoom
+:MountDoom rdf:type owl:NamedIndividual ,
+                    :DangerZone ,
+                    :Location ,
+                    [ owl:intersectionOf ( :Location
+                                           [ rdf:type owl:Restriction ;
+                                             owl:onProperty :hasNarrativeFunction ;
+                                             owl:hasValue "Conflitto"
+                                           ]
+                                         ) ;
+                      rdf:type owl:Class
+                    ] ,
+                    [ rdf:type owl:Restriction ;
+                      owl:onProperty :hasNarrativeFunction ;
+                      owl:hasValue "Conflitto"
+                    ] ;
+           :belongsToUniverse :MiddleEarthUniverse ;
+           :partOf :Mordor ;
+           :description "Vulcano attivo nel cuore di Mordor, unico luogo dove l'Anello Unico può essere distrutto" ;
+           :hasNarrativeFunction "Conflitto" ;
+           rdfs:comment "Vulcano dove l'Anello Unico fu forgiato e dove deve essere distrutto"@it ;
+           rdfs:label "Monte Fato"@it .
+
+
+###  http://www.narrative-universes.org/ontology#MountOlympus
+:MountOlympus rdf:type owl:NamedIndividual ,
+                       :Location ,
+                       :SafePlace ,
+                       [ owl:intersectionOf ( :Location
+                                              [ rdf:type owl:Restriction ;
+                                                owl:onProperty :hasNarrativeFunction ;
+                                                owl:hasValue "Rifugio"
+                                              ]
+                                            ) ;
+                         rdf:type owl:Class
+                       ] ,
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasNarrativeFunction ;
+                         owl:hasValue "Rifugio"
+                       ] ;
+              :belongsToUniverse :PercyJacksonUniverse ;
+              :description "Dimora degli dei greci, sospesa nel cielo sopra New York, accessibile dal 600° piano dell'Empire State Building" ;
+              :hasNarrativeFunction "Rifugio" ;
+              rdfs:comment "Casa degli dei olimpici, fluttuante sopra l'Empire State Building"@it ;
+              rdfs:label "Monte Olimpo"@it .
+
+
+###  http://www.narrative-universes.org/ontology#OneRing
+:OneRing rdf:type owl:NamedIndividual ,
+                  <http://www.co-ode.org/ontologies/ont.owl#PowerArtifact> ,
+                  :Object ,
+                  [ owl:intersectionOf ( :Object
+                                         [ rdf:type owl:Restriction ;
+                                           owl:onProperty :grantsAbility ;
+                                           owl:someValuesFrom :Ability
+                                         ]
+                                       ) ;
+                    rdf:type owl:Class
+                  ] ,
+                  [ rdf:type owl:Restriction ;
+                    owl:onProperty :grantsAbility ;
+                    owl:someValuesFrom :Ability
+                  ] ;
+         :belongsToUniverse :MiddleEarthUniverse ;
+         :grantsAbility :DominationPower ;
+         :hasPowerTypeEnum :CorruptivePower ;
+         :canBeDestroyed "true"^^xsd:boolean ;
+         :description """È un potente artefatto magico creato da Sauron per dominare gli altri Anelli del Potere.
+Conferisce al portatore un’enorme influenza sulla volontà altrui e amplifica le sue capacità, ma allo stesso tempo lo corrompe progressivamente""" ;
+         rdfs:comment "L'Anello del Potere forgiato da Sauron per dominare tutti gli altri anelli"@it ;
+         rdfs:label "Anello Unico"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Parseltongue
+:Parseltongue rdf:type owl:NamedIndividual ,
+                       :Ability ,
+                       :MagicalAbility ;
+              rdfs:comment "L'abilità di parlare con i serpenti"@it ;
+              rdfs:label "Serpentese"@it .
+
+
+###  http://www.narrative-universes.org/ontology#PercyJackson
+:PercyJackson rdf:type owl:NamedIndividual ,
+                       <http://www.co-ode.org/ontologies/ont.owl#PowerfulProtagonist> ,
+                       :Character ,
+                       :HybridCharacter ,
+                       :Protagonist ,
+                       [ owl:intersectionOf ( :Character
+                                              [ rdf:type owl:Restriction ;
+                                                owl:onProperty :hasOriginType ;
+                                                owl:minCardinality "2"^^xsd:nonNegativeInteger
+                                              ]
+                                            ) ;
+                         rdf:type owl:Class
+                       ] ,
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :alliedWith ;
+                         owl:someValuesFrom :Character
+                       ] ,
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasOriginType ;
+                         owl:minCardinality "2"^^xsd:nonNegativeInteger
+                       ] ;
+              <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :AnnabethChase ,
+                                                                            :GroverUnderwood ,
+                                                                            :PercyJackson ;
+              :alliedWith :AnnabethChase ,
+                          :GroverUnderwood ,
+                          :PercyJackson ;
+              :appearsIn :LightningThief_Book ,
+                         :LightningThief_Movie ,
+                         :SeaOfMonsters_Book ;
+              :belongsToUniverse :PercyJacksonUniverse ;
+              :hasAbility :WaterControl ;
+              :hasOriginType :DivineOrigin ;
+              :memberOf :CampHalfBloodOrganization ;
+              :possesses :Riptide ;
+              :description "Figlio di Poseidone e Sally Jackson, semidio con controllo sull'acqua, spade e capacità di respirare sott'acqua" ;
+              rdfs:comment "Semidio figlio di Poseidone, protagonista della saga, con poteri sull'acqua"@it ;
+              rdfs:label "Percy Jackson"@it .
+
+
+###  http://www.narrative-universes.org/ontology#PercyJacksonUniverse
+:PercyJacksonUniverse rdf:type owl:NamedIndividual ,
+                               :NarrativeUniverse ;
+                      :description "Mondo contemporaneo dove la mitologia greca è reale e gli dei olimpici convivono con gli umani, generando semidei con poteri straordinari" ;
+                      rdfs:comment "Universo narrativo fantasy urbano creato da Rick Riordan, dove gli dei greci esistono nell'America moderna"@it ;
+                      rdfs:label "Universo di Percy Jackson"@it .
+
+
+###  http://www.narrative-universes.org/ontology#PhilosophersStone_Book
+:PhilosophersStone_Book rdf:type owl:NamedIndividual ,
+                                 <http://www.co-ode.org/ontologies/ont.owl#HighlyRatedWork> ,
+                                 :Book ,
+                                 :NarrativeWork ,
+                                 [ owl:intersectionOf ( :NarrativeWork
+                                                        [ rdf:type owl:Restriction ;
+                                                          owl:onProperty :numberOfPages ;
+                                                          owl:someValuesFrom xsd:integer
+                                                        ]
+                                                      ) ;
+                                   rdf:type owl:Class
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :numberOfPages ;
+                                   owl:someValuesFrom xsd:integer
+                                 ] ;
+                        :belongsToUniverse :HarryPotterUniverse ;
+                        :features :AberforthDumbledore ,
+                                  :AlbusDumbledore ,
+                                  :HarryPotter ,
+                                  :HermioneGranger ,
+                                  :LordVoldemort ,
+                                  :RonWeasley ;
+                        :hasMainProtagonist :HarryPotter ;
+                        :indirectlySetIn :ForbiddenForest ;
+                        :prequelOf :ChamberOfSecrets_Book ;
+                        :setIn :Hogwarts ;
+                        :description "Il primo libro della saga, racconta il primo anno di Harry a Hogwarts e la scoperta della Pietra Filosofale" ;
+                        :numberOfPages 223 ;
+                        :publicationYear 1997 ;
+                        :rating "9.6"^^xsd:float ;
+                        :title "Harry Potter and the Philosopher's Stone" ;
+                        rdfs:comment "Il primo libro della saga di Harry Potter"@it ;
+                        rdfs:label "Harry Potter e la Pietra Filosofale"@it .
+
+
+###  http://www.narrative-universes.org/ontology#PhilosophersStone_Movie
+:PhilosophersStone_Movie rdf:type owl:NamedIndividual ,
+                                  <http://www.co-ode.org/ontologies/ont.owl#ModernWork> ,
+                                  :Movie ,
+                                  :NarrativeWork ,
+                                  [ owl:intersectionOf ( :NarrativeWork
+                                                         [ rdf:type owl:Class ;
+                                                           owl:complementOf [ rdf:type owl:Restriction ;
+                                                                              owl:onProperty :isOngoing ;
+                                                                              owl:hasValue "true"^^xsd:boolean
+                                                                            ]
+                                                         ]
+                                                         [ rdf:type owl:Restriction ;
+                                                           owl:onProperty :runtime ;
+                                                           owl:someValuesFrom xsd:integer
+                                                         ]
+                                                       ) ;
+                                    rdf:type owl:Class
+                                  ] ,
+                                  [ rdf:type owl:Class ;
+                                    owl:complementOf [ rdf:type owl:Restriction ;
+                                                       owl:onProperty :isOngoing ;
+                                                       owl:hasValue "true"^^xsd:boolean
+                                                     ]
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :runtime ;
+                                    owl:someValuesFrom xsd:integer
+                                  ] ;
+                         :adaptationOf :PhilosophersStone_Book ;
+                         :belongsToUniverse :HarryPotterUniverse ;
+                         :features :AberforthDumbledore ,
+                                   :AlbusDumbledore ,
+                                   :HarryPotter ,
+                                   :HermioneGranger ,
+                                   :LordVoldemort ,
+                                   :RonWeasley ;
+                         :setIn :Hogwarts ;
+                         :description "Adattamento cinematografico del primo libro, diretto da Chris Columbus" ;
+                         :publicationYear 2001 ;
+                         :rating "7.6"^^xsd:float ;
+                         :runtime 152 ;
+                         :title "Harry Potter and the Philosopher's Stone" ;
+                         rdfs:comment "Adattamento cinematografico del primo libro"@it ;
+                         rdfs:label "Harry Potter e la Pietra Filosofale (Film)"@it .
+
+
+###  http://www.narrative-universes.org/ontology#PortaleMondoMorti
+:PortaleMondoMorti rdf:type owl:NamedIndividual ,
+                            :LiminalSpace ,
+                            :Location ,
+                            [ owl:intersectionOf ( :Location
+                                                   [ rdf:type owl:Restriction ;
+                                                     owl:onProperty :hasNarrativeFunction ;
+                                                     owl:hasValue "Transizione"
+                                                   ]
+                                                 ) ;
+                              rdf:type owl:Class
+                            ] ,
+                            [ rdf:type owl:Restriction ;
+                              owl:onProperty :hasNarrativeFunction ;
+                              owl:hasValue "Transizione"
+                            ] ;
+                   :belongsToUniverse :PercyJacksonUniverse ;
+                   :partOf :CampHalfBlood ;
+                   :description "Portale d'ingresso agli Inferi, situato a Los Angeles presso gli Studios DOA. Permette ai vivi di entrare nel regno di Ade" ;
+                   :hasNarrativeFunction "Transizione" ;
+                   rdfs:comment "Luogo di confine tra il mondo dei vivi e l’Oltretomba."@it .
+
+
+###  http://www.narrative-universes.org/ontology#Riptide
+:Riptide rdf:type owl:NamedIndividual ,
+                  <http://www.co-ode.org/ontologies/ont.owl#PowerArtifact> ,
+                  :Object ,
+                  [ owl:intersectionOf ( :Object
+                                         [ rdf:type owl:Restriction ;
+                                           owl:onProperty :grantsAbility ;
+                                           owl:someValuesFrom :Ability
+                                         ]
+                                       ) ;
+                    rdf:type owl:Class
+                  ] ,
+                  [ rdf:type owl:Restriction ;
+                    owl:onProperty :grantsAbility ;
+                    owl:someValuesFrom :Ability
+                  ] ;
+         :belongsToUniverse :PercyJacksonUniverse ;
+         :grantsAbility :CelestialBronzePower ;
+         :hasPowerTypeEnum :MagicalPower ;
+         :canBeDestroyed "false"^^xsd:boolean ;
+         :description """È la spada magica di Percy Jackson, in grado di ritornare alla mano del proprietario quando viene persa o smarrita.
+Possiede la proprietà di trasformarsi da oggetto comune a spada divina al contatto con il suo utilizzatore.
+È efficace contro creature soprannaturali e mitologiche.""" ;
+         rdfs:comment "Spada di bronzo celestiale di Percy, si trasforma in una penna e ritorna sempre al suo proprietario"@it ;
+         rdfs:label "Riptide (Controcorrente)"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Rivendell
+:Rivendell rdf:type owl:NamedIndividual ,
+                    :Location ,
+                    :SafePlace ,
+                    [ owl:intersectionOf ( :Location
+                                           [ rdf:type owl:Restriction ;
+                                             owl:onProperty :hasNarrativeFunction ;
+                                             owl:hasValue "Rifugio"
+                                           ]
+                                         ) ;
+                      rdf:type owl:Class
+                    ] ,
+                    [ rdf:type owl:Restriction ;
+                      owl:onProperty :hasNarrativeFunction ;
+                      owl:hasValue "Rifugio"
+                    ] ;
+           :belongsToUniverse :MiddleEarthUniverse ;
+           :hosts :FellowshipOfTheRing ;
+           :description "Valle nascosta governata da Elrond Mezzelfo, ultimo rifugio di saggezza e bellezza elfica nella Terra di Mezzo" ;
+           :hasNarrativeFunction "Rifugio" ;
+           rdfs:comment "Rifugio elfico di Elrond, luogo del Consiglio dove si forma la Compagnia dell'Anello"@it ;
+           rdfs:label "Gran Burrone"@it .
+
+
+###  http://www.narrative-universes.org/ontology#RonWeasley
+:RonWeasley rdf:type owl:NamedIndividual ,
+                     :Character ,
+                     :HumanCharacter ,
+                     [ rdf:type owl:Restriction ;
+                       owl:onProperty :alliedWith ;
+                       owl:someValuesFrom :Character
+                     ] ;
+            <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> :AberforthDumbledore ,
+                                                                          :AlbusDumbledore ,
+                                                                          :HarryPotter ,
+                                                                          :HermioneGranger ,
+                                                                          :RonWeasley ;
+            :alliedWith :AberforthDumbledore ,
+                        :AlbusDumbledore ,
+                        :HarryPotter ,
+                        :HermioneGranger ,
+                        :RonWeasley ;
+            :appearsIn :ChamberOfSecrets_Book ,
+                       :PhilosophersStone_Book ,
+                       :PhilosophersStone_Movie ;
+            :belongsToUniverse :HarryPotterUniverse ;
+            :memberOf :HogwartsSchool ;
+            :birthYear 1980 ;
+            :description "Migliore amico di Harry, leale e coraggioso membro della famiglia Weasley" ;
+            rdfs:comment "Migliore amico di Harry, fedele compagno"@it ;
+            rdfs:label "Ron Weasley"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Sauron
+:Sauron rdf:type owl:NamedIndividual ,
+                 :Character ,
+                 :NonHumanCharacter ,
+                 [ rdf:type owl:Restriction ;
+                   owl:onProperty :enemyOf ;
+                   owl:someValuesFrom :Protagonist
+                 ] ;
+        :belongsToUniverse :MiddleEarthUniverse ;
+        :enemyOf :FrodoBaggins ;
+        :description "Maia corrotto, antico servitore di Morgoth, cerca di dominare la Terra di Mezzo attraverso l'Anello Unico" ;
+        rdfs:comment "Signore Oscuro, creatore dell'Anello Unico, antagonista principale"@it ;
+        rdfs:label "Sauron"@it .
+
+
+###  http://www.narrative-universes.org/ontology#SeaOfMonsters_Book
+:SeaOfMonsters_Book rdf:type owl:NamedIndividual ,
+                             <http://www.co-ode.org/ontologies/ont.owl#ModernWork> ,
+                             :Book ,
+                             :NarrativeWork ,
+                             [ owl:intersectionOf ( :NarrativeWork
+                                                    [ rdf:type owl:Restriction ;
+                                                      owl:onProperty :numberOfPages ;
+                                                      owl:someValuesFrom xsd:integer
+                                                    ]
+                                                  ) ;
+                               rdf:type owl:Class
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :numberOfPages ;
+                               owl:someValuesFrom xsd:integer
+                             ] ;
+                    :belongsToUniverse :PercyJacksonUniverse ;
+                    :features :AnnabethChase ,
+                              :PercyJackson ;
+                    :sequelOf :LightningThief_Book ;
+                    :setIn :CampHalfBlood ;
+                    :description "Percy e i suoi amici devono recuperare il Vello d'Oro per salvare il campo e salvare Grover" ;
+                    :numberOfPages 279 ;
+                    :publicationYear 2006 ;
+                    :rating "9.0"^^xsd:float ;
+                    :title "The Sea of Monsters" ;
+                    rdfs:comment "Secondo libro della saga"@it ;
+                    rdfs:label "Il Mare dei Mostri"@it .
+
+
+###  http://www.narrative-universes.org/ontology#SymbolicPower
+:SymbolicPower rdf:type owl:NamedIndividual ,
+                        :PowerType ,
+                        [ rdf:type owl:Class ;
+                          owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                                      :CorruptivePower
+                                      :DivinePower
+                                      :MagicalPower
+                                      :SymbolicPower
+                                    )
+                        ] ;
+               rdfs:comment "Potere rappresentato da autorità, legittimità o significato simbolico"@it ;
+               rdfs:label "Potere Simbolico"@it .
+
+
+###  http://www.narrative-universes.org/ontology#Tartarus
+:Tartarus rdf:type owl:NamedIndividual ,
+                   :DangerZone ,
+                   :Location ,
+                   [ owl:intersectionOf ( :Location
+                                          [ rdf:type owl:Restriction ;
+                                            owl:onProperty :hasNarrativeFunction ;
+                                            owl:hasValue "Conflitto"
+                                          ]
+                                        ) ;
+                     rdf:type owl:Class
+                   ] ,
+                   [ rdf:type owl:Restriction ;
+                     owl:onProperty :hasNarrativeFunction ;
+                     owl:hasValue "Conflitto"
+                   ] ;
+          :belongsToUniverse :PercyJacksonUniverse ;
+          :partOf :TheUnderworld ;
+          :description "Abisso più profondo dell'universo, sotto gli Inferi, dove sono imprigionati i Titani e i nemici più pericolosi degli dei" ;
+          :hasNarrativeFunction "Conflitto" ;
+          rdfs:comment "Abisso primordiale sotto gli Inferi, prigione dei Titani"@it ;
+          rdfs:label "Tartaro"@it .
+
+
+###  http://www.narrative-universes.org/ontology#TheShire
+:TheShire rdf:type owl:NamedIndividual ,
+                   :Location ,
+                   :SafePlace ,
+                   [ owl:intersectionOf ( :Location
+                                          [ rdf:type owl:Restriction ;
+                                            owl:onProperty :hasNarrativeFunction ;
+                                            owl:hasValue "Rifugio"
+                                          ]
+                                        ) ;
+                     rdf:type owl:Class
+                   ] ,
+                   [ rdf:type owl:Restriction ;
+                     owl:onProperty :hasNarrativeFunction ;
+                     owl:hasValue "Rifugio"
+                   ] ;
+          :belongsToUniverse :MiddleEarthUniverse ;
+          :description "Idilliaca regione verde nel nord-ovest della Terra di Mezzo, famosa per la sua pace e abbondanza" ;
+          :hasNarrativeFunction "Rifugio" ;
+          rdfs:comment "Regione pacifica abitata dagli hobbit, casa di Frodo e Bilbo"@it ;
+          rdfs:label "La Contea"@it .
+
+
+###  http://www.narrative-universes.org/ontology#TheUnderworld
+:TheUnderworld rdf:type owl:NamedIndividual ,
+                        :DangerZone ,
+                        :Location ,
+                        [ owl:intersectionOf ( :Location
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty :hasNarrativeFunction ;
+                                                 owl:hasValue "Conflitto"
+                                               ]
+                                             ) ;
+                          rdf:type owl:Class
+                        ] ,
+                        [ rdf:type owl:Restriction ;
+                          owl:onProperty :hasNarrativeFunction ;
+                          owl:hasValue "Conflitto"
+                        ] ;
+               :belongsToUniverse :PercyJacksonUniverse ;
+               :description "Regno sotterraneo dei morti, governato da Ade, con ingresso a Los Angeles attraverso gli studi DOA" ;
+               :hasNarrativeFunction "Conflitto" ;
+               rdfs:comment "Regno dei morti governato da Ade, luogo oscuro e pericoloso"@it ;
+               rdfs:label "Gli Inferi"@it .
+
+
+###  http://www.narrative-universes.org/ontology#TrueInvisibility
+:TrueInvisibility rdf:type owl:NamedIndividual ,
+                           :Ability ,
+                           :MagicalAbility ;
+                  rdfs:comment "L'invisibilità perfetta del mantello"@it ;
+                  rdfs:label "Invisibilità Vera"@it .
+
+
+###  http://www.narrative-universes.org/ontology#UnbeatableMagic
+:UnbeatableMagic rdf:type owl:NamedIndividual ,
+                          :Ability ,
+                          :MagicalAbility ;
+                 rdfs:comment "Il potere supremo della Bacchetta di Sambuco"@it ;
+                 rdfs:label "Magia Imbattibile"@it .
+
+
+###  http://www.narrative-universes.org/ontology#WaterControl
+:WaterControl rdf:type owl:NamedIndividual ,
+                       :Ability ,
+                       :DivineAbility ;
+              rdfs:comment "Capacità divina di controllare e manipolare l'acqua"@it ;
+              rdfs:label "Controllo dell'Acqua"@it .
+
+
+###  http://www.narrative-universes.org/ontology#YankeeCap
+:YankeeCap rdf:type owl:NamedIndividual ,
+                    <http://www.co-ode.org/ontologies/ont.owl#PowerArtifact> ,
+                    :Object ,
+                    [ owl:intersectionOf ( :Object
+                                           [ rdf:type owl:Restriction ;
+                                             owl:onProperty :grantsAbility ;
+                                             owl:someValuesFrom :Ability
+                                           ]
+                                         ) ;
+                      rdf:type owl:Class
+                    ] ,
+                    [ rdf:type owl:Restriction ;
+                      owl:onProperty :grantsAbility ;
+                      owl:someValuesFrom :Ability
+                    ] ;
+           :belongsToUniverse :PercyJacksonUniverse ;
+           :grantsAbility :MagicalInvisibility ;
+           :hasPowerTypeEnum :MagicalPower ;
+           :canBeDestroyed "true"^^xsd:boolean ;
+           :description "È un oggetto indossabile, tipicamente un cappello da baseball, appartenente ad Annabeth." ;
+           rdfs:comment "Berretto magico che rende invisibile chi lo indossa"@it ;
+           rdfs:label "Cappello Yankees di Annabeth"@it .
+
+
+#################################################################
+#    General axioms
+#################################################################
+
+[ owl:intersectionOf ( :Character
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :alliedWith ;
+                         owl:someValuesFrom :Character
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Alleato
+] .
+
+
+[ owl:intersectionOf ( :Character
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :enemyOf ;
+                         owl:someValuesFrom :Protagonist
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Antagonist
+] .
+
+
+[ owl:intersectionOf ( :Character
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :mentors ;
+                         owl:someValuesFrom :Character
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Mentor
+] .
+
+
+[ owl:intersectionOf ( :Character
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasOriginType ;
+                         owl:minCardinality "2"^^xsd:nonNegativeInteger
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Character
+] .
+
+
+[ owl:intersectionOf ( :Character
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasOriginType ;
+                         owl:minCardinality "2"^^xsd:nonNegativeInteger
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :HybridCharacter
+] .
+
+
+[ owl:intersectionOf ( :Location
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasNarrativeFunction ;
+                         owl:hasValue "Conflitto"
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :DangerZone
+] .
+
+
+[ owl:intersectionOf ( :Location
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasNarrativeFunction ;
+                         owl:hasValue "Conflitto"
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Location
+] .
+
+
+[ owl:intersectionOf ( :Location
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasNarrativeFunction ;
+                         owl:hasValue "Rifugio"
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Location
+] .
+
+
+[ owl:intersectionOf ( :Location
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasNarrativeFunction ;
+                         owl:hasValue "Rifugio"
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :SafePlace
+] .
+
+
+[ owl:intersectionOf ( :Location
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasNarrativeFunction ;
+                         owl:hasValue "Transizione"
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :LiminalSpace
+] .
+
+
+[ owl:intersectionOf ( :Location
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasNarrativeFunction ;
+                         owl:hasValue "Transizione"
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Location
+] .
+
+
+[ owl:intersectionOf ( :NarrativeWork
+                       [ rdf:type owl:Class ;
+                         owl:complementOf [ rdf:type owl:Restriction ;
+                                            owl:onProperty :isOngoing ;
+                                            owl:hasValue "true"^^xsd:boolean
+                                          ]
+                       ]
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :runtime ;
+                         owl:someValuesFrom xsd:integer
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Movie
+] .
+
+
+[ owl:intersectionOf ( :NarrativeWork
+                       [ rdf:type owl:Class ;
+                         owl:complementOf [ rdf:type owl:Restriction ;
+                                            owl:onProperty :isOngoing ;
+                                            owl:hasValue "true"^^xsd:boolean
+                                          ]
+                       ]
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :runtime ;
+                         owl:someValuesFrom xsd:integer
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :NarrativeWork
+] .
+
+
+[ owl:intersectionOf ( :NarrativeWork
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty <http://www.co-ode.org/ontologies/ont.owl#hasSeasons> ;
+                         owl:someValuesFrom xsd:integer
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :NarrativeWork
+] .
+
+
+[ owl:intersectionOf ( :NarrativeWork
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty <http://www.co-ode.org/ontologies/ont.owl#hasSeasons> ;
+                         owl:someValuesFrom xsd:integer
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :TVSeries
+] .
+
+
+[ owl:intersectionOf ( :NarrativeWork
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :numberOfPages ;
+                         owl:someValuesFrom xsd:integer
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Book
+] .
+
+
+[ owl:intersectionOf ( :NarrativeWork
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :numberOfPages ;
+                         owl:someValuesFrom xsd:integer
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :NarrativeWork
+] .
+
+
+[ owl:intersectionOf ( :Object
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :grantsAbility ;
+                         owl:someValuesFrom :Ability
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf <http://www.co-ode.org/ontologies/ont.owl#PowerArtifact>
+] .
+
+
+[ owl:intersectionOf ( :Object
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :grantsAbility ;
+                         owl:someValuesFrom :Ability
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Object
+] .
+
+
+[ owl:intersectionOf ( :Object
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasPowerTypeEnum ;
+                         owl:hasValue <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Object
+] .
+
+
+[ owl:intersectionOf ( :Object
+                       [ rdf:type owl:Restriction ;
+                         owl:onProperty :hasPowerTypeEnum ;
+                         owl:hasValue <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+                       ]
+                     ) ;
+  rdf:type owl:Class ;
+  rdfs:subClassOf :Weapon
+] .
+
+
+[ rdf:type owl:Class ;
+  owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#ElvenOrigin>
+              <http://www.co-ode.org/ontologies/ont.owl#GiantOrigin>
+              <http://www.co-ode.org/ontologies/ont.owl#HumanOrigin>
+              <http://www.co-ode.org/ontologies/ont.owl#SpiritOrigin>
+              :DivineOrigin
+            ) ;
+  rdfs:subClassOf :OriginType
+] .
+
+
+[ rdf:type owl:Class ;
+  owl:oneOf ( <http://www.co-ode.org/ontologies/ont.owl#OrdinaryPower>
+              :CorruptivePower
+              :DivinePower
+              :MagicalPower
+              :SymbolicPower
+            ) ;
+  rdfs:subClassOf :PowerType
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Book
+                :Movie
+                :TVSeries
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :DangerZone
+                :LiminalSpace
+                :SafePlace
+              )
+] .
+
+
+#################################################################
+#    Rules
+#################################################################
+
+:p rdf:type <http://www.w3.org/2003/11/swrl#Variable> .
+
+:artifact rdf:type <http://www.w3.org/2003/11/swrl#Variable> .
+
+:x rdf:type <http://www.w3.org/2003/11/swrl#Variable> .
+
+:y rdf:type <http://www.w3.org/2003/11/swrl#Variable> .
+
+:z rdf:type <http://www.w3.org/2003/11/swrl#Variable> .
+
+:year rdf:type <http://www.w3.org/2003/11/swrl#Variable> .
+
+:w rdf:type <http://www.w3.org/2003/11/swrl#Variable> .
+
+:r rdf:type <http://www.w3.org/2003/11/swrl#Variable> .
+
+[ <http://swrl.stanford.edu/ontologies/3.3/swrla.owl#isRuleEnabled> "true"^^xsd:boolean ;
+   rdfs:comment "Classifica come Protagonista Potente tutti i protagonisti che possiedono un Artefatto di Potere" ;
+   rdfs:label "InferisciProtagonistaPotente" ;
+   rdf:type <http://www.w3.org/2003/11/swrl#Imp> ;
+   <http://www.w3.org/2003/11/swrl#body> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                           rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                       <http://www.w3.org/2003/11/swrl#classPredicate> :Protagonist ;
+                                                       <http://www.w3.org/2003/11/swrl#argument1> :p
+                                                     ] ;
+                                           rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                      rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#IndividualPropertyAtom> ;
+                                                                  <http://www.w3.org/2003/11/swrl#propertyPredicate> :possesses ;
+                                                                  <http://www.w3.org/2003/11/swrl#argument1> :p ;
+                                                                  <http://www.w3.org/2003/11/swrl#argument2> :artifact
+                                                                ] ;
+                                                      rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                                 rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                                             <http://www.w3.org/2003/11/swrl#classPredicate> <http://www.co-ode.org/ontologies/ont.owl#PowerArtifact> ;
+                                                                             <http://www.w3.org/2003/11/swrl#argument1> :artifact
+                                                                           ] ;
+                                                                 rdf:rest rdf:nil
+                                                               ]
+                                                    ]
+                                         ] ;
+   <http://www.w3.org/2003/11/swrl#head> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                           rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                       <http://www.w3.org/2003/11/swrl#classPredicate> <http://www.co-ode.org/ontologies/ont.owl#PowerfulProtagonist> ;
+                                                       <http://www.w3.org/2003/11/swrl#argument1> :p
+                                                     ] ;
+                                           rdf:rest rdf:nil
+                                         ]
+ ] .
+
+[ <http://swrl.stanford.edu/ontologies/3.3/swrla.owl#isRuleEnabled> "true"^^xsd:boolean ;
+   rdfs:comment "Inferisce una relazione di alleanza indiretta tra due personaggi se esiste un alleato comune" ;
+   rdfs:label "InferisciAlleanzaIndiretta" ;
+   rdf:type <http://www.w3.org/2003/11/swrl#Imp> ;
+   <http://www.w3.org/2003/11/swrl#body> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                           rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                       <http://www.w3.org/2003/11/swrl#classPredicate> :Character ;
+                                                       <http://www.w3.org/2003/11/swrl#argument1> :x
+                                                     ] ;
+                                           rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                      rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                                  <http://www.w3.org/2003/11/swrl#classPredicate> :Character ;
+                                                                  <http://www.w3.org/2003/11/swrl#argument1> :y
+                                                                ] ;
+                                                      rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                                 rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                                             <http://www.w3.org/2003/11/swrl#classPredicate> :Character ;
+                                                                             <http://www.w3.org/2003/11/swrl#argument1> :z
+                                                                           ] ;
+                                                                 rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                                            rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#IndividualPropertyAtom> ;
+                                                                                        <http://www.w3.org/2003/11/swrl#propertyPredicate> :alliedWith ;
+                                                                                        <http://www.w3.org/2003/11/swrl#argument1> :x ;
+                                                                                        <http://www.w3.org/2003/11/swrl#argument2> :y
+                                                                                      ] ;
+                                                                            rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                                                       rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#IndividualPropertyAtom> ;
+                                                                                                   <http://www.w3.org/2003/11/swrl#propertyPredicate> :alliedWith ;
+                                                                                                   <http://www.w3.org/2003/11/swrl#argument1> :y ;
+                                                                                                   <http://www.w3.org/2003/11/swrl#argument2> :z
+                                                                                                 ] ;
+                                                                                       rdf:rest rdf:nil
+                                                                                     ]
+                                                                          ]
+                                                               ]
+                                                    ]
+                                         ] ;
+   <http://www.w3.org/2003/11/swrl#head> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                           rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#IndividualPropertyAtom> ;
+                                                       <http://www.w3.org/2003/11/swrl#propertyPredicate> <http://www.co-ode.org/ontologies/ont.owl#IndirectlyAllyWith> ;
+                                                       <http://www.w3.org/2003/11/swrl#argument1> :x ;
+                                                       <http://www.w3.org/2003/11/swrl#argument2> :z
+                                                     ] ;
+                                           rdf:rest rdf:nil
+                                         ]
+ ] .
+
+[ <http://swrl.stanford.edu/ontologies/3.3/swrla.owl#isRuleEnabled> "true"^^xsd:boolean ;
+   rdfs:comment "Classifica come Personaggio Antico tutti i personaggi nati prima del 1900" ;
+   rdfs:label "InferisciPersonaggioAntico" ;
+   rdf:type <http://www.w3.org/2003/11/swrl#Imp> ;
+   <http://www.w3.org/2003/11/swrl#body> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                           rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                       <http://www.w3.org/2003/11/swrl#classPredicate> :Character ;
+                                                       <http://www.w3.org/2003/11/swrl#argument1> :x
+                                                     ] ;
+                                           rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                      rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#DatavaluedPropertyAtom> ;
+                                                                  <http://www.w3.org/2003/11/swrl#propertyPredicate> :birthYear ;
+                                                                  <http://www.w3.org/2003/11/swrl#argument1> :x ;
+                                                                  <http://www.w3.org/2003/11/swrl#argument2> :year
+                                                                ] ;
+                                                      rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                                 rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#BuiltinAtom> ;
+                                                                             <http://www.w3.org/2003/11/swrl#builtin> <http://www.w3.org/2003/11/swrlb#lessThan> ;
+                                                                             <http://www.w3.org/2003/11/swrl#arguments> [ rdf:type rdf:List ;
+                                                                                                                          rdf:first :year ;
+                                                                                                                          rdf:rest [ rdf:type rdf:List ;
+                                                                                                                                     rdf:first 1900 ;
+                                                                                                                                     rdf:rest rdf:nil
+                                                                                                                                   ]
+                                                                                                                        ]
+                                                                           ] ;
+                                                                 rdf:rest rdf:nil
+                                                               ]
+                                                    ]
+                                         ] ;
+   <http://www.w3.org/2003/11/swrl#head> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                           rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                       <http://www.w3.org/2003/11/swrl#classPredicate> <http://www.co-ode.org/ontologies/ont.owl#AncientCharacter> ;
+                                                       <http://www.w3.org/2003/11/swrl#argument1> :x
+                                                     ] ;
+                                           rdf:rest rdf:nil
+                                         ]
+ ] .
+
+[ <http://swrl.stanford.edu/ontologies/3.3/swrla.owl#isRuleEnabled> "true"^^xsd:boolean ;
+   rdfs:comment "Classifica come Opera Moderna tutte le opere narrative pubblicate dopo il 2000" ;
+   rdfs:label "InferisciOperaModerna" ;
+   rdf:type <http://www.w3.org/2003/11/swrl#Imp> ;
+   <http://www.w3.org/2003/11/swrl#body> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                           rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                       <http://www.w3.org/2003/11/swrl#classPredicate> :NarrativeWork ;
+                                                       <http://www.w3.org/2003/11/swrl#argument1> :w
+                                                     ] ;
+                                           rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                      rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#DatavaluedPropertyAtom> ;
+                                                                  <http://www.w3.org/2003/11/swrl#propertyPredicate> :publicationYear ;
+                                                                  <http://www.w3.org/2003/11/swrl#argument1> :w ;
+                                                                  <http://www.w3.org/2003/11/swrl#argument2> :year
+                                                                ] ;
+                                                      rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                                 rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#BuiltinAtom> ;
+                                                                             <http://www.w3.org/2003/11/swrl#builtin> <http://www.w3.org/2003/11/swrlb#greaterThan> ;
+                                                                             <http://www.w3.org/2003/11/swrl#arguments> [ rdf:type rdf:List ;
+                                                                                                                          rdf:first :year ;
+                                                                                                                          rdf:rest [ rdf:type rdf:List ;
+                                                                                                                                     rdf:first 2000 ;
+                                                                                                                                     rdf:rest rdf:nil
+                                                                                                                                   ]
+                                                                                                                        ]
+                                                                           ] ;
+                                                                 rdf:rest rdf:nil
+                                                               ]
+                                                    ]
+                                         ] ;
+   <http://www.w3.org/2003/11/swrl#head> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                           rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                       <http://www.w3.org/2003/11/swrl#classPredicate> <http://www.co-ode.org/ontologies/ont.owl#ModernWork> ;
+                                                       <http://www.w3.org/2003/11/swrl#argument1> :w
+                                                     ] ;
+                                           rdf:rest rdf:nil
+                                         ]
+ ] .
+
+[ <http://swrl.stanford.edu/ontologies/3.3/swrla.owl#isRuleEnabled> "true"^^xsd:boolean ;
+   rdfs:comment "Classifica come Opera Maggiore tutte le opere narrative con valutazione superiore a 9.0" ;
+   rdfs:label "InferisciOperaMaggiore" ;
+   rdf:type <http://www.w3.org/2003/11/swrl#Imp> ;
+   <http://www.w3.org/2003/11/swrl#body> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                           rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                       <http://www.w3.org/2003/11/swrl#classPredicate> :NarrativeWork ;
+                                                       <http://www.w3.org/2003/11/swrl#argument1> :w
+                                                     ] ;
+                                           rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                      rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#DatavaluedPropertyAtom> ;
+                                                                  <http://www.w3.org/2003/11/swrl#propertyPredicate> :rating ;
+                                                                  <http://www.w3.org/2003/11/swrl#argument1> :w ;
+                                                                  <http://www.w3.org/2003/11/swrl#argument2> :r
+                                                                ] ;
+                                                      rdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                                                 rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#BuiltinAtom> ;
+                                                                             <http://www.w3.org/2003/11/swrl#builtin> <http://www.w3.org/2003/11/swrlb#greaterThan> ;
+                                                                             <http://www.w3.org/2003/11/swrl#arguments> [ rdf:type rdf:List ;
+                                                                                                                          rdf:first :r ;
+                                                                                                                          rdf:rest [ rdf:type rdf:List ;
+                                                                                                                                     rdf:first 9.0 ;
+                                                                                                                                     rdf:rest rdf:nil
+                                                                                                                                   ]
+                                                                                                                        ]
+                                                                           ] ;
+                                                                 rdf:rest rdf:nil
+                                                               ]
+                                                    ]
+                                         ] ;
+   <http://www.w3.org/2003/11/swrl#head> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;
+                                           rdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;
+                                                       <http://www.w3.org/2003/11/swrl#classPredicate> <http://www.co-ode.org/ontologies/ont.owl#HighlyRatedWork> ;
+                                                       <http://www.w3.org/2003/11/swrl#argument1> :w
+                                                     ] ;
+                                           rdf:rest rdf:nil
+                                         ]
+ ] .
+
+###  Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi
