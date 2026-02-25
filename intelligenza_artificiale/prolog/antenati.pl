@@ -28,3 +28,19 @@ genitore(umberto,andrea).
 genitore(umberto,anna).
 genitore(allegraCaracciolo,andrea).
 genitore(allegraCaracciolo,anna).
+
+nonno(X,Y) :- genitore(X,Z), genitore(Z,Y).
+
+antenato(X,Y) :- antenato(X,Z), genitore(Z,Y).
+
+fratelli_unilaterali(X,Y):-
+    X==Y,
+    genitore(GenComune,X),
+    genitore(GenComune,Y),
+    genitore(GenX,X),
+    GenX==GenComune,
+    genitore(GenY,Y),
+    genitore(GenY,Y),
+    GenY==GenComune,
+    GenY==GenX,
+    X==Y.
