@@ -56,8 +56,12 @@ PIPELINE:
 BINARY_RULES = {
     ('NP',  'VP'):   ['S'],
     ('Det', 'N'):    ['NP'],
-    ('V',   'NP'):   ['VP'],
+    ('Num', 'N'):    ['NP'],       # NP → Num N  ("novecento anni")
+    ('NP',  'PP'):   ['NP'],       # NP → NP PP  ("novecento anni di età")
+    ('V',   'NP'):   ['VP', 'VP1'],# VP → V NP, VP1 → V NP
     ('V',   'PP'):   ['VP'],
+    ('V',   'Adj'):  ['VP'],       # VP → V Adj  (copulativo: "siamo illuminati")
+    ('VP1', 'Adv'):  ['VP'],       # VP → VP1 Adv  ("hai amici lì")
     ('Prep','NP'):   ['PP'],
 }
 
@@ -102,6 +106,24 @@ LEXICON = {
     'con':     ['Prep'],
     'su':      ['Prep'],
     'per':     ['Prep'],
+    # --- parole delle frasi d'esame ---
+    # pronomi (fungono direttamente da NP)
+    'Tu':          ['NP'],
+    'Noi':         ['NP'],
+    # verbi
+    'hai':         ['V'],
+    'avrai':       ['V'],
+    'siamo':       ['V'],
+    # nomi
+    'amici':       ['N', 'NP'],
+    'anni':        ['N'],
+    'età':         ['N', 'NP'],
+    # numerale
+    'novecento':   ['Num'],
+    # aggettivo (predicativo)
+    'illuminati':  ['Adj'],
+    # avverbio
+    'lì':          ['Adv'],
 }
 
 # ===========================================================
@@ -307,16 +329,30 @@ def trasforma_in_yoda(nodo):
         sogg = nodo.children[0]   # NP (soggetto)
         vp   = nodo.children[1]   # VP
 
-        # VP → V Complemento (NP o PP)
         if vp.label == 'VP' and len(vp.children) == 2:
-            verbo = vp.children[0]        # V
-            compl = vp.children[1]        # NP o PP
+            child0 = vp.children[0]
+            child1 = vp.children[1]
 
-            # Nuovo ordine Yoda: Complemento → Soggetto → Verbo
-            nodo.label = 'S_yoda'
-            nodo.children = [compl, sogg, verbo]
+            # Caso 1: VP → V NP/PP/Adj (standard e copulativo)
+            # "mangia la mela", "siamo illuminati"
+            if child0.label == 'V' and child1.label in ('NP', 'PP', 'Adj'):
+                verbo = child0
+                compl = child1
+                nodo.label = 'S_yoda'
+                nodo.children = [compl, sogg, verbo]
 
-        # VP → V solo (verbo intransitivo): V NP → NP V
+            # Caso 2: VP → VP1 Adv ("hai amici lì")
+            # VP1 → V NP: il complemento NP va in testa, Adv resta in coda
+            elif child0.label == 'VP1' and child1.label == 'Adv':
+                vp1 = child0
+                adv = child1
+                if len(vp1.children) == 2 and vp1.children[0].label == 'V':
+                    verbo = vp1.children[0]
+                    compl = vp1.children[1]
+                    nodo.label = 'S_yoda'
+                    nodo.children = [compl, sogg, verbo, adv]
+
+        # VP → V solo (verbo intransitivo)
         elif vp.label == 'VP' and len(vp.children) == 1:
             verbo = vp.children[0]
             nodo.label = 'S_yoda'
@@ -384,6 +420,14 @@ def converti_in_yoda(frase_stringa):
     # Fase 3: Raccolta delle foglie
     print("\n[Fase 3] Raccolta foglie (frase Yoda)...")
     foglie = raccogli_foglie(albero_yoda)
+
+    # Post-processing: maiuscole/minuscole stile frase
+    # I nomi propri (es. Mario) restano maiuscoli, il resto diventa minuscolo,
+    # poi si capitalizza la prima parola della frase Yoda.
+    nomi_propri = {w for w, tags in LEXICON.items() if 'N' in tags and 'NP' in tags and w[0].isupper()}
+    foglie = [w if w in nomi_propri else w.lower() for w in foglie]
+    if foglie:
+        foglie[0] = foglie[0].capitalize()
     frase_yoda = ' '.join(foglie)
 
     print(f"\n  OUTPUT: {frase_yoda}")
@@ -398,6 +442,14 @@ def converti_in_yoda(frase_stringa):
 
 if __name__ == '__main__':
 
+    # --- Frasi richieste dall'esame ---
+    frasi_esame = [
+        ("Tu hai amici lì",                    "Amici tu hai lì"),
+        ("Tu avrai novecento anni di età",      "Novecento anni di età tu avrai"),
+        ("Noi siamo illuminati",                "Illuminati noi siamo"),
+    ]
+
+    # --- Altre frasi di test ---
     frasi_di_esempio = [
         "Mario mangia la mela",
         "Luigi legge il libro",
@@ -413,9 +465,18 @@ if __name__ == '__main__':
     print("\nOrdine originale:  SVO (Soggetto Verbo Oggetto)")
     print("Ordine Yoda:       XSV (Oggetto Soggetto Verbo)")
 
+    print("\n" + "-"*55)
+    print("  FRASI D'ESAME")
+    print("-"*55)
+    for frase, atteso in frasi_esame:
+        risultato = converti_in_yoda(frase)
+        if risultato == atteso:
+            print(f"  ✓ CORRETTO (atteso: '{atteso}')")
+        else:
+            print(f"  ✗ ERRORE: atteso '{atteso}', ottenuto '{risultato}'")
+
+    print("\n" + "-"*55)
+    print("  FRASI DI TEST AGGIUNTIVE")
+    print("-"*55)
     for frase in frasi_di_esempio:
         converti_in_yoda(frase)
-
-    # Test di frase non riconoscibile
-    print("\n--- Test con frase fuori dalla grammatica ---")
-    converti_in_yoda("il computer elabora i dati")
