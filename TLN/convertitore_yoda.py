@@ -462,7 +462,7 @@ if __name__ == '__main__':
     print("\n" + "="*55)
     print("  CONVERTITORE ITALIANO → ITALIANO-YODA")
     print("="*55)
-    print("\nOrdine originale:  SVO (Soggetto Verbo Oggetto)")
+    print("\nOrdine originale:  SVX (Soggetto Verbo Oggetto)")
     print("Ordine Yoda:       XSV (Oggetto Soggetto Verbo)")
 
     print("\n" + "-"*55)
