@@ -1,0 +1,34 @@
+Parte 1 — Conceptual Similarity con WordNet
+Il task di conceptual similarity consiste nel dare un punteggio numerico che misuri quanto due termini siano semanticamente vicini (es. car e bus potrebbero avere similarity 0.8 su scala [0,1]).
+Per farlo si sfrutta la struttura ad albero di WordNet. Vengono presentate tre misure:
+Wu & Palmer
+La formula è 2 * depth(LCS) / (depth(s1) + depth(s2)). L'LCS (Lowest Common Subsumer) è il primo antenato comune tra i due synset. Più l'antenato comune è profondo e specifico nell'albero, più i due concetti sono simili.
+Shortest Path
+simpath(s1, s2) = 2 * depthMax - len(s1, s2). Si calcola il cammino più corto tra i due synset nell'albero di WordNet. Più sono vicini nel grafo, più sono simili. Il valore va da 0 a 2 * depthMax.
+Leakcock & Chodorow
+simLC(s1, s2) = -log(len(s1,s2) / 2*depthMax). Usa il logaritmo del percorso normalizzato. Si aggiunge 1 a numeratore e denominatore per evitare log(0).
+Attenzione: termini vs sensi. L'input è composto da coppie di termini (parole ambigue), ma le formule lavorano su sensi. La soluzione è prendere la similarity massima tra tutte le coppie di sensi possibili dei due termini.
+Dataset usato: WordSim353 — 353 coppie di termini con score umano [0,10], usato come benchmark internazionale. Per la valutazione si calcolano correlazione di Pearson e correlazione di Spearman tra i propri risultati e quelli annotati.
+
+Parte 2 — Word Sense Disambiguation (WSD)
+La WSD è il problema di identificare quale significato di una parola polisemica viene usato in un dato contesto (es. bass = pesce oppure strumento musicale?).
+Si divide in due varianti principali: lexical sample task (poche parole target pre-selezionate) e all-words task (tutte le parole di un testo).
+Feature extraction: per disambiguare si estraggono feature da una finestra di parole intorno alla parola target, dopo POS tagging e lemmatizzazione. Le feature si dividono in:
+
+Collocational: parole in posizioni specifiche (es. la parola 2 posizioni a sinistra)
+Bag-of-words: presenza/assenza di parole nel contesto, senza considerare l'ordine
+
+Algoritmo di Lesk: il più famoso approccio basato su dizionario. Per ogni senso della parola target, confronta le parole della sua signature (gloss + esempi da WordNet) con il contesto della frase. Sceglie il senso con il massimo overlap.
+Corpus Lesk: variante migliorata. Espande la signature con dati da corpora annotati (SemCor) e pesa le parole in overlap con IDF (parole rare contano di più di parole comuni come "the", "of").
+Gemini-enhanced Lesk (opzionale): si usa un LLM (Gemini, Mistral, ecc.) per generare frasi di esempio aggiuntive per ogni senso, arricchendo ulteriormente la signature.
+Dataset di test: SemCor — corpus in inglese con testi annotati manualmente con i synset di WordNet (352 testi dal Brown corpus, disponibile anche via NLTK).
+
+Parte 3 — Word in Context (WiC)
+Task di classificazione binaria: data una parola target w e due frasi che la contengono, bisogna dire se w ha lo stesso significato in entrambe le frasi (T/F).
+Il file di input è tab-separato: parola | PoS | indici | frase1 | frase2, e il file gold contiene T o F.
+L'approccio suggerito è disambiguare la parola in entrambi i contesti (con Lesk, eventualmente potenziato) e vedere se il senso assegnato coincide.
+
+Le consegne in sintesi
+Hai due esercitazioni:
+Esercitazione similarity — Implementare le tre misure (Wu&Palmer, Shortest Path, Leakcock&Chodorow) sul dataset WordSim353 e calcolare la correlazione con i punteggi umani.
+Esercitazione WSD — Implementare l'algoritmo di Lesk (da zero, non usare NLTK direttamente), estrarre 50 frasi da SemCor, disambiguare un sostantivo per frase e calcolare l'accuratezza. Poi ripetere 10 volte con selezione random e restituire la media.
