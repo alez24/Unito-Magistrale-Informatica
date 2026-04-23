@@ -436,47 +436,61 @@ def converti_in_yoda(frase_stringa):
     return frase_yoda
 
 
+
 # ===========================================================
 # SEZIONE 6 — ESEMPI E TEST
 # ===========================================================
 
 if __name__ == '__main__':
+    # 1. Inizializza il parser
+    parser = argparse.ArgumentParser(
+        description="Convertitore Italiano → Italiano-Yoda",
+        epilog="Esempio d'uso: python yoda.py 'Tu hai amici lì'"
+    )
+    
+    # 2. Aggiungi l'argomento per la frase
+    # nargs='?' significa che l'argomento è opzionale
+    parser.add_argument(
+        "frase", 
+        type=str, 
+        nargs='?', 
+        help="La frase in italiano da convertire"
+    )
+    
+    # 3. Aggiungi un flag per eseguire i test integrati
+    parser.add_argument(
+        "--test", 
+        action="store_true", 
+        help="Esegue le frasi d'esame e i test predefiniti"
+    )
 
-    # --- Frasi richieste dall'esame ---
-    frasi_esame = [
-        ("Tu hai amici lì",                    "Amici tu hai lì"),
-        ("Tu avrai novecento anni di età",      "Novecento anni di età tu avrai"),
-        ("Noi siamo illuminati",                "Illuminati noi siamo"),
-    ]
-
-    # --- Altre frasi di test ---
-    frasi_di_esempio = [
-        "Mario mangia la mela",
-        "Luigi legge il libro",
-        "Maria vede il gatto",
-        "il bambino prende il pane",
-        "la donna ama il cane",
-        "Mario saluta Luigi",
-    ]
+    # 4. Leggi gli argomenti da terminale
+    args = parser.parse_args()
 
     print("\n" + "="*55)
     print("  CONVERTITORE ITALIANO → ITALIANO-YODA")
     print("="*55)
-    print("\nOrdine originale:  SVX (Soggetto Verbo Oggetto)")
-    print("Ordine Yoda:       XSV (Oggetto Soggetto Verbo)")
 
-    print("\n" + "-"*55)
-    print("  FRASI D'ESAME")
-    print("-"*55)
-    for frase, atteso in frasi_esame:
-        risultato = converti_in_yoda(frase)
-        if risultato == atteso:
-            print(f"  ✓ CORRETTO (atteso: '{atteso}')")
-        else:
-            print(f"  ✗ ERRORE: atteso '{atteso}', ottenuto '{risultato}'")
-
-    print("\n" + "-"*55)
-    print("  FRASI DI TEST AGGIUNTIVE")
-    print("-"*55)
-    for frase in frasi_di_esempio:
-        converti_in_yoda(frase)
+    # LOGICA DI ESECUZIONE
+    if args.test:
+        #--test
+        frasi_esame = [
+            ("Tu hai amici lì",                    "Amici tu hai lì"),
+            ("Tu avrai novecento anni di età",      "Novecento anni di età tu avrai"),
+            ("Noi siamo illuminati",                "Illuminati noi siamo"),
+        ]
+        print("\n--- ESECUZIONE TEST D'ESAME ---")
+        for frase, atteso in frasi_esame:
+            risultato = converti_in_yoda(frase)
+            if risultato == atteso:
+                print(f"  ✓ CORRETTO (atteso: '{atteso}')")
+            else:
+                print(f"  ✗ ERRORE: atteso '{atteso}', ottenuto '{risultato}'")
+                
+    elif args.frase:
+        # Se l'utente ha passato una frase da terminale
+        converti_in_yoda(args.frase)
+        
+    else:
+        # Se non ha passato né una frase né il flag --test, mostriamo l'help
+        parser.print_help()
