@@ -87,8 +87,7 @@ LEXICON = {
     'mela':    ['N'], 'libro':   ['N'], 'gatto':   ['N'], 'cane':    ['N'],
     'uomo':    ['N'], 'donna':   ['N'], 'bambino': ['N'], 'studente':['N'],
     'pane':    ['N'], 'acqua':   ['N'], 'amici':   ['N', 'NP'], 'anni':  ['N'],
-    'età':     ['N', 'NP'],
-    # nuove aggiunte
+    'età':     ['N', 'NP'],              'uomo':   ['N', 'NP'],
     'spada':   ['N'], 'forza':   ['N'], 'maestro': ['N'], 'allievo': ['N'],
     'casa':    ['N'], 'macchina':['N'], 'strada':  ['N'], 'albero':  ['N'],
     'sole':    ['N'], 'luna':    ['N'], 'cielo':   ['N'], 'terra':   ['N'],
@@ -100,7 +99,6 @@ LEXICON = {
     'mangia':  ['V'], 'legge':   ['V'], 'vede':    ['V'], 'prende':  ['V'],
     'porta':   ['V'], 'ama':     ['V'], 'saluta':  ['V'], 'hai':     ['V'],
     'avrai':   ['V'], 'siamo':   ['V'],
-    # nuove aggiunte (presente, passato, futuro, copule)
     'usa':     ['V'], 'sente':   ['V'], 'scrive':  ['V'], 'beve':    ['V'],
     'dorme':   ['V'], 'corre':   ['V'], 'pensa':   ['V'], 'crede':   ['V'],
     'conosce': ['V'], 'trova':   ['V'], 'cerca':   ['V'], 'è':       ['V'],
@@ -123,8 +121,9 @@ LEXICON = {
     'saggio':      ['Adj'], 'giovane':     ['Adj'], 'vecchio':     ['Adj'],
     'forte':       ['Adj'], 'debole':      ['Adj'], 'bello':       ['Adj'],
     'brutto':      ['Adj'], 'grande':      ['Adj'], 'piccolo':     ['Adj'],
-    'rosso':       ['Adj'], 'nero':        ['Adj'], 'bianco':      ['Adj'],
+    'rosso':       ['Adj'], 'nero':        ['Adj','N'], 'bianco':      ['Adj'],
     'buono':       ['Adj'], 'cattivo':     ['Adj'], 'luminoso':    ['Adj'],
+   
 
     # --- AVVERBI (Adv) ---
     'lì':      ['Adv'], 'qui':     ['Adv'], 'ora':     ['Adv'],
