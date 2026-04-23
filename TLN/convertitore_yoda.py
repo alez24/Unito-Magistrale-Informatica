@@ -1,58 +1,14 @@
 """
 =============================================================
-  CONVERTITORE ITALIANO → ITALIANO-YODA (IT-YO)
-=============================================================
-
-CONCETTI CHIAVE:
-  - Italiano (SVO): "Mario mangia la mela"
-                     S      V      O
-  - Italiano-Yoda (XSV): "La mela Mario mangia"
-                           O      S      V
-
-PIPELINE:
-  1. Grammatica CFG in Forma Normale di Chomsky (CNF)
-  2. Parsing con algoritmo CKY → albero di derivazione
-  3. Trasformazione dell'albero: SVX → XSV
-  4. Stampa delle foglie → frase Yoda
-
+  CONVERTITORE LESSICALE ITALIANO → YODA (IT-YO)
 =============================================================
 """
 import argparse
+
 # ===========================================================
-# SEZIONE 1 — GRAMMATICA CFG IN CNF
+# GRAMMATICA CFG IN CNF
 # ===========================================================
-#
-# Una grammatica Context-Free (CFG) descrive la struttura
-# sintattica di frasi tramite regole di riscrittura.
-#
-# La FORMA NORMALE DI CHOMSKY (CNF) richiede che ogni regola sia:
-#   A → B C    (esattamente 2 non-terminali)
-#   A → 'a'    (esattamente 1 terminale)
-#
-# Perché CNF? Perché l'algoritmo CKY funziona SOLO con CNF.
-#
-# STRUTTURA DELLA FRASE ITALIANA (SVO):
-#
-#   S  → NP VP          (Frase = SN + SV)
-#   NP → Det N          (SN = articolo + nome)
-#   NP → N              (SN = solo nome, es. "Mario")
-#   VP → V NP           (SV = verbo + oggetto diretto)
-#   VP → V PP           (SV = verbo + complemento preposizionale)
-#   VP → V              (SV = solo verbo)
-#   PP → Prep NP        (SP = preposizione + SN)
-#
-# LESSICO (terminali):
-#   Det  → 'il' | 'la' | 'lo' | 'un' | 'una' | 'i' | 'le'
-#   N    → 'Mario' | 'mela' | 'gatto' | 'libro' | ...
-#   V    → 'mangia' | 'legge' | 'vede' | 'dà' | ...
-#   Prep → 'a' | 'di' | 'con' | 'su' | 'per'
 
-
-# ---- Strutture dati per la grammatica ----
-
-# Regole BINARIE: A → B C
-# Formato: dizionario {(B, C): [A, A2, ...]}
-# (più simboli possono derivare dalla stessa coppia)
 BINARY_RULES = {
     ('NP',  'VP'):   ['S'],
     ('Det', 'N'):    ['NP'],
@@ -65,17 +21,15 @@ BINARY_RULES = {
     ('Prep','NP'):   ['PP'],
 }
 
-# Regole UNARIE: A → a  (solo terminali)
-# Formato: dizionario {parola: [categoria1, categoria2, ...]}
 LEXICON = {
-    # --- ARTICOLI / DETERMINANTI ---
+    # ARTICOLI / DETERMINANTI 
     'il':      ['Det'], 'la':      ['Det'], 'lo':      ['Det'],
     'i':       ['Det'], 'le':      ['Det'], 'gli':     ['Det'],
     'un':      ['Det'], 'una':     ['Det'], 'uno':     ['Det'], 
     # dimostrativi (usati come determinanti)
     'questo':  ['Det'], 'questa':  ['Det'], 'quello':  ['Det'], 'quella':  ['Det'],
 
-    # --- NOMI PROPRI E PRONOMI (NP diretti) ---
+    # NOMI PROPRI E PRONOMI (NP diretti) 
     'Mario':   ['N', 'NP'], 'Luigi':   ['N', 'NP'], 'Maria':   ['N', 'NP'],
     'Giulia':  ['N', 'NP'], 'Luca':    ['N', 'NP'], 'Roma':    ['N', 'NP'],
     'Yoda':    ['N', 'NP'], 'Luke':    ['N', 'NP'], 'Vader':   ['N', 'NP'],
@@ -83,7 +37,7 @@ LEXICON = {
     'Io':      ['NP'], 'Tu':      ['NP'], 'Lui':     ['NP'], 'Lei':     ['NP'],
     'Noi':     ['NP'], 'Voi':     ['NP'], 'Loro':    ['NP'], 'Egli':    ['NP'],
 
-    # --- NOMI COMUNI (N) ---
+    # NOMI COMUNI (N) 
     'mela':    ['N'], 'libro':   ['N'], 'gatto':   ['N'], 'cane':    ['N'],
     'uomo':    ['N'], 'donna':   ['N'], 'bambino': ['N'], 'studente':['N'],
     'pane':    ['N'], 'acqua':   ['N'], 'amici':   ['N', 'NP'], 'anni':  ['N'],
@@ -95,7 +49,7 @@ LEXICON = {
     'paura':   ['N'], 'rabbia':  ['N'], 'guerra':  ['N'], 'pace':    ['N'],
     'lato':    ['N'], 'cavaliere':['N'],
 
-    # --- VERBI (V) ---
+    # VERBI (V) 
     'mangia':  ['V'], 'legge':   ['V'], 'vede':    ['V'], 'prende':  ['V'],
     'porta':   ['V'], 'ama':     ['V'], 'saluta':  ['V'], 'hai':     ['V'],
     'avrai':   ['V'], 'siamo':   ['V'],
@@ -105,18 +59,18 @@ LEXICON = {
     'sono':    ['V'], 'era':     ['V'], 'sarà':    ['V'], 'teme':    ['V'],
     'vuole':   ['V'], 'può':     ['V'], 'deve':    ['V'], 'vince':   ['V'],
 
-    # --- PREPOSIZIONI (Prep) ---
+    # PREPOSIZIONI (Prep) 
     'a':       ['Prep'], 'di':      ['Prep'], 'con':     ['Prep'],
     'su':      ['Prep'], 'per':     ['Prep'], 'in':      ['Prep'],
     'da':      ['Prep'], 'tra':     ['Prep'], 'fra':     ['Prep'],
     'verso':   ['Prep'], 'contro':  ['Prep'],
 
-    # --- NUMERALI (Num) ---
+    #  NUMERALI (Num) 
     'uno':         ['Num'], 'due':         ['Num'], 'tre':         ['Num'],
     'quattro':     ['Num'], 'dieci':       ['Num'], 'cento':       ['Num'],
     'novecento':   ['Num'], 'mille':       ['Num'],
 
-    # --- AGGETTIVI (Adj) ---
+    # AGGETTIVI (Adj)
     'illuminati':  ['Adj'], 'potente':     ['Adj'], 'oscuro':      ['Adj'],
     'saggio':      ['Adj'], 'giovane':     ['Adj'], 'vecchio':     ['Adj'],
     'forte':       ['Adj'], 'debole':      ['Adj'], 'bello':       ['Adj'],
@@ -125,7 +79,7 @@ LEXICON = {
     'buono':       ['Adj'], 'cattivo':     ['Adj'], 'luminoso':    ['Adj'],
    
 
-    # --- AVVERBI (Adv) ---
+    # AVVERBI (Adv)
     'lì':      ['Adv'], 'qui':     ['Adv'], 'ora':     ['Adv'],
     'sempre':  ['Adv'], 'mai':     ['Adv'], 'bene':    ['Adv'],
     'male':    ['Adv'], 'molto':   ['Adv'], 'poco':    ['Adv'],
@@ -133,29 +87,8 @@ LEXICON = {
 }
 
 # ===========================================================
-# SEZIONE 2 — NODO DELL'ALBERO DI DERIVAZIONE
+# ALBERO DI DERIVAZIONE
 # ===========================================================
-#
-# L'albero di derivazione (parse tree) rappresenta la struttura
-# sintattica della frase.
-#
-# Esempio per "Mario mangia la mela":
-#
-#         S
-#        / \
-#       NP  VP
-#       |   / \
-#     Mario V  NP
-#           |  / \
-#        mangia Det N
-#               |   |
-#              la  mela
-#
-# Ogni nodo ha:
-#   - label:    il simbolo (es. 'S', 'NP', 'Mario')
-#   - children: lista di figli (vuota = foglia)
-#   - word:     la parola se è una foglia lessicale
-
 
 class Nodo:
     """Un nodo dell'albero di derivazione."""
@@ -186,30 +119,8 @@ class Nodo:
 
 
 # ===========================================================
-# SEZIONE 3 — ALGORITMO CKY (Cocke-Kasami-Younger)
+# ALGORITMO CKY 
 # ===========================================================
-#
-# CKY è un algoritmo di parsing bottom-up per grammatiche CNF.
-# Riempie una tabella triangolare T dove:
-#   T[i][j] = insieme dei simboli che derivano la sottostringa
-#              dalla parola i alla parola j (incluse).
-#
-# Per una frase di n parole, la tabella ha n×n celle.
-# La cella T[0][n-1] (in alto a destra nella tabella triangolare)
-# contiene i simboli che derivano l'intera frase.
-#
-# ESEMPIO con "Mario mangia la mela" (4 parole, indici 0..3):
-#
-#   i\j  0       1        2        3
-#    0   {NP}   {S}      {}       {S}     ← Mario mangia la mela
-#    1          {V,VP}   {}       {VP}    ← mangia la mela
-#    2                   {Det}    {NP}    ← la mela
-#    3                            {N}     ← mela
-#
-# Se 'S' ∈ T[0][3] → la frase è grammaticale!
-#
-# RICOSTRUZIONE: per ogni cella memorizziamo anche il "back pointer"
-# (come ci siamo arrivati) per ricostruire l'albero di derivazione.
 
 
 def cky_parse(sentence, binary_rules=BINARY_RULES, lexicon=LEXICON):
@@ -226,11 +137,6 @@ def cky_parse(sentence, binary_rules=BINARY_RULES, lexicon=LEXICON):
     # Memorizziamo il nodo già costruito per ricostruire l'albero.
     table = [[{} for _ in range(n)] for _ in range(n)]
 
-    # ----------------------------------------------------------
-    # PASSO 1: riempire la diagonale principale (celle [i][i])
-    # Ogni cella [i][i] contiene i simboli che derivano la sola
-    # parola words[i].
-    # ----------------------------------------------------------
     for i, word in enumerate(words):
         if word in lexicon:
             for pos_tag in lexicon[word]:
@@ -243,11 +149,7 @@ def cky_parse(sentence, binary_rules=BINARY_RULES, lexicon=LEXICON):
                 # vengono gestiti direttamente nel lessico, ma aggiungiamo anche
                 # la regola Det N → NP tramite le regole binarie sotto)
 
-    # ----------------------------------------------------------
-    # PASSO 2: riempire le celle [i][j] con j > i
-    # Per ogni lunghezza span (da 2 a n), per ogni posizione i,
-    # proviamo tutte le possibili suddivisioni k.
-    # ----------------------------------------------------------
+
     for span in range(2, n + 1):          # lunghezza della sottostringa
         for i in range(n - span + 1):     # inizio della sottostringa
             j = i + span - 1              # fine della sottostringa
@@ -266,9 +168,7 @@ def cky_parse(sentence, binary_rules=BINARY_RULES, lexicon=LEXICON):
                                     children=[node_B, node_C]
                                 )
 
-    # ----------------------------------------------------------
-    # RISULTATO: cerchiamo 'S' nella cella [0][n-1]
-    # ----------------------------------------------------------
+    # cerchiamo 'S' nella cella [0][n-1]
     if 'S' in table[0][n-1]:
         return table[0][n-1]['S']
     else:
@@ -276,50 +176,13 @@ def cky_parse(sentence, binary_rules=BINARY_RULES, lexicon=LEXICON):
 
 
 # ===========================================================
-# SEZIONE 4 — TRASFORMAZIONE DELL'ALBERO: SVX → XSV
+# TRASFORMAZIONE DELL'ALBERO: SVX → XSV
 # ===========================================================
-#
-# Obiettivo: riscrivere l'albero SVO in un albero XSV (Yoda).
-#
-# Regola di trasformazione:
-#   Un nodo S ha la struttura:    S → NP(sogg) VP
-#   Un nodo VP ha la struttura:   VP → V NP(ogg)  oppure  VP → V PP
-#
-# Trasformazione Yoda:
-#   Originale:  S → NP(sogg)  [VP → V  Complemento]
-#   Yoda:       S → Complemento  NP(sogg)  V
-#               ^^^^^^^^^^^^^^ il complemento sale in testa
-#
-# In termini di albero:
-#   Prima:     S
-#             / \
-#           NP   VP
-#           |   / \
-#         Mario V   NP
-#               |   / \
-#            mangia Det N
-#                   |   |
-#                  la  mela
-#
-#   Dopo:      S_yoda
-#             /   |   \
-#           NP   NP    V
-#          / \   |     |
-#        Det  N Mario mangia
-#         |   |
-#        la  mela
-#
-# Nota: ignoriamo l'ambiguità e usiamo il primo albero ottenuto.
-
 
 def trasforma_in_yoda(nodo):
     """
-    Trasforma ricorsivamente l'albero di derivazione italiano
-    in un albero Italiano-Yoda (ordine XSV).
-    
-    Regola principale: quando troviamo S → NP VP
-    con VP → V Comp (dove Comp è NP o PP),
-    riordiniamo in S_yoda → Comp NP V
+    Trasforma ricorsivamente l'albero di derivazione italiano in un albero Italiano-Yoda (ordine XSV).
+    Regola principale: quando troviamo S → NP VP con VP → V Comp (dove Comp è NP o PP), riordiniamo in S_yoda → Comp NP V
     """
 
     # Caso base: foglia → non c'è nulla da trasformare
@@ -368,15 +231,9 @@ def trasforma_in_yoda(nodo):
 
 
 # ===========================================================
-# SEZIONE 5 — STAMPA DELLE FOGLIE (visita DFS)
+# STAMPA DELLE FOGLIE INVERTITE
 # ===========================================================
-#
-# Una volta trasformato l'albero, la frase Yoda si ottiene
-# visitando le foglie da sinistra a destra (DFS in-order).
-#
-# Visita DFS (Depth-First Search, pre-order):
-#   - Se il nodo è una foglia → aggiungi la parola
-#   - Altrimenti → visita ricorsivamente i figli nell'ordine
+
 
 
 def raccogli_foglie(nodo):
@@ -405,7 +262,7 @@ def converti_in_yoda(frase_stringa):
     print(f"  INPUT:  {frase_stringa}")
     print(f"{'='*55}")
 
-    # Fase 1: Parsing CKY
+    # Parsing CKY
     print("\n[Fase 1] Parsing CKY...")
     albero = cky_parse(parole)
 
@@ -414,16 +271,16 @@ def converti_in_yoda(frase_stringa):
         print("  → Suggerimento: aggiungi le parole mancanti al lessico LEXICON.")
         return None
 
-    print("  ✓ Albero di derivazione trovato:")
+    print(" Albero di derivazione trovato:")
     albero.pretty_print(indent=2)
 
-    # Fase 2: Trasformazione SVX → XSV
+    # Trasformazione SVX → XSV
     print("\n[Fase 2] Trasformazione in ordine Yoda...")
     albero_yoda = trasforma_in_yoda(albero)
-    print("  ✓ Albero Yoda:")
+    print(" Albero Yoda:")
     albero_yoda.pretty_print(indent=2)
 
-    # Fase 3: Raccolta delle foglie
+    # Raccolta delle foglie
     print("\n[Fase 3] Raccolta foglie (frase Yoda)...")
     foglie = raccogli_foglie(albero_yoda)
 
@@ -444,17 +301,17 @@ def converti_in_yoda(frase_stringa):
 
 
 # ===========================================================
-# SEZIONE 6 — ESEMPI E TEST
+# TEST
 # ===========================================================
 
 if __name__ == '__main__':
-    # 1. Inizializza il parser
+    # Inizializzazione parser
     parser = argparse.ArgumentParser(
         description="Convertitore Italiano → Italiano-Yoda",
         epilog="Esempio d'uso: python yoda.py 'Tu hai amici lì'"
     )
     
-    # 2. Aggiungi l'argomento per la frase
+    # argomento per la frase
     # nargs='?' significa che l'argomento è opzionale
     parser.add_argument(
         "frase", 
@@ -463,23 +320,23 @@ if __name__ == '__main__':
         help="La frase in italiano da convertire"
     )
     
-    # 3. Aggiungi un flag per eseguire i test integrati
+    # Aggiunge flag --test per eseguire frasi preimpostate
     parser.add_argument(
         "--test", 
         action="store_true", 
         help="Esegue le frasi d'esame e i test predefiniti"
     )
 
-    # 4. Leggi gli argomenti da terminale
+    # Legge argomenti da terminale
     args = parser.parse_args()
 
     print("\n" + "="*55)
     print("  CONVERTITORE ITALIANO → ITALIANO-YODA")
     print("="*55)
 
-    # LOGICA DI ESECUZIONE
+    # logica di esecuzione
     if args.test:
-        #--test
+        #flag --test
         frasi_esame = [
             ("Tu hai amici lì",                    "Amici tu hai lì"),
             ("Tu avrai novecento anni di età",      "Novecento anni di età tu avrai"),
@@ -489,14 +346,14 @@ if __name__ == '__main__':
         for frase, atteso in frasi_esame:
             risultato = converti_in_yoda(frase)
             if risultato == atteso:
-                print(f"  ✓ CORRETTO (atteso: '{atteso}')")
+                print(f"  CORRETTO (atteso: '{atteso}')")
             else:
-                print(f"  ✗ ERRORE: atteso '{atteso}', ottenuto '{risultato}'")
+                print(f" ERRORE: atteso '{atteso}', ottenuto '{risultato}'")
                 
     elif args.frase:
-        # Se l'utente ha passato una frase da terminale
+        # frase da tastiera
         converti_in_yoda(args.frase)
         
     else:
-        # Se non ha passato né una frase né il flag --test, mostriamo l'help
+        # Se non ha passato né frase da tastiera né flag --test, mostra l'help
         parser.print_help()

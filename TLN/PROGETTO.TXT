@@ -1,2 +1,168 @@
-CIAO hola come stai?
-NEGRO
+"""
+=============================================================
+  CONVERTITORE ITALIANO → ITALIANO-YODA (IT-YO)
+=============================================================
+
+CONCETTI CHIAVE:
+  - Italiano (SVO): "Mario mangia la mela"
+                     S      V      O
+  - Italiano-Yoda (XSV): "La mela Mario mangia"
+                           O      S      V
+
+PIPELINE:
+  1. Grammatica CFG in Forma Normale di Chomsky (CNF)
+  2. Parsing con algoritmo CKY → albero di derivazione
+  3. Trasformazione dell'albero: SVX → XSV
+  4. Stampa delle foglie → frase Yoda
+
+=============================================================
+"""
+# ===========================================================
+# SEZIONE 1 — GRAMMATICA CFG IN CNF
+# ===========================================================
+#
+# Una grammatica Context-Free (CFG) descrive la struttura
+# sintattica di frasi tramite regole di riscrittura.
+#
+# La FORMA NORMALE DI CHOMSKY (CNF) richiede che ogni regola sia:
+#   A → B C    (esattamente 2 non-terminali)
+#   A → 'a'    (esattamente 1 terminale)
+#
+# Perché CNF? Perché l'algoritmo CKY funziona SOLO con CNF.
+#
+# STRUTTURA DELLA FRASE ITALIANA (SVO):
+#
+#   S  → NP VP          (Frase = SN + SV)
+#   NP → Det N          (SN = articolo + nome)
+#   NP → N              (SN = solo nome, es. "Mario")
+#   VP → V NP           (SV = verbo + oggetto diretto)
+#   VP → V PP           (SV = verbo + complemento preposizionale)
+#   VP → V              (SV = solo verbo)
+#   PP → Prep NP        (SP = preposizione + SN)
+#
+# LESSICO (terminali):
+#   Det  → 'il' | 'la' | 'lo' | 'un' | 'una' | 'i' | 'le'
+#   N    → 'Mario' | 'mela' | 'gatto' | 'libro' | ...
+#   V    → 'mangia' | 'legge' | 'vede' | 'dà' | ...
+#   Prep → 'a' | 'di' | 'con' | 'su' | 'per'
+
+
+# ---- Strutture dati per la grammatica ----
+
+# Regole BINARIE: A → B C
+# Formato: dizionario {(B, C): [A, A2, ...]}
+# (più simboli possono derivare dalla stessa coppia)
+# Regole UNARIE: A → a  (solo terminali)
+# Formato: dizionario {parola: [categoria1, categoria2, ...]}
+
+
+# ===========================================================
+# SEZIONE 2 — NODO DELL'ALBERO DI DERIVAZIONE
+# ===========================================================
+#
+# L'albero di derivazione (parse tree) rappresenta la struttura
+# sintattica della frase.
+#
+# Esempio per "Mario mangia la mela":
+#
+#         S
+#        / \
+#       NP  VP
+#       |   / \
+#     Mario V  NP
+#           |  / \
+#        mangia Det N
+#               |   |
+#              la  mela
+#
+# Ogni nodo ha:
+#   - label:    il simbolo (es. 'S', 'NP', 'Mario')
+#   - children: lista di figli (vuota = foglia)
+#   - word:     la parola se è una foglia lessicale
+
+# ===========================================================
+# SEZIONE 3 — ALGORITMO CKY (Cocke-Kasami-Younger)
+# ===========================================================
+#
+# CKY è un algoritmo di parsing bottom-up per grammatiche CNF.
+# Riempie una tabella triangolare T dove:
+#   T[i][j] = insieme dei simboli che derivano la sottostringa
+#              dalla parola i alla parola j (incluse).
+#
+# Per una frase di n parole, la tabella ha n×n celle.
+# La cella T[0][n-1] (in alto a destra nella tabella triangolare)
+# contiene i simboli che derivano l'intera frase.
+#
+# ESEMPIO con "Mario mangia la mela" (4 parole, indici 0..3):
+#
+#   i\j  0       1        2        3
+#    0   {NP}   {S}      {}       {S}     ← Mario mangia la mela
+#    1          {V,VP}   {}       {VP}    ← mangia la mela
+#    2                   {Det}    {NP}    ← la mela
+#    3                            {N}     ← mela
+#
+# Se 'S' ∈ T[0][3] → la frase è grammaticale!
+#
+# RICOSTRUZIONE: per ogni cella memorizziamo anche il "back pointer"
+# (come ci siamo arrivati) per ricostruire l'albero di derivazione.
+
+   # ----------------------------------------------------------
+    # PASSO 1: riempire la diagonale principale (celle [i][i])
+    # Ogni cella [i][i] contiene i simboli che derivano la sola
+    # parola words[i].
+    # ----------------------------------------------------------
+    # ----------------------------------------------------------
+    # PASSO 2: riempire le celle [i][j] con j > i
+    # Per ogni lunghezza span (da 2 a n), per ogni posizione i,
+    # proviamo tutte le possibili suddivisioni k.
+    # ----------------------------------------------------------
+
+    # ===========================================================
+# SEZIONE 4 — TRASFORMAZIONE DELL'ALBERO: SVX → XSV
+# ===========================================================
+#
+# Obiettivo: riscrivere l'albero SVO in un albero XSV (Yoda).
+#
+# Regola di trasformazione:
+#   Un nodo S ha la struttura:    S → NP(sogg) VP
+#   Un nodo VP ha la struttura:   VP → V NP(ogg)  oppure  VP → V PP
+#
+# Trasformazione Yoda:
+#   Originale:  S → NP(sogg)  [VP → V  Complemento]
+#   Yoda:       S → Complemento  NP(sogg)  V
+#               ^^^^^^^^^^^^^^ il complemento sale in testa
+#
+# In termini di albero:
+#   Prima:     S
+#             / \
+#           NP   VP
+#           |   / \
+#         Mario V   NP
+#               |   / \
+#            mangia Det N
+#                   |   |
+#                  la  mela
+#
+#   Dopo:      S_yoda
+#             /   |   \
+#           NP   NP    V
+#          / \   |     |
+#        Det  N Mario mangia
+#         |   |
+#        la  mela
+#
+# Nota: ignoriamo l'ambiguità e usiamo il primo albero ottenuto.
+# ===========================================================
+# SEZIONE 5 — STAMPA DELLE FOGLIE (visita DFS)
+# ===========================================================
+#
+# Una volta trasformato l'albero, la frase Yoda si ottiene
+# visitando le foglie da sinistra a destra (DFS in-order).
+#
+# Visita DFS (Depth-First Search, pre-order):
+#   - Se il nodo è una foglia → aggiungi la parola
+#   - Altrimenti → visita ricorsivamente i figli nell'ordine
+
+# ===========================================================
+# SEZIONE 6 — ESEMPI E TEST
+# ===========================================================
