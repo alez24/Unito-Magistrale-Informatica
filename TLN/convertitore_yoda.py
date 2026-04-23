@@ -17,7 +17,7 @@ PIPELINE:
 
 =============================================================
 """
-
+import argparse
 # ===========================================================
 # SEZIONE 1 — GRAMMATICA CFG IN CNF
 # ===========================================================
@@ -68,62 +68,69 @@ BINARY_RULES = {
 # Regole UNARIE: A → a  (solo terminali)
 # Formato: dizionario {parola: [categoria1, categoria2, ...]}
 LEXICON = {
-    # articoli determinativi
-    'il':      ['Det'],
-    'la':      ['Det'],
-    'lo':      ['Det'],
-    'i':       ['Det'],
-    'le':      ['Det'],
-    # articoli indeterminativi
-    'un':      ['Det'],
-    'una':     ['Det'],
-    # nomi propri (fungono da NP direttamente)
-    'Mario':   ['N', 'NP'],
-    'Luigi':   ['N', 'NP'],
-    'Maria':   ['N', 'NP'],
-    # nomi comuni
-    'mela':    ['N'],
-    'libro':   ['N'],
-    'gatto':   ['N'],
-    'cane':    ['N'],
-    'uomo':    ['N'],
-    'donna':   ['N'],
-    'bambino': ['N'],
-    'studente':['N'],
-    'pane':    ['N'],
-    'acqua':   ['N'],
-    # verbi
-    'mangia':  ['V'],
-    'legge':   ['V'],
-    'vede':    ['V'],
-    'prende':  ['V'],
-    'porta':   ['V'],
-    'ama':     ['V'],
-    'saluta':  ['V'],
-    # preposizioni
-    'a':       ['Prep'],
-    'di':      ['Prep'],
-    'con':     ['Prep'],
-    'su':      ['Prep'],
-    'per':     ['Prep'],
-    # --- parole delle frasi d'esame ---
-    # pronomi (fungono direttamente da NP)
-    'Tu':          ['NP'],
-    'Noi':         ['NP'],
-    # verbi
-    'hai':         ['V'],
-    'avrai':       ['V'],
-    'siamo':       ['V'],
-    # nomi
-    'amici':       ['N', 'NP'],
-    'anni':        ['N'],
-    'età':         ['N', 'NP'],
-    # numerale
-    'novecento':   ['Num'],
-    # aggettivo (predicativo)
-    'illuminati':  ['Adj'],
-    # avverbio
-    'lì':          ['Adv'],
+    # --- ARTICOLI / DETERMINANTI ---
+    'il':      ['Det'], 'la':      ['Det'], 'lo':      ['Det'],
+    'i':       ['Det'], 'le':      ['Det'], 'gli':     ['Det'],
+    'un':      ['Det'], 'una':     ['Det'], 'uno':     ['Det'], 
+    # dimostrativi (usati come determinanti)
+    'questo':  ['Det'], 'questa':  ['Det'], 'quello':  ['Det'], 'quella':  ['Det'],
+
+    # --- NOMI PROPRI E PRONOMI (NP diretti) ---
+    'Mario':   ['N', 'NP'], 'Luigi':   ['N', 'NP'], 'Maria':   ['N', 'NP'],
+    'Giulia':  ['N', 'NP'], 'Luca':    ['N', 'NP'], 'Roma':    ['N', 'NP'],
+    'Yoda':    ['N', 'NP'], 'Luke':    ['N', 'NP'], 'Vader':   ['N', 'NP'],
+    # pronomi
+    'Io':      ['NP'], 'Tu':      ['NP'], 'Lui':     ['NP'], 'Lei':     ['NP'],
+    'Noi':     ['NP'], 'Voi':     ['NP'], 'Loro':    ['NP'], 'Egli':    ['NP'],
+
+    # --- NOMI COMUNI (N) ---
+    'mela':    ['N'], 'libro':   ['N'], 'gatto':   ['N'], 'cane':    ['N'],
+    'uomo':    ['N'], 'donna':   ['N'], 'bambino': ['N'], 'studente':['N'],
+    'pane':    ['N'], 'acqua':   ['N'], 'amici':   ['N', 'NP'], 'anni':  ['N'],
+    'età':     ['N', 'NP'],
+    # nuove aggiunte
+    'spada':   ['N'], 'forza':   ['N'], 'maestro': ['N'], 'allievo': ['N'],
+    'casa':    ['N'], 'macchina':['N'], 'strada':  ['N'], 'albero':  ['N'],
+    'sole':    ['N'], 'luna':    ['N'], 'cielo':   ['N'], 'terra':   ['N'],
+    'ragazzo': ['N'], 'ragazza': ['N'], 'cibo':    ['N'], 'vino':    ['N'],
+    'paura':   ['N'], 'rabbia':  ['N'], 'guerra':  ['N'], 'pace':    ['N'],
+    'lato':    ['N'], 'cavaliere':['N'],
+
+    # --- VERBI (V) ---
+    'mangia':  ['V'], 'legge':   ['V'], 'vede':    ['V'], 'prende':  ['V'],
+    'porta':   ['V'], 'ama':     ['V'], 'saluta':  ['V'], 'hai':     ['V'],
+    'avrai':   ['V'], 'siamo':   ['V'],
+    # nuove aggiunte (presente, passato, futuro, copule)
+    'usa':     ['V'], 'sente':   ['V'], 'scrive':  ['V'], 'beve':    ['V'],
+    'dorme':   ['V'], 'corre':   ['V'], 'pensa':   ['V'], 'crede':   ['V'],
+    'conosce': ['V'], 'trova':   ['V'], 'cerca':   ['V'], 'è':       ['V'],
+    'sono':    ['V'], 'era':     ['V'], 'sarà':    ['V'], 'teme':    ['V'],
+    'vuole':   ['V'], 'può':     ['V'], 'deve':    ['V'], 'vince':   ['V'],
+
+    # --- PREPOSIZIONI (Prep) ---
+    'a':       ['Prep'], 'di':      ['Prep'], 'con':     ['Prep'],
+    'su':      ['Prep'], 'per':     ['Prep'], 'in':      ['Prep'],
+    'da':      ['Prep'], 'tra':     ['Prep'], 'fra':     ['Prep'],
+    'verso':   ['Prep'], 'contro':  ['Prep'],
+
+    # --- NUMERALI (Num) ---
+    'uno':         ['Num'], 'due':         ['Num'], 'tre':         ['Num'],
+    'quattro':     ['Num'], 'dieci':       ['Num'], 'cento':       ['Num'],
+    'novecento':   ['Num'], 'mille':       ['Num'],
+
+    # --- AGGETTIVI (Adj) ---
+    'illuminati':  ['Adj'], 'potente':     ['Adj'], 'oscuro':      ['Adj'],
+    'saggio':      ['Adj'], 'giovane':     ['Adj'], 'vecchio':     ['Adj'],
+    'forte':       ['Adj'], 'debole':      ['Adj'], 'bello':       ['Adj'],
+    'brutto':      ['Adj'], 'grande':      ['Adj'], 'piccolo':     ['Adj'],
+    'rosso':       ['Adj'], 'nero':        ['Adj'], 'bianco':      ['Adj'],
+    'buono':       ['Adj'], 'cattivo':     ['Adj'], 'luminoso':    ['Adj'],
+
+    # --- AVVERBI (Adv) ---
+    'lì':      ['Adv'], 'qui':     ['Adv'], 'ora':     ['Adv'],
+    'sempre':  ['Adv'], 'mai':     ['Adv'], 'bene':    ['Adv'],
+    'male':    ['Adv'], 'molto':   ['Adv'], 'poco':    ['Adv'],
+    'forse':   ['Adv'], 'oggi':    ['Adv'], 'domani':  ['Adv'],
 }
 
 # ===========================================================
