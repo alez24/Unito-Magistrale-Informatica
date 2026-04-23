@@ -259,29 +259,26 @@ def converti_in_yoda(frase_stringa):
     parole = frase_stringa.strip().split()
 
     print(f"\n{'='*55}")
-    print(f"  INPUT:  {frase_stringa}")
+    print(f" La tua frase:  {frase_stringa}")
     print(f"{'='*55}")
 
     # Parsing CKY
-    print("\n[Fase 1] Parsing CKY...")
     albero = cky_parse(parole)
 
     if albero is None:
-        print("  ✗ Parsing fallito: la frase non è riconosciuta dalla grammatica G1.")
-        print("  → Suggerimento: aggiungi le parole mancanti al lessico LEXICON.")
+        print(" Parsing fallito :( -> la frase non è riconosciuta dalla grammatica.")
         return None
 
-    print(" Albero di derivazione trovato:")
+    print("\nAlbero di derivazione:")
     albero.pretty_print(indent=2)
 
     # Trasformazione SVX → XSV
-    print("\n[Fase 2] Trasformazione in ordine Yoda...")
+    print("\nTrasformazione in ordine Yoda")
     albero_yoda = trasforma_in_yoda(albero)
-    print(" Albero Yoda:")
+    print("\nAlbero Yoda:")
     albero_yoda.pretty_print(indent=2)
 
     # Raccolta delle foglie
-    print("\n[Fase 3] Raccolta foglie (frase Yoda)...")
     foglie = raccogli_foglie(albero_yoda)
 
     # Post-processing: maiuscole/minuscole stile frase
@@ -293,7 +290,7 @@ def converti_in_yoda(frase_stringa):
         foglie[0] = foglie[0].capitalize()
     frase_yoda = ' '.join(foglie)
 
-    print(f"\n  OUTPUT: {frase_yoda}")
+    print(f"\n  Frase in Yoda: {frase_yoda}")
     print(f"{'='*55}\n")
 
     return frase_yoda
@@ -337,13 +334,13 @@ if __name__ == '__main__':
     # logica di esecuzione
     if args.test:
         #flag --test
-        frasi_esame = [
+        frasi_esempio = [
             ("Tu hai amici lì",                    "Amici tu hai lì"),
             ("Tu avrai novecento anni di età",      "Novecento anni di età tu avrai"),
             ("Noi siamo illuminati",                "Illuminati noi siamo"),
         ]
         print("\n--- ESECUZIONE TEST D'ESAME ---")
-        for frase, atteso in frasi_esame:
+        for frase, atteso in frasi_esempio:
             risultato = converti_in_yoda(frase)
             if risultato == atteso:
                 print(f"  CORRETTO (atteso: '{atteso}')")
