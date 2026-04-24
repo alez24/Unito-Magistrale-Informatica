@@ -1,0 +1,11 @@
+{
+    "NP,VP": ["S"],
+    "Det,N": ["NP"],
+    "Num,N": ["NP"],
+    "NP,PP": ["NP"],
+    "V,NP": ["VP", "VP1"],
+    "V,PP": ["VP"],
+    "V,Adj": ["VP"],
+    "VP1,Adv": ["VP"],
+    "Prep,NP": ["PP"]
+}
