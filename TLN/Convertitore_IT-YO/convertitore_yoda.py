@@ -16,18 +16,18 @@ def carica_dizionari(file_regole='regole_binarie.json', file_lessico='Lexicon.js
     Converte le chiavi testuali delle regole (es. "NP,VP") nelle
     tuple richieste dall'algoritmo CKY (es. ('NP', 'VP')).
     """
-    # 1. Carica il lessico
+    # Carica Lexicon
     with open(file_lessico, 'r', encoding='utf-8') as f:
         lexicon_data = json.load(f)
         
-    # 2. Carica le regole grammaticali
+    # Carica regole 
     with open(file_regole, 'r', encoding='utf-8') as f:
         rules_data = json.load(f)
         
-    # 3. Riconversione delle chiavi in Tuple per l'algoritmo CKY
+    # Riconversione delle chiavi in Tuple per l'algoritmo CKY
     binary_rules_data = {}
     for key, value in rules_data.items():
-        # Dividiamo la stringa "Cat1,Cat2" in due elementi
+        # Splitta la stringa "Cat1,Cat2" in due elementi
         elemento1, elemento2 = key.split(',')
         tupla_chiave = (elemento1.strip(), elemento2.strip())
         binary_rules_data[tupla_chiave] = value
@@ -42,7 +42,7 @@ BINARY_RULES, LEXICON = carica_dizionari()
 # ===========================================================
 
 class Nodo:
-    """Un nodo dell'albero di derivazione."""
+    """nodo geneerico dell'albero di derivazione."""
 
     def __init__(self, label, children=None, word=None):
         self.label = label          # simbolo grammaticale o parola
@@ -58,15 +58,26 @@ class Nodo:
         figli = ', '.join(repr(c) for c in self.children)
         return f"[{self.label} → {figli}]"
 
-    def pretty_print(self, indent=0):
-        """Stampa l'albero in modo leggibile."""
-        prefix = "  " * indent
-        if self.is_leaf():
-            print(f"{prefix}{self.label}: '{self.word}'")
+def pretty_print(self, prefix="", is_last=True):
+        """Stampa albero leggibile nel terminale."""
+        # Se alla radice non stampa i connettori (prefix = vuoto)
+        if not prefix:
+            print(self.label)
+            new_prefix = ""
         else:
-            print(f"{prefix}{self.label}")
-            for child in self.children:
-                child.pretty_print(indent + 1)
+            #connettori grafici
+            connector = "└── " if is_last else "├── "
+            if self.is_leaf():
+                print(f"{prefix}{connector}{self.label}: '{self.word}'")
+            else:
+                print(f"{prefix}{connector}{self.label}")
+            # Aggiorniamo prefisso per i figli successivi: se questo nodo era l'ultimo, lascia vuoto, altrimenti mette linea verticale
+            new_prefix = prefix + ("    " if is_last else "│   ")
+            
+        # Chiamata ricorsiva sui figli
+        for i, child in enumerate(self.children):
+            last_child = (i == len(self.children) - 1)
+            child.pretty_print(new_prefix, last_child)
 
 
 # ===========================================================
@@ -140,7 +151,7 @@ def trasforma_in_yoda(nodo):
     if nodo.is_leaf():
         return nodo
 
-    # Prima trasformiamo ricorsivamente i figli
+    # Trasforma ricorsivamente i figli
     nuovi_figli = [trasforma_in_yoda(f) for f in nodo.children]
     nodo.children = nuovi_figli
 
@@ -153,16 +164,15 @@ def trasforma_in_yoda(nodo):
             child0 = vp.children[0]
             child1 = vp.children[1]
 
-            # Caso 1: VP → V NP/PP/Adj (standard e copulativo)
-            # "mangia la mela", "siamo illuminati"
+            # Caso 1: VP → V NP/PP/Adj
             if child0.label == 'V' and child1.label in ('NP', 'PP', 'Adj'):
                 verbo = child0
                 compl = child1
                 nodo.label = 'S_yoda'
                 nodo.children = [compl, sogg, verbo]
 
-            # Caso 2: VP → VP1 Adv ("hai amici lì")
-            # VP1 → V NP: il complemento NP va in testa, Adv resta in coda
+            # Caso 2: VP → VP1 Adv
+            # VP1 → V NP: NP va in testa, Adv resta in coda
             elif child0.label == 'VP1' and child1.label == 'Adv':
                 vp1 = child0
                 adv = child1
@@ -184,8 +194,6 @@ def trasforma_in_yoda(nodo):
 # ===========================================================
 # STAMPA DELLE FOGLIE INVERTITE
 # ===========================================================
-
-
 
 def raccogli_foglie(nodo):
     """
@@ -232,9 +240,7 @@ def converti_in_yoda(frase_stringa):
     # Raccolta delle foglie
     foglie = raccogli_foglie(albero_yoda)
 
-    # Post-processing: maiuscole/minuscole stile frase
-    # I nomi propri (es. Mario) restano maiuscoli, il resto diventa minuscolo,
-    # poi si capitalizza la prima parola della frase Yoda.
+    # Post-processing: maiuscole/minuscole stile frase, poi capitalizza la prima parola della frase Yoda.
     nomi_propri = {w for w, tags in LEXICON.items() if 'N' in tags and 'NP' in tags and w[0].isupper()}
     foglie = [w if w in nomi_propri else w.lower() for w in foglie]
     if foglie:
@@ -260,7 +266,7 @@ if __name__ == '__main__':
     )
     
     # argomento per la frase
-    # nargs='?' significa che l'argomento è opzionale
+    # nargs='?' -> argomento è opzionale
     parser.add_argument(
         "frase", 
         type=str, 
@@ -297,6 +303,6 @@ if __name__ == '__main__':
                 print(f" ERRORE: atteso '{atteso}', ottenuto '{risultato}'")
                 
     elif args.frase:
-        # frase da tastiera
+        #frase da tastiera
         converti_in_yoda(args.frase)
         
