@@ -42,7 +42,7 @@ BINARY_RULES, LEXICON = carica_dizionari()
 # ===========================================================
 
 class Nodo:
-    """nodo geneerico dell'albero di derivazione."""
+    """nodo generico dell'albero di derivazione."""
 
     def __init__(self, label, children=None, word=None):
         self.label = label          # simbolo grammaticale o parola
@@ -58,26 +58,27 @@ class Nodo:
         figli = ', '.join(repr(c) for c in self.children)
         return f"[{self.label} → {figli}]"
 
-def pretty_print(self, prefix="", is_last=True):
+    def pretty_print(self, prefix="", is_last=True, is_root=True):
         """Stampa albero leggibile nel terminale."""
-        # Se alla radice non stampa i connettori (prefix = vuoto)
-        if not prefix:
+        # Se siamo alla radice, stampiamo solo l'etichetta senza connettori
+        if is_root:
             print(self.label)
             new_prefix = ""
         else:
-            #connettori grafici
+            # Connettori grafici per i figli
             connector = "└── " if is_last else "├── "
             if self.is_leaf():
                 print(f"{prefix}{connector}{self.label}: '{self.word}'")
             else:
                 print(f"{prefix}{connector}{self.label}")
-            # Aggiorniamo prefisso per i figli successivi: se questo nodo era l'ultimo, lascia vuoto, altrimenti mette linea verticale
+            
+            # Aggiorniamo il prefisso per i livelli successivi
             new_prefix = prefix + ("    " if is_last else "│   ")
             
-        # Chiamata ricorsiva sui figli
+        # Chiamata ricorsiva sui figli, disattivando is_root
         for i, child in enumerate(self.children):
             last_child = (i == len(self.children) - 1)
-            child.pretty_print(new_prefix, last_child)
+            child.pretty_print(new_prefix, is_last=last_child, is_root=False)
 
 
 # ===========================================================
@@ -229,13 +230,13 @@ def converti_in_yoda(frase_stringa):
         return None
 
     print("\nAlbero di derivazione:")
-    albero.pretty_print(indent=2)
+    albero.pretty_print()
 
     # Trasformazione SVX → XSV
     print("\nTrasformazione in ordine Yoda")
     albero_yoda = trasforma_in_yoda(albero)
     print("\nAlbero Yoda:")
-    albero_yoda.pretty_print(indent=2)
+    albero_yoda.pretty_print()
 
     # Raccolta delle foglie
     foglie = raccogli_foglie(albero_yoda)
