@@ -4,87 +4,38 @@
 =============================================================
 """
 import argparse
+import json
 
 # ===========================================================
 # GRAMMATICA CFG IN CNF
 # ===========================================================
 
-BINARY_RULES = {
-    ('NP',  'VP'):   ['S'],
-    ('Det', 'N'):    ['NP'],
-    ('Num', 'N'):    ['NP'],       # NP → Num N  ("novecento anni")
-    ('NP',  'PP'):   ['NP'],       # NP → NP PP  ("novecento anni di età")
-    ('V',   'NP'):   ['VP', 'VP1'],# VP → V NP, VP1 → V NP
-    ('V',   'PP'):   ['VP'],
-    ('V',   'Adj'):  ['VP'],       # VP → V Adj  (copulativo: "siamo illuminati")
-    ('VP1', 'Adv'):  ['VP'],       # VP → VP1 Adv  ("hai amici lì")
-    ('Prep','NP'):   ['PP'],
-}
+def carica_dizionari(file_regole='regole_binarie.json', file_lessico='Lexicon.json'):
+    """
+    Carica le regole grammaticali e il lessico dai file JSON esterni.
+    Converte le chiavi testuali delle regole (es. "NP,VP") nelle
+    tuple richieste dall'algoritmo CKY (es. ('NP', 'VP')).
+    """
+    # 1. Carica il lessico
+    with open(file_lessico, 'r', encoding='utf-8') as f:
+        lexicon_data = json.load(f)
+        
+    # 2. Carica le regole grammaticali
+    with open(file_regole, 'r', encoding='utf-8') as f:
+        rules_data = json.load(f)
+        
+    # 3. Riconversione delle chiavi in Tuple per l'algoritmo CKY
+    binary_rules_data = {}
+    for key, value in rules_data.items():
+        # Dividiamo la stringa "Cat1,Cat2" in due elementi
+        elemento1, elemento2 = key.split(',')
+        tupla_chiave = (elemento1.strip(), elemento2.strip())
+        binary_rules_data[tupla_chiave] = value
+        
+    return binary_rules_data, lexicon_data
 
-LEXICON = {
-    # ARTICOLI / DETERMINANTI 
-    'il':      ['Det'], 'la':      ['Det'], 'lo':      ['Det'],
-    'i':       ['Det'], 'le':      ['Det'], 'gli':     ['Det'],
-    'un':      ['Det'], 'una':     ['Det'], 'uno':     ['Det'], 
-    # dimostrativi (usati come determinanti)
-    'questo':  ['Det'], 'questa':  ['Det'], 'quello':  ['Det'], 'quella':  ['Det'],
-
-    # NOMI PROPRI E PRONOMI (NP diretti) 
-    'Mario':   ['N', 'NP'], 'Luigi':   ['N', 'NP'], 'Maria':   ['N', 'NP'],
-    'Giulia':  ['N', 'NP'], 'Luca':    ['N', 'NP'], 'Roma':    ['N', 'NP'],
-    'Yoda':    ['N', 'NP'], 'Luke':    ['N', 'NP'], 'Vader':   ['N', 'NP'],
-    # pronomi
-    'Io':      ['NP'], 'Tu':      ['NP'], 'Lui':     ['NP'], 'Lei':     ['NP'],
-    'Noi':     ['NP'], 'Voi':     ['NP'], 'Loro':    ['NP'], 'Egli':    ['NP'],
-
-    # NOMI COMUNI (N) 
-    'mela':    ['N'], 'libro':   ['N'], 'gatto':   ['N'], 'cane':    ['N'],
-    'uomo':    ['N'], 'donna':   ['N'], 'bambino': ['N'], 'studente':['N'],
-    'pane':    ['N'], 'acqua':   ['N'], 'amici':   ['N', 'NP'], 'anni':  ['N'],
-    'età':     ['N', 'NP'],              'uomo':   ['N', 'NP'],
-    'spada':   ['N'], 'forza':   ['N'], 'maestro': ['N'], 'allievo': ['N'],
-    'casa':    ['N'], 'macchina':['N'], 'strada':  ['N'], 'albero':  ['N'],
-    'sole':    ['N'], 'luna':    ['N'], 'cielo':   ['N'], 'terra':   ['N'],
-    'ragazzo': ['N'], 'ragazza': ['N'], 'cibo':    ['N'], 'vino':    ['N'],
-    'paura':   ['N'], 'rabbia':  ['N'], 'guerra':  ['N'], 'pace':    ['N'],
-    'lato':    ['N'], 'cavaliere':['N'],
-
-    # VERBI (V) 
-    'mangia':  ['V'], 'legge':   ['V'], 'vede':    ['V'], 'prende':  ['V'],
-    'porta':   ['V'], 'ama':     ['V'], 'saluta':  ['V'], 'hai':     ['V'],
-    'avrai':   ['V'], 'siamo':   ['V'],
-    'usa':     ['V'], 'sente':   ['V'], 'scrive':  ['V'], 'beve':    ['V'],
-    'dorme':   ['V'], 'corre':   ['V'], 'pensa':   ['V'], 'crede':   ['V'],
-    'conosce': ['V'], 'trova':   ['V'], 'cerca':   ['V'], 'è':       ['V'],
-    'sono':    ['V'], 'era':     ['V'], 'sarà':    ['V'], 'teme':    ['V'],
-    'vuole':   ['V'], 'può':     ['V'], 'deve':    ['V'], 'vince':   ['V'],
-
-    # PREPOSIZIONI (Prep) 
-    'a':       ['Prep'], 'di':      ['Prep'], 'con':     ['Prep'],
-    'su':      ['Prep'], 'per':     ['Prep'], 'in':      ['Prep'],
-    'da':      ['Prep'], 'tra':     ['Prep'], 'fra':     ['Prep'],
-    'verso':   ['Prep'], 'contro':  ['Prep'],
-
-    #  NUMERALI (Num) 
-    'uno':         ['Num'], 'due':         ['Num'], 'tre':         ['Num'],
-    'quattro':     ['Num'], 'dieci':       ['Num'], 'cento':       ['Num'],
-    'novecento':   ['Num'], 'mille':       ['Num'],
-
-    # AGGETTIVI (Adj)
-    'illuminati':  ['Adj'], 'potente':     ['Adj'], 'oscuro':      ['Adj'],
-    'saggio':      ['Adj'], 'giovane':     ['Adj'], 'vecchio':     ['Adj'],
-    'forte':       ['Adj'], 'debole':      ['Adj'], 'bello':       ['Adj'],
-    'brutto':      ['Adj'], 'grande':      ['Adj'], 'piccolo':     ['Adj'],
-    'rosso':       ['Adj'], 'nero':        ['Adj','N'], 'bianco':      ['Adj'],
-    'buono':       ['Adj'], 'cattivo':     ['Adj'], 'luminoso':    ['Adj'],
-   
-
-    # AVVERBI (Adv)
-    'lì':      ['Adv'], 'qui':     ['Adv'], 'ora':     ['Adv'],
-    'sempre':  ['Adv'], 'mai':     ['Adv'], 'bene':    ['Adv'],
-    'male':    ['Adv'], 'molto':   ['Adv'], 'poco':    ['Adv'],
-    'forse':   ['Adv'], 'oggi':    ['Adv'], 'domani':  ['Adv'],
-}
+# Inizializzazione globale delle strutture dati
+BINARY_RULES, LEXICON = carica_dizionari()
 
 # ===========================================================
 # ALBERO DI DERIVAZIONE
@@ -314,14 +265,12 @@ if __name__ == '__main__':
         "frase", 
         type=str, 
         nargs='?', 
-        help="La frase in italiano da convertire"
     )
     
     # Aggiunge flag --test per eseguire frasi preimpostate
     parser.add_argument(
         "--test", 
         action="store_true", 
-        help="Esegue le frasi d'esame e i test predefiniti"
     )
 
     # Legge argomenti da terminale
@@ -339,7 +288,7 @@ if __name__ == '__main__':
             ("Tu avrai novecento anni di età",      "Novecento anni di età tu avrai"),
             ("Noi siamo illuminati",                "Illuminati noi siamo"),
         ]
-        print("\n--- ESECUZIONE TEST D'ESAME ---")
+        print("\n--- ESECUZIONE TEST ---")
         for frase, atteso in frasi_esempio:
             risultato = converti_in_yoda(frase)
             if risultato == atteso:
@@ -351,6 +300,3 @@ if __name__ == '__main__':
         # frase da tastiera
         converti_in_yoda(args.frase)
         
-    else:
-        # Se non ha passato né frase da tastiera né flag --test, mostra l'help
-        parser.print_help()
