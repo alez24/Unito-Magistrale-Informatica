@@ -1,0 +1,726 @@
+\documentclass[12pt, a4paper]{article}
+
+% ============================================================
+% PACCHETTI
+% ============================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{titlesec}
+\usepackage{titling}
+\usepackage{abstract}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{tikz}
+\usetikzlibrary{trees, positioning, arrows.meta}
+
+% ============================================================
+% STILE LISTATI DI CODICE
+% ============================================================
+\definecolor{codebg}{rgb}{0.97,0.97,0.97}
+\definecolor{codegreen}{rgb}{0.0, 0.5, 0.0}
+\definecolor{codepurple}{rgb}{0.5, 0.0, 0.5}
+\definecolor{codeblue}{rgb}{0.0, 0.0, 0.7}
+\definecolor{codegray}{rgb}{0.4, 0.4, 0.4}
+
+\lstdefinestyle{pythonstyle}{
+    backgroundcolor=\color{codebg},
+    commentstyle=\color{codegreen}\itshape,
+    keywordstyle=\color{codeblue}\bfseries,
+    stringstyle=\color{codepurple},
+    numberstyle=\tiny\color{codegray},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=8pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    frame=single,
+    framerule=0.4pt,
+    rulecolor=\color{gray!40},
+    xleftmargin=15pt,
+    xrightmargin=5pt,
+    language=Python
+}
+\lstset{style=pythonstyle}
+
+% ============================================================
+% INTESTAZIONE E PIÈ DI PAGINA
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small Convertitore Italiano $\rightarrow$ Italiano-Yoda}
+\lhead{\small Elaborato di Linguaggi e Grammatiche Formali}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ============================================================
+% TITOLO
+% ============================================================
+\title{
+    \vspace{-1cm}
+    {\large Elaborato per il corso di}\\[0.3cm]
+    {\large \textit{Linguaggi Formali e Compilatori / Linguistica Computazionale}}\\[1cm]
+    \rule{\linewidth}{1.5pt}\\[0.5cm]
+    {\LARGE \textbf{Convertitore Lessicale Italiano $\rightarrow$ Italiano-Yoda}}\\[0.3cm]
+    {\large Analisi sintattica con algoritmo CKY e trasformazione dell'ordine delle parole}\\[0.3cm]
+    \rule{\linewidth}{1.5pt}
+}
+
+\author{
+    \begin{tabular}[t]{c}
+        Alessandro Olivero \\
+        Andrea Franco \\
+        Samuele Iudice \\[0.4cm]
+        \small Università degli Studi di Torino \\
+        \small Corso di Laurea in Informatica
+    \end{tabular}
+}
+\date{Anno Accademico 2025/2026}
+
+% ============================================================
+% DOCUMENTO
+% ============================================================
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\vspace{1cm}
+
+% ============================================================
+% ABSTRACT
+% ============================================================
+\begin{abstract}
+\noindent
+Il presente elaborato descrive la progettazione e l'implementazione di un sistema per la
+conversione automatica di frasi in lingua italiana nel cosiddetto \textit{Italiano-Yoda} (IT-YO),
+ovvero una variante artificiale dell'italiano che riproduce il caratteristico ordine sintattico
+usato dal personaggio di Yoda nella saga di Guerre Stellari: complemento oggetto, soggetto,
+verbo (ordine OVS/XSV). Il sistema è basato su una grammatica context-free in Forma Normale
+di Chomsky (CNF), su un parser CKY implementato in Python, e su un modulo di trasformazione
+ricorsiva dell'albero di derivazione. Vengono discussi la modellazione della grammatica, le
+strutture dati adottate, l'algoritmo di parsing, la trasformazione sintattica e i limiti del
+sistema attuale.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ============================================================
+% 1. INTRODUZIONE
+% ============================================================
+\section{Introduzione}
+
+Il linguaggio è uno dei fenomeni più complessi e affascinanti dell'intelligenza umana.
+Tra i molteplici strumenti che la linguistica computazionale mette a disposizione per
+analizzare e manipolare il linguaggio naturale, le grammatiche context-free (CFG) e
+gli algoritmi di parsing occupano un ruolo centrale, tanto nella ricerca accademica
+quanto nelle applicazioni pratiche come compilatori, assistenti vocali e sistemi di
+traduzione automatica.
+
+Questo progetto nasce come esercitazione pratica su tali strumenti, con un obiettivo
+volutamente leggero ma tecnicamente significativo: realizzare un convertitore che,
+data una frase in italiano con ordine canonico soggetto-verbo-oggetto (SVO), produca
+una versione nella stessa lingua ma con un diverso ordine delle costituenti,
+ispirato allo stile sintattico del personaggio Yoda dell'universo di Guerre Stellari.
+
+Il risultato è il sistema \texttt{IT-YO} (\textit{Italiano-Yoda}), che opera nelle
+seguenti fasi:
+\begin{enumerate}
+    \item \textbf{Tokenizzazione}: la frase in input viene suddivisa in parole (token).
+    \item \textbf{Analisi lessicale}: ogni token viene identificato tramite un lessico
+          (\texttt{Lexicon.json}) che associa le parole alle loro categorie grammaticali.
+    \item \textbf{Parsing CKY}: l'algoritmo Cocke-Kasami-Younger costruisce l'albero di
+          derivazione sintattica a partire dalla grammatica in CNF definita nel file
+          \texttt{regole\_binarie.json}.
+    \item \textbf{Trasformazione}: l'albero viene riordinato ricorsivamente per
+          produrre l'ordine XSV tipico di Yoda.
+    \item \textbf{Linearizzazione}: le foglie dell'albero trasformato vengono estratte
+          e assemblate nella frase finale in Italiano-Yoda.
+\end{enumerate}
+
+Il sistema è interamente scritto in Python 3 e non dipende da librerie NLP esterne;
+la grammatica e il lessico sono rappresentati come dati JSON separati dal codice.
+
+% ============================================================
+% 2. BACKGROUND TEORICO
+% ============================================================
+\section{Background Teorico}
+
+\subsection{Grammatiche Context-Free (CFG)}
+
+Una \textbf{grammatica context-free} è una quadrupla $G = (V, \Sigma, R, S)$ dove:
+\begin{itemize}
+    \item $V$ è un insieme finito di \textit{variabili} (simboli non-terminali),
+          tipicamente rappresentanti categorie sintattiche come NP, VP, S;
+    \item $\Sigma$ è un insieme finito di \textit{terminali} (parole del vocabolario),
+          con $V \cap \Sigma = \emptyset$;
+    \item $R$ è un insieme finito di \textit{regole di produzione} della forma
+          $A \rightarrow \alpha$, con $A \in V$ e $\alpha \in (V \cup \Sigma)^*$;
+    \item $S \in V$ è il \textit{simbolo iniziale} (assioma), nel nostro caso \texttt{S}.
+\end{itemize}
+
+Una stringa $w \in \Sigma^*$ è \textit{generata} da $G$ se esiste una derivazione
+$S \Rightarrow^* w$. Il linguaggio $L(G)$ generato dalla grammatica è l'insieme di
+tutte le stringhe derivabili dall'assioma.
+
+Le CFG sono ampiamente usate in linguistica computazionale per descrivere la
+struttura sintattica delle frasi: la struttura a costituenti (NP, VP, PP, ecc.)
+si modella naturalmente tramite regole di riscrittura.
+
+\subsection{Forma Normale di Chomsky (CNF)}
+
+Un algoritmo di parsing efficiente come CKY richiede che la grammatica sia in
+\textbf{Forma Normale di Chomsky} (CNF). Una CFG è in CNF se tutte le regole
+di produzione sono della forma:
+\[
+    A \rightarrow BC \quad \text{oppure} \quad A \rightarrow a
+\]
+dove $A, B, C \in V$ e $a \in \Sigma$. In altre parole, ogni regola produce
+esattamente due non-terminali oppure un singolo terminale.
+
+Qualsiasi CFG senza $\varepsilon$-produzioni può essere convertita in CNF
+attraverso i passi standard di \textit{binarizzazione} delle regole con più di
+due simboli nella parte destra e \textit{eliminazione delle regole unitarie}.
+
+Nel progetto, la grammatica è stata progettata direttamente in CNF; le regole
+lessicali (terminali) sono memorizzate nel lessico, mentre le regole binarie
+$A \rightarrow BC$ sono nel file \texttt{regole\_binarie.json}.
+
+\subsection{L'Algoritmo CKY}
+
+L'algoritmo \textbf{CKY} (da Cocke, Kasami e Younger, 1965--1969) è un algoritmo
+di parsing bottom-up per grammatiche in CNF, basato su programmazione dinamica.
+
+Dato l'input $w = w_1 w_2 \cdots w_n$, l'algoritmo costruisce una
+\textit{tabella triangolare} $T$ di dimensione $n \times n$, dove la cella
+$T[i][j]$ contiene l'insieme dei non-terminali che possono derivare la sottostringa
+$w_i w_{i+1} \cdots w_j$.
+
+\paragraph{Algoritmo:}
+\begin{enumerate}
+    \item \textbf{Inizializzazione}: per ogni $i$ da 1 a $n$, inserire in $T[i][i]$
+          tutti i non-terminali $A$ tali che $A \rightarrow w_i$ è una regola lessicale.
+    \item \textbf{Riempimento}: per ogni lunghezza di span $\ell$ da 2 a $n$, per ogni
+          inizio $i$ e fine $j = i + \ell - 1$, per ogni punto di taglio $k$ da $i$ a
+          $j-1$: se $B \in T[i][k]$ e $C \in T[k+1][j]$ e $A \rightarrow BC \in R$,
+          allora inserire $A$ in $T[i][j]$.
+    \item \textbf{Accettazione}: la frase è riconosciuta se e solo se $S \in T[1][n]$.
+\end{enumerate}
+
+La complessità temporale è $O(n^3 \cdot |G|)$ dove $|G|$ è la dimensione della
+grammatica. La variante con ricostruzione dell'albero (usata in questo progetto)
+memorizza, per ogni cella, anche i puntatori ai sottoalberi che hanno giustificato
+l'inserimento di un non-terminale.
+
+% ============================================================
+% 3. STRUTTURA DEL PROGETTO
+% ============================================================
+\section{Struttura del Progetto}
+
+Il progetto è organizzato in tre componenti principali:
+
+\begin{table}[H]
+\centering
+\caption{Componenti del sistema IT-YO}
+\begin{tabular}{>{\ttfamily}l l p{7cm}}
+\toprule
+\normalfont{File} & Tipo & Descrizione \\
+\midrule
+yoda.py & Codice Python & Modulo principale: parsing, trasformazione, CLI \\
+Lexicon.json & Dati JSON & Lessico italiano con etichette POS \\
+regole\_binarie.json & Dati JSON & Regole binarie della grammatica in CNF \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Il Lessico (\texttt{Lexicon.json})}
+
+Il lessico è un dizionario JSON che mappa ogni parola italiana a una lista di
+categorie grammaticali (POS tag). Ad esempio:
+
+\begin{lstlisting}[language={},caption={Esempio di voci nel lessico}]
+{
+  "Mario":   ["N", "NP"],
+  "gatto":   ["N"],
+  "mangia":  ["V"],
+  "il":      ["Det"],
+  "lentamente": ["Adv"],
+  "novecento": ["Num"]
+}
+\end{lstlisting}
+
+Le categorie utilizzate nella grammatica sono: \texttt{Det} (determinante),
+\texttt{N} (nome), \texttt{NP} (nome proprio / sintagma nominale pre-formato),
+\texttt{V} (verbo), \texttt{Adj} (aggettivo), \texttt{Adv} (avverbio),
+\texttt{Prep} (preposizione), \texttt{Num} (numerale).
+
+\subsection{Le Regole Grammaticali (\texttt{regole\_binarie.json})}
+
+Il file contiene le regole binarie della grammatica in CNF, dove la chiave è la
+coppia di figli e il valore è la lista dei possibili genitori. La scelta di
+\textit{invertire} la direzione rispetto alla notazione tradizionale (dai figli
+al genitore) è una ottimizzazione per l'algoritmo CKY: durante il parsing si cerca
+quali genitori sono compatibili con una coppia di figli già riconosciuti, non
+il contrario.
+
+\begin{lstlisting}[language={},caption={Esempio di regole binarie (formato chiave-valore invertito)}]
+{
+  "Det,N":   ["NP"],
+  "NP,VP":   ["S"],
+  "V,NP":    ["VP", "VP1"],
+  "VP1,Adv": ["VP"],
+  "Prep,NP": ["PP"],
+  "V,PP":    ["VP"],
+  "V,Adj":   ["VP"],
+  "Num,N":   ["NP"]
+}
+\end{lstlisting}
+
+La funzione \texttt{carica\_dizionari()} in fase di inizializzazione converte le
+chiavi stringa (es. \texttt{"Det,N"}) nelle tuple Python richieste dall'algoritmo
+(es. \texttt{('Det', 'N')}).
+
+% ============================================================
+% 4. IMPLEMENTAZIONE
+% ============================================================
+\section{Implementazione}
+
+\subsection{La Classe \texttt{Nodo}}
+
+L'albero di derivazione è rappresentato tramite la classe \texttt{Nodo}, che
+implementa un nodo di albero n-ario con tre attributi:
+
+\begin{itemize}
+    \item \texttt{label}: il simbolo grammaticale del nodo (es. \texttt{'NP'},
+          \texttt{'VP'}) oppure la parola stessa nelle foglie.
+    \item \texttt{children}: lista di nodi figli.
+    \item \texttt{word}: la parola (solo per le foglie lessicali).
+\end{itemize}
+
+I nodi foglia (terminali) sono distinti da quelli interni tramite il metodo
+\texttt{is\_leaf()}, che verifica se la lista \texttt{children} è vuota.
+
+La struttura è volutamente semplice per facilitare la visita ricorsiva sia nella
+stampa (\texttt{pretty\_print}) che nella trasformazione Yoda.
+
+\begin{lstlisting}[caption={Classe Nodo -- costruttore e metodi principali}]
+class Nodo:
+    def __init__(self, label, children=None, word=None):
+        self.label    = label
+        self.children = children or []
+        self.word     = word
+
+    def is_leaf(self):
+        return len(self.children) == 0
+\end{lstlisting}
+
+Il metodo \texttt{pretty\_print()} produce una rappresentazione visuale ad albero
+nel terminale, con connettori grafici ASCII (\texttt{├──}, \texttt{└──}, \texttt{│})
+analoga a quella del comando Unix \texttt{tree}.
+
+\subsection{L'Algoritmo CKY: Implementazione}
+
+La funzione \texttt{cky\_parse(sentence)} riceve una lista di parole tokenizzate
+e restituisce il nodo radice dell'albero di derivazione (etichettato \texttt{'S'})
+oppure \texttt{None} se la frase non è riconosciuta dalla grammatica.
+
+L'implementazione usa una tabella tridimensionale \texttt{table[i][j]} dove ogni
+cella è un dizionario \texttt{\{simbolo: Nodo\}}. Questa scelta — memorizzare
+direttamente il nodo invece del semplice booleano — consente di ricostruire
+l'albero durante il parsing senza una fase separata di \textit{backtracking}.
+
+\begin{lstlisting}[caption={Nucleo dell'algoritmo CKY con ricostruzione dell'albero}]
+for span in range(2, n + 1):
+    for i in range(n - span + 1):
+        j = i + span - 1
+        for k in range(i, j):
+            for (B, C), parents in binary_rules.items():
+                if B in table[i][k] and C in table[k+1][j]:
+                    for A in parents:
+                        if A not in table[i][j]:
+                            node_B = table[i][k][B]
+                            node_C = table[k+1][j][C]
+                            table[i][j][A] = Nodo(
+                                label=A,
+                                children=[node_B, node_C]
+                            )
+\end{lstlisting}
+
+Si noti che, in caso di ambiguità grammaticale, l'algoritmo mantiene solo il
+\textit{primo} albero trovato per ogni non-terminale in ogni cella, corrispondente
+alla prima regola applicabile nell'ordine di iterazione del dizionario. Una
+grammatica ambigua produce risultati deterministici ma dipendenti dall'ordinamento
+delle regole.
+
+\subsection{La Trasformazione in Ordine Yoda}
+
+Il modulo più originale del progetto è la funzione \texttt{trasforma\_in\_yoda()},
+che visita l'albero in post-ordine (prima i figli, poi il nodo corrente) e
+riorganizza i sottoalberi laddove trova la struttura sintattica canonica italiana.
+
+La regola principale è: ogni nodo \texttt{S} con struttura $S \rightarrow NP\ VP$
+viene trasformato in $S\_yoda \rightarrow Comp\ NP\ V$, dove \texttt{Comp} è il
+complemento contenuto nel VP. In altre parole, il complemento viene spostato in
+posizione iniziale di frase.
+
+Sono gestiti tre casi distinti:
+
+\paragraph{Caso 1: Frase transitiva semplice} $VP \rightarrow V\ X$ con $X \in \{NP, PP, Adj\}$
+\[
+    S \rightarrow NP\ (VP \rightarrow V\ Comp)
+    \quad \Longrightarrow \quad
+    S\_yoda \rightarrow Comp\ NP\ V
+\]
+
+\paragraph{Caso 2: Frase con avverbio} $VP \rightarrow VP1\ Adv$ con $VP1 \rightarrow V\ NP$
+\[
+    S \rightarrow NP\ (VP \rightarrow (VP1 \rightarrow V\ NP)\ Adv)
+    \quad \Longrightarrow \quad
+    S\_yoda \rightarrow NP\ Sogg\ V\ Adv
+\]
+
+\paragraph{Caso 3: Frase intransitiva} $VP \rightarrow V$ (solo verbo)
+\[
+    S \rightarrow NP\ (VP \rightarrow V)
+    \quad \Longrightarrow \quad
+    S\_yoda \rightarrow NP\ V
+\]
+(nessuna trasposizione, l'ordine resta invariato poiché non c'è complemento da anteporre)
+
+\begin{lstlisting}[caption={Trasformazione Caso 1 -- VP con complemento diretto}]
+if child0.label == 'V' and child1.label in ('NP', 'PP', 'Adj'):
+    verbo = child0
+    compl = child1
+    nodo.label = 'S_yoda'
+    nodo.children = [compl, sogg, verbo]
+\end{lstlisting}
+
+\subsection{Linearizzazione e Post-processing}
+
+La funzione \texttt{raccogli\_foglie()} effettua una visita DFS (depth-first,
+in-order) sull'albero trasformato, raccogliendo le parole nelle foglie da sinistra
+a destra. La funzione \texttt{converti\_in\_yoda()} applica infine un post-processing
+minimo:
+
+\begin{itemize}
+    \item Le parole vengono rese minuscole, salvo i \textit{nomi propri}, che
+          vengono identificati come parole che appaiono nel lessico con entrambi
+          i tag \texttt{N} e \texttt{NP} e iniziano con la maiuscola.
+    \item La prima parola della frase Yoda viene capitalizzata.
+\end{itemize}
+
+% ============================================================
+% 5. INTERFACCIA DA LINEA DI COMANDO
+% ============================================================
+\section{Interfaccia da Linea di Comando (CLI)}
+
+Il modulo è utilizzabile direttamente da terminale grazie al modulo \texttt{argparse}
+della libreria standard Python. Sono supportate due modalità d'uso:
+
+\paragraph{Frase singola:}
+\begin{lstlisting}[language=bash, style=pythonstyle]
+python yoda.py "Mario mangia il gatto"
+\end{lstlisting}
+
+\paragraph{Modalità test:}
+\begin{lstlisting}[language=bash, style=pythonstyle]
+python yoda.py --test
+\end{lstlisting}
+
+La modalità \texttt{--test} esegue una suite di frasi predefinite confrontando
+l'output ottenuto con quello atteso. Ogni test riporta \texttt{CORRETTO} o
+\texttt{ERRORE} con il dettaglio dell'output ottenuto vs.\ atteso.
+
+Le tre frasi di test incluse nel codice sono:
+
+\begin{table}[H]
+\centering
+\caption{Suite di test del modulo \texttt{--test}}
+\begin{tabular}{l l}
+\toprule
+\textbf{Input italiano} & \textbf{Output Yoda atteso} \\
+\midrule
+Tu hai amici lì & Amici tu hai lì \\
+Tu avrai novecento anni di età & Novecento anni di età tu avrai \\
+Noi siamo illuminati & Illuminati noi siamo \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+L'output a schermo include, per ogni frase: la frase originale, l'albero di
+derivazione iniziale, l'albero dopo la trasformazione Yoda, e la frase finale.
+Questo livello di verbosità è intenzionale a scopo didattico.
+
+% ============================================================
+% 6. ESEMPIO DI ESECUZIONE
+% ============================================================
+\section{Esempio di Esecuzione}
+
+Per illustrare concretamente il funzionamento del sistema, si considera la frase
+di input \textit{``Tu hai amici lì''}.
+
+\subsection{Albero di Derivazione Originale}
+
+La frase viene tokenizzata in \texttt{[Tu, hai, amici, lì]}. Il parser CKY
+riconosce la struttura seguente:
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    every node/.style={font=\small\ttfamily},
+    level 1/.style={sibling distance=5cm, level distance=1.3cm},
+    level 2/.style={sibling distance=2.5cm, level distance=1.3cm},
+    level 3/.style={sibling distance=1.3cm, level distance=1.2cm},
+    edge from parent/.style={draw, -}
+]
+\node {S}
+    child { node {NP}
+        child { node {Tu} }
+    }
+    child { node {VP}
+        child { node {VP1}
+            child { node {V}
+                child { node {hai} }
+            }
+            child { node {NP}
+                child { node {amici} }
+            }
+        }
+        child { node {Adv}
+            child { node {lì} }
+        }
+    };
+\end{tikzpicture}
+\caption{Albero di derivazione della frase ``Tu hai amici lì''}
+\end{figure}
+
+\subsection{Albero Trasformato in Ordine Yoda}
+
+La funzione \texttt{trasforma\_in\_yoda()} identifica la struttura
+$S \rightarrow NP\ (VP \rightarrow (VP1 \rightarrow V\ NP)\ Adv)$
+(Caso 2) e riorganizza le costituenti nell'ordine $Comp\ Sogg\ V\ Adv$:
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    every node/.style={font=\small\ttfamily},
+    level 1/.style={sibling distance=3.5cm, level distance=1.3cm},
+    level 2/.style={sibling distance=1.5cm, level distance=1.2cm},
+    edge from parent/.style={draw, -}
+]
+\node {S\_yoda}
+    child { node {NP}
+        child { node {amici} }
+    }
+    child { node {NP}
+        child { node {Tu} }
+    }
+    child { node {V}
+        child { node {hai} }
+    }
+    child { node {Adv}
+        child { node {lì} }
+    };
+\end{tikzpicture}
+\caption{Albero trasformato in ordine Yoda: ``Amici tu hai lì''}
+\end{figure}
+
+La linearizzazione delle foglie produce la frase finale:
+\begin{center}
+    \textbf{Input:} \textit{Tu hai amici lì} \\[0.3cm]
+    \textbf{Output IT-YO:} \textit{Amici tu hai lì}
+\end{center}
+
+% ============================================================
+% 7. LIMITI E POSSIBILI ESTENSIONI
+% ============================================================
+\section{Limiti e Possibili Estensioni}
+
+\subsection{Limiti del Sistema Attuale}
+
+\paragraph{Copertura lessicale limitata.}
+Il lessico comprende un numero ridotto di voci, pensato per le frasi di test.
+L'aggiunta di nuove frasi richiede l'estensione manuale del file \texttt{Lexicon.json},
+il che non è scalabile per frasi arbitrarie.
+
+\paragraph{Grammatica ristretta.}
+La grammatica in CNF copre costruzioni sintattiche semplici (frasi semplici SVO
+con al più un avverbio o un sintagma preposizionale). Non sono gestite:
+subordinate, relative, coordinate, frasi passive, costruzioni con clitici (es.
+\textit{lo vedo}), né strutture con ausiliari complessi.
+
+\paragraph{Ambiguità non gestita esplicitamente.}
+In caso di ambiguità strutturale (più alberi possibili), viene restituito solo
+il primo albero trovato nell'ordine di iterazione del dizionario delle regole.
+Il sistema non avvisa l'utente della presenza di ambiguità, né consente di
+esplorare parsing alternativi.
+
+\paragraph{Assenza di analisi morfologica.}
+Il lessico è basato sulla forma di superficie delle parole: forme flesse diverse
+dello stesso lemma (es. \textit{mangia}, \textit{mangiano}, \textit{mangiava})
+devono essere inserite separatamente. Non è presente alcun modulo di
+lemmatizzazione o analisi morfologica.
+
+\paragraph{Trasformazione solo al livello radice.}
+La funzione \texttt{trasforma\_in\_yoda()} agisce ricorsivamente, ma la
+trasformazione XSV è applicata solo ai nodi \texttt{S} di primo livello.
+Le frasi subordinate annidate non vengono trasformate.
+
+\subsection{Possibili Estensioni}
+
+\begin{itemize}
+    \item \textbf{Estensione del lessico tramite risorse esterne}: integrazione con
+          WordNet italiano o PoS tagger preaddestrati (es. spaCy, Stanza) per
+          ottenere la copertura su frasi arbitrarie.
+
+    \item \textbf{Grammatica più ricca}: aggiunta di regole per subordinate
+          relative, completive, coordinate, costruzioni passive e perifrasi
+          verbali.
+
+    \item \textbf{Parser probabilistico (PCFG + CKY)}: associare probabilità alle
+          regole per gestire l'ambiguità in modo principiato, selezionando l'albero
+          più probabile (algoritmo CKY probabilistico con massimizzazione del
+          prodotto delle probabilità).
+
+    \item \textbf{Interfaccia grafica o web}: creazione di una semplice interfaccia
+          web (es.\ Flask + HTML) o di una GUI per rendere il sistema accessibile
+          a utenti non tecnici.
+
+    \item \textbf{Supporto a più trasformazioni}: oltre all'ordine Yoda, si
+          potrebbero implementare altre trasformazioni sintattiche (topicalizzazione,
+          dislocazione a sinistra, passivizzazione) come varianti configurabili.
+\end{itemize}
+
+% ============================================================
+% 8. CONFRONTO CON APPROCCI ALTERNATIVI
+% ============================================================
+\section{Confronto con Approcci Alternativi}
+
+\subsection{Parser Rule-Based vs.\ Neurali}
+
+Il parser implementato in questo progetto è di tipo \textbf{rule-based simbolico}:
+le regole grammaticali sono scritte esplicitamente dall'autore, il lessico è
+compilato a mano, e l'algoritmo CKY produce alberi deterministici in base alla
+grammatica fornita. Questo approccio ha il vantaggio della piena interpretabilità
+(ogni decisione è tracciabile nelle regole) e del controllo totale sulla struttura
+degli alberi prodotti.
+
+In contrasto, i moderni parser neurali (es.\ quelli basati su BERT, XLM-R o
+architetture Transformer encoder-decoder) apprendono le strutture sintattiche
+da grandi corpora annotati (es.\ Universal Dependencies) e raggiungono prestazioni
+molto superiori su frasi naturali non vincolate. Tuttavia, questi modelli:
+\begin{itemize}
+    \item Non sono interpretabili in modo diretto;
+    \item Richiedono risorse computazionali e dati di addestramento significativi;
+    \item Non garantiscono alberi che rispettino una grammatica formale definita
+          dall'utente.
+\end{itemize}
+
+Per gli obiettivi didattici di questo progetto — comprendere la struttura degli
+algoritmi di parsing e manipolare direttamente gli alberi sintattici — l'approccio
+simbolico è quello più adeguato.
+
+\subsection{Trasformazione via Regole vs.\ Modelli Seq2Seq}
+
+La trasformazione da ordine SVO a XSV è qui implementata come una semplice
+visita e riorganizzazione dell'albero. Un approccio alternativo è l'uso di modelli
+\textit{sequence-to-sequence} addestrati su coppie di frasi (italiano $\rightarrow$
+italiano-Yoda), che apprendono implicitamente la trasformazione senza una
+rappresentazione intermedia esplicita. Ancora una volta, il vantaggio dell'approccio
+strutturale adottato è la trasparenza e la garanzia formale che l'output rispetti
+le trasformazioni progettate.
+
+% ============================================================
+% 9. CONCLUSIONI
+% ============================================================
+\section{Conclusioni}
+
+Il progetto IT-YO ha consentito di mettere in pratica i concetti fondamentali
+di analisi sintattica formale: progettazione di una grammatica context-free
+in Forma Normale di Chomsky, implementazione dell'algoritmo CKY con ricostruzione
+dell'albero di derivazione, e manipolazione strutturale dell'albero per ottenere
+una trasformazione dell'ordine delle parole.
+
+Il sistema è funzionante per un sottoinsieme controllato di frasi italiane e
+produce output corretti sui casi di test previsti. La separazione tra grammatica
+(dati JSON) e logica di parsing (codice Python) rende il sistema facilmente
+estendibile: per coprire nuove costruzioni sintattiche è sufficiente aggiungere
+voci al lessico e regole al file JSON, senza modificare l'algoritmo.
+
+Dal punto di vista didattico, il progetto illustra concretamente come la teoria
+delle grammatiche formali si traduca in un sistema computazionale funzionante,
+e come la manipolazione degli alberi di derivazione sia uno strumento potente
+per operare trasformazioni linguistiche strutturate.
+
+Tra i possibili sviluppi futuri, l'integrazione con un PoS tagger automatico e
+l'estensione della grammatica a costruzioni più complesse rappresentano le
+direzioni più promettenti per avvicinare il sistema a un uso su frasi naturali
+non vincolate.
+
+% ============================================================
+% BIBLIOGRAFIA
+% ============================================================
+\newpage
+\begin{thebibliography}{9}
+
+\bibitem{chomsky1965}
+Chomsky, N. (1965).
+\textit{Aspects of the Theory of Syntax}.
+MIT Press, Cambridge, MA.
+
+\bibitem{cocke1969}
+Cocke, J. (1969).
+Programming languages and their compilers: Preliminary notes.
+\textit{Courant Institute of Mathematical Sciences}, New York University.
+
+\bibitem{kasami1966}
+Kasami, T. (1966).
+An efficient recognition and syntax-analysis algorithm for context-free languages.
+\textit{Technical Report AFCRL-65-758}, Air Force Cambridge Research Laboratory.
+
+\bibitem{younger1967}
+Younger, D. H. (1967).
+Recognition and parsing of context-free languages in time $n^3$.
+\textit{Information and Control}, 10(2), 189--208.
+
+\bibitem{jurafsky2023}
+Jurafsky, D., \& Martin, J. H. (2023).
+\textit{Speech and Language Processing} (3rd ed.\ draft).
+Disponibile online: \url{https://web.stanford.edu/~jurafsky/slp3/}
+
+\bibitem{manning1999}
+Manning, C. D., \& Schütze, H. (1999).
+\textit{Foundations of Statistical Natural Language Processing}.
+MIT Press.
+
+\bibitem{hopcroft2006}
+Hopcroft, J. E., Motwani, R., \& Ullman, J. D. (2006).
+\textit{Introduction to Automata Theory, Languages, and Computation} (3rd ed.).
+Addison-Wesley.
+
+\end{thebibliography}
+
+\end{document}
