@@ -3,8 +3,14 @@
 *.log
 *.out
 *.toc
-*.pdf
-*.syntex.gz
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.dpth
+*.md5
+*.auxlock
+*.synctex.gz
 *.synctex(busy)
 
 # VS Code
