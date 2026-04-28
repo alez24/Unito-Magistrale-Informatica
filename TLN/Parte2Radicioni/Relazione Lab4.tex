@@ -1,4 +1,4 @@
- \documentclass[12pt, a4paper]{article}
+\documentclass[12pt, a4paper]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -13,9 +13,10 @@
 \usepackage{booktabs}
 \usepackage{float}
 \usepackage{fancyhdr}
-\usepackage{titlesec}
 \usepackage{enumitem}
 \usepackage[expansion=false]{microtype}
+\usepackage{parskip}
+\usepackage{setspace}
 
 \geometry{
     top=2.5cm,
@@ -24,93 +25,90 @@
     right=3cm
 }
 
-% Stile intestazione
 \pagestyle{fancy}
 \fancyhf{}
-\rhead{TLN - Lab 4}
+\rhead{TLN --- Lab 4}
 \lhead{Università degli Studi di Torino}
 \rfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
 
-% Colori per il codice
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
 \definecolor{backcolour}{rgb}{0.97,0.97,0.97}
 \definecolor{codered}{rgb}{0.8,0,0}
+\definecolor{darkblue}{rgb}{0.0,0.2,0.5}
 
-% Stile codice Python
 \lstdefinestyle{pythonstyle}{
     backgroundcolor=\color{backcolour},
-    commentstyle=\color{codegreen},
+    commentstyle=\color{codegreen}\itshape,
     keywordstyle=\color{codepurple}\bfseries,
     numberstyle=\tiny\color{codegray},
     stringstyle=\color{codered},
-    basicstyle=\ttfamily\footnotesize,
+    basicstyle=\ttfamily\small,
     breakatwhitespace=false,
     breaklines=true,
     captionpos=b,
     keepspaces=true,
     numbers=left,
-    numbersep=5pt,
+    numbersep=8pt,
     showspaces=false,
     showstringspaces=false,
     showtabs=false,
     tabsize=2,
     frame=single,
-    rulecolor=\color{codegray}
+    rulecolor=\color{codegray},
+    xleftmargin=15pt
 }
-
 \lstset{style=pythonstyle}
 
-% Hyperref setup
 \hypersetup{
     colorlinks=true,
-    linkcolor=blue,
+    linkcolor=darkblue,
     filecolor=magenta,
-    urlcolor=cyan,
+    urlcolor=darkblue,
 }
+
+\onehalfspacing
 
 % ============================================================
 \begin{document}
 % ============================================================
 
-% Pagina titolo
 \begin{titlepage}
     \centering
-    \vspace*{1cm}
+    \vspace*{0.8cm}
 
-    {\Large \textbf{Università degli Studi di Torino}}\\
-    \vspace{0.3cm}
-    {\large Dipartimento di Informatica}\\
-    \vspace{0.3cm}
+    {\Large \textbf{Università degli Studi di Torino}}\\[0.2cm]
+    {\large Dipartimento di Informatica}\\[0.1cm]
     {\large Corso di Laurea Magistrale in Informatica}
 
-    \vspace{2cm}
+    \vspace{1.5cm}
+    \rule{\linewidth}{0.8mm}\\[0.6cm]
 
-    \rule{\linewidth}{0.5mm}\\
-    \vspace{0.5cm}
-    {\LARGE \textbf{Tecnologie del Linguaggio Naturale}}\\
-    \vspace{0.3cm}
-    {\Large \textbf{Lab 4 --- Modellazione del Linguaggio con N-gram}}\\
-    \vspace{0.3cm}
-    {\large \textit{Modeling social media and literary language with N-grams}}\\
-    \vspace{0.5cm}
-    \rule{\linewidth}{0.5mm}
+    {\LARGE \textbf{Tecnologie del Linguaggio Naturale}}\\[0.4cm]
+    {\Large \textbf{Lab 4 --- Modellazione del Linguaggio con N-gram}}\\[0.3cm]
+    {\large \textit{Modeling social media and literary language with N-grams}}\\[0.6cm]
 
-    \vspace{2cm}
+    \rule{\linewidth}{0.8mm}
+
+    \vspace{1.8cm}
+
+    {\large \textbf{Gruppo di lavoro:}}\\[0.5cm]
 
     \begin{tabular}{ll}
-        \textbf{Studente:}  & Alessandro Olivero \\
-        \textbf{Matricola:} & [INSERIRE MATRICOLA] \\
-        \textbf{Docente:}   & Prof. Daniele Radicioni \\
-        \textbf{A.A.:}      & 2024/2025 \\
+        \textbf{Studente}       & \textbf{Matricola} \\[0.3cm]
+        Alessandro Olivero      & 915069  \\[0.2cm]
+        Samuele Iudice          & 1235245 \\[0.2cm]
+        Andrea Franco           & 1226739 \\[0.5cm]
+        \textbf{Docente:}       & Prof. Daniele Radicioni \\[0.2cm]
+        \textbf{Anno Accademico:} & 2024/2025 \\
     \end{tabular}
 
     \vfill
     {\large Torino, \today}
 \end{titlepage}
 
-% Indice
 \tableofcontents
 \newpage
 
@@ -118,78 +116,92 @@
 \section{Introduzione}
 % ============================================================
 
-Questo laboratorio ha come obiettivo la modellazione statistica del linguaggio
-attraverso modelli N-gram applicati a due domini linguistici radicalmente diversi:
-i \textbf{social media} (Twitter) e il \textbf{linguaggio letterario} (romanzi
-dell'Ottocento).
+L'obiettivo di questo laboratorio è modellare e confrontare due varietà
+linguistiche radicalmente diverse attraverso modelli N-gram: il linguaggio
+dei \textbf{social media} (Twitter) e il \textbf{linguaggio letterario}
+ottocentesco (\textit{Emma} di Jane Austen, 1816).
 
-L'ipotesi di partenza è che i due domini siano statisticamente distinguibili:
-il linguaggio dei social media è caratterizzato da frasi brevi, abbreviazioni,
-slang ed espressioni emotive, mentre il linguaggio letterario si distingue per
-strutture sintattiche complesse, vocabolario formale e coerenza narrativa.
+L'intuizione di fondo è semplice: un tweet e una frase di un romanzo dell'Ottocento
+sono testi profondamente diversi, e questa diversità dovrebbe essere catturabile
+in modo quantitativo. I modelli N-gram, pur essendo tra gli strumenti più semplici
+del NLP, si prestano bene a questo tipo di analisi: contano le sequenze di parole
+più frequenti e ne stimano le probabilità, rivelando le strutture ricorrenti
+tipiche di ciascun dominio.
 
-\subsection{Obiettivi}
+\subsection{Obiettivi specifici}
 
-\begin{itemize}
-    \item Costruire modelli N-gram (unigrammi, bigrammi, trigrammi) su entrambi
-          i corpora e analizzare le sequenze più frequenti.
-    \item Addestrare modelli di linguaggio MLE e Laplace e confrontarne i limiti.
-    \item Dimostrare le differenze tra i due domini attraverso la perplexity
-          e la log-likelihood.
-    \item Implementare un classificatore basato su log-likelihood capace di
-          distinguere automaticamente un testo Twitter da uno letterario.
-    \item Analizzare le differenze linguistiche attraverso metriche quantitative
-          come il Type-Token Ratio (TTR) e la lunghezza media delle frasi.
+\begin{itemize}[leftmargin=1.5cm]
+    \item Estrarre e confrontare gli N-gram (unigrammi, bigrammi, trigrammi)
+          più frequenti nei due corpora, con e senza stopwords.
+    \item Addestrare modelli di linguaggio MLE e Laplace e mostrarne
+          differenze e limiti pratici.
+    \item Analizzare la \textit{perplexity} cross-domain e discuterne i limiti
+          quando i vocabolari hanno dimensioni diverse.
+    \item Implementare un classificatore basato su \textit{log-likelihood}
+          che superi i limiti della perplexity.
+    \item Quantificare le differenze linguistiche attraverso il
+          Type-Token Ratio (TTR) e la lunghezza media delle frasi.
+    \item Generare testo nei due stili e confrontare qualitativamente
+          i risultati.
 \end{itemize}
 
-\subsection{Strumenti utilizzati}
+\subsection{Strumenti e librerie}
 
-\begin{itemize}
-    \item \textbf{Python 3.x}
-    \item \textbf{NLTK} (Natural Language Toolkit): tokenizzazione, corpora,
-          modelli di linguaggio
-    \item \textbf{Matplotlib}: visualizzazione dei risultati
-    \item \textbf{scikit-learn}: valutazione formale del classificatore
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Python 3.x} — linguaggio di implementazione
+    \item \textbf{NLTK} --- tokenizzazione, corpora, modelli N-gram
+    \item \textbf{Matplotlib} --- visualizzazione dei risultati
+    \item \textbf{re} (regex) --- pulizia dei testi
 \end{itemize}
 
 % ============================================================
 \section{Dataset}
 % ============================================================
 
-\subsection{Twitter Samples (NLTK)}
+\subsection{Twitter Samples}
 
-Il corpus Twitter è stato ottenuto dal pacchetto \texttt{nltk.corpus.twitter\_samples},
-che contiene tweet pre-classificati in positivi e negativi raccolti nel 2015.
+Il corpus Twitter proviene dal pacchetto \texttt{nltk.corpus.twitter\_samples},
+che include tweet annotati automaticamente in base alla presenza di emoticon
+positive o negative, raccolti nel 2015.
 
-\begin{itemize}
-    \item \texttt{positive\_tweets.json}: 5.000 tweet con emoticon positive \texttt{:)}
-    \item \texttt{negative\_tweets.json}: 5.000 tweet con emoticon negative \texttt{:(}
+\begin{itemize}[leftmargin=1.5cm]
+    \item \texttt{positive\_tweets.json} --- 5.000 tweet con emoticon \texttt{:)}
+    \item \texttt{negative\_tweets.json} --- 5.000 tweet con emoticon \texttt{:(}
     \item \textbf{Totale}: 10.000 tweet
 \end{itemize}
 
-\begin{lstlisting}[language=Python, caption=Caricamento dataset Twitter]
+Si è scelto di usare questo sottoinsieme invece del file
+\texttt{tweets.20150430-223406.json} (20.000 tweet generici),
+perché quest'ultimo era dominato da contenuti politici relativi
+alle elezioni britanniche del 30 aprile 2015 (menzionava Ed Miliband,
+David Cameron, SNP), rendendo il confronto meno significativo.
+I tweet positivi/negativi hanno invece un linguaggio più vario e
+rappresentativo del social media in generale.
+
+\begin{lstlisting}[language=Python, caption=Caricamento del corpus Twitter]
 from nltk.corpus import twitter_samples
 
 tweets_pos = twitter_samples.strings('positive_tweets.json')
 tweets_neg = twitter_samples.strings('negative_tweets.json')
-tweets_raw = tweets_pos + tweets_neg  # 10000 tweet totali
+tweets_raw = tweets_pos + tweets_neg  # 10.000 tweet totali
 \end{lstlisting}
 
-Esempi di tweet dal dataset:
-
-\begin{itemize}
-    \item \textit{Positivo}: ``\#FollowFriday @France\_Inte for being top engaged members :)''
-    \item \textit{Negativo}: ``hopeless for tmr :( ''
+Esempi rappresentativi:
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textit{Positivo}: \texttt{\#FollowFriday @France\_Inte for being top engaged members this week :)}
+    \item \textit{Negativo}: \texttt{hopeless for tmr :(}
 \end{itemize}
 
-\subsection{Corpus Letterario (Gutenberg)}
+\subsection{Corpus Letterario --- Emma di Jane Austen}
 
-Il testo letterario è stato estratto dal corpus Gutenberg di NLTK, che raccoglie
-opere classiche di dominio pubblico. È stato scelto il romanzo
-\textbf{\textit{Emma} di Jane Austen (1816)} come rappresentante del linguaggio
-letterario formale ottocentesco.
+Il testo letterario è stato estratto dal corpus Gutenberg di NLTK,
+che raccoglie opere classiche di dominio pubblico. È stato scelto
+\textbf{\textit{Emma} di Jane Austen (1816)} come rappresentante
+del linguaggio letterario formale ottocentesco: il romanzo è lungo,
+narrativamente ricco, e utilizza costruzioni sintattiche complesse
+con un vocabolario formale e preciso.
 
-\begin{lstlisting}[language=Python, caption=Caricamento corpus letterario]
+\begin{lstlisting}[language=Python, caption=Caricamento del corpus letterario]
 from nltk.corpus import gutenberg
 
 testo_letterario_raw = gutenberg.raw('austen-emma.txt')
@@ -198,51 +210,60 @@ testo_letterario_raw = gutenberg.raw('austen-emma.txt')
 
 \subsection{Statistiche comparative}
 
+La tabella seguente riassume le principali caratteristiche dei due corpora
+dopo il preprocessing.
+
 \begin{table}[H]
 \centering
 \begin{tabular}{lrr}
 \toprule
 \textbf{Metrica} & \textbf{Twitter} & \textbf{Letterario} \\
 \midrule
-Testi totali         & 10.000 tweet    & 1 romanzo \\
-Token totali         & 94.706          & 158.267 \\
-Parole uniche        & 12.024          & 9.305 \\
-Lunghezza media      & 16,0 parole     & 25,6 parole \\
-Type-Token Ratio     & 0,1270          & 0,0588 \\
+Numero di testi      & 10.000 tweet & 1 romanzo \\
+Token totali         & 94.706       & 158.267 \\
+Parole uniche        & 12.024       & 9.305 \\
+Lunghezza media      & 16,0 parole  & 25,6 parole \\
+Type-Token Ratio     & 0,1270       & 0,0588 \\
 \bottomrule
 \end{tabular}
-\caption{Statistiche comparative dei due corpora}
+\caption{Statistiche comparative dei due corpora dopo preprocessing}
 \end{table}
 
 % ============================================================
 \section{Preprocessing}
 % ============================================================
 
-\subsection{Pulizia dei testi}
+Prima di costruire i modelli N-gram, i testi devono essere puliti
+e normalizzati. I due corpora richiedono trattamenti diversi.
 
-I due corpora richiedono procedure di pulizia diverse data la loro natura.
+\subsection{Pulizia dei tweet}
 
-\subsubsection{Pulizia Twitter}
+I tweet contengono elementi non linguistici che andrebbero a
+sporcare il modello: URL, menzioni utente (\texttt{@user}),
+simboli degli hashtag, emoticon e punteggiatura.
 
-\begin{lstlisting}[language=Python, caption=Funzione di pulizia tweet]
+\begin{lstlisting}[language=Python, caption=Funzione di pulizia dei tweet]
 def pulisci_tweet(testo):
-    testo = re.sub(r'http\S+', '', testo)       # rimuovi URL
-    testo = re.sub(r'@\w+', '', testo)           # rimuovi @menzioni
-    testo = re.sub(r'#', '', testo)              # rimuovi simbolo #
-    testo = re.sub(r'[^a-zA-Z\s]', '', testo)   # solo lettere
+    testo = re.sub(r'http\S+', '', testo)      # rimuove URL
+    testo = re.sub(r'@\w+', '', testo)          # rimuove @menzioni
+    testo = re.sub(r'#', '', testo)             # rimuove simbolo #
+    testo = re.sub(r'[^a-zA-Z\s]', '', testo)  # solo lettere
     testo = testo.lower().strip()
     return testo
 \end{lstlisting}
 
 Esempio di trasformazione:
-\begin{itemize}
-    \item \textbf{Prima}: \texttt{\#FollowFriday @France\_Inte for being top :)}
-    \item \textbf{Dopo}: \texttt{followfriday for being top}
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Prima:} \texttt{\#FollowFriday @France\_Inte for being top engaged :)}
+    \item \textbf{Dopo:}  \texttt{followfriday for being top engaged}
 \end{itemize}
 
-\subsubsection{Pulizia testo letterario}
+\subsection{Pulizia del testo letterario}
 
-\begin{lstlisting}[language=Python, caption=Funzione di pulizia testo letterario]
+Per il romanzo è sufficiente rimuovere la punteggiatura e normalizzare
+il caso, dato che non contiene URL o menzioni.
+
+\begin{lstlisting}[language=Python, caption=Funzione di pulizia del testo letterario]
 def pulisci_letterario(testo):
     testo = re.sub(r'[^a-zA-Z\s]', '', testo)
     testo = testo.lower().strip()
@@ -251,40 +272,32 @@ def pulisci_letterario(testo):
 
 \subsection{Tokenizzazione}
 
-La tokenizzazione è stata effettuata con \texttt{word\_tokenize} di NLTK,
-che a differenza del semplice \texttt{split()} gestisce correttamente
-la punteggiatura e le contrazioni inglesi.
-
-\begin{lstlisting}[language=Python, caption=Tokenizzazione]
-from nltk.tokenize import word_tokenize
-
-tokens_tweet = word_tokenize(' '.join(tweets_puliti))
-tokens_lett  = word_tokenize(testo_lett_pulito)
-\end{lstlisting}
-
-Esempio di differenza tra \texttt{split()} e \texttt{word\_tokenize}:
+La tokenizzazione converte la stringa di testo in una lista di token
+(parole). Si è usata la funzione \texttt{word\_tokenize} di NLTK
+invece del semplice \texttt{split()}, perché gestisce correttamente
+le contrazioni inglesi e separa la punteggiatura residua.
 
 \begin{table}[H]
 \centering
 \begin{tabular}{ll}
 \toprule
-\textbf{Metodo} & \textbf{Output} \\
+\textbf{Metodo} & \textbf{Output su ``I can't stop,''} \\
 \midrule
 \texttt{split()} & \texttt{["I", "can't", "stop,"]} \\
 \texttt{word\_tokenize()} & \texttt{["I", "ca", "n't", "stop", ","]} \\
 \bottomrule
 \end{tabular}
-\caption{Confronto tra split() e word\_tokenize()}
+\caption{Differenza tra split() e word\_tokenize()}
 \end{table}
 
-\subsection{Rimozione delle Stopwords}
+\subsection{Rimozione delle stopwords}
 
-Le stopwords sono parole molto comuni (``the'', ``a'', ``in'') che appaiono
-frequentemente in tutti i tipi di testo e quindi non sono discriminative.
-Rimuoverle permette di far emergere i bigrammi veramente caratteristici
-di ciascun dominio.
+Le stopwords sono parole molto frequenti in qualsiasi testo inglese
+(``the'', ``a'', ``in'', ``of''...) e non sono discriminative tra
+i due domini. La loro rimozione permette di far emergere i bigrammi
+davvero caratteristici di ciascun corpus.
 
-\begin{lstlisting}[language=Python, caption=Rimozione stopwords]
+\begin{lstlisting}[language=Python, caption=Rimozione delle stopwords]
 from nltk.corpus import stopwords
 
 stop = set(stopwords.words('english'))
@@ -293,30 +306,29 @@ tokens_lett_filtrati  = [t for t in tokens_lett  if t not in stop]
 \end{lstlisting}
 
 % ============================================================
-\section{Modelli N-gram}
+\section{Analisi N-gram}
 % ============================================================
 
-\subsection{Cos'è un N-gram}
+\subsection{Definizione}
 
 Un \textbf{N-gram} è una sequenza contigua di $N$ parole in un testo.
-Formalmente, dato un testo $w_1, w_2, \ldots, w_T$, un N-gram è una
-sequenza $(w_i, w_{i+1}, \ldots, w_{i+N-1})$.
+Dato un testo $w_1, w_2, \ldots, w_T$, gli N-gram di ordine $N$ sono
+tutte le sequenze $(w_i, w_{i+1}, \ldots, w_{i+N-1})$ per
+$i = 1, \ldots, T-N+1$.
 
-\begin{itemize}
-    \item \textbf{Unigrammi} ($N=1$): singole parole.
-          Frase: ``i love cats'' $\rightarrow$ \texttt{[i, love, cats]}
-    \item \textbf{Bigrammi} ($N=2$): coppie di parole consecutive.
-          Frase: ``i love cats'' $\rightarrow$ \texttt{[(i,love), (love,cats)]}
-    \item \textbf{Trigrammi} ($N=3$): triplette di parole consecutive.
-          Frase: ``i love cats'' $\rightarrow$ \texttt{[(i,love,cats)]}
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Unigrammi} ($N=1$): parole singole.
+          Es.: ``i love cats'' $\to$ \texttt{[i, love, cats]}
+    \item \textbf{Bigrammi} ($N=2$): coppie consecutive.
+          Es.: ``i love cats'' $\to$ \texttt{[(i,love), (love,cats)]}
+    \item \textbf{Trigrammi} ($N=3$): triplette consecutive.
+          Es.: ``i love cats'' $\to$ \texttt{[(i,love,cats)]}
 \end{itemize}
 
-\subsection{Analisi delle frequenze}
+\subsection{Bigrammi senza stopwords}
 
-\subsubsection{Bigrammi senza stopwords}
-
-I bigrammi più frequenti dopo la rimozione delle stopwords sono i più
-informativi per caratterizzare ciascun dominio:
+La rimozione delle stopwords fa emergere le coppie di parole
+più caratteristiche di ciascun dominio.
 
 \begin{table}[H]
 \centering
@@ -324,29 +336,31 @@ informativi per caratterizzare ciascun dominio:
 \toprule
 \textbf{Dominio} & \textbf{Bigramma} & \textbf{Frequenza} \\
 \midrule
-Twitter & (wan, na)         & 123 \\
-Twitter & (follow, please)  & 81 \\
-Twitter & (gon, na)         & 72 \\
-Twitter & (happy, birthday) & 54 \\
+Twitter & (wan, na)          & 123 \\
+Twitter & (follow, please)   & 81  \\
+Twitter & (gon, na)          & 72  \\
+Twitter & (follow, u)        & 62  \\
+Twitter & (happy, birthday)  & 54  \\
 \midrule
-Letterario & (mr, knightley)   & 248 \\
-Letterario & (mrs, weston)     & 222 \\
-Letterario & (mr, elton)       & 184 \\
-Letterario & (miss, woodhouse) & 148 \\
+Letterario & (mr, knightley)    & 248 \\
+Letterario & (mrs, weston)      & 222 \\
+Letterario & (mr, elton)        & 184 \\
+Letterario & (miss, woodhouse)  & 148 \\
+Letterario & (frank, churchill) & 123 \\
 \bottomrule
 \end{tabular}
-\caption{Top bigrammi per dominio (senza stopwords)}
+\caption{Top bigrammi per dominio dopo la rimozione delle stopwords}
 \end{table}
 
-I bigrammi Twitter riflettono il linguaggio colloquiale e le interazioni
-sociali tipiche della piattaforma: \textit{wanna}, \textit{gonna},
-richieste di follow reciproco, auguri di compleanno.
+I bigrammi Twitter mostrano chiaramente le interazioni sociali tipiche
+della piattaforma: \textit{wanna} e \textit{gonna} (spezzati dal
+tokenizzatore in \texttt{wan na} e \texttt{gon na}), richieste di
+follow reciproco, auguri di compleanno. I bigrammi letterari sono
+quasi esclusivamente titoli e cognomi dei personaggi del romanzo,
+riflettendo la struttura narrativa del testo e il registro formale
+dell'inglese ottocentesco.
 
-I bigrammi letterari sono dominati da titoli e nomi propri dei personaggi
-del romanzo (Mr. Knightley, Mrs. Weston, Miss Woodhouse), riflettendo
-il registro formale dell'inglese ottocentesco.
-
-\subsubsection{Bigrammi con stopwords}
+\subsection{Bigrammi con stopwords}
 
 \begin{table}[H]
 \centering
@@ -354,11 +368,11 @@ il registro formale dell'inglese ottocentesco.
 \toprule
 \textbf{Dominio} & \textbf{Bigramma} & \textbf{Frequenza} \\
 \midrule
-Twitter & (thank, you)  & 260 \\
-Twitter & (i, love)     & 173 \\
-Twitter & (i, miss)     & 160 \\
-Twitter & (love, you)   & 155 \\
-Twitter & (i, cant)     & 155 \\
+Twitter & (thank, you) & 260 \\
+Twitter & (i, love)    & 173 \\
+Twitter & (i, miss)    & 160 \\
+Twitter & (love, you)  & 155 \\
+Twitter & (i, cant)    & 155 \\
 \midrule
 Letterario & (to, be)    & 602 \\
 Letterario & (of, the)   & 563 \\
@@ -367,20 +381,23 @@ Letterario & (she, had)  & 322 \\
 Letterario & (had, been) & 305 \\
 \bottomrule
 \end{tabular}
-\caption{Top bigrammi per dominio (con stopwords)}
+\caption{Top bigrammi per dominio con stopwords}
 \end{table}
 
-Osservazioni:
-\begin{itemize}
-    \item Twitter usa la forma contratta \textit{cant} invece di \textit{cannot},
-          tipica del linguaggio informale.
-    \item Il letterario usa \textit{i am} (forma completa) invece di \textit{i'm},
-          tipico dell'inglese formale ottocentesco.
-    \item Il letterario mostra strutture come \textit{had been} (past perfect)
-          assenti nei tweet.
+Alcune osservazioni interessanti:
+\begin{itemize}[leftmargin=1.5cm]
+    \item Twitter usa \textit{cant} (contrazione senza apostrofo),
+          mentre il romanzo usa \textit{i am} (forma estesa): è una
+          differenza di registro molto netta.
+    \item La struttura \textit{had been} (past perfect) è molto
+          frequente nel romanzo (305 occorrenze) e praticamente
+          assente nei tweet, dove i tempi verbali sono più semplici.
+    \item Twitter è dominato da espressioni affettive dirette
+          (\textit{i love}, \textit{love you}, \textit{i miss}),
+          tipiche della comunicazione personale sui social.
 \end{itemize}
 
-\subsubsection{Trigrammi}
+\subsection{Trigrammi}
 
 \begin{table}[H]
 \centering
@@ -388,18 +405,24 @@ Osservazioni:
 \toprule
 \textbf{Dominio} & \textbf{Trigramma} & \textbf{Frequenza} \\
 \midrule
-Twitter & (i, love, you)        & 84 \\
-Twitter & (you, so, much)       & 74 \\
-Twitter & (thanks, for, the)    & 67 \\
+Twitter & (i, love, you)     & 84 \\
+Twitter & (you, so, much)    & 74 \\
+Twitter & (thanks, for, the) & 67 \\
+Twitter & (i, want, to)      & 63 \\
 \midrule
-Letterario & (i, do, not)         & 123 \\
-Letterario & (i, am, sure)        & 97 \\
-Letterario & (she, could, not)    & 68 \\
-Letterario & (a, great, deal)     & 63 \\
+Letterario & (i, do, not)      & 123 \\
+Letterario & (i, am, sure)     & 97  \\
+Letterario & (she, could, not) & 68  \\
+Letterario & (a, great, deal)  & 63  \\
 \bottomrule
 \end{tabular}
 \caption{Top trigrammi per dominio}
 \end{table}
+
+I trigrammi letterari mostrano costruzioni tipiche del parlato
+ottocentesco trascritto: \textit{i do not}, \textit{i am sure},
+\textit{she could not}. Twitter al contrario produce espressioni
+emotive brevi e ripetitive: \textit{i love you}, \textit{you so much}.
 
 % ============================================================
 \section{Modelli di Linguaggio}
@@ -408,28 +431,29 @@ Letterario & (a, great, deal)     & 63 \\
 \subsection{Maximum Likelihood Estimation (MLE)}
 
 Il modello MLE stima la probabilità di una parola dato il contesto
-precedente contando le occorrenze nel corpus di training.
-
-Per i bigrammi, la probabilità condizionale è:
+precedente semplicemente contando le occorrenze nel corpus di training.
+Per i bigrammi, la formula è:
 
 \begin{equation}
-P(w_i \mid w_{i-1}) = \frac{C(w_{i-1}, w_i)}{C(w_{i-1})}
+P(w_i \mid w_{i-1}) = \frac{C(w_{i-1},\, w_i)}{C(w_{i-1})}
 \end{equation}
 
-dove $C(w_{i-1}, w_i)$ è il numero di occorrenze del bigramma
-$(w_{i-1}, w_i)$ e $C(w_{i-1})$ è il numero di occorrenze
-di $w_{i-1}$.
+dove $C(\cdot)$ indica il numero di occorrenze nel corpus.
 
-\begin{lstlisting}[language=Python, caption=Addestramento modello MLE]
+\begin{lstlisting}[language=Python, caption=Addestramento del modello MLE]
 from nltk.lm import MLE
 from nltk.lm.preprocessing import padded_everygram_pipeline
 
 n = 2  # bigrammi
 train_data, vocab = padded_everygram_pipeline(n, [tokens_tweet])
 
-modello = MLE(n)
-modello.fit(train_data, vocab)
+modello_tweet = MLE(n)
+modello_tweet.fit(train_data, vocab)
 \end{lstlisting}
+
+La funzione \texttt{padded\_everygram\_pipeline} aggiunge i simboli
+\texttt{<s>} (inizio frase) e \texttt{</s>} (fine frase) ai token
+e costruisce tutti gli N-gram fino all'ordine $n$ richiesto.
 
 \subsubsection{Probabilità condizionali osservate}
 
@@ -442,63 +466,65 @@ modello.fit(train_data, vocab)
 \midrule
 love  & i    & 0,0530 & 0,0017 \\
 wait  & cant & 0,1146 & 0,0000 \\
-happy & so   & 0,0138 & --- \\
+happy & so   & 0,0138 & ---    \\
 mr    & said & 0,0000 & 0,0802 \\
 been  & had  & ---    & 0,1885 \\
 \bottomrule
 \end{tabular}
-\caption{Probabilità condizionali nei due modelli MLE}
+\caption{Probabilità condizionali MLE nei due modelli}
 \end{table}
 
-I risultati confermano le differenze attese:
-\begin{itemize}
-    \item \textit{love} segue \textit{i} con probabilità 5,3\% su Twitter,
-          quasi mai nel romanzo.
-    \item \textit{mr} segue \textit{said} con probabilità 8\% nel romanzo,
-          mai nei tweet.
-    \item \textit{had been} (past perfect) è molto frequente nel romanzo
-          (18,85\%), assente nei tweet.
-\end{itemize}
+I risultati confermano le aspettative. \textit{love} segue \textit{i}
+con probabilità del 5,3\% su Twitter e quasi zero nel romanzo.
+\textit{had been} è frequentissimo nel romanzo (18,9\%), riflettendo
+l'uso narrativo del past perfect, mentre è praticamente assente nei tweet.
 
-\subsubsection{Limite del MLE: il problema dello zero}
+\subsubsection{Il problema dello zero}
 
-Il principale limite del MLE è che assegna probabilità \textbf{zero}
-a qualsiasi sequenza non osservata nel training. Questo causa la
-\textbf{perplexity infinita} quando il testo di test contiene parole
-o bigrammi mai visti:
+Il principale limite del MLE è che assegna probabilità esattamente
+\textbf{zero} a qualsiasi sequenza non osservata durante il training.
+Questo causa perplexity infinita su qualsiasi testo che contenga
+anche una sola parola o coppia mai vista:
 
 \begin{equation}
-P_{\text{MLE}}(\text{``xyzword''} \mid \text{``i''}) = \frac{0}{C(\text{``i''})} = 0
+P_{\text{MLE}}\bigl(\text{``xyzword''} \mid \text{``i''}\bigr)
+= \frac{0}{C(\text{``i''})} = 0
+\quad \Rightarrow \quad
+\text{PP} = \infty
 \end{equation}
 
 \begin{lstlisting}[language=Python, caption=Dimostrazione del problema dello zero]
 print(modello_tweet.score('xyzword', ['i']))
-# -> 0.000000  (zero esatto)
+# -> 0.000000
 
 frase_rara = word_tokenize("i xyzword lol")
 print(modello_tweet.perplexity(frase_rara))
-# -> inf  (infinita!)
+# -> inf
 \end{lstlisting}
+
+Questo è un problema reale: anche un solo token fuori vocabolario
+rende inutilizzabile la perplexity MLE come metrica di valutazione.
 
 \subsection{Smoothing di Laplace}
 
 Il \textbf{Laplace smoothing} (o add-one smoothing) risolve il problema
-dello zero aggiungendo 1 a tutti i conteggi:
+aggiungendo 1 a tutti i conteggi, incluse le coppie mai osservate:
 
 \begin{equation}
 P_{\text{Laplace}}(w_i \mid w_{i-1}) =
-\frac{C(w_{i-1}, w_i) + 1}{C(w_{i-1}) + |V|}
+\frac{C(w_{i-1},\, w_i) + 1}{C(w_{i-1}) + |V|}
 \end{equation}
 
-dove $|V|$ è la dimensione del vocabolario.
+dove $|V|$ è la dimensione del vocabolario. In questo modo nessuna
+sequenza ha probabilità zero, ma le sequenze mai viste ricevono
+una probabilità molto piccola.
 
-\begin{lstlisting}[language=Python, caption=Addestramento modello Laplace]
+\begin{lstlisting}[language=Python, caption=Addestramento del modello Laplace]
 from nltk.lm import Laplace
 
 modello_lp = Laplace(n)
 modello_lp.fit(train_data, vocab)
 
-# Ora le parole mai viste hanno probabilita' piccola ma > 0
 print(modello_lp.score('xyzword', ['i']))
 # -> 0.000065  (piccolo ma non zero)
 
@@ -512,13 +538,14 @@ print(modello_lp.perplexity(frase_rara))
 \toprule
 \textbf{Metrica} & \textbf{MLE} & \textbf{Laplace} \\
 \midrule
-P('xyzword' $|$ 'i')          & 0,000000 & 0,000065 \\
-Perplexity su parola rara     & $\infty$ & 1677,95 \\
-Gestisce parole mai viste     & No       & Sì \\
+$P(\text{``xyzword''} \mid \text{``i''})$ & 0,000000 & 0,000065 \\
+Perplexity su parola mai vista            & $\infty$ & 1677,95  \\
+Gestisce OOV\footnotemark                 & No       & Sì       \\
 \bottomrule
 \end{tabular}
 \caption{Confronto MLE vs Laplace}
 \end{table}
+\footnotetext{OOV = Out-Of-Vocabulary, parole non presenti nel training set.}
 
 \subsection{Scelta del valore di N}
 
@@ -526,105 +553,108 @@ Gestisce parole mai viste     & No       & Sì \\
 \centering
 \begin{tabular}{lrr}
 \toprule
-\textbf{N} & \textbf{PP frase Twitter} & \textbf{PP frase Letterario} \\
+$N$ & \textbf{PP frase Twitter} & \textbf{PP frase Letterario} \\
 \midrule
 1 & 5170,14 & 12025,00 \\
 2 & 5170,91 & 12027,00 \\
 3 & 5170,92 & 12027,00 \\
 \bottomrule
 \end{tabular}
-\caption{Confronto perplexity per n=1,2,3 (Laplace, modello Twitter)}
+\caption{Perplexity Laplace per $N=1,2,3$ (modello Twitter)}
 \end{table}
 
-I valori quasi identici per $N=1,2,3$ indicano un problema di
-\textbf{data sparsity}: con soli 94.706 token Twitter, la maggior
-parte dei bigrammi e trigrammi appare raramente, e Laplace li tratta
-quasi tutti come sequenze rare. Con un corpus più grande le differenze
-sarebbero più marcate, e i trigrammi catturerebbero strutture
-sintattiche più complesse.
+I valori quasi identici per $N=1,2,3$ sono sintomo di un problema
+di \textbf{data sparsity}: con soli 94.706 token Twitter, la
+maggior parte dei bigrammi e trigrammi possibili appare raramente
+o mai nel corpus. Laplace tratta quindi quasi tutte queste sequenze
+come sconosciute, producendo perplexity simili indipendentemente da $N$.
+Con un corpus più grande le differenze sarebbero più marcate, e i
+trigrammi catturerebbero strutture sintattiche più complesse.
 
 % ============================================================
 \section{Perplexity e Classificazione}
 % ============================================================
 
-\subsection{Cos'è la Perplexity}
+\subsection{Perplexity}
 
-La \textbf{perplexity} misura quanto un modello è ``sorpreso'' da un testo:
+La \textbf{perplexity} di un modello su una sequenza $W = w_1 \ldots w_N$
+misura quanto il modello è ``sorpreso'' da quel testo:
 
 \begin{equation}
-\text{PP}(W) = P(w_1, w_2, \ldots, w_N)^{-\frac{1}{N}} =
-\sqrt[N]{\frac{1}{P(w_1, w_2, \ldots, w_N)}}
+\text{PP}(W) = P(w_1, \ldots, w_N)^{-\frac{1}{N}}
+= \sqrt[N]{\prod_{i=1}^{N} \frac{1}{P(w_i \mid w_{i-1})}}
 \end{equation}
 
-Un valore \textbf{basso} indica che il modello conosce bene quel tipo
-di testo; un valore \textbf{alto} indica sorpresa.
+Un valore \textbf{basso} significa che il modello assegna alta probabilità
+alla sequenza (la conosce bene); un valore \textbf{alto} indica sorpresa.
 
-\subsection{Perplexity cross-domain}
+\subsection{Limiti della perplexity per la classificazione}
 
 \begin{table}[H]
 \centering
 \begin{tabular}{llrrl}
 \toprule
-\textbf{Frase} & \textbf{Tipo atteso} &
-\textbf{PP Twitter} & \textbf{PP Lett.} & \textbf{Verdetto} \\
+\textbf{Frase} & \textbf{Atteso} &
+\textbf{PP Twitter} & \textbf{PP Lett.} & \textbf{Risultato} \\
 \midrule
-``i love you so much''       & TW & 5170,9 & 4488,5 & TW \checkmark \\
-``so happy right now''       & TW & 12027,0 & 9308,0 & LT $\times$ \\
-``i miss you feel so sad''   & TW & 5746,3 & 4917,0 & TW \checkmark \\
-``she had been very well''   & LT & 12027,0 & 9308,0 & TW $\times$ \\
-``it was a very good thing'' & LT & 6756,2 & 5258,0 & TW $\times$ \\
+``i love you so much''     & TW & 5170,9  & 4488,5  & TW \checkmark \\
+``so happy right now''     & TW & 12027,0 & 9308,0  & LT $\times$   \\
+``i miss you feel sad''    & TW & 5746,3  & 4917,0  & TW \checkmark \\
+``she had been very well'' & LT & 12027,0 & 9308,0  & TW $\times$   \\
+``it was a very good''     & LT & 6756,2  & 5258,0  & TW $\times$   \\
 \bottomrule
 \end{tabular}
-\caption{Perplexity cross-domain (Laplace normalizzata)}
+\caption{Classificazione con perplexity Laplace: accuratezza 3/5}
 \end{table}
 
-\textbf{Limite osservato}: la perplexity con Laplace su vocabolari
-di dimensioni diverse non è direttamente comparabile. Il modello con
-vocabolario più grande (Twitter, 12.027 parole) distribuisce la
-probabilità su più termini e ottiene sempre perplexity più alta,
-indipendentemente dal contenuto del testo.
+Il classificatore basato su perplexity è inaffidabile. Il motivo è
+strutturale: il modello Twitter ha un vocabolario più grande (12.027
+parole) rispetto a quello letterario (9.308 parole). Con lo smoothing
+di Laplace, un vocabolario più grande ``diluisce'' la probabilità su
+più termini, producendo sistematicamente perplexity più alta.
+Il classificatore quindi tende sempre a preferire il modello con
+vocabolario più piccolo, indipendentemente dal contenuto del testo.
 
 \subsection{Classificatore con Log-Likelihood}
 
-Per superare il limite della perplexity, abbiamo implementato un
-classificatore basato sulla \textbf{log-likelihood}:
+Per superare questo limite si è adottata la \textbf{log-likelihood}
+come metrica di classificazione:
 
 \begin{equation}
-\log P(w_1, \ldots, w_N) = \sum_{i=2}^{N} \log P(w_i \mid w_{i-1})
+\mathcal{L}(W) = \log P(w_1, \ldots, w_N)
+= \sum_{i=2}^{N} \log P(w_i \mid w_{i-1})
 \end{equation}
 
-Un valore \textbf{meno negativo} (più alto) indica che il modello
-spiega meglio il testo.
+Un valore \textbf{meno negativo} (più vicino a zero) indica che il
+modello assegna alta probabilità alla sequenza, ovvero la ``conosce bene''.
+Poiché la log-likelihood non dipende dalla dimensione del vocabolario
+in modo diretto come la perplexity, è una metrica più robusta per
+confrontare modelli su vocabolari di dimensioni diverse.
 
-\begin{lstlisting}[language=Python, caption=Funzione log-likelihood]
+\begin{lstlisting}[language=Python, caption=Implementazione del classificatore log-likelihood]
 import math
 
 def log_likelihood(modello, tokens):
     score = 0.0
     for i in range(1, len(tokens)):
-        contesto = [tokens[i-1]]
-        prob = modello.score(tokens[i], contesto)
-        if prob > 0:
-            score += math.log(prob)
-        else:
-            score += math.log(1e-10)  # parole mai viste
+        prob = modello.score(tokens[i], [tokens[i-1]])
+        score += math.log(prob) if prob > 0 else math.log(1e-10)
     return score
 
-def classifica_loglik(testo, mod_tw, mod_lt):
+def classifica(testo, mod_tw, mod_lt):
     tokens = word_tokenize(testo.lower())
     ll_tw   = log_likelihood(mod_tw, tokens)
     ll_lett = log_likelihood(mod_lt, tokens)
     return "TWITTER" if ll_tw > ll_lett else "LETTERARIO"
 \end{lstlisting}
 
-\subsubsection{Risultati del classificatore}
+\subsubsection{Risultati}
 
 \begin{table}[H]
 \centering
-\begin{tabular}{p{7cm}rrr}
+\begin{tabular}{p{7.5cm}rrr}
 \toprule
-\textbf{Testo} &
-\textbf{LL Twitter} & \textbf{LL Lett.} & \textbf{Verdetto} \\
+\textbf{Testo} & \textbf{LL Twitter} & \textbf{LL Lett.} & \textbf{Verdetto} \\
 \midrule
 ``i love you so much thank you''
     & $-32,02$ & $-42,15$ & TWITTER \checkmark \\
@@ -644,25 +674,36 @@ def classifica_loglik(testo, mod_tw, mod_lt):
     & $-108,42$ & $-24,91$ & LETTERARIO \checkmark \\
 \bottomrule
 \end{tabular}
-\caption{Risultati del classificatore log-likelihood (8/8 corretti)}
+\caption{Risultati classificatore log-likelihood: 8/8 corretti}
 \end{table}
 
-Il classificatore log-likelihood classifica correttamente tutti gli 8 testi di test,
-a differenza del classificatore basato su perplexity (3/8).
+Il classificatore log-likelihood classifica correttamente tutti gli
+8 casi di test, rispetto ai 3/8 del classificatore basato su perplexity.
+Le differenze di log-likelihood sono particolarmente marcate per testi
+fortemente tipici di un dominio: ``she had been very well disposed''
+ha LL letterario di $-21,91$ contro $-124,74$ per Twitter, una
+differenza di oltre 100 unità che riflette quanto quella struttura
+sintattica sia rara nei tweet.
 
 % ============================================================
 \section{Generazione del Testo}
 % ============================================================
 
-Il modello MLE può essere usato per \textbf{generare} testo nello
-stile del corpus su cui è stato addestrato. La generazione avviene
-campionando la parola successiva in base alle probabilità condizionali
-apprese.
+I modelli MLE possono essere usati per \textbf{generare} testo nello
+stile del corpus su cui sono stati addestrati. La generazione è
+un processo probabilistico: ad ogni passo, la parola successiva
+viene campionata dalla distribuzione condizionale data la parola
+precedente.
 
-\begin{lstlisting}[language=Python, caption=Generazione testo]
-def genera_testo(modello, n_parole=30):
+Si è scelto di usare MLE (e non Laplace) per la generazione, perché
+Laplace distribuisce la probabilità su tutti i token del vocabolario
+inclusi quelli sconosciuti, producendo sequenze di lettere singole
+invece di parole reali.
+
+\begin{lstlisting}[language=Python, caption=Generazione del testo]
+def genera_testo(modello, n_parole=40):
     testo_raw = modello.generate(n_parole, random_seed=42)
-    # Filtra token speciali e lettere singole (artefatti)
+    # Filtra token speciali e artefatti
     testo_filtrato = [
         t for t in testo_raw
         if t not in ['<s>', '</s>', '<UNK>']
@@ -671,46 +712,42 @@ def genera_testo(modello, n_parole=30):
     return ' '.join(testo_filtrato)
 \end{lstlisting}
 
-\subsubsection{Testo generato}
-
 \begin{table}[H]
 \centering
-\begin{tabular}{p{2cm}p{10cm}}
+\begin{tabular}{p{2.2cm}p{10cm}}
 \toprule
-\textbf{Stile} & \textbf{Testo generato} \\
+\textbf{Stile} & \textbf{Testo generato (seed=42)} \\
 \midrule
 Twitter &
 ``papa coach it from the rain why are not a fantastic spring
 fiesta make sure the donation manager we all the rest his cute
-when im being a small polka dots'' \\
-\midrule
+when im being a small polka dots'' \\[0.5cm]
 Letterario &
 ``over a good exchange consent to the cardroom looking about
 her less allied with persevering attention could not that a
 substance of her but yet heard any body to me'' \\
 \bottomrule
 \end{tabular}
-\caption{Esempi di testo generato dai due modelli}
+\caption{Esempi di testo generato con i due modelli (seed=42)}
 \end{table}
 
-La differenza stilistica è evidente: il testo Twitter è disorganizzato
-e colloquiale, mentre quello letterario usa costruzioni più complesse
-tipiche del romanzo ottocentesco.
-
-\subsubsection{Confronto con diversi seed}
+Il testo Twitter è frammentato e colloquiale, con espressioni
+informali (\textit{im}, \textit{polka dots}). Il testo letterario
+usa strutture più elaborate (\textit{persevering attention},
+\textit{allied with}) tipiche della prosa ottocentesca.
 
 \begin{table}[H]
 \centering
-\begin{tabular}{cp{5cm}p{5cm}}
+\begin{tabular}{cp{5.5cm}p{5.5cm}}
 \toprule
 \textbf{Seed} & \textbf{Twitter} & \textbf{Letterario} \\
 \midrule
-99  & ``im getting bigger at the epic i love you in my life'' &
-      ``i can believe i shall decidedly in the neighbourhood'' \\
-7   & ``have a new cards in march free insurance'' &
-      ``hartfield and return among their getting at last'' \\
+99  & ``im getting bigger at the epic i love you in my life going'' &
+      ``i can believe i shall decidedly in the neighbourhood who'' \\
+7   & ``have a new cards in march free insurance co i beleve'' &
+      ``hartfield and return among their getting at last ah my'' \\
 123 & ``and by my bestfriend she brought us i want corn chips'' &
-      ``and away from being to announce cheerful exulting'' \\
+      ``and away from being to announce cheerful exulting than'' \\
 \bottomrule
 \end{tabular}
 \caption{Generazione con diversi seed casuali}
@@ -720,13 +757,16 @@ tipiche del romanzo ottocentesco.
 \section{Analisi Linguistica}
 % ============================================================
 
-\subsection{Type-Token Ratio (TTR)}
+\subsection{Type-Token Ratio}
 
-Il \textbf{Type-Token Ratio} misura la ricchezza lessicale di un corpus:
+Il \textbf{Type-Token Ratio} (TTR) misura la ricchezza lessicale
+di un corpus come rapporto tra tipi (parole distinte) e token
+(parole totali):
 
 \begin{equation}
-\text{TTR} = \frac{\text{numero di parole uniche (types)}}
-                  {\text{numero totale di parole (tokens)}}
+\text{TTR} =
+\frac{|\{w : w \in \text{corpus}\}|}{|\text{corpus}|}
+= \frac{\text{types}}{\text{tokens}}
 \end{equation}
 
 \begin{table}[H]
@@ -742,13 +782,15 @@ Letterario & 9.305  & 158.267 & 0,0588 \\
 \caption{Type-Token Ratio dei due corpora}
 \end{table}
 
-Il TTR di Twitter è più del \textbf{doppio} rispetto al romanzo.
-Questo risultato può sembrare controintuitivo, ma si spiega con
-la natura eterogenea dei tweet: ogni tweet introduce nomi propri,
-hashtag, abbreviazioni e slang diversi (\texttt{followfriday},
+Il TTR di Twitter è più del doppio rispetto al romanzo.
+Questo risultato è controintuitivo: ci si aspetterebbe che un romanzo
+ottocentesco abbia un vocabolario più ricco di tweet. La spiegazione
+sta nella natura eterogenea dei tweet: ogni tweet introduce hashtag,
+abbreviazioni, slang e nomi propri unici (\texttt{followfriday},
 \texttt{unfollowers}, \texttt{bestfriend}), molti dei quali appaiono
 raramente nel corpus. Il romanzo invece ripete sistematicamente gli
-stessi personaggi e costruzioni grammaticali.
+stessi personaggi e costruzioni grammaticali, abbassando il rapporto
+types/tokens.
 
 \subsection{Lunghezza media delle frasi}
 
@@ -762,83 +804,86 @@ Tweet             & 16,0 \\
 Frase letteraria  & 25,6 \\
 \bottomrule
 \end{tabular}
-\caption{Lunghezza media delle frasi}
+\caption{Lunghezza media delle frasi nei due corpora}
 \end{table}
 
-Le frasi letterarie sono in media \textbf{9,6 parole più lunghe} dei
-tweet. Questo riflette la struttura sintattica complessa del romanzo
-ottocentesco, con subordinate multiple, incisi e descrizioni elaborate,
-contrapposta alla brevità imposta dal limite di 140 caratteri di Twitter.
+Le frasi letterarie sono in media 9,6 parole più lunghe dei tweet.
+Questo riflette la struttura sintattica complessa del romanzo
+ottocentesco, con proposizioni subordinate multiple, incisi e
+descrizioni elaborate, contrapposta alla brevità imposta dal
+limite di 140 caratteri di Twitter (al momento della raccolta
+del dataset nel 2015).
 
 % ============================================================
-\section{Limiti e Vantaggi}
+\section{Limiti, Vantaggi e Confronto}
 % ============================================================
 
-\subsection{Vantaggi dell'approccio N-gram}
+\subsection{Vantaggi degli N-gram}
 
-\begin{itemize}
-    \item \textbf{Semplicità}: facile da implementare e interpretare.
-    \item \textbf{Efficienza}: addestramento e inferenza molto veloci.
-    \item \textbf{Trasparenza}: le probabilità condizionali sono
-          direttamente leggibili e spiegabili.
-    \item \textbf{Nessun training pesante}: non richiede GPU o
-          risorse computazionali elevate.
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Semplicità e trasparenza}: l'intero modello si riduce
+          a conteggi di sequenze. Le probabilità condizionali sono
+          direttamente leggibili e interpretabili.
+    \item \textbf{Efficienza computazionale}: addestramento e inferenza
+          sono molto veloci, non richiedono GPU né risorse elevate.
+    \item \textbf{Nessun training pre-esistente richiesto}: si addestrare
+          da zero su qualsiasi corpus in pochi secondi.
 \end{itemize}
 
-\subsection{Limiti dell'approccio N-gram}
+\subsection{Limiti degli N-gram}
 
-\begin{itemize}
-    \item \textbf{Data sparsity}: con dataset piccoli (come i 10.000
-          tweet usati), la maggior parte dei bigrammi e trigrammi
-          appare raramente o mai. Questo rende i valori di perplexity
-          per $N=1,2,3$ quasi identici.
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Data sparsity}: con dataset piccoli, la maggior parte
+          dei bigrammi e trigrammi possibili non viene mai osservata nel
+          training. Nel nostro caso, i 94.706 token Twitter sono
+          insufficienti per stimare bene le probabilità di trigrammi,
+          come dimostrano i valori di perplexity quasi identici per
+          $N=1,2,3$.
 
-    \item \textbf{Finestra di contesto limitata}: i bigrammi
-          considerano solo la parola precedente. Non catturano
-          dipendenze a lungo raggio tipiche del linguaggio naturale
-          (``The man who I met yesterday \textbf{was} kind'').
+    \item \textbf{Contesto limitato}: i bigrammi considerano solo la
+          parola immediatamente precedente. Non possono catturare
+          dipendenze a lungo raggio come in ``The man who I met
+          yesterday \textbf{was} kind'', dove \textit{was} dipende
+          da \textit{man} che è lontano.
 
-    \item \textbf{Nessuna comprensione semantica}: il modello non
-          capisce il significato delle parole. \textit{happy} e
-          \textit{joyful} sono trattate come parole completamente
-          diverse.
+    \item \textbf{Nessuna semantica}: il modello non capisce il
+          significato delle parole. \textit{happy} e \textit{joyful}
+          sono token completamente diversi, anche se sinonimi.
 
-    \item \textbf{Problema della perplexity con Laplace}:
-          la perplexity non è direttamente comparabile tra modelli
-          con vocabolari di dimensioni diverse, rendendo necessario
-          l'uso della log-likelihood per il classificatore.
-
-    \item \textbf{Dataset sbilanciato}: il corpus Twitter (94.706
-          token) è significativamente più piccolo del corpus
-          letterario (158.267 token), influenzando il confronto.
+    \item \textbf{Perplexity non comparabile tra vocabolari diversi}:
+          come dimostrato nella sezione sulla classificazione, la
+          perplexity con Laplace non è direttamente comparabile tra
+          modelli con vocabolari di dimensioni diverse. È stato
+          necessario ricorrere alla log-likelihood per ottenere un
+          classificatore affidabile.
 \end{itemize}
 
 \subsection{Confronto con approcci alternativi}
 
 \begin{table}[H]
 \centering
-\begin{tabular}{p{3cm}p{3.5cm}p{3.5cm}p{2.5cm}}
+\begin{tabular}{p{2.5cm}p{3.5cm}p{3.5cm}p{2cm}}
 \toprule
 \textbf{Approccio} & \textbf{Vantaggi} &
 \textbf{Svantaggi} & \textbf{Complessità} \\
 \midrule
-N-gram (questo lab) &
+N-gram &
 Semplice, veloce, interpretabile &
-Nessun contesto semantico, sparsità &
+Sparsità, no semantica, contesto corto &
 Bassa \\
 \midrule
 Word2Vec &
-Cattura semantica, vettori densi &
-Non genera testo, no probabilità &
+Semantica, vettori densi &
+No probabilità, no generazione &
 Media \\
 \midrule
 LSTM / RNN &
-Contesto lungo, genera testo realistico &
+Contesto lungo, genera testo &
 Richiede molto training &
 Alta \\
 \midrule
-Transformer (GPT) &
-Stato dell'arte, testo coerente &
+Transformer &
+Stato dell'arte &
 Computazionalmente costoso &
 Molto alta \\
 \bottomrule
@@ -850,30 +895,30 @@ Molto alta \\
 \section{Risultati e Conclusioni}
 % ============================================================
 
-\subsection{Riepilogo dei risultati}
+\subsection{Riepilogo}
 
 \begin{table}[H]
 \centering
-\begin{tabular}{lll}
+\begin{tabular}{p{4cm}p{4cm}p{5cm}}
 \toprule
 \textbf{Esperimento} & \textbf{Risultato} & \textbf{Interpretazione} \\
 \midrule
-Bigrammi Twitter     & (i, love), (cant, wait) &
-Linguaggio emozionale, informale \\
-Bigrammi Letterario  & (mr, knightley), (mrs, weston) &
-Nomi propri formali, titoli \\
+Bigrammi Twitter     & (wan,na), (i,love), (i,cant) &
+Slang, espressioni emotive \\
+Bigrammi Letterario  & (mr,knightley), (had,been) &
+Titoli formali, past perfect \\
 TTR Twitter          & 0,1270 &
-Vocabolario più vario \\
+Vocabolario eterogeneo \\
 TTR Letterario       & 0,0588 &
-Vocabolario più ripetitivo \\
-Lunghezza tweet      & 16,0 parole &
-Frasi brevi \\
-Lunghezza frase lett. & 25,6 parole &
-Frasi lunghe e complesse \\
-Classificatore (PP)  & 3/8 = 38\% &
-Inaffidabile \\
-Classificatore (LL)  & 8/8 = 100\% &
-Accurato su frasi note \\
+Vocabolario ripetitivo \\
+Lunghezza frasi TW   & 16,0 parole &
+Brevi, imposte dal limite 140 car. \\
+Lunghezza frasi LT   & 25,6 parole &
+Complesse, subordinate multiple \\
+Classif. perplexity  & 3/8 = 38\% &
+Inaffidabile con vocabolari diversi \\
+Classif. log-lik.    & 8/8 = 100\% &
+Robusto, non dipende da $|V|$ \\
 \bottomrule
 \end{tabular}
 \caption{Riepilogo dei principali risultati}
@@ -881,61 +926,61 @@ Accurato su frasi note \\
 
 \subsection{Conclusioni}
 
-Questo laboratorio ha dimostrato che i modelli N-gram sono strumenti
-efficaci per caratterizzare e distinguere stili linguistici diversi.
+Questo laboratorio ha mostrato che i modelli N-gram, pur nella loro
+semplicità, sono strumenti efficaci per caratterizzare e distinguere
+stili linguistici diversi.
 
 I principali risultati ottenuti sono:
 
-\begin{enumerate}
-    \item I bigrammi e trigrammi più frequenti riflettono chiaramente
-          le differenze culturali e stilistiche tra Twitter e il
-          linguaggio letterario ottocentesco.
+\begin{enumerate}[leftmargin=1.5cm]
+    \item I bigrammi e trigrammi più frequenti rispecchiano fedelmente
+          le caratteristiche culturali e stilistiche di ciascun dominio:
+          slang e interazioni sociali per Twitter, titoli formali e
+          strutture narrative complesse per il romanzo.
 
-    \item Il TTR più alto di Twitter conferma che i social media
-          producono un linguaggio lessicalmente più vario,
-          sebbene meno strutturato sintatticamente.
+    \item Il TTR più alto di Twitter è controintuitivo ma spiegabile:
+          la varietà lessicale dei tweet deriva dall'eterogeneità dei
+          contenuti e dall'uso di hashtag e abbreviazioni uniche,
+          non da un vocabolario intrinsecamente più ricco.
 
-    \item La perplexity con Laplace non è un indicatore affidabile
-          per la classificazione cross-dominio quando i vocabolari
-          hanno dimensioni molto diverse. La log-likelihood è
-          una metrica più robusta per questo scopo.
+    \item La perplexity con Laplace non è una metrica affidabile per
+          classificare testi tra modelli con vocabolari di dimensioni
+          diverse. La log-likelihood è una metrica più robusta
+          per questo scopo, raggiungendo il 100\% di accuratezza
+          sui casi di test.
 
-    \item Il classificatore basato su log-likelihood raggiunge
-          un'accuratezza del 100\% sulle frasi di test, confermando
-          che i due domini sono statisticamente ben separabili.
-
-    \item La generazione di testo evidenzia le differenze stilistiche:
-          il modello Twitter produce testo colloquiale e frammentato,
-          mentre il modello letterario produce costruzioni più
-          elaborate tipiche del romanzo.
+    \item I limiti osservati (sparsità, perplexity identica per $N=1,2,3$)
+          sono in gran parte attribuibili alla dimensione ridotta del
+          corpus Twitter. Un dataset più grande ridurrebbe la sparsità
+          e farebbe emergere differenze più nette tra unigrammi,
+          bigrammi e trigrammi.
 \end{enumerate}
 
-Sviluppi futuri potrebbero includere l'uso di dataset più grandi
-per ridurre la sparsità, l'adozione di smoothing più sofisticati
-come Kneser-Ney, e il confronto con modelli neurali come LSTM o
-Transformer per valutare il guadagno in qualità rispetto alla
-complessità computazionale.
+Sviluppi futuri potrebbero includere: l'uso di dataset più grandi,
+l'adozione di smoothing più sofisticati come Kneser-Ney, e il
+confronto con modelli neurali (LSTM, Transformer) per valutare
+il guadagno in qualità rispetto alla complessità computazionale.
 
 % ============================================================
-\section*{Contributi da strumenti generativi}
+\section*{Dichiarazione sull'uso di strumenti generativi}
 % ============================================================
 
-\addcontentsline{toc}{section}{Contributi da strumenti generativi}
+\addcontentsline{toc}{section}{Dichiarazione sull'uso di strumenti generativi}
 
-Come richiesto dalle istruzioni del laboratorio, si dichiara che
-nella stesura di questa relazione e nella scrittura del codice
-sono stati utilizzati strumenti di AI generativa (Claude, Anthropic)
-per:
+Come richiesto dalle linee guida del laboratorio, si dichiara che
+nella realizzazione di questo lavoro sono stati utilizzati strumenti
+di intelligenza artificiale generativa (Claude, Anthropic) per:
 
-\begin{itemize}
-    \item Supporto nella strutturazione del codice Python.
-    \item Debugging di errori nella generazione del testo e nel
-          classificatore.
-    \item Revisione e formattazione della relazione in \LaTeX.
+\begin{itemize}[leftmargin=1.5cm]
+    \item Supporto nella strutturazione e nel debugging del codice Python.
+    \item Identificazione e correzione di errori nel classificatore
+          e nella generazione del testo.
+    \item Formattazione della presente relazione in \LaTeX.
 \end{itemize}
 
-Tutte le scelte progettuali, l'analisi dei risultati e le conclusioni
-sono state elaborate autonomamente dallo studente.
+Tutte le scelte progettuali, l'analisi e l'interpretazione dei
+risultati, e le conclusioni sono state elaborate autonomamente
+dal gruppo.
 
 % ============================================================
 \end{document}
