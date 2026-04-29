@@ -175,10 +175,6 @@ di produzione sono della forma:
 dove $A, B, C \in V$ e $a \in \Sigma$, ovvero, ogni regola produce
 esattamente due non-terminali oppure un singolo terminale.
 
-Qualsiasi CFG senza $\varepsilon$-produzioni può essere convertita in CNF
-attraverso i passi standard di \textit{binarizzazione} delle regole con più di
-due simboli nella parte destra e \textit{eliminazione delle regole unitarie}.
-
 Nel progetto, la grammatica è stata progettata direttamente in CNF; le regole
 lessicali (terminali) sono memorizzate nel lessico, mentre le regole binarie
 $A \rightarrow BC$ sono nel file \texttt{regole\_binarie.json}.
