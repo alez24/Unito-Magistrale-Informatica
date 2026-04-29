@@ -142,7 +142,7 @@ La scelta di separare algoritmi e conoscenze linguistiche dona al sistema maggio
 % ============================================================
 % 2. Teoria applicata
 % ============================================================
-\section{Teoria applicata}
+\section{Applicazioni teoriche}
 
 \subsection{Grammatiche Context-Free (CFG)}
 
@@ -167,12 +167,12 @@ struttura sintattica delle frasi.
 \subsection{Forma Normale di Chomsky (CNF)}
 
 Un algoritmo di parsing efficiente come CKY richiede che la grammatica sia in
-\textbf{Forma Normale di Chomsky} (CNF). Una CFG è in CNF se tutte le regole
+Forma Normale di Chomsky (CNF). Una CFG è in CNF se tutte le regole
 di produzione sono della forma:
 \[
     A \rightarrow BC \quad \text{oppure} \quad A \rightarrow a
 \]
-dove $A, B, C \in V$ e $a \in \Sigma$. In altre parole, ogni regola produce
+dove $A, B, C \in V$ e $a \in \Sigma$, ovvero, ogni regola produce
 esattamente due non-terminali oppure un singolo terminale.
 
 Qualsiasi CFG senza $\varepsilon$-produzioni può essere convertita in CNF
