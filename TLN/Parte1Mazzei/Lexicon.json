@@ -1,7 +1,7 @@
 {
     "il": ["Det"], "la": ["Det"], "lo": ["Det"],
-    "i": ["Det"], "le": ["Det"], "gli": ["Det"],"l'": ["Det"],
-    "un": ["Det"], "una": ["Det"], "uno": ["Det"],
+    "i": ["Det"], "le": ["Det"], "gli": ["Det"], "l'": ["Det"],
+    "un": ["Det"], "una": ["Det"], "uno": ["Det"], "un'": ["Det"],
     
     "questo": ["Det"], "questa": ["Det"], "quello": ["Det"], "quella": ["Det"],
     "questi": ["Det"], "queste": ["Det"], "quegli": ["Det"], "quei": ["Det"],
