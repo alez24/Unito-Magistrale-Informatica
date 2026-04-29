@@ -20,10 +20,6 @@ from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 
 import nltk
-nltk.download('punkt')
-nltk.download('punkt_tab')
-nltk.download('stopwords')
-
 warnings.filterwarnings('ignore')
 
 stop = set(stopwords.words('english'))
@@ -47,7 +43,7 @@ print(f"Dataset: {df.shape[0]} canzoni, {df['artist'].nunique()} artisti")
 print("\n[STEP 2] Selezione artisti per era...")
 
 artisti_70s = [
-    'Led Zeppelin', 'Pink Floyd', 'Queen',
+    'Aerosmith', 'Pink Floyd', 'Queen',
     'Eagles', 'Fleetwood Mac', 'Bee Gees',
     'David Bowie', 'Elton John', 'ABBA',
     'Doors', 'Rolling Stones', 'Deep Purple'
@@ -74,40 +70,18 @@ print(f"Canzoni anni 2000:     {len(df_2000s)}")
 print("\n[STEP 3] Pulizia testi...")
 
 def pulisci_testo(testo):
-    """
-    Pulisce un testo lirico rimuovendo:
-    - indicazioni strutturali [Chorus], [Verse]...
-    - punteggiatura e caratteri non alfabetici
-    - stopwords NLTK
-    - parole molto corte (< 3 caratteri)
-    Restituisce una lista di token puliti.
-    """
     if not isinstance(testo, str):
         return []
-
-    # Rimuovi [Chorus], [Verse 1], etc.
     testo = re.sub(r'\[.*?\]', '', testo)
-
-    # Solo lettere e spazi
     testo = re.sub(r'[^a-zA-Z\s]', '', testo)
-
-    # Lowercase
     testo = testo.lower()
-
-    # Tokenizza con NLTK
-    tokens = word_tokenize(testo)
-
-    # Rimuovi stopwords e parole corte
-    tokens = [t for t in tokens
-              if t not in stop
-              and len(t) >= 3]
-
+    tokens = testo.split()
+    tokens = [t for t in tokens if t not in stop and len(t) >= 3]
     return tokens
 
 df_70s['tokens']   = df_70s['text'].apply(pulisci_testo)
 df_2000s['tokens'] = df_2000s['text'].apply(pulisci_testo)
 
-# Rimuovi canzoni vuote
 df_70s   = df_70s[df_70s['tokens'].map(len) > 5]
 df_2000s = df_2000s[df_2000s['tokens'].map(len) > 5]
 
@@ -136,13 +110,6 @@ for p, c in freq_2000s.most_common(15):
 # STEP 4: Addestramento Word2Vec
 # ============================================================
 print("\n[STEP 4] Addestramento Word2Vec...")
-
-# Parametri:
-# vector_size: dimensione embedding (quante dimensioni ha ogni vettore)
-# window:      contesto (quante parole prima/dopo considerare)
-# min_count:   ignora parole che appaiono meno di N volte
-# epochs:      quante volte scorre il dataset durante il training
-# seed:        per riproducibilità
 
 params = dict(
     vector_size = 100,
@@ -200,6 +167,8 @@ for w1, w2 in coppie:
             if w1 in model_2000s.wv and w2 in model_2000s.wv else "---"
     print(f"({w1}, {w2}){'':6} | {s70:>8} | {s2000:>10}")
 
+
+
 # ============================================================
 # STEP 7: Analisi vocabolario
 # ============================================================
@@ -216,7 +185,6 @@ print(f"Solo anni 70:   {len(solo_70s)} parole")
 print(f"Solo anni 2000: {len(solo_2000s)} parole")
 print(f"In comune:      {len(comuni)} parole")
 
-# Filtra parole con frequenza significativa
 interessanti_70s   = sorted(
     [p for p in solo_70s   if freq_70s[p]   > 20],
     key=lambda x: -freq_70s[x]
@@ -232,16 +200,146 @@ print(f"\nParole caratteristiche anni 2000 (freq > 20):")
 print(f"  {interessanti_2000s[:20]}")
 
 # ============================================================
+# ============================================================
+# STEP 6b: Analisi sistematica coppie di parole
+# ============================================================
+print("\n[STEP 6b] Analisi sistematica coppie...")
+
+FREQ_COPPIE = 100
+
+candidati = [
+    p for p in (vocab_70s & vocab_2000s)
+    if freq_70s[p] >= FREQ_COPPIE and freq_2000s[p] >= FREQ_COPPIE
+]
+
+print(f"Parole candidate (freq >= {FREQ_COPPIE} in entrambe): {len(candidati)}")
+print(f"Coppie totali da confrontare: {len(candidati) * (len(candidati)-1) // 2}")
+
+coppie_sist = []
+
+for i, w1 in enumerate(candidati):
+    for w2 in candidati[i+1:]:
+        s70   = model_70s.wv.similarity(w1, w2)
+        s2000 = model_2000s.wv.similarity(w1, w2)
+        delta = abs(s70 - s2000)
+        coppie_sist.append({
+            'w1':        w1,
+            'w2':        w2,
+            's70':       s70,
+            's2000':     s2000,
+            'delta':     delta,
+            'direzione': s2000 - s70,
+        })
+
+coppie_sist.sort(key=lambda x: -x['delta'])
+
+sep = "=" * 65
+sep2 = "-" * 65
+print("\n" + sep)
+print("TOP 20 COPPIE CON PIU' CAMBIAMENTO DI SIMILARITA'")
+print("(delta alto = la relazione tra queste parole e' cambiata molto)")
+print(sep)
+print(f"{'COPPIA':<26} {'ANNI 70':>8} {'ANNI 2000':>10} {'DELTA':>7}  TREND")
+print(sep2)
+
+for r in coppie_sist[:20]:
+    trend    = "piu' vicine ->" if r['direzione'] > 0 else "<- piu' lontane"
+    coppia   = f"({r['w1']}, {r['w2']})"
+    print(f"{coppia:<26} {r['s70']:>8.4f} {r['s2000']:>10.4f} {r['delta']:>7.4f}  {trend}")
+
+print("\n" + sep)
+print("TOP 10 COPPIE PIU' STABILI")
+print("(delta basso = la relazione e' rimasta praticamente uguale)")
+print(sep)
+print(f"{'COPPIA':<26} {'ANNI 70':>8} {'ANNI 2000':>10} {'DELTA':>7}")
+print(sep2)
+
+for r in coppie_sist[-10:][::-1]:
+    coppia = f"({r['w1']}, {r['w2']})"
+    print(f"{coppia:<26} {r['s70']:>8.4f} {r['s2000']:>10.4f} {r['delta']:>7.4f}")
+
+
+# STEP 7b: Analisi sistematica vocabolario comune
+# ============================================================
+print("\n[STEP 7b] Analisi sistematica parole comuni...")
+
+FREQ_MINIMA   = 30
+TOP_N_VICINI  = 10
+TOP_RISULTATI = 30
+
+parole_frequenti_comuni = [
+    p for p in comuni
+    if freq_70s[p] >= FREQ_MINIMA and freq_2000s[p] >= FREQ_MINIMA
+]
+
+print(f"Parole comuni con freq >= {FREQ_MINIMA} in entrambe le ere: "
+      f"{len(parole_frequenti_comuni)}")
+
+risultati = []
+
+for parola in parole_frequenti_comuni:
+    vicini_70s   = set(w for w,_ in model_70s.wv.most_similar(parola,   topn=TOP_N_VICINI))
+    vicini_2000s = set(w for w,_ in model_2000s.wv.most_similar(parola, topn=TOP_N_VICINI))
+
+    n_comuni_v  = len(vicini_70s & vicini_2000s)
+    overlap     = n_comuni_v / TOP_N_VICINI
+    cambiamento = 1 - overlap
+
+    risultati.append({
+        'parola':       parola,
+        'cambiamento':  cambiamento,
+        'overlap':      overlap,
+        'vicini_70s':   vicini_70s,
+        'vicini_2000s': vicini_2000s,
+        'freq_70s':     freq_70s[parola],
+        'freq_2000s':   freq_2000s[parola],
+    })
+
+risultati.sort(key=lambda x: -x['cambiamento'])
+
+print(f"\n{'='*70}")
+print(f"TOP {TOP_RISULTATI} PAROLE CHE HANNO CAMBIATO PIU' CONTESTO")
+print(f"(overlap basso = vicini completamente diversi tra le due ere)")
+print(f"{'='*70}")
+print(f"{'#':<4} {'PAROLA':<12} {'CAMBIAMENTO':>12} {'OVERLAP':>8} "
+      f"{'FREQ 70s':>9} {'FREQ 2000s':>10}")
+print("-" * 70)
+
+for i, r in enumerate(risultati[:TOP_RISULTATI]):
+    print(f"{i+1:<4} {r['parola']:<12} {r['cambiamento']:>11.0%} "
+          f"{r['overlap']:>8.0%} {r['freq_70s']:>9} {r['freq_2000s']:>10}")
+
+print(f"\n{'='*70}")
+print("DETTAGLIO TOP 10: cosa era vicino prima vs adesso")
+print(f"{'='*70}")
+
+for r in risultati[:10]:
+    p            = r['parola']
+    solo_70s_v   = r['vicini_70s']  - r['vicini_2000s']
+    solo_2000s_v = r['vicini_2000s'] - r['vicini_70s']
+    rimasti      = r['vicini_70s']  & r['vicini_2000s']
+
+    print(f"\n[ {p.upper()} ]  cambiamento: {r['cambiamento']:.0%}  "
+          f"(freq: {r['freq_70s']} anni70 / {r['freq_2000s']} anni2000)")
+    print(f"  Vicini spariti  (solo anni 70):   {', '.join(sorted(solo_70s_v))}")
+    print(f"  Vicini nuovi    (solo anni 2000): {', '.join(sorted(solo_2000s_v))}")
+    print(f"  Rimasti stabili:                  {', '.join(sorted(rimasti)) or 'nessuno'}")
+
+print(f"\n{'='*70}")
+print(f"TOP 10 PAROLE PIU' STABILI (contesto quasi identico tra le ere)")
+print(f"{'='*70}")
+
+for r in risultati[-10:][::-1]:
+    vicini_comuni_str = ', '.join(sorted(r['vicini_70s'] & r['vicini_2000s']))
+    print(f"  {r['parola']:<12} overlap: {r['overlap']:.0%}  "
+          f"| vicini comuni: {vicini_comuni_str}")
+
+# ============================================================
 # STEP 8: Clustering K-Means
 # ============================================================
 print("\n[STEP 8] Clustering K-Means...")
 
 def fai_clustering(model, n_clusters=6, top_words=200):
-    """
-    Prende le top_words parole più comuni nel vocabolario,
-    le rappresenta come vettori Word2Vec e le raggruppa
-    con K-Means in n_clusters cluster.
-    """
     parole  = model.wv.index_to_key[:top_words]
     vettori = np.array([model.wv[w] for w in parole])
     km      = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
@@ -267,10 +365,6 @@ for cid, parole_cl in sorted(cl_2000s.items()):
 print("\n[STEP 9] Generazione grafici...")
 
 def tsne_plot(parole, vettori, labels, titolo, ax, n_clusters=6):
-    """
-    Riduce i vettori a 2D con t-SNE e li visualizza
-    colorati per cluster. Annota le parole più significative.
-    """
     tsne = TSNE(n_components=2, random_state=42,
                 perplexity=30, max_iter=1000)
     v2d  = tsne.fit_transform(vettori)
@@ -306,13 +400,11 @@ fig.suptitle('Word2Vec - Testi Musicali: Anni 70 vs Anni 2000',
              fontsize=15, fontweight='bold')
 
 tsne_plot(par_70s, vec_70s, lbl_70s,
-          'Cluster parole anni 70\n'
-          '(Pink Floyd, Queen, Eagles, Bee Gees...)',
+          'Cluster parole anni 70\n(Pink Floyd, Queen, Eagles, Bee Gees...)',
           axes[0, 0])
 
 tsne_plot(par_2000s, vec_2000s, lbl_2000s,
-          'Cluster parole anni 2000\n'
-          '(Eminem, Coldplay, Lady Gaga, Taylor Swift...)',
+          'Cluster parole anni 2000\n(Eminem, Coldplay, Lady Gaga, Taylor Swift...)',
           axes[0, 1])
 
 top15_70s   = freq_70s.most_common(15)
@@ -354,14 +446,36 @@ ax2.bar(x + width/2,
 ax2.set_xticks(x)
 ax2.set_xticklabels(parole_sim, fontsize=11)
 ax2.set_ylabel('Similarità coseno con "love"')
-ax2.set_title('Come cambia il concetto di "love" tra le due ere',
-              fontweight='bold')
+ax2.set_title('Come cambia il concetto di "love" tra le due ere', fontweight='bold')
 ax2.legend()
 ax2.set_ylim(0, 1)
 
 plt.tight_layout()
 plt.savefig('word2vec_similarita.png', dpi=150, bbox_inches='tight')
 print("Salvato: word2vec_similarita.png")
+
+# --- Grafico 3: cambiamento semantico top 20 parole ---
+fig3, ax3 = plt.subplots(figsize=(10, 8))
+
+top20 = risultati[:20]
+nomi  = [r['parola'] for r in top20][::-1]
+vals  = [r['cambiamento'] for r in top20][::-1]
+
+bars = ax3.barh(nomi, vals, color='mediumpurple', alpha=0.8)
+ax3.set_xlabel('Cambiamento semantico (1 - overlap vicini)')
+ax3.set_title('Top 20 parole con maggior cambiamento contestuale\n'
+              'tra anni 70 e anni 2000', fontweight='bold')
+ax3.set_xlim(0, 1)
+ax3.axvline(x=0.5, color='gray', linestyle='--', alpha=0.5, label='50% cambiamento')
+ax3.legend()
+
+for bar, val in zip(bars, vals):
+    ax3.text(bar.get_width() + 0.01, bar.get_y() + bar.get_height()/2,
+             f'{val:.0%}', va='center', fontsize=9)
+
+plt.tight_layout()
+plt.savefig('word2vec_cambiamento.png', dpi=150, bbox_inches='tight')
+print("Salvato: word2vec_cambiamento.png")
 
 # ============================================================
 # STEP 10: Riepilogo
@@ -397,3 +511,4 @@ print("\nLab completato!")
 print("File generati:")
 print("  - word2vec_analisi.png")
 print("  - word2vec_similarita.png")
+print("  - word2vec_cambiamento.png")
