@@ -329,21 +329,19 @@ Sono gestiti tre casi distinti:
     \quad \Longrightarrow \quad
     S\_yoda \rightarrow NP\ V
 \]
-(nessuna trasposizione, l'ordine resta invariato poiché non c'è complemento da anteporre)
+(nessuna trasposizione, l'ordine resta invariato poiché non c'è complemento da anteporre)  Trasformazione Caso 1 -- VP con complemento diretto
 
-\begin{lstlisting}[caption={Trasformazione Caso 1 -- VP con complemento diretto}]
-if child0.label == 'V' and child1.label in ('NP', 'PP', 'Adj'):
-    verbo = child0
-    compl = child1
-    nodo.label = 'S_yoda'
-    nodo.children = [compl, sogg, verbo]
-\end{lstlisting}
+\begin{figure}[H] % [H] forza l'immagine esattamente in questo punto
+    \centering % Centra l'immagine
+    \includegraphics[width=0.8\textwidth]{caso1nodo} % Non serve l'estensione (.png, .jpg)
+    \caption{Trasformazione Caso 1 -- VP con complemento diretto}
+\end{figure}
 
 \subsection{Linearizzazione e Post-processing}
 
 La funzione \texttt{raccogli\_foglie()} effettua una visita DFS (depth-first,
 in-order) sull'albero trasformato, raccogliendo le parole nelle foglie da sinistra
-a destra. La funzione \texttt{converti\_in\_yoda()} applica infine un post-processing
+a destra. \\ \\La funzione \texttt{converti\_in\_yoda()} applica infine un post-processing
 minimo:
 
 \begin{itemize}
@@ -400,7 +398,7 @@ riconosce la struttura seguente:
 \subsection{Albero Trasformato in Ordine Yoda}
 
 La funzione \texttt{trasforma\_in\_yoda()} identifica la struttura
-$S \rightarrow NP\ (VP \rightarrow (VP1 \rightarrow V\ NP)\ Adv)$
+\\$S \rightarrow NP\ (VP \rightarrow (VP1 \rightarrow V\ NP)\ Adv)$
 (Caso 2) e riorganizza le costituenti nell'ordine $Comp\ Sogg\ V\ Adv$:
 
 \begin{figure}[H]
