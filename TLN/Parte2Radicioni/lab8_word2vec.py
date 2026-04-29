@@ -51,7 +51,7 @@ artisti_70s = [
 
 artisti_2000s = [
     'Eminem', 'Coldplay', 'Linkin Park',
-    'Kanye West', 'Radiohead', 'Foo Fighters',
+    'Christina Aguilera', 'Radiohead', 'Foo Fighters',
     'Lady Gaga', 'Taylor Swift', 'The Killers',
     'Green Day', 'Nickelback'
 ]
