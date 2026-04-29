@@ -43,7 +43,7 @@ print(f"Dataset: {df.shape[0]} canzoni, {df['artist'].nunique()} artisti")
 print("\n[STEP 2] Selezione artisti per era...")
 
 artisti_70s = [
-    'Aerosmith', 'Pink Floyd', 'Queen',
+    'Led Zeppelin', 'Pink Floyd', 'Queen',
     'Eagles', 'Fleetwood Mac', 'Bee Gees',
     'David Bowie', 'Elton John', 'ABBA',
     'Doors', 'Rolling Stones', 'Deep Purple'
@@ -454,29 +454,6 @@ plt.tight_layout()
 plt.savefig('word2vec_similarita.png', dpi=150, bbox_inches='tight')
 print("Salvato: word2vec_similarita.png")
 
-# --- Grafico 3: cambiamento semantico top 20 parole ---
-fig3, ax3 = plt.subplots(figsize=(10, 8))
-
-top20 = risultati[:20]
-nomi  = [r['parola'] for r in top20][::-1]
-vals  = [r['cambiamento'] for r in top20][::-1]
-
-bars = ax3.barh(nomi, vals, color='mediumpurple', alpha=0.8)
-ax3.set_xlabel('Cambiamento semantico (1 - overlap vicini)')
-ax3.set_title('Top 20 parole con maggior cambiamento contestuale\n'
-              'tra anni 70 e anni 2000', fontweight='bold')
-ax3.set_xlim(0, 1)
-ax3.axvline(x=0.5, color='gray', linestyle='--', alpha=0.5, label='50% cambiamento')
-ax3.legend()
-
-for bar, val in zip(bars, vals):
-    ax3.text(bar.get_width() + 0.01, bar.get_y() + bar.get_height()/2,
-             f'{val:.0%}', va='center', fontsize=9)
-
-plt.tight_layout()
-plt.savefig('word2vec_cambiamento.png', dpi=150, bbox_inches='tight')
-print("Salvato: word2vec_cambiamento.png")
-
 # ============================================================
 # STEP 10: Riepilogo
 # ============================================================
@@ -511,4 +488,3 @@ print("\nLab completato!")
 print("File generati:")
 print("  - word2vec_analisi.png")
 print("  - word2vec_similarita.png")
-print("  - word2vec_cambiamento.png")
