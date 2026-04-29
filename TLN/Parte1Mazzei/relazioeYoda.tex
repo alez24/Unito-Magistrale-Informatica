@@ -84,7 +84,7 @@
     {\large \textit{Tecnologie del linguaggio naturale}}\\[1cm]
     \rule{\linewidth}{1.5pt}\\[0.5cm]
     {\LARGE \textbf{Convertitore Lessicale Italiano $\rightarrow$ Yoda}}\\[0.3cm]
-    {\large Analisi sintattica con algoritmo CKY e trasformazione dell'ordine delle parole}\\[0.3cm]
+    {\large algoritmo CKY e trasformazione dell'ordine delle parole}\\[0.3cm]
     \rule{\linewidth}{1.5pt}
 }
 
@@ -113,9 +113,10 @@
 % ============================================================
 \begin{abstract}
 \noindent
-L'obbiettivo è l'implementazione di un sistema per la conversione automatica di frasi dall'italiano allo Yodish, variante sintattica ispirata al linguaggio di Yoda in Guerre Stellari. 
-Sviluppato in Python, il software integra un parser CKY per l'analisi a costituenti e un modulo di trasformazione ricorsiva degli alberi di derivazione. Questa relazione analizza l'intero workflow computazionale, dalla 
-modellazione della grammatica alla manipolazione sintattica, discutendo i risultati ottenuti e i limiti intrinseci dell'approccio rule-based.
+L'obbiettivo del progetto è l'implementazione di un sistema per la conversione automatica di frasi dall'italiano allo Yodish, variante sintattica ispirata al linguaggio di Yoda nella saga di Guerre Stellari. 
+Sviluppato in Python, il software integra un parser CKY per l'analisi a costituenti e un modulo di trasformazione ricorsiva degli alberi di derivazione. Questa relazione analizza l'intero workflow, dalla 
+modellazione della grammatica alla manipolazione sintattica, discutendo i risultati ottenuti e i limiti dell'approccio rule-based. 
+Nel corso della realizzazione progettuale abbiamo adottato il materiale didattico del docente come riferimento per l'apparato teorico e nozionistico, avvalendoci invece del supporto dell'intelligenza artificiale generativa come ausilio operativo nella fase di esecuzione pratica del progetto.
 \end{abstract}
 
 \newpage
@@ -139,7 +140,7 @@ Lo sviluppo progettuale si articola in tre fasi principali:
 L'approccio adottato garantisce una netta separazione tra logica algoritmica e base di conoscenza linguistica, consentendo maggiore flessbilità e portabilità del sistema.
 
 % ============================================================
-% 2. Applicazioni teorche
+% 2. Applicazioni teoriche
 % ============================================================
 \section{Applicazioni teoriche}
 
@@ -153,7 +154,7 @@ Una grammatica context-free è una quadrupla $G = (V, \Sigma, R, S)$ dove:
           $A \rightarrow \alpha$.
     \item $S \in V$ è il simbolo iniziale detto assioma.
 \end{itemize}
-Una stringa $w \in \Sigma^*$ è \textit{generata} da $G$ se esiste una derivazione
+Una stringa $w \in \Sigma^*$ è generata da $G$ se esiste una derivazione
 $S \Rightarrow^* w$. Il linguaggio $L(G)$ generato dalla grammatica è l'insieme di
 tutte le stringhe derivabili dall'assioma.
 
@@ -215,12 +216,11 @@ regole\_binarie.json & Dati JSON & Regole binarie della grammatica in CNF \\
 
 Lexicon è un dizionario in file JSON che mappa ogni parola italiana a una lista di
 categorie grammaticali (POS tag). Ad esempio:
-
-
-Le categorie utilizzate nella grammatica sono: \texttt{Det} (determinante),
-\texttt{N} (nome), \texttt{NP} (nome proprio / sintagma nominale pre-formato),
-\texttt{V} (verbo), \texttt{Adj} (aggettivo), \texttt{Adv} (avverbio),
-\texttt{Prep} (preposizione), \texttt{Num} (numerale).
+\begin{figure}[H] % [H] forza l'immagine esattamente in questo punto
+    \centering % Centra l'immagine
+    \includegraphics[width=0.8\textwidth]{lexicon} % Non serve l'estensione (.png, .jpg)
+    \caption{Organizzazione dei dati nel file Lexicon.JSON}
+\end{figure}
 
 \subsection{Le Regole Grammaticali (\texttt{regole\_binarie.json})}
 
@@ -231,18 +231,12 @@ al genitore) è una ottimizzazione utile all'algoritmo CKY: durante il parsing s
 quali genitori sono compatibili con una coppia di figli già riconosciuti, non
 il contrario.
 
-\begin{lstlisting}[language={},caption={Esempio di regole binarie (formato chiave-valore invertito)}]
-{
-  "Det,N":   ["NP"],
-  "NP,VP":   ["S"],
-  "V,NP":    ["VP", "VP1"],
-  "VP1,Adv": ["VP"],
-  "Prep,NP": ["PP"],
-  "V,PP":    ["VP"],
-  "V,Adj":   ["VP"],
-  "Num,N":   ["NP"]
-}
-\end{lstlisting}
+\begin{figure}[H] % [H] forza l'immagine esattamente in questo punto
+    \centering % Centra l'immagine
+    \includegraphics[width=0.3\textwidth]{regole} % Non serve l'estensione (.png, .jpg)
+    \caption{Organizzazione delle regole binarie nel file JSON}
+    
+\end{figure}
 
 La funzione \texttt{carica\_dizionari()} in fase di inizializzazione converte le
 chiavi stringa (es. \texttt{"Det,N"}) nelle tuple Python richieste dall'algoritmo
@@ -253,9 +247,9 @@ chiavi stringa (es. \texttt{"Det,N"}) nelle tuple Python richieste dall'algoritm
 % ============================================================
 \section{Implementazione}
 
-\subsection{La Classe \texttt{Nodo}}
+\subsection{La Classe Nodo}
 
-L'albero di derivazione è rappresentato tramite la classe \texttt{Nodo}, che
+L'albero di derivazione è rappresentato tramite la classe Nodo, che
 implementa un nodo di albero n-ario con tre attributi:
 
 \begin{itemize}
@@ -265,26 +259,21 @@ implementa un nodo di albero n-ario con tre attributi:
     \item \texttt{word}: la parola (solo per le foglie lessicali).
 \end{itemize}
 
-I nodi foglia (terminali) sono distinti da quelli interni tramite il metodo
+I nodi foglia sono distinti da quelli interni tramite il metodo
 \texttt{is\_leaf()}, che verifica se la lista \texttt{children} è vuota.
 
 La struttura è volutamente semplice per facilitare la visita ricorsiva sia nella
 stampa (\texttt{pretty\_print}) che nella trasformazione Yoda.
 
-\begin{lstlisting}[caption={Classe Nodo -- costruttore e metodi principali}]
-class Nodo:
-    def __init__(self, label, children=None, word=None):
-        self.label    = label
-        self.children = children or []
-        self.word     = word
-
-    def is_leaf(self):
-        return len(self.children) == 0
-\end{lstlisting}
+\begin{figure}[H] % [H] forza l'immagine esattamente in questo punto
+    \centering % Centra l'immagine
+    \includegraphics[width=0.8\textwidth]{classenodo} % Non serve l'estensione (.png, .jpg)
+    \caption{Implementazione dell'albero di derivazione}  
+\end{figure}
 
 Il metodo \texttt{pretty\_print()} produce una rappresentazione visuale ad albero
 nel terminale, con connettori grafici ASCII (\texttt{├──}, \texttt{└──}, \texttt{│})
-analoga a quella del comando Unix \texttt{tree}.
+per dare in output un risultato più chiaro all'utente.
 
 \subsection{L'Algoritmo CKY: Implementazione}
 
@@ -297,32 +286,19 @@ cella è un dizionario \texttt{\{simbolo: Nodo\}}. Questa scelta — memorizzare
 direttamente il nodo invece del semplice booleano — consente di ricostruire
 l'albero durante il parsing senza una fase separata di \textit{backtracking}.
 
-\begin{lstlisting}[caption={Nucleo dell'algoritmo CKY con ricostruzione dell'albero}]
-for span in range(2, n + 1):
-    for i in range(n - span + 1):
-        j = i + span - 1
-        for k in range(i, j):
-            for (B, C), parents in binary_rules.items():
-                if B in table[i][k] and C in table[k+1][j]:
-                    for A in parents:
-                        if A not in table[i][j]:
-                            node_B = table[i][k][B]
-                            node_C = table[k+1][j][C]
-                            table[i][j][A] = Nodo(
-                                label=A,
-                                children=[node_B, node_C]
-                            )
-\end{lstlisting}
+\begin{figure}[H] % [H] forza l'immagine esattamente in questo punto
+    \centering % Centra l'immagine
+    \includegraphics[width=0.6\textwidth]{cky} % Non serve l'estensione (.png, .jpg)
+    \caption{Implementazione dell'algoritmo cky}
+\end{figure}
 
-Si noti che, in caso di ambiguità grammaticale, l'algoritmo mantiene solo il
-\textit{primo} albero trovato per ogni non-terminale in ogni cella, corrispondente
-alla prima regola applicabile nell'ordine di iterazione del dizionario. Una
-grammatica ambigua produce risultati deterministici ma dipendenti dall'ordinamento
-delle regole.
 
-\subsection{La Trasformazione in Ordine Yoda}
+L'algoritmo gestisce l'ambiguità grammaticale in modo deterministico restituendo unicamente il primo albero derivato, 
+la cui struttura dipende esclusivamente dall'ordine di iterazione delle regole nel dizionario.
 
-Il modulo più originale del progetto è la funzione \texttt{trasforma\_in\_yoda()},
+\subsection{Trasformazione in Ordine Yoda}
+
+La funzione \texttt{trasforma\_in\_yoda()},
 che visita l'albero in post-ordine (prima i figli, poi il nodo corrente) e
 riorganizza i sottoalberi laddove trova la struttura sintattica canonica italiana.
 
@@ -377,47 +353,6 @@ minimo:
     \item La prima parola della frase Yoda viene capitalizzata.
 \end{itemize}
 
-% ============================================================
-% 5. INTERFACCIA DA LINEA DI COMANDO
-% ============================================================
-\section{Interfaccia da Linea di Comando (CLI)}
-
-Il modulo è utilizzabile direttamente da terminale grazie al modulo \texttt{argparse}
-della libreria standard Python. Sono supportate due modalità d'uso:
-
-\paragraph{Frase singola:}
-\begin{lstlisting}[language=bash, style=pythonstyle]
-python yoda.py "Mario mangia il gatto"
-\end{lstlisting}
-
-\paragraph{Modalità test:}
-\begin{lstlisting}[language=bash, style=pythonstyle]
-python yoda.py --test
-\end{lstlisting}
-
-La modalità \texttt{--test} esegue una suite di frasi predefinite confrontando
-l'output ottenuto con quello atteso. Ogni test riporta \texttt{CORRETTO} o
-\texttt{ERRORE} con il dettaglio dell'output ottenuto vs.\ atteso.
-
-Le tre frasi di test incluse nel codice sono:
-
-\begin{table}[H]
-\centering
-\caption{Suite di test del modulo \texttt{--test}}
-\begin{tabular}{l l}
-\toprule
-\textbf{Input italiano} & \textbf{Output Yoda atteso} \\
-\midrule
-Tu hai amici lì & Amici tu hai lì \\
-Tu avrai novecento anni di età & Novecento anni di età tu avrai \\
-Noi siamo illuminati & Illuminati noi siamo \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-L'output a schermo include, per ogni frase: la frase originale, l'albero di
-derivazione iniziale, l'albero dopo la trasformazione Yoda, e la frase finale.
-Questo livello di verbosità è intenzionale a scopo didattico.
 
 % ============================================================
 % 6. ESEMPIO DI ESECUZIONE
