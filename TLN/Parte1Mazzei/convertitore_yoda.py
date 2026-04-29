@@ -143,10 +143,6 @@ def cky_parse(sentence, binary_rules=BINARY_RULES, lexicon=LEXICON):
 # ===========================================================
 
 def trasforma_in_yoda(nodo):
-    """
-    Trasforma ricorsivamente l'albero di derivazione italiano in un albero Italiano-Yoda (ordine XSV).
-    Regola principale: quando troviamo S → NP VP con VP → V Comp (dove Comp è NP o PP), riordiniamo in S_yoda → Comp NP V
-    """
 
     # Caso base: foglia → non c'è nulla da trasformare
     if nodo.is_leaf():
