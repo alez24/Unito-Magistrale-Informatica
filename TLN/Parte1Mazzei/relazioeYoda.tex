@@ -267,7 +267,7 @@ stampa (\texttt{pretty\_print}) che nella trasformazione Yoda.
 
 \begin{figure}[H] % [H] forza l'immagine esattamente in questo punto
     \centering % Centra l'immagine
-    \includegraphics[width=0.8\textwidth]{classenodo} % Non serve l'estensione (.png, .jpg)
+    \includegraphics[width=0.6\textwidth]{classenodo} % Non serve l'estensione (.png, .jpg)
     \caption{Implementazione dell'albero di derivazione}  
 \end{figure}
 
@@ -341,7 +341,7 @@ Sono gestiti tre casi distinti:
 
 La funzione \texttt{raccogli\_foglie()} effettua una visita DFS (depth-first,
 in-order) sull'albero trasformato, raccogliendo le parole nelle foglie da sinistra
-a destra. \\ \\La funzione \texttt{converti\_in\_yoda()} applica infine un post-processing
+a destra. La funzione \texttt{converti\_in\_yoda()} applica infine un post-processing
 minimo:
 
 \begin{itemize}
@@ -353,7 +353,7 @@ minimo:
 
 
 % ============================================================
-% 6. ESEMPIO DI ESECUZIONE
+% ESEMPIO DI ESECUZIONE
 % ============================================================
 \section{Esempio di Esecuzione}
 
@@ -428,44 +428,54 @@ La funzione \texttt{trasforma\_in\_yoda()} identifica la struttura
 
 La linearizzazione delle foglie produce la frase finale:
 \begin{center}
-    \textbf{Input:} \textit{Tu hai amici lì} \\[0.3cm]
-    \textbf{Output IT-YO:} \textit{Amici tu hai lì}
+    \textbf{Input ITALIANO:} \textit{Tu hai amici lì} \\[0.3cm]
+    \textbf{Output YODISH:} \textit{Amici tu hai lì}
 \end{center}
 
 % ============================================================
 % 7. LIMITI E POSSIBILI ESTENSIONI
 % ============================================================
-\section{Limiti e Possibili Sviluppi Futuri}
 
-\subsection{Limiti del Sistema}
+\section{Test e Limiti del Sistema}
 
-\paragraph{Copertura e Scalabilità.}
-Il lessico e la grammatica sono limitati a costruzioni semplici (SVO). L'estensione manuale dei file JSON non è scalabile per il linguaggio naturale arbitrario e non sono gestite strutture complesse (subordinate, passive, clitici).
+In questa sezione vengono analizzate le prestazioni del convertitore attraverso casi di test reali, verificando sia la corretta capacità di trasformazione sintattica sia le restrizioni strutturali del parser CKY implementato.
 
-\paragraph{Gestione dell'Ambiguità.}
-Il sistema restituisce il primo albero trovato senza segnalare eventuali ambiguità strutturali né permettere l'esplorazione di parsing alternativi.
+\subsection{Casi di Test (Successo)}
+Le frasi riportate di seguito sono state elaborate correttamente, poiché i lemmi appartengono al \texttt{Lexicon.json} e le strutture rispettano le regole in Forma Normale di Chomsky (CNF) definite nel progetto.
 
-\paragraph{Analisi Morfologica.}
-Manca un modulo di lemmatizzazione: il lessico si basa su forme di superficie, richiedendo l'inserimento manuale di ogni flessione verbale o nominale.
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{|l|l|l|p{5cm}|}
+\hline
+\textbf{Tipologia} & \textbf{Input Italiano (SVO)} & \textbf{Output Yodish (XSV)} & \textbf{Analisi} \\ \hline
+Semplice & \textit{Luke usa la forza} & La forza Luke usa & Il complemento oggetto "la forza" viene correttamente anteposto al soggetto. \\ \hline
+Con Numerale & \textit{Vader distrugge due droni} & Due droni Vader distrugge & Il sintagma nominale (NP) composto da numerale e nome viene spostato integralmente. \\ \hline
+Con Avverbio & \textit{Io vedo sith qui} & Sith io vedo qui & L'avverbio "qui" mantiene la posizione finale secondo la logica del Caso 2. \\ \hline
+Sogg. Pronome & \textit{Lui mangia la mela} & La mela lui mangia & Corretto riconoscimento dei pronomi personali come sintagmi nominali. \\ \hline
+\end{tabular}
+\caption{Esempi di trasformazioni eseguite con successo dal sistema.}
+\label{tab:test_successo}
+\end{table}
 
-\paragraph{Trasformazione Superficiale.}
-La "Yodificazione" avviene efficacemente solo al livello radice ($S$); eventuali subordinate annidate non vengono processate correttamente.
-
-\subsection{Sviluppi Futuri}
+\subsection{Limiti del Sistema (Test Negativi)}
+Attraverso una fase di "stress test" con parole estratte esclusivamente dal lessico fornito, sono emersi i limiti intrinseci dell'approccio rule-based del sistema:
 
 \begin{itemize}
-    \item \textbf{Integrazione Risorse Esterne}: Uso di spaCy o WordNet per la copertura lessicale e il PoS tagging automatico.
-    \item \textbf{Arricchimento Grammaticale}: Supporto a frasi relative, coordinate e perifrasi verbali complesse.
-    \item \textbf{Parser Probabilistico}: Implementazione di \textbf{PCFG} con algoritmo CKY probabilistico per una gestione pesata dell'ambiguità.
-    \item \textbf{Interfaccia Utente}: Sviluppo di una GUI o web app (Flask) per rendere il tool accessibile.
-    \item \textbf{Trasformazioni Multiple}: Implementazione di altri stili sintattici (es. topicalizzazione o dislocazione).
+    \item \textbf{Posizionamento degli Aggettivi:} Sebbene termini come \textit{"oscuro"} o \textit{"potente"} siano presenti nel lessico come \texttt{Adj}, la grammatica attuale fallisce il parsing di frasi come \textit{"Il lato oscuro vince"}. Ciò è dovuto alla mancanza di una regola binaria che gestisca la sequenza \texttt{N, Adj} all'interno di un NP.
+    \item \textbf{Ambiguità Lessicale:} Parole come \textit{"rosso"} o \textit{"nero"} sono caricate con doppio tag (\texttt{Adj} e \texttt{N}). Il parser restituisce solo il primo albero derivato trovato, ignorando potenziali interpretazioni alternative che potrebbero influenzare la qualità della traduzione.
+    \item \textbf{Mancanza di Flessione (Lemmatizzazione):} Il sistema fallisce se viene inserita una forma verbale non esplicitamente mappata. Ad esempio, mentre \textit{"Noi abbiamo speranza"} viene riconosciuto, \textit{"Noi avevamo speranza"} produce un errore poiché "avevamo" non figura nel \texttt{Lexicon.json}.
+    \item \textbf{Strutture Complesse:} Il sistema non è in grado di processare complementi introdotti da preposizioni articolate (es. \textit{"della"}, \textit{"nella"}) a meno che non vengano inserite manualmente come token singoli, limitando di fatto il linguaggio naturale arbitrario.
 \end{itemize}
+
+\subsection{Conclusioni sui Test}
+I test confermano che il cuore algoritmico (CKY e trasformazione ricorsiva) è solido e performante per l'uso didattico previsto. Tuttavia, la "Yodificazione" è attualmente limitata alla struttura della frase principale: il sistema è ottimizzato per spostare complementi diretti, ma richiede un arricchimento del file \texttt{regole\_binarie.json} per gestire correttamente subordinate o strutture aggettivali complesse.
 
 
 % ============================================================
 % 9. CONCLUSIONI
 % ============================================================
-\section{Conclusioni}
+\section{Conclusioni e sviluppi futuri}
 
 Il progetto IT-YO ha consentito di mettere in pratica i concetti fondamentali
 di analisi sintattica formale: progettazione di una grammatica context-free
@@ -488,6 +498,15 @@ Tra i possibili sviluppi futuri, l'integrazione con un PoS tagger automatico e
 l'estensione della grammatica a costruzioni più complesse rappresentano le
 direzioni più promettenti per avvicinare il sistema a un uso su frasi naturali
 non vincolate.
+\subsection{Sviluppi Futuri}
+
+\begin{itemize}
+    \item \textbf{Integrazione Risorse Esterne}: Uso di spaCy o WordNet per la copertura lessicale e il PoS tagging automatico.
+    \item \textbf{Arricchimento Grammaticale}: Supporto a frasi relative, coordinate e perifrasi verbali complesse.
+    \item \textbf{Parser Probabilistico}: Implementazione di \textbf{PCFG} con algoritmo CKY probabilistico per una gestione pesata dell'ambiguità.
+    \item \textbf{Interfaccia Utente}: Sviluppo di una GUI o web app (Flask) per rendere il tool accessibile.
+    \item \textbf{Trasformazioni Multiple}: Implementazione di altri stili sintattici (es. topicalizzazione o dislocazione).
+\end{itemize}
 
 
 \end{document}
