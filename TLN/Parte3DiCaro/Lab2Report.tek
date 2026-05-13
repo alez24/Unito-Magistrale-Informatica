@@ -1,0 +1,233 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{parskip}
+\usepackage{caption}
+
+\geometry{margin=2.5cm}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+\title{\textbf{LAB-2: Valutazione Content-to-Form}\\
+\large Ricerca Onomasiologica con WordNet\\
+\normalsize TLN 2025/2026 -- Prof. Luigi Di Caro}
+\author{Alessandro Olivero \and Samele Iudice \and Andrea Franco}
+\date{}
+
+\begin{document}
+\maketitle
+
+% -----------------------------------------------------------------------
+\section{Obiettivo}
+
+Il Lab-2 esplora la \textbf{ricerca onomasiologica}: dato un contenuto
+(una definizione scritta in linguaggio naturale), si cerca di risalire
+alla \textbf{forma lessicale} codificata in WordNet, ovvero al synset
+corretto.
+
+Questo inverte la direzione tipica di un dizionario
+(\textit{forma} $\to$ \textit{contenuto}) e
+pone la domanda: \emph{quanto deve essere ``buona'' una definizione
+affinch\'e permetta il recupero automatico del concetto giusto?}
+
+% -----------------------------------------------------------------------
+\section{Materiale e metodo}
+
+\subsection*{Dataset}
+Si \`e utilizzato il dataset \texttt{Dataset\_definizioni-spurio.csv},
+contenente 28 definizioni raccolte durante la lezione per quattro concetti:
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+\textbf{Colonna} & \textbf{Concetto} & \textbf{Tipo} & \textbf{Specificit\`a} \\
+\midrule
+AG & Music   & Astratto & Generico  \\
+AS & Ethics  & Astratto & Specifico \\
+CG & Tree    & Concreto & Generico  \\
+CS & Teapot  & Concreto & Specifico \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Procedura}
+
+Per ciascuna definizione \`e stato applicato il seguente procedimento:
+
+\begin{enumerate}
+  \item \textbf{Pulizia del testo}: conversione in minuscolo, rimozione
+        della punteggiatura, filtraggio delle stopword.
+  \item \textbf{Selezione dei synset candidati}: per ogni concetto sono
+        stati scelti i 5 synset pi\`u plausibili da WordNet 3.1
+        (inclusi sensi alternativi e iperonomi).
+  \item \textbf{Vettorizzazione TF-IDF}: la definizione e le glosse dei
+        synset candidati vengono rappresentate come vettori TF-IDF.
+  \item \textbf{Cosine similarity}: si confronta la definizione con ogni
+        glossa e si seleziona il synset con punteggio pi\`u alto.
+  \item \textbf{Valutazione}: il synset recuperato viene confrontato con
+        il synset target (quello semanticamente corretto).
+\end{enumerate}
+
+% -----------------------------------------------------------------------
+\section{Risultati}
+
+\subsection{Risultati per concetto}
+
+\begin{table}[h]
+\centering
+\caption{Accuratezza e score di similarit\`a per concetto}
+\begin{tabular}{llllccc}
+\toprule
+\textbf{Concetto} & \textbf{Tipo} & \textbf{Spec.} & \textbf{Synset target}
+  & \textbf{Corretto} & \textbf{Score medio} & \textbf{Score max} \\
+\midrule
+Music  & Astratto & Generico  & \texttt{music.n.01}  & 9/28 (32.1\%)  & 0.1298 & 0.3981 \\
+Ethics & Astratto & Specifico & \texttt{ethics.n.01} & 12/28 (42.9\%) & 0.1524 & 0.6295 \\
+Tree   & Concreto & Generico  & \texttt{tree.n.01}   & 25/28 (89.3\%) & 0.1025 & 0.2919 \\
+Teapot & Concreto & Specifico & \texttt{teapot.n.01} & 20/28 (71.4\%) & 0.1272 & 0.3063 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Aggregazione per tipo e specificit\`a}
+
+\begin{table}[h]
+\centering
+\caption{Score medio e accuratezza aggregati}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Dimensione} & \textbf{Gruppo} & \textbf{Score medio} & \textbf{Accuratezza} \\
+\midrule
+\multirow{2}{*}{Tipo}
+  & Astratto & 0.1411 & 37.5\% \\
+  & Concreto & 0.1149 & 80.4\% \\
+\midrule
+\multirow{2}{*}{Specificit\`a}
+  & Generico  & 0.1162 & 60.7\% \\
+  & Specifico & 0.1398 & 57.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Esempi rappresentativi}
+
+\textbf{Definizione con score pi\`u alto -- Ethics (0.63):}
+\begin{quote}
+\textit{``Branch of philosophy that studies human behavior by trying to
+define what is right and what is wrong, often influenced by historical
+and sociocultural context.''}
+\end{quote}
+Questa definizione segue esplicitamente lo schema
+\textit{genus-differentia}: il genus \textit{``branch of philosophy''}
+corrisponde quasi letteralmente alla glossa di
+\texttt{ethics.n.01} (\textit{``the philosophical study of moral values
+and rules''}), garantendo un'alta sovrapposizione lessicale.
+
+\textbf{Definizione con score pi\`u alto -- Music (0.40):}
+\begin{quote}
+\textit{``A set of sounds made simultaneously by people and/or musical
+instruments.''}
+\end{quote}
+Cattura bene gli elementi chiave (\textit{sounds}, \textit{instruments})
+ma non include il riferimento alla struttura artistica presente nella
+glossa target.
+
+\textbf{Definizione con score pi\`u alto -- Tree (0.29):}
+\begin{quote}
+\textit{``Woody plant with branches and leaves.''}
+\end{quote}
+Brevissima ma efficace: i termini \textit{plant}, \textit{branches}
+coincidono con la glossa \texttt{tree.n.01}.
+
+\textbf{Definizioni a score zero:}
+Diverse definizioni mostrano score pari a 0. In molti casi si tratta di
+risposte compilate in modo generico o errato dagli studenti (es.\ una
+definizione di teapot inserita nella colonna di Ethics), confermando
+che la qualit\`a della definizione ha un impatto diretto sul recupero.
+
+% -----------------------------------------------------------------------
+\section{Analisi e discussione}
+
+\subsection{Concetti concreti vs astratti}
+
+Il risultato pi\`u significativo \`e la netta differenza di accuratezza
+tra concetti \textbf{concreti} (80.4\%) e \textbf{astratti} (37.5\%).
+
+I concetti concreti come \textit{Tree} e \textit{Teapot} hanno
+propriet\`a fisiche ben definite (tronco, rami, foglie; beccuccio,
+manico, ceramica) che si traducono in un vocabolario condiviso e
+prevedibile. Le definizioni degli studenti convergono sugli stessi
+termini chiave, facilitando il matching con le glosse WordNet.
+
+I concetti astratti come \textit{Music} ed \textit{Ethics} ammettono
+invece descrizioni molto diverse: chi si concentra sull'aspetto
+emotivo, chi su quello filosofico, chi su quello strutturale. La
+variabilit\`a lessicale \`e alta, e il TF-IDF non riesce a catturare la
+somiglianza concettuale quando le parole usate divergono.
+
+\subsection{L'efficacia del genus-differentia}
+
+Le definizioni che seguono lo schema \textit{genus-differentia}
+ottengono sistematicamente score pi\`u alti. Il \textit{genus} (categoria
+generale) corrisponde spesso all'iperonimo del synset target in
+WordNet, mentre la \textit{differentia} (propriet\`a distintiva) permette
+di discriminare tra synset dello stesso campo semantico.
+
+Esempio: \textit{``branch of philosophy [genus] that studies moral
+values [differentia]''} si allinea con \texttt{ethics.n.01}
+(\textit{``the philosophical study of moral values and rules''}).
+
+\subsection{Limiti del metodo TF-IDF}
+
+Il metodo TF-IDF presenta alcune limitazioni rilevanti:
+
+\begin{itemize}
+  \item \textbf{Opacit\`a semantica}: due parole sinonime (es.\
+        \textit{container} e \textit{vessel}) ricevono score zero
+        nonostante la somiglianza concettuale.
+  \item \textbf{Sensibilit\`a alla lunghezza}: definizioni molto brevi
+        producono vettori sparsi con bassa copertura.
+  \item \textbf{Assenza di struttura}: il TF-IDF tratta la definizione
+        come bag-of-words, perdendo la struttura sintattica che in uno
+        schema genus-differentia \`e semanticamente significativa.
+\end{itemize}
+
+Un approccio con embeddings contestuali (es.\ Sentence-BERT) cattura
+meglio la similarit\`a semantica, superando il limite della dipendenza
+lessicale esatta.
+
+\subsection{Qualit\`a delle definizioni e recupero del synset}
+
+L'esercizio mette in luce che la qualit\`a di una definizione non \`e
+solo una questione stilistica, ma ha un impatto misurabile sulla
+ricercabilit\`a del concetto:
+
+\begin{itemize}
+  \item Definizioni con genus esplicito $\to$ recupero pi\`u facile.
+  \item Definizioni per esempi o per riferimento $\to$ recupero pi\`u
+        difficile (mancano i termini tecnici della glossa).
+  \item Definizioni vaghe o generiche $\to$ score prossimo a zero.
+\end{itemize}
+
+% -----------------------------------------------------------------------
+\section{Conclusioni}
+
+Il Lab-2 ha mostrato empiricamente che la ricerca onomasiologica
+automatica \`e significativamente pi\`u efficace per concetti concreti
+rispetto a concetti astratti. La struttura genus-differentia risulta la
+strategia definitoria pi\`u utile per il recupero automatico in WordNet,
+poich\'e allinea il vocabolario della definizione con quello delle glosse
+lessicografiche.
+
+Dal punto di vista computazionale, il metodo TF-IDF \`e un baseline
+ragionevole ma insufficiente per catturare la ricchezza semantica di
+concetti astratti; approcci basati su embeddings contestuali
+rappresentano il naturale passo successivo.
+
+\end{document}
