@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "if": "Bash(pdflatex *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rm -f *.aux *.log *.out *.toc *.lof *.lot *.fls *.fdb_latexmk *.synctex.gz 2>/dev/null || true",
+            "statusMessage": "Pulizia file LaTeX..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "if": "Bash(xelatex *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rm -f *.aux *.log *.out *.toc *.lof *.lot *.fls *.fdb_latexmk *.synctex.gz 2>/dev/null || true",
+            "statusMessage": "Pulizia file LaTeX..."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,73 @@
+\documentclass[11pt,a4paper]{article}
+
+% Pacchetti essenziali per lingua e formattazione
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{a4paper, top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+
+% Pacchetto per tabelle eleganti
+\usepackage{booktabs}
+
+\title{\textbf{Relazione LAB-1:\\ Complessità Definizionale e Sovrapposizione Semantica}}
+\author{Alessandro Olivero \and Samele Iudice \and Andrea Franco}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Fase 1: Creazione condivisa di definizioni}
+In questa prima fase, l'obiettivo è stato esplorare la complessità insita nella formulazione di definizioni per quattro concetti distinti, bilanciati lungo due dimensioni (concretezza e specificità):
+\begin{itemize}
+    \item \textbf{Tree (Albero):} Concetto concreto e generico.
+    \item \textbf{Teapot (Teiera):} Concetto concreto e specifico.
+    \item \textbf{Music (Musica):} Concetto astratto e generico.
+    \item \textbf{Ethics (Etica):} Concetto astratto e specifico.
+\end{itemize}
+
+Per lo svolgimento dell'esercizio, ci si è avvalsi di un dataset testuale ("Dataset definizioni-spurio.csv") contenente molteplici definizioni redatte in linguaggio naturale da diversi utenti. Il vincolo di partenza era che ciascuna definizione dovesse risultare comprensibile a un lettore generico. Di seguito alcuni esempi estratti dal dataset:
+\begin{itemize}
+    \item \textbf{Tree (CG):} \textit{"A plant with roots, trunk, branches and foliage used to obtain timber and produce paper."}
+    \item \textbf{Ethics (AS):} \textit{"Philosophical thought aimed at explaining ideal human behavior, attempting to demonstrate what is right and what is wrong."}
+\end{itemize}
+
+\section{Fase 2: Analisi collettiva}
+Dall'analisi qualitativa delle definizioni raccolte sono emerse dinamiche linguistiche rilevanti:
+\begin{enumerate}
+    \item \textbf{Scelte linguistiche e specificità:} Per i concetti concreti (\textit{Tree, Teapot}), il lessico si concentra su componenti fisiche e funzionali (es. \textit{"roots", "metal container"}). Per \textit{Teapot}, in particolare, emerge un altissimo grado di specificità legata al suo scopo primario (l'infusione del tè). Al contrario, per i concetti astratti (\textit{Music, Ethics}), il vocabolario si sposta sulla sfera cognitiva e sensoriale (\textit{"sentiment", "behavior", "melodious sounds"}).
+    \item \textbf{Difficoltà concettuali:} Si è riscontrata una maggiore difficoltà nel definire i concetti astratti. Mentre per l'albero e la teiera il referente fisico nel mondo reale guida uniformemente la descrizione, concetti come l'etica hanno generato definizioni eterogenee, sfumate e fortemente dipendenti dal contesto socio-culturale.
+    \item \textbf{Strategie definitorie:} L'approccio classico aristotelico del \textit{genus-differentia} è stato adottato spontaneamente per i concetti concreti (\textit{Tree} = \textit{Kind of plant} [genus] + \textit{composed by a trunk} [differentia]). Per i concetti astratti come la musica, invece, gli utenti hanno spesso preferito descrizioni operative o parafrasi basate sull'effetto prodotto.
+\end{enumerate}
+
+\section{Fase 3 e 4: Confronto lessicale (Simlex) e semantico (Simsem)}
+Al fine di quantificare la sovrapposizione tra le definizioni di uno stesso concetto, sono state applicate metriche computazionali (tramite script esterno in Python).
+\begin{itemize}
+    \item \textbf{Metodologia Simlex:} Il testo è stato normalizzato (conversione in minuscolo, rimozione di punteggiatura e \textit{stopword}, lemmatizzazione). È stato poi calcolato l'\textbf{Indice di Jaccard} sulle definizioni accoppiate a due a due per misurare l'esatta sovrapposizione lessicale.
+    \item \textbf{Metodologia Simsem:} Le definizioni sono state vettorializzate tramite approccio \textbf{TF-IDF} ed è stata calcolata la \textbf{Cosine Similarity} media per catturare la vicinanza concettuale.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\caption{Risultati medi aggregati della sovrapposizione lessicale e semantica.}
+\vspace{0.2cm}
+\begin{tabular}{@{}lllcc@{}}
+\toprule
+\textbf{Concetto} & \textbf{Tipo} & \textbf{Specificità} & \textbf{Simlex (Jaccard)} & \textbf{Simsem (Cosine)} \\ \midrule
+\textbf{Tree}     & Concreto      & Generico             & 0.084                     & 0.077                    \\
+\textbf{Teapot}   & Concreto      & Specifico            & 0.057                     & 0.062                    \\
+\textbf{Ethics}   & Astratto      & Specifico            & 0.034                     & 0.041                    \\
+\textbf{Music}    & Astratto      & Generico             & 0.034                     & 0.036                    \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\section{Fase 5: Analisi e riflessione finale}
+L'aggregazione quantitativa dei risultati ci permette di trarre le seguenti conclusioni:
+\begin{itemize}
+    \item \textbf{Variabilità Lessicale (Simlex):} I valori di Jaccard sono risultati estremamente bassi per tutti i concetti (con un picco massimo di appena l'8.4\% per l'albero). Ciò dimostra un'altissima variabilità del linguaggio naturale: i parlanti scelgono vocaboli molto diversi anche quando descrivono lo stesso referente.
+    \item \textbf{Somiglianza Semantica (Simsem):} La metrica del coseno si è rivelata preziosa per i concetti astratti. Per l'Etica (0.041) e la Musica (0.036), la similarità semantica supera quella lessicale (0.034). I modelli vettoriali riescono infatti ad allineare sinonimi e concetti affini, riflettendo l'intuizione umana che riconosce definizioni concettualmente vicine pur se lessicalmente distanti.
+    \item \textbf{Il ruolo di Concretezza e Astrazione:} Emerge un pattern inequivocabile: i concetti concreti ottengono punteggi di similarità nettamente superiori rispetto a quelli astratti. Il referente fisico restringe il campo semantico "costringendo" i parlanti a un lessico condiviso, mentre l'astrazione concettuale amplifica drasticamente le divergenze interpretative e formali.
+\end{itemize}
+
+\end{document}
