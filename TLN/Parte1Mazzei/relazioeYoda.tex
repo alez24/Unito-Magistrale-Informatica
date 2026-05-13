@@ -448,7 +448,7 @@ Le frasi riportate di seguito sono state elaborate correttamente, poiché i lemm
 \small
 \begin{tabular}{|l|l|l|p{5cm}|}
 \hline
-\textbf{Tipologia} & \textbf{Input Italiano (SVO)} & \textbf{Output Yodish (XSV)} & \textbf{Analisi} \\ \hline
+\textbf{Tipologia} & \textbf{Input Italiano} & \textbf{Output Yodish} & \textbf{Analisi} \\ \hline
 Semplice & \textit{Luke usa la forza} & La forza Luke usa & Il complemento oggetto "la forza" viene correttamente anteposto al soggetto. \\ \hline
 Con Numerale & \textit{Vader distrugge due droni} & Due droni Vader distrugge & Il sintagma nominale (NP) composto da numerale e nome viene spostato integralmente. \\ \hline
 Con Avverbio & \textit{Io vedo sith qui} & Sith io vedo qui & L'avverbio "qui" mantiene la posizione finale secondo la logica del Caso 2. \\ \hline
@@ -458,7 +458,7 @@ Sogg. Pronome & \textit{Lui mangia la mela} & La mela lui mangia & Corretto rico
 \label{tab:test_successo}
 \end{table}
 
-\subsection{Limiti del Sistema (Test Negativi)}
+\subsection{Limiti del Sistema}
 Attraverso una fase di "stress test" con parole estratte esclusivamente dal lessico fornito, sono emersi i limiti intrinseci dell'approccio rule-based del sistema:
 
 \begin{itemize}
@@ -469,7 +469,7 @@ Attraverso una fase di "stress test" con parole estratte esclusivamente dal less
 \end{itemize}
 
 \subsection{Conclusioni sui Test}
-I test confermano che il cuore algoritmico (CKY e trasformazione ricorsiva) è solido e performante per l'uso didattico previsto. Tuttavia, la "Yodificazione" è attualmente limitata alla struttura della frase principale: il sistema è ottimizzato per spostare complementi diretti, ma richiede un arricchimento del file \texttt{regole\_binarie.json} per gestire correttamente subordinate o strutture aggettivali complesse.
+I test confermano che il cuore algoritmico (CKY e trasformazione ricorsiva) è solido e performante per l'uso didattico previsto. Tuttavia, la "Yodificazione" è attualmente limitata alla struttura della frase principale: il sistema è ottimizzato per spostare complementi diretti, ma richiede un arricchimento delle regole binarie per gestire correttamente subordinate o strutture aggettivali complesse.
 
 
 % ============================================================
@@ -478,35 +478,19 @@ I test confermano che il cuore algoritmico (CKY e trasformazione ricorsiva) è s
 \section{Conclusioni e sviluppi futuri}
 
 Il progetto IT-YO ha consentito di mettere in pratica i concetti fondamentali
-di analisi sintattica formale: progettazione di una grammatica context-free
-in Forma Normale di Chomsky, implementazione dell'algoritmo CKY con ricostruzione
-dell'albero di derivazione, e manipolazione strutturale dell'albero per ottenere
-una trasformazione dell'ordine delle parole.
-
+di analisi sintattica formale appresi durante le lezioni frontali.
 Il sistema è funzionante per un sottoinsieme controllato di frasi italiane e
 produce output corretti sui casi di test previsti. La separazione tra grammatica
-(dati JSON) e logica di parsing (codice Python) rende il sistema facilmente
-estendibile: per coprire nuove costruzioni sintattiche è sufficiente aggiungere
+e logica di parsing rende il sistema facilmente
+estendibile per coprire nuove costruzioni sintattiche è sufficiente aggiungere
 voci al lessico e regole al file JSON, senza modificare l'algoritmo.
-
 Dal punto di vista didattico, il progetto illustra concretamente come la teoria
 delle grammatiche formali si traduca in un sistema computazionale funzionante,
 e come la manipolazione degli alberi di derivazione sia uno strumento potente
 per operare trasformazioni linguistiche strutturate.
-
 Tra i possibili sviluppi futuri, l'integrazione con un PoS tagger automatico e
 l'estensione della grammatica a costruzioni più complesse rappresentano le
 direzioni più promettenti per avvicinare il sistema a un uso su frasi naturali
 non vincolate.
-\subsection{Sviluppi Futuri}
-
-\begin{itemize}
-    \item \textbf{Integrazione Risorse Esterne}: Uso di spaCy o WordNet per la copertura lessicale e il PoS tagging automatico.
-    \item \textbf{Arricchimento Grammaticale}: Supporto a frasi relative, coordinate e perifrasi verbali complesse.
-    \item \textbf{Parser Probabilistico}: Implementazione di \textbf{PCFG} con algoritmo CKY probabilistico per una gestione pesata dell'ambiguità.
-    \item \textbf{Interfaccia Utente}: Sviluppo di una GUI o web app (Flask) per rendere il tool accessibile.
-    \item \textbf{Trasformazioni Multiple}: Implementazione di altri stili sintattici (es. topicalizzazione o dislocazione).
-\end{itemize}
-
 
 \end{document}
