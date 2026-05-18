@@ -1,0 +1,193 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{parskip}
+
+\geometry{margin=2.5cm}
+
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+\title{\textbf{Progetto Esteso -- TLN Parte III}\\
+\large RAG Ibrido con Valutazione Quantitativa\\
+\normalsize Riassunto per lo studio}
+\author{Tecnologie del Linguaggio Naturale -- Prof.\ Di Caro -- A.A.\ 2025/2026}
+\date{}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% ─────────────────────────────────────────────
+\section{Cos'è RAG --- la base del progetto}
+
+RAG (\textbf{Retrieval-Augmented Generation}) è un sistema che risponde a domande
+combinando due componenti:
+\begin{enumerate}
+  \item Un \textbf{motore di ricerca} che recupera i documenti più rilevanti per la domanda;
+  \item Un \textbf{LLM} (Large Language Model) che legge quei documenti e genera la risposta.
+\end{enumerate}
+
+Il vantaggio è che il modello non deve ``ricordare'' tutto: accede a conoscenza
+esterna al momento del bisogno. Il flusso è:
+\[
+  \text{Query utente}
+  \xrightarrow{\text{retrieval}}
+  \text{Documenti rilevanti}
+  \xrightarrow{\text{generazione}}
+  \text{Risposta}
+\]
+
+\subsection{Cosa abbiamo costruito nel LAB-5}
+
+Nel quinto laboratorio abbiamo implementato un sistema RAG completo sul dataset
+\texttt{MaartenGr/arxiv\_nlp} di Hugging Face, contenente circa 45.000 abstract
+di paper scientifici NLP. Il sistema:
+\begin{itemize}
+  \item genera \textbf{embeddings semantici} degli abstract con \texttt{all-MiniLM-L6-v2};
+  \item indicizza i vettori con \textbf{FAISS} (Fast Approximate Nearest Neighbor);
+  \item recupera i $k$ documenti più simili alla query;
+  \item genera la risposta con un LLM locale (es.\ Qwen2.5-0.5B).
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Il problema del RAG base: perché non basta}
+
+Il retrieval basato solo su embeddings ragiona per \textbf{concetti}, non per
+\textbf{parole esatte}. Questo crea problemi in due casi tipici:
+\begin{itemize}
+  \item Query con \textbf{termini tecnici specifici} (nomi di algoritmi, acronimi);
+  \item Query \textbf{molto brevi} dove il contesto semantico è insufficiente.
+\end{itemize}
+
+\textbf{Esempio.} Se cerchi ``BERT pre-training'', il sistema semantico potrebbe
+restituire documenti che parlano di transformer in generale, anche se non
+contengono letteralmente quelle parole.
+
+% ─────────────────────────────────────────────
+\section{Il progetto esteso: Hybrid Search}
+
+\subsection{BM25 --- il retrieval lessicale}
+
+BM25 (\textit{Best Match 25}) è un algoritmo di ranking classico che misura la
+rilevanza di un documento rispetto a una query basandosi sulla
+\textbf{frequenza delle parole} nel documento e nella collezione.
+A differenza degli embeddings, BM25 lavora sulle \textbf{parole esatte}.
+
+La formula di scoring è:
+\[
+  \text{score}(D,Q) = \sum_{i=1}^{n} \mathrm{IDF}(q_i)
+  \cdot \frac{f(q_i,D)\cdot(k_1+1)}
+             {f(q_i,D)+k_1\!\left(1-b+b\cdot\dfrac{|D|}{\mathrm{avgdl}}\right)}
+\]
+dove $f(q_i,D)$ è la frequenza del termine nel documento, $|D|$ è la lunghezza
+del documento, \textit{avgdl} è la lunghezza media, e $k_1=1.5$, $b=0.75$ sono
+parametri tipici.
+
+\subsection{Confronto tra i due approcci}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+& \textbf{Embeddings semantici} & \textbf{BM25 lessicale} \\
+\midrule
+Punto di forza   & Capisce sinonimi e concetti    & Preciso su termini esatti \\
+Punto debole     & Impreciso su termini specifici & Non capisce il significato \\
+Buono per        & Query concettuali e lunghe     & Query con termini tecnici \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Hybrid Search: la combinazione}
+
+Combiniamo i due metodi con \textbf{Reciprocal Rank Fusion (RRF)}:
+\[
+  \mathrm{RRF}(d) = \sum_{r \in R} \frac{1}{k + r(d)}
+\]
+dove $r(d)$ è il rank del documento $d$ nella lista $r$ e $k=60$ è una costante
+tipica. In pratica:
+\begin{enumerate}
+  \item BM25 produce una lista ordinata di documenti;
+  \item Gli embeddings producono un'altra lista ordinata;
+  \item RRF fonde le due liste dando peso ai documenti che appaiono in cima a entrambe.
+\end{enumerate}
+
+% ─────────────────────────────────────────────
+\section{La valutazione quantitativa}
+
+Non ci limitiamo a dire ``funziona bene'': \textbf{misuriamo} quanto funziona bene.
+
+\textbf{Precision@k} -- dei primi $k$ documenti restituiti, quanti sono rilevanti?
+\[
+  P@k = \frac{|\text{documenti rilevanti tra i primi } k|}{k}
+\]
+
+\textbf{Recall@k} -- di tutti i documenti rilevanti esistenti, quanti ne ho recuperati?
+\[
+  R@k = \frac{|\text{documenti rilevanti tra i primi } k|}{|\text{tutti i documenti rilevanti}|}
+\]
+
+\textbf{Faithfulness} -- la risposta generata è fedele ai documenti recuperati,
+o il modello ``inventa'' informazioni non presenti nel contesto?
+
+\subsection{Disegno sperimentale}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Configurazione} & \textbf{Retrieval} & \textbf{Atteso migliore su} \\
+\midrule
+RAG base    & Solo embeddings         & Query concettuali \\
+RAG ibrido  & BM25 + embeddings (RRF) & Query con termini precisi \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ─────────────────────────────────────────────
+\section{Stack tecnologico}
+
+\begin{itemize}
+  \item \texttt{rank\_bm25} -- implementazione Python di BM25
+  \item \texttt{sentence-transformers} -- generazione embeddings
+  \item \texttt{faiss-cpu} -- vector store per nearest neighbor search
+  \item \texttt{datasets} (HuggingFace) -- caricamento dataset arXiv NLP
+  \item \texttt{transformers} + \texttt{torch} -- LLM locale per la generazione
+  \item \texttt{RAGAS} (opzionale) -- framework per valutazione automatica RAG
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Cosa dire al professore}
+
+\textit{``Abbiamo completato tutti e cinque i laboratori. Come progetto esteso
+vorremmo partire dal LAB-5 e estenderlo in due direzioni.}
+
+\textit{La prima è implementare un hybrid search: invece di usare solo gli
+embeddings semantici, combiniamo BM25 con gli embeddings tramite Reciprocal
+Rank Fusion, e confrontiamo i risultati su query di tipo diverso.}
+
+\textit{La seconda è aggiungere una valutazione quantitativa con Precision@k,
+Recall@k e, se riusciamo, la faithfulness.}
+
+\textit{L'obiettivo non è solo far funzionare il sistema, ma confrontare almeno
+due configurazioni e analizzare i trade-off.''}
+
+% ─────────────────────────────────────────────
+\section{Connessione con il corso}
+
+\begin{itemize}
+  \item \textbf{Cap.\ 6 -- Pre-LLM NLP}: BM25 è citato esplicitamente come
+        baseline robusta per il retrieval lessicale.
+  \item \textbf{Cap.\ 7 -- RAG}: il progetto è un'estensione diretta del LAB-5,
+        citata nella sezione 7.14.8 della dispensa.
+  \item \textbf{Cap.\ 9 -- Valutazione}: le metriche Precision@k e faithfulness
+        sono al centro della griglia di valutazione del prof.
+\end{itemize}
+
+\end{document}
