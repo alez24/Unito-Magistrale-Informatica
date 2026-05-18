@@ -1,3 +1,4 @@
 {
-    "prolog.executablePath": "C:\\Program Files\\swipl\\bin\\swipl.exe"
+    "prolog.executablePath": "C:\\Program Files\\swipl\\bin\\swipl.exe",
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }
