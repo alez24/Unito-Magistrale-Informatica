@@ -1,4 +1,23 @@
 {
     "prolog.executablePath": "C:\\Program Files\\swipl\\bin\\swipl.exe",
-    "python-envs.defaultEnvManager": "ms-python.python:system"
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "latex-workshop.latex.tools": [
+        {
+            "name": "tectonic",
+            "command": "C:/Users/aless/AppData/Local/tectonic/tectonic.exe",
+            "args": [
+                "--synctex",
+                "--keep-logs",
+                "--print",
+                "%DOC%.tex"
+            ]
+        }
+    ],
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "tectonic",
+            "tools": ["tectonic"]
+        }
+    ],
+    "latex-workshop.latex.recipe.default": "tectonic"
 }
