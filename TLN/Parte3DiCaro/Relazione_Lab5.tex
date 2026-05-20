@@ -1,0 +1,671 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{parskip}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings,breakable,skins}
+
+\geometry{
+  top=2.5cm, bottom=2.5cm,
+  left=2.5cm, right=2.5cm
+}
+
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{keywordcolor}{RGB}{0,0,180}
+\definecolor{commentcolor}{RGB}{0,128,0}
+\definecolor{stringcolor}{RGB}{163,21,21}
+\definecolor{codeframe}{RGB}{180,180,180}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{keywordcolor}\bfseries,
+  commentstyle=\color{commentcolor}\itshape,
+  stringstyle=\color{stringcolor},
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  tabsize=4,
+  xleftmargin=1.5em,
+  keepspaces=true,
+  columns=flexible,
+  frame=none,
+  aboveskip=0pt,
+  belowskip=0pt,
+}
+\lstset{style=python}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+\newtcblisting{pylisting}[1][]{
+  listing only,
+  enhanced,
+  colback=codebg,
+  colframe=codeframe,
+  coltitle=black,
+  fonttitle=\small\itshape,
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=codebg, colframe=codeframe, boxrule=0.5pt},
+  boxrule=0.5pt,
+  arc=2pt,
+  left=4pt, right=4pt, top=8pt, bottom=4pt,
+  listing options={style=python},
+  before upper={\vspace{-2pt}},
+  #1
+}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+\raggedbottom
+
+% ============================================================
+% FRONTESPIZIO
+% ============================================================
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+
+  {\Large\textbf{Universit\`a degli Studi di Torino}\\[0.3em]
+  Corso di Laurea Magistrale in Informatica}
+
+  \vspace{1cm}
+  \HRule\\[0.4em]
+  {\LARGE\textbf{Tecnologie del Linguaggio Naturale}}\\[0.3em]
+  {\large Parte 3 -- Prof.\ Luigi Di Caro}\\[0.2em]
+  \HRule
+
+  \vspace{1.2cm}
+  {\huge\textbf{Lab 5}}\\[0.5em]
+  {\LARGE Hybrid Search RAG}\\[0.4em]
+  {\large Retrieval-Augmented Generation con ricerca ibrida semantica e lessicale}
+
+  \vspace{2cm}
+
+  {\large\textbf{Gruppo di lavoro:}}\\[0.8em]
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Studente}    & \textbf{Matricola} \\
+    \midrule
+    Alessandro Olivero   & 915069  \\
+    Samuele Iudice       & 1235245 \\
+    Andrea Franco        & 1226739 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{1.5cm}
+  \begin{tabular}{ll}
+    \textbf{Docente:}          & Prof.\ Luigi Di Caro \\[0.3em]
+    \textbf{Anno Accademico:}  & 2025/2026 \\
+  \end{tabular}
+
+  \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introduzione}
+% ============================================================
+
+Questo laboratorio affronta il problema della \textbf{Retrieval-Augmented Generation (RAG)}, un paradigma che potenzia i modelli di linguaggio combinando un meccanismo di \textit{retrieval} su una knowledge base esterna con la capacit\`a generativa di un Large Language Model (LLM). L'obiettivo \`e confrontare due strategie di retrieval su un corpus scientifico NLP:
+
+\begin{itemize}
+  \item \textbf{RAG base}: recupero puramente semantico tramite embeddings SciBERT e indice FAISS.
+  \item \textbf{RAG ibrido}: combinazione del retrieval semantico con BM25 lessicale, fusi tramite Reciprocal Rank Fusion (RRF).
+\end{itemize}
+
+L'esperimento principale varia la dimensione del corpus da 1\,000 a 44\,949 documenti, misurando l'impatto sulle prestazioni con quattro metriche ispirate al framework RAGAS: Precision@5, Context Relevance, Answer Relevance e Faithfulness. Si analizza inoltre la \textbf{robustezza} del sistema a parafrasature delle query.
+
+Il dataset usato \`e \texttt{MaartenGr/arxiv\_nlp}, una collezione di paper scientifici NLP da arXiv, disponibile su Hugging Face. Il modello di linguaggio \`e \textbf{Phi-3.5-mini-instruct} di Microsoft, eseguito interamente in locale su CPU.
+
+% ============================================================
+\section{Background Teorico}
+% ============================================================
+
+\subsection{Retrieval-Augmented Generation (RAG)}
+
+Un sistema RAG si articola in tre componenti:
+\begin{enumerate}
+  \item \textbf{Retriever}: dato una query, recupera i documenti pi\`u rilevanti da una knowledge base.
+  \item \textbf{Context assembly}: i documenti recuperati vengono concatenati come contesto.
+  \item \textbf{Generator}: un LLM produce una risposta condizionata dal contesto e dalla query.
+\end{enumerate}
+
+Il vantaggio principale rispetto a un LLM stand-alone \`e la capacit\`a di accedere a informazioni aggiornate e specifiche di dominio senza ri-addestrare il modello, riducendo al contempo le allucinazioni.
+
+\subsection{Retrieval semantico con FAISS e SciBERT}
+
+Il retrieval semantico si basa su \textbf{dense embeddings}: ogni documento e ogni query vengono proiettati in uno spazio vettoriale denso, e il retrieval \`e una ricerca dei vicini pi\`u prossimi (Nearest Neighbor Search).
+
+Si usa \textbf{SciBERT} (\texttt{allenai/scibert\_scivocab\_uncased}) come modello di embedding: un BERT pre-addestrato su 1,14 milioni di paper scientifici da Semantic Scholar. Produce vettori di dimensione 768, normalizzati a norma unitaria per l'uso con similarit\`a coseno.
+
+L'indice di ricerca \`e costruito con \textbf{FAISS} (Facebook AI Similarity Search), che implementa \texttt{IndexFlatIP} (inner product su vettori normalizzati, equivalente alla similarit\`a coseno) e consente ricerca efficiente su decine di migliaia di vettori.
+
+\subsection{Retrieval lessicale con BM25}
+
+\textbf{BM25} (Best Match 25) \`e un modello di recupero probabilistico basato sulla frequenza dei termini. Per ogni query $q$ e documento $d$, il punteggio \`e:
+
+\[
+  \text{BM25}(q, d) = \sum_{t \in q} \text{IDF}(t) \cdot
+  \frac{f(t,d) \cdot (k_1+1)}{f(t,d) + k_1 \left(1 - b + b \cdot \frac{|d|}{\text{avgdl}}\right)}
+\]
+
+dove $f(t,d)$ \`e la frequenza del termine $t$ nel documento $d$, $|d|$ \`e la lunghezza del documento, $\text{avgdl}$ \`e la lunghezza media del corpus, e $k_1 = 1.5$, $b = 0.75$ sono iperparametri standard.
+
+A differenza del retrieval semantico, BM25 \`e efficace per query con termini tecnici specifici (es.\ acronimi, nomi propri) che gli embeddings tendono a generalizzare.
+
+\subsection{Reciprocal Rank Fusion (RRF)}
+
+La \textbf{Reciprocal Rank Fusion} \`e una tecnica di fusione dei risultati di pi\`u retriever. Dati i ranking prodotti da $n$ retriever, il punteggio RRF di un documento $d$ \`e:
+
+\[
+  \text{RRF}(d) = \sum_{r=1}^{n} \frac{1}{k + \text{rank}_r(d)}
+\]
+
+con $k=60$ (costante di smorzamento). I documenti vengono ri-ordinati per punteggio RRF decrescente. Questo approccio \`e robusto perch\'e non richiede normalizzazione degli score eterogenei e valorizza i documenti consistentemente rilevanti per pi\`u retriever.
+
+\subsection{Phi-3.5-mini-instruct}
+
+Il modello generativo \`e \textbf{Phi-3.5-mini-instruct} di Microsoft: un LLM da 3.8B parametri ottimizzato per il ragionamento e l'instruction-following. Viene eseguito in modalit\`a \textit{float32} su CPU, con generazione limitata a 300 token. Il template di chat segue il formato Phi-3 con ruoli \texttt{system} e \texttt{user}.
+
+\subsection{Metriche di valutazione ispirate a RAGAS}
+
+Si implementano quattro metriche per valutare il sistema RAG, ispirate al framework RAGAS (Retrieval-Augmented Generation Assessment System):
+
+\begin{itemize}
+  \item \textbf{Precision@5}: percentuale di documenti rilevanti (per gold standard) tra i top-5 recuperati.
+  \[
+    P@5 = \frac{|\{d \in R_5 : d \text{ rilevante}\}|}{5}
+  \]
+
+  \item \textbf{Context Relevance (CR)}: similarit\`a coseno media tra l'embedding SciBERT della query e gli snippet dei documenti recuperati. Misura quanto il contesto \`e semanticamente pertinente alla domanda.
+  \[
+    \text{CR} = \frac{1}{|R|} \sum_{d \in R} \cos(\text{enc}(q),\, \text{enc}(d[:200]))
+  \]
+
+  \item \textbf{Answer Relevance (AR)}: similarit\`a coseno tra l'embedding della query e l'embedding della risposta generata dall'LLM. Misura se la risposta \`e centrata sulla domanda.
+  \[
+    \text{AR} = \cos(\text{enc}(q),\, \text{enc}(a))
+  \]
+
+  \item \textbf{Faithfulness proxy (FF)}: percentuale di parole contenutistiche della risposta (escluse le stopwords) che compaiono nel testo dei documenti recuperati. Misura in modo approssimato quanto la risposta \`e fondata sul contesto.
+  \[
+    \text{FF} = \frac{|\{w \in a_{\text{content}} : w \in C\}|}{|a_{\text{content}}|}
+  \]
+  dove $C$ \`e il testo concatenato dei documenti di contesto.
+
+  \item \textbf{Robustezza}: per un sottoinsieme di query, si calcolano le parafrasature e si misura l'overlap@5 tra i risultati della query originale e quelli delle parafrasature:
+  \[
+    \text{Rob} = \frac{1}{|P|} \sum_{p \in P} \frac{|R_5(q) \cap R_5(p)|}{5}
+  \]
+  Un valore alto indica che il retrieval \`e stabile a variazioni di formulazione della query.
+\end{itemize}
+
+% ============================================================
+\section{Architettura del Sistema}
+% ============================================================
+
+Il sistema si struttura in tre livelli:
+
+\begin{enumerate}
+  \item \textbf{Livello dati}: caricamento del dataset arXiv-NLP, campionamento di $N$ documenti, costruzione del testo come concatenazione di titolo e abstract.
+  \item \textbf{Livello retrieval}: indice FAISS (semantico) + indice BM25 (lessicale), con fusione RRF per il retrieval ibrido.
+  \item \textbf{Livello generazione}: Phi-3.5-mini-instruct riceve la query e i top-5 documenti come contesto e genera una risposta in linguaggio naturale con citazioni.
+\end{enumerate}
+
+\begin{pylisting}[title={Funzione di retrieval ibrido con RRF}]
+def retrieve_hybrid(query, faiss_index, bm25, documents, metadata, k=5):
+    # retrieval semantico (top-20) e lessicale (top-20)
+    sem = retrieve_semantic(query, faiss_index, documents, metadata, k=20)
+    bm  = retrieve_bm25(query, bm25, documents, metadata, k=20)
+    # fusione RRF e restituzione dei top-k
+    return reciprocal_rank_fusion([sem, bm])[:k]
+
+def reciprocal_rank_fusion(results_list, k=60):
+    rrf_scores, doc_map = {}, {}
+    for results in results_list:
+        for item in results:
+            ix = item['idx']
+            rrf_scores[ix] = rrf_scores.get(ix, 0) + 1 / (k + item['rank'])
+            doc_map[ix]    = item
+    sorted_docs = sorted(rrf_scores.items(),
+                         key=lambda x: x[1], reverse=True)
+    return [
+        {'rank': i+1, 'rrf_score': score, 'idx': ix,
+         'document': doc_map[ix]['document'],
+         'metadata': doc_map[ix]['metadata']}
+        for i, (ix, score) in enumerate(sorted_docs)
+    ]
+\end{pylisting}
+
+Il retrieval ibrido parte da $k'=20$ risultati per ciascun retriever prima della fusione, cos\`i da avere un pool di candidati sufficientemente ampio per il re-ranking.
+
+% ============================================================
+\section{Dataset e Configurazione}
+% ============================================================
+
+\subsection{Dataset}
+
+Il dataset \texttt{MaartenGr/arxiv\_nlp} contiene \textbf{44\,949 paper scientifici NLP} da arXiv, con i campi \texttt{title}, \texttt{abstract} e \texttt{year}. Ogni documento \`e rappresentato come la concatenazione di titolo e abstract.
+
+\begin{pylisting}[title={Caricamento e costruzione del corpus}]
+dataset = load_dataset("MaartenGr/arxiv_nlp")
+df_full = pd.DataFrame(dataset['train'])
+# Documenti totali disponibili: 44,949
+
+def build_corpus(df, n):
+    df_s = df.sample(n=n, random_state=42).reset_index(drop=True)
+    docs, meta = [], []
+    for _, row in df_s.iterrows():
+        title    = str(row['title'])
+        abstract = str(row['abstract'])
+        docs.append(f"Title: {title}\n\nAbstract: {abstract}")
+        meta.append({'title': title, 'year': str(row['year'])})
+    return docs, meta
+\end{pylisting}
+
+\subsection{Configurazione dell'esperimento}
+
+L'esperimento varia la dimensione del corpus su cinque livelli:
+\[
+  N_{\text{DOCS}} \in \{1\,000,\; 5\,000,\; 15\,000,\; 25\,000,\; 44\,949\}
+\]
+
+Per ogni configurazione si ricostruisce il corpus (campionamento casuale con seed fisso), si riaddestramo gli indici FAISS e BM25, e si rieseguono le valutazioni. Il gold standard \`e definito da cinque query NLP con parole chiave rilevanti:
+
+\begin{table}[H]
+  \centering
+  \caption{Query di valutazione e parole chiave del gold standard}
+  \begin{tabular}{p{7cm} p{7cm}}
+    \toprule
+    \textbf{Query} & \textbf{Parole chiave rilevanti} \\
+    \midrule
+    What is BERT and how does self-attention work? & bert, attention, transformer, language model, pre-training \\
+    How does word2vec represent word meaning?       & word2vec, skip-gram, word embedding, word representation \\
+    What are the main challenges in machine translation? & machine translation, neural machine translation, nmt \\
+    How does topic modeling work?                  & topic model, lda, bertopic, topic, clustering \\
+    What is named entity recognition?              & named entity, ner, entity recognition, sequence labeling \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Modelli utilizzati}
+
+\begin{table}[H]
+  \centering
+  \caption{Modelli e librerie del sistema}
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Componente}    & \textbf{Modello/Libreria}                      & \textbf{Ruolo} \\
+    \midrule
+    Embedding              & SciBERT (\texttt{allenai/scibert\_scivocab\_uncased}) & Retrieval semantico \\
+    Indice vettoriale      & FAISS \texttt{IndexFlatIP}                     & ANN search \\
+    Retrieval lessicale    & BM25Okapi (\texttt{rank\_bm25})                & Keyword search \\
+    Fusione                & Reciprocal Rank Fusion ($k=60$)                & Re-ranking ibrido \\
+    Generazione            & Phi-3.5-mini-instruct (3.8B)                   & Produzione risposta \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% ============================================================
+\section{Implementazione del Retrieval}
+% ============================================================
+
+\subsection{Retrieval semantico}
+
+\begin{pylisting}[title={Costruzione indice FAISS e retrieval semantico}]
+def build_faiss_index(documents):
+    embeddings = embedding_model.encode(
+        documents, show_progress_bar=True,
+        batch_size=64, convert_to_numpy=True,
+        normalize_embeddings=True          # norma L2 = 1 (inner product = coseno)
+    )
+    idx = faiss.IndexFlatIP(embeddings.shape[1])  # dimensione 768
+    idx.add(embeddings.astype(np.float32))
+    return idx
+
+def retrieve_semantic(query, faiss_index, documents, metadata, k=10):
+    qe = embedding_model.encode(
+        [query], convert_to_numpy=True, normalize_embeddings=True
+    ).astype(np.float32)
+    sims, idxs = faiss_index.search(qe, k)
+    return [
+        {'rank': i+1, 'score': float(s), 'idx': int(ix),
+         'document': documents[ix], 'metadata': metadata[ix]}
+        for i, (s, ix) in enumerate(zip(sims[0], idxs[0]))
+    ]
+\end{pylisting}
+
+Il retrieval semantico codifica la query con SciBERT e recupera i $k$ documenti con massima similarit\`a coseno. FAISS \texttt{IndexFlatIP} calcola l'inner product su tutti i vettori: essendo normalizzati, coincide esattamente con la similarit\`a coseno.
+
+\subsection{Retrieval BM25}
+
+\begin{pylisting}[title={Costruzione indice BM25 e retrieval lessicale}]
+def build_bm25_index(documents):
+    tokenized = [doc.lower().split() for doc in documents]
+    return BM25Okapi(tokenized), tokenized
+
+def retrieve_bm25(query, bm25, documents, metadata, k=10):
+    scores = bm25.get_scores(query.lower().split())
+    top    = np.argsort(scores)[::-1][:k]
+    return [
+        {'rank': i+1, 'score': float(scores[ix]), 'idx': int(ix),
+         'document': documents[ix], 'metadata': metadata[ix]}
+        for i, ix in enumerate(top)
+    ]
+\end{pylisting}
+
+BM25 tokenizza i documenti con semplice split su spazio e punteggia ogni documento in base alla frequenza normalizzata dei termini della query. Non richiede inferenza neurale, quindi \`e ordini di grandezza pi\`u veloce del retrieval semantico a runtime.
+
+% ============================================================
+\section{Generazione della Risposta}
+% ============================================================
+
+\begin{pylisting}[title={Prompt e generazione con Phi-3.5-mini-instruct}]
+def rag_answer(query, results):
+    context_parts = [
+        f"[Paper {r['rank']}] {r['metadata']['title']}\n{r['document']}"
+        for r in results
+    ]
+    context = "\n\n".join(context_parts)
+    if len(context) > 3000:
+        context = context[:3000] + "\n[...truncated...]"
+
+    messages = [
+        {"role": "system", "content": (
+            "You are a helpful assistant specialized in NLP research. "
+            "Answer questions based only on the provided research papers. "
+            "Always cite the paper numbers [Paper X] you used. "
+            "If the context is insufficient, say so clearly."
+        )},
+        {"role": "user", "content": (
+            f"Context from research papers:\n\n{context}\n\n"
+            f"Question: {query}\n\n"
+            f"Answer based on the context above, citing paper numbers:"
+        )}
+    ]
+    prompt = tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+    output    = llm(prompt)
+    full_text = output[0]['generated_text']
+    return full_text[len(prompt):].strip()
+\end{pylisting}
+
+Il prompt \`e strutturato con ruolo \texttt{system} (vincola l'LLM all'uso del solo contesto fornito e richiede citazioni esplicite) e ruolo \texttt{user} (context + query). Il contesto \`e troncato a 3\,000 caratteri per gestire la finestra di contesto del modello su CPU. La temperatura \`e $T=0.3$ per favorire risposte deterministiche.
+
+% ============================================================
+\section{Metriche di Valutazione: Implementazione}
+% ============================================================
+
+\begin{pylisting}[title={Context Relevance e Answer Relevance}]
+def context_relevance(query, results):
+    qe   = embedding_model.encode(
+               [query], convert_to_numpy=True, normalize_embeddings=True)
+    snip = [r['document'][:200] for r in results]
+    de   = embedding_model.encode(
+               snip, convert_to_numpy=True, normalize_embeddings=True)
+    return float(np.mean(de @ qe.T))   # media dei coseni query-snippet
+
+def answer_relevance(query, answer):
+    embs = embedding_model.encode(
+               [query, answer], convert_to_numpy=True, normalize_embeddings=True)
+    return float(embs[0] @ embs[1])    # coseno query-risposta
+\end{pylisting}
+
+\begin{pylisting}[title={Faithfulness proxy e robustezza}]
+def faithfulness_proxy(answer, results):
+    context_text  = ' '.join(r['document'][:500] for r in results).lower()
+    words         = re.findall(r'\b[a-z]{4,}\b', answer.lower())
+    content_words = [w for w in words if w not in sw]  # sw = stopwords NLTK
+    if not content_words:
+        return 0.0
+    return sum(1 for w in content_words if w in context_text) / len(content_words)
+
+def robustness_test(query, paraphrases, faiss_index, bm25,
+                    documents, metadata, k=5):
+    base_titles = {r['metadata']['title']
+                   for r in retrieve_hybrid(
+                       query, faiss_index, bm25, documents, metadata, k)}
+    overlaps = []
+    for para in paraphrases:
+        para_titles = {r['metadata']['title']
+                       for r in retrieve_hybrid(
+                           para, faiss_index, bm25, documents, metadata, k)}
+        overlaps.append(len(base_titles & para_titles) / k)
+    return float(np.mean(overlaps))
+\end{pylisting}
+
+La \textbf{faithfulness proxy} \`e una stima lessicale della fedelt\`a: controlla che le parole contenutistiche della risposta siano ancorate al testo dei documenti recuperati. Non misura la correttezza logica (richiederebbe un NLI model), ma individua risposte ``fuori contesto''.
+
+La \textbf{robustezza} testa tre query con due parafrasature ciascuna, misurando l'overlap@5 tra i risultati della query originale e quelli delle varianti. Un overlap basso segnala instabilit\`a del retriever a piccole variazioni lessicali.
+
+% ============================================================
+\section{Esperimento: Variazione di N\_DOCS}
+% ============================================================
+
+\subsection{Risultati per singolo N\_DOCS}
+
+Le tabelle seguenti riportano i risultati completi per ciascuna configurazione.
+
+\begin{table}[H]
+  \centering
+  \caption{Risultati N\_DOCS = 1\,000}
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Metrica} & \textbf{Base} & \textbf{Ibrido} & \textbf{Delta} \\
+    \midrule
+    Precision@5        & 0.160 & 0.400 & +0.240 \\
+    Context Relevance  & 0.716 & 0.718 & +0.001 \\
+    Answer Relevance   & 0.697 & 0.684 & $-$0.014 \\
+    Faithfulness       & 0.516 & 0.588 & +0.072 \\
+    Robustezza         &  ---  & 0.233 &  --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{Risultati N\_DOCS = 5\,000}
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Metrica} & \textbf{Base} & \textbf{Ibrido} & \textbf{Delta} \\
+    \midrule
+    Precision@5        & 0.240 & 0.560 & +0.320 \\
+    Context Relevance  & 0.724 & 0.714 & $-$0.010 \\
+    Answer Relevance   & 0.687 & 0.674 & $-$0.014 \\
+    Faithfulness       & 0.572 & 0.667 & +0.095 \\
+    Robustezza         &  ---  & 0.100 &  --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{Risultati N\_DOCS = 15\,000}
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Metrica} & \textbf{Base} & \textbf{Ibrido} & \textbf{Delta} \\
+    \midrule
+    Precision@5        & 0.160 & 0.520 & +0.360 \\
+    Context Relevance  & 0.713 & 0.719 & +0.007 \\
+    Answer Relevance   & 0.686 & 0.667 & $-$0.018 \\
+    Faithfulness       & 0.562 & 0.647 & +0.084 \\
+    Robustezza         &  ---  & 0.033 &  --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{Risultati N\_DOCS = 25\,000}
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Metrica} & \textbf{Base} & \textbf{Ibrido} & \textbf{Delta} \\
+    \midrule
+    Precision@5        & 0.200 & 0.440 & +0.240 \\
+    Context Relevance  & 0.720 & 0.730 & +0.010 \\
+    Answer Relevance   & 0.679 & 0.682 & +0.003 \\
+    Faithfulness       & 0.560 & 0.587 & +0.027 \\
+    Robustezza         &  ---  & 0.000 &  --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{Risultati N\_DOCS = 44\,949 (corpus completo)}
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Metrica} & \textbf{Base} & \textbf{Ibrido} & \textbf{Delta} \\
+    \midrule
+    Precision@5        & 0.120 & 0.360 & +0.240 \\
+    Context Relevance  & 0.719 & 0.726 & +0.007 \\
+    Answer Relevance   & 0.678 & 0.666 & $-$0.012 \\
+    Faithfulness       & 0.496 & 0.569 & +0.074 \\
+    Robustezza         &  ---  & 0.033 &  --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Riepilogo comparativo: Precision@5}
+
+\begin{table}[H]
+  \centering
+  \caption{Precision@5 al variare di N\_DOCS}
+  \begin{tabular}{rrrrr}
+    \toprule
+    \textbf{N\_DOCS} & \textbf{Base} & \textbf{Ibrido} & \textbf{Delta} & \textbf{Miglioramento} \\
+    \midrule
+    1\,000  & 0.160 & 0.400 & +0.240 & +150.0\% \\
+    5\,000  & 0.240 & 0.560 & +0.320 & +133.3\% \\
+    15\,000 & 0.160 & 0.520 & +0.360 & +225.0\% \\
+    25\,000 & 0.200 & 0.440 & +0.240 & +120.0\% \\
+    44\,949 & 0.120 & 0.360 & +0.240 & +200.0\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Dettaglio per query: Precision@5 ibrido}
+
+\begin{table}[H]
+  \centering
+  \caption{P@5 ibrido per singola query al variare di N\_DOCS}
+  \small
+  \begin{tabular}{p{6.5cm}rrrrr}
+    \toprule
+    \textbf{Query} & \textbf{1K} & \textbf{5K} & \textbf{15K} & \textbf{25K} & \textbf{44.9K} \\
+    \midrule
+    BERT / self-attention  & 0.20 & 0.40 & 0.40 & 0.00 & 0.20 \\
+    word2vec               & 0.40 & 0.60 & 0.60 & 0.60 & 0.40 \\
+    machine translation    & 0.20 & 0.40 & 0.60 & 0.60 & 0.40 \\
+    topic modeling         & 0.40 & 0.60 & 0.20 & 0.20 & 0.20 \\
+    named entity recog.    & 0.80 & 0.80 & 0.80 & 0.80 & 0.60 \\
+    \midrule
+    \textbf{Media}         & \textbf{0.400} & \textbf{0.560} & \textbf{0.520} & \textbf{0.440} & \textbf{0.360} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Robustezza al variare di N\_DOCS}
+
+\begin{table}[H]
+  \centering
+  \caption{Robustezza (overlap@5) al variare di N\_DOCS}
+  \begin{tabular}{rr}
+    \toprule
+    \textbf{N\_DOCS} & \textbf{Robustezza} \\
+    \midrule
+    1\,000  & 0.233 \\
+    5\,000  & 0.100 \\
+    15\,000 & 0.033 \\
+    25\,000 & 0.000 \\
+    44\,949 & 0.033 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% ============================================================
+\section{Risultati e Discussione}
+% ============================================================
+
+\subsection{Il retrieval ibrido migliora sistematicamente la Precision@5}
+
+Il dato pi\`u netto \`e che il sistema ibrido supera il baseline semantico in \textit{tutte e cinque} le configurazioni di N\_DOCS, con miglioramenti che vanno da +120\% a +225\%. L'ibrido porta la Precision@5 media da valori tra 0.120 e 0.240 a valori tra 0.360 e 0.560.
+
+Questo conferma l'ipotesi di partenza: BM25, catturando i termini tecnici esatti (es.\ ``NER'', ``LDA'', ``skip-gram''), recupera documenti che il solo retrieval semantico manca, perch\'e SciBERT tende a generalizzare i termini tecnici verso concetti pi\`u astratti. La fusione RRF bilancia i punti di forza dei due retriever.
+
+\subsection{Andamento non monotono della Precision@5 con N\_DOCS}
+
+La Precision@5 ibrida non cresce monotonamente all'aumentare del corpus:
+
+\begin{itemize}
+  \item Picco a N=5\,000 (P@5=0.560): il corpus \`e abbastanza grande da contenere paper rilevanti, ma abbastanza piccolo da non essere ``inquinato'' da troppi documenti distanti.
+  \item Calo a N=44\,949 (P@5=0.360): l'aumento esponenziale del numero di documenti incrementa il ``rumore'' nel retrieval — BM25 soffre di pi\`u con vocabulari molto grandi, e anche FAISS deve discriminare tra molti pi\`u candidati simili.
+\end{itemize}
+
+Questo suggerisce che per corpus di paper NLP molto grandi, sarebbe necessario pre-filtrare per sotto-dominio (es.\ clustering gerarchico) prima del retrieval.
+
+\subsection{Context Relevance e Answer Relevance: differenze minime}
+
+La Context Relevance (CR) e l'Answer Relevance (AR) mostrano differenze piccole tra base e ibrido (tipicamente $|\Delta| < 0.02$). Questo \`e atteso: entrambe le metriche sono basate sugli stessi embeddings SciBERT usati anche per il retrieval semantico, creando una parziale circolarit\`a. Il retrieval semantico massimizza gi\`a la similarit\`a coseno con la query, quindi CR e AR non riescono a discriminare ulteriormente tra i due sistemi.
+
+L'AR ibrida \`e spesso leggermente inferiore a quella base: i documenti BM25 sono meno ``semanticamente centrati'' sulla query (recuperano per parole chiave, non per embedding), quindi il contesto risultante, pur pi\`u preciso nel contenuto fattuale, pu\`o essere meno coeso, portando l'LLM a risposte con embedding pi\`u dispersi.
+
+\subsection{Faithfulness: il sistema ibrido produce risposte pi\`u fedeli}
+
+La Faithfulness proxy \`e sistematicamente pi\`u alta per il sistema ibrido in tutti gli esperimenti ($+0.027$ a $+0.095$). Questo \`e il risultato pi\`u interpretabile: i documenti recuperati dall'ibrido sono pi\`u aderenti al dominio tecnico specifico della query, quindi l'LLM usa pi\`u termini che compaiono letteralmente nel contesto, riducendo le allucinazioni lessicali.
+
+\subsection{Robustezza: cala drasticamente con N\_DOCS}
+
+La robustezza \`e alta a N=1\,000 (0.233) e crolla a N=25\,000 (0.000). Questo \`e controintuitivo a prima vista: con pi\`u documenti ci si aspetterebbe retrieval pi\`u stabile. La spiegazione \`e che con corpus piccoli i risultati sono dominati da pochi paper molto rilevanti, stabili anche a variazioni della query. Con corpus grandi, la minima variazione lessicale della query sposta i confini di un denso spazio di candidati, portando a ranking molto diversi.
+
+La robustezza bassa al corpus grande segnala la necessit\`a di tecniche di \textit{query expansion} o ensemble di retriever pi\`u sofisticati per sistemi di produzione su grandi knowledge base.
+
+\subsection{Query con performance diverse}
+
+La query ``named entity recognition'' \`e quella con P@5 pi\`u alta e stabile (0.60--0.80): il termine ``NER'' \`e molto specifico e BM25 lo gestisce perfettamente. La query ``BERT / self-attention'' ha P@5 bassa a N=25\,000 (0.00): a quella dimensione del corpus, il retrieval trova paper che parlano di attention in generale, senza includere paper specificatamente su BERT tra i top-5.
+
+% ============================================================
+\section{Conclusioni}
+% ============================================================
+
+Il laboratorio ha implementato un sistema RAG ibrido su un corpus di paper scientifici NLP, dimostrando che la combinazione di retrieval semantico (SciBERT + FAISS) e lessicale (BM25) tramite Reciprocal Rank Fusion porta a miglioramenti consistenti rispetto al solo retrieval semantico.
+
+I risultati principali sono:
+
+\begin{enumerate}
+  \item \textbf{Il retrieval ibrido migliora la Precision@5 in modo sistematico}: il delta medio su tutte le configurazioni \`e +0.280, con un miglioramento percentuale che va da +120\% a +225\%.
+
+  \item \textbf{La dimensione ottimale del corpus \`e N=5\,000}: il picco di P@5 ibrido (0.560) si raggiunge a 5\,000 documenti, suggerendo che per questo tipo di query un corpus pi\`u focalizzato \`e preferibile a un corpus completo.
+
+  \item \textbf{La Faithfulness beneficia del retrieval ibrido}: l'ibrido produce risposte pi\`u ancorate al testo dei documenti recuperati, riducendo le allucinazioni lessicali.
+
+  \item \textbf{La robustezza \`e inversamente correlata alla dimensione del corpus}: questo apre la strada a lavori futuri su query expansion, diversificazione dei risultati e indici gerarchici per grandi knowledge base.
+\end{enumerate}
+
+I limiti principali riguardano il gold standard (definito manualmente e limitato a 5 query), il costo computazionale su CPU (necessario in assenza di GPU), e la faithfulness proxy che \`e una stima lessicale e non valuta la correttezza logica delle risposte.
+
+\end{document}
