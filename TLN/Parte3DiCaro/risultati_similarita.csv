@@ -1,0 +1,5 @@
+Concetto,Tipo,Specificità,Simlex (Jaccard),Simsem (Cosine)
+Music (AG),Astratto,Generico,0.049,0.036
+Ethics (AS),Astratto,Specifico,0.042,0.042
+Tree (CG),Concreto,Generico,0.094,0.078
+Teapot (CS),Concreto,Specifico,0.063,0.063
