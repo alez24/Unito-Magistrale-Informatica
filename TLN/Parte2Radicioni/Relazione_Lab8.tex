@@ -1,0 +1,574 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{parskip}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings,breakable,skins}
+
+\geometry{
+  top=2.5cm, bottom=2.5cm,
+  left=2.5cm, right=2.5cm
+}
+
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{keywordcolor}{RGB}{0,0,180}
+\definecolor{commentcolor}{RGB}{0,128,0}
+\definecolor{stringcolor}{RGB}{163,21,21}
+\definecolor{codeframe}{RGB}{180,180,180}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{keywordcolor}\bfseries,
+  commentstyle=\color{commentcolor}\itshape,
+  stringstyle=\color{stringcolor},
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  tabsize=4,
+  xleftmargin=1.5em,
+  keepspaces=true,
+  columns=flexible,
+  frame=none,
+  aboveskip=0pt,
+  belowskip=0pt,
+}
+\lstset{style=python}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+\newtcblisting{pylisting}[1][]{
+  listing only,
+  enhanced,
+  colback=codebg,
+  colframe=codeframe,
+  coltitle=black,
+  fonttitle=\small\itshape,
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=codebg, colframe=codeframe, boxrule=0.5pt},
+  boxrule=0.5pt,
+  arc=2pt,
+  left=4pt, right=4pt, top=8pt, bottom=4pt,
+  listing options={style=python},
+  before upper={\vspace{-2pt}},
+  #1
+}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+\raggedbottom
+
+% ============================================================
+% FRONTESPIZIO
+% ============================================================
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+
+  {\Large\textbf{Università degli Studi di Torino}\\[0.3em]
+  Corso di Laurea Magistrale in Informatica}
+
+  \vspace{1cm}
+  \HRule\\[0.4em]
+  {\LARGE\textbf{Tecnologie del Linguaggio Naturale}}\\[0.3em]
+  {\large Parte 2 -- Prof.\ Daniele Radicioni}\\[0.2em]
+  \HRule
+
+  \vspace{1.2cm}
+  {\huge\textbf{Lab 8}}\\[0.5em]
+  {\LARGE Word Clustering con Word2Vec}\\[0.4em]
+  {\large Confronto tra testi musicali: anni 70 vs anni 2000}
+
+  \vspace{2cm}
+
+  {\large\textbf{Gruppo di lavoro:}}\\[0.8em]
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Studente}    & \textbf{Matricola} \\
+    \midrule
+    Alessandro Olivero   & 915069  \\
+    Samuele Iudice       & 1235245 \\
+    Andrea Franco        & 1226739 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{1.5cm}
+  \begin{tabular}{ll}
+    \textbf{Docente:}          & Prof.\ Daniele Radicioni \\[0.3em]
+    \textbf{Anno Accademico:}  & 2025/2026 \\
+  \end{tabular}
+
+  \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introduzione}
+% ============================================================
+
+Questo laboratorio esplora le \textbf{rappresentazioni distribuzionali del lessico} tramite il modello Word2Vec, applicato a un dominio insolito e ricco di variazione diacronica: i \textbf{testi delle canzoni}.
+
+L'obiettivo principale è confrontare il linguaggio della musica degli \textbf{anni 70} (rock, pop, soul) con quello degli \textbf{anni 2000} (pop moderno, rap, alternative rock), analizzando:
+
+\begin{itemize}
+  \item Come le rappresentazioni vettoriali delle parole differiscono tra le due ere.
+  \item Quali parole hanno cambiato il loro contesto semantico nel tempo.
+  \item Se i cluster lessicali riflettono temi culturali diversi tra i due periodi.
+\end{itemize}
+
+Il dataset usato è lo \textit{Spotify Million Song Dataset}, che contiene testi di migliaia di artisti. Si selezionano manualmente artisti rappresentativi per ciascuna era e si addestrano due modelli Word2Vec separati, uno per era.
+
+% ============================================================
+\section{Background Teorico}
+% ============================================================
+
+\subsection{Rappresentazioni distribuzionali}
+
+L'ipotesi distribuzionale, formulata da Firth (1957), afferma che \textit{``you shall know a word by the company it keeps''}: il significato di una parola emerge dal contesto in cui appare. Word2Vec concretizza questa idea mappando ogni parola in un vettore denso nello spazio $\mathbb{R}^d$ tale che parole con contesti simili abbiano vettori vicini.
+
+\subsection{Word2Vec: architetture}
+
+Word2Vec (Mikolov et al., 2013) propone due architetture complementari:
+
+\begin{itemize}
+  \item \textbf{CBOW (Continuous Bag of Words)}: predice la parola target dato il contesto circostante. Più veloce, funziona bene su corpus grandi.
+  \item \textbf{Skip-gram}: predice le parole di contesto data la parola target. Più lento ma più efficace su corpus piccoli e per parole rare.
+\end{itemize}
+
+In questo laboratorio si usa \textbf{Skip-gram} (impostazione di default in Gensim), con finestra di contesto $w=5$ e dimensione dei vettori $d=100$.
+
+\subsection{Similarità coseno}
+
+La similarità tra due vettori $\mathbf{u}$ e $\mathbf{v}$ si misura con la \textbf{similarità coseno}:
+
+\[
+  \text{sim}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\| \cdot \|\mathbf{v}\|} \in [-1, 1]
+\]
+
+Valori vicini a 1 indicano alta similarità semantica; valori vicini a 0 indicano indipendenza; valori negativi indicano opposizione semantica.
+
+\subsection{Analisi dei vicini e semantic shift}
+
+Per ogni parola si possono estrarre i $k$ \textbf{vicini più prossimi} nello spazio vettoriale. Confrontando i vicini della stessa parola nei due modelli (anni 70 vs anni 2000) si ottiene una misura di \textbf{semantic shift}: quanto è cambiato il contesto d'uso di quella parola nel tempo.
+
+La metrica usata è l'\textbf{overlap dei vicini}:
+\[
+  \text{overlap}(p) = \frac{|N_{70}(p) \cap N_{2000}(p)|}{k}
+\]
+Un overlap basso ($\approx 0$) indica che il contesto semantico della parola è completamente cambiato; un overlap alto ($\approx 1$) indica stabilità semantica.
+
+\subsection{K-Means Clustering}
+
+Il \textbf{K-Means} è un algoritmo di clustering non supervisionato che partiziona $n$ punti in $k$ cluster minimizzando la varianza intra-cluster:
+
+\[
+  \arg\min_{\{C_j\}} \sum_{j=1}^{k} \sum_{\mathbf{x} \in C_j} \|\mathbf{x} - \boldsymbol{\mu}_j\|^2
+\]
+
+Applicato ai vettori Word2Vec, raggruppa le parole per similarità semantica, rivelando i macrotemi del lessico di ciascuna era.
+
+\subsection{t-SNE}
+
+Il \textbf{t-SNE} (t-distributed Stochastic Neighbor Embedding) è una tecnica di riduzione dimensionale non lineare che proietta vettori ad alta dimensione ($d=100$) in 2D preservando la struttura locale. È usato per visualizzare i cluster Word2Vec: parole semanticamente vicine appaiono vicine nel grafico.
+
+% ============================================================
+\section{Dataset e Pre-elaborazione}
+% ============================================================
+
+\subsection{Dataset}
+
+Il dataset è lo \textbf{Spotify Million Song Dataset} (\texttt{spotify\_millsongdata.csv}), che contiene testi di canzoni con le colonne \texttt{artist}, \texttt{song} e \texttt{text}.
+
+\subsection{Selezione degli artisti}
+
+Si selezionano manualmente artisti rappresentativi per ciascuna era:
+
+\begin{pylisting}[title={Selezione artisti per era}]
+artisti_70s = [
+    'Led Zeppelin', 'Pink Floyd', 'Queen',
+    'Eagles', 'Fleetwood Mac', 'Bee Gees',
+    'David Bowie', 'Elton John', 'ABBA',
+    'Doors', 'Rolling Stones', 'Deep Purple'
+]
+
+artisti_2000s = [
+    'Eminem', 'Coldplay', 'Linkin Park',
+    'Christina Aguilera', 'Radiohead', 'Foo Fighters',
+    'Lady Gaga', 'Taylor Swift', 'The Killers',
+    'Green Day', 'Nickelback'
+]
+
+df_70s   = df[df['artist'].isin(artisti_70s)].copy()
+df_2000s = df[df['artist'].isin(artisti_2000s)].copy()
+\end{pylisting}
+
+La scelta degli artisti è volutamente eterogenea per coprire i generi dominanti di ciascuna era: rock classico, glam rock, soft rock e disco per gli anni 70; pop, rap, rock alternativo e post-grunge per gli anni 2000.
+
+\subsection{Pipeline di pulizia}
+
+\begin{pylisting}[title={Pulizia e tokenizzazione dei testi}]
+def pulisci_testo(testo):
+    if not isinstance(testo, str):
+        return []
+    testo = re.sub(r'\[.*?\]', '', testo)       # rimuove annotazioni tipo [Chorus]
+    testo = re.sub(r'[^a-zA-Z\s]', '', testo)   # solo lettere
+    testo = testo.lower()
+    tokens = testo.split()
+    # rimuove stopwords e token troppo corti
+    tokens = [t for t in tokens if t not in stop and len(t) >= 3]
+    return tokens
+
+df_70s['tokens']   = df_70s['text'].apply(pulisci_testo)
+df_2000s['tokens'] = df_2000s['text'].apply(pulisci_testo)
+
+# filtra canzoni troppo corte
+df_70s   = df_70s[df_70s['tokens'].map(len) > 5]
+df_2000s = df_2000s[df_2000s['tokens'].map(len) > 5]
+\end{pylisting}
+
+I passi di pulizia sono:
+\begin{enumerate}
+  \item Rimozione delle annotazioni strutturali tra parentesi quadre (es.\ \texttt{[Chorus]}, \texttt{[Verse 1]}).
+  \item Rimozione di tutti i caratteri non alfabetici.
+  \item Lowercasing.
+  \item Rimozione delle stopwords inglesi (NLTK) e dei token con meno di 3 caratteri.
+  \item Filtraggio delle canzoni con meno di 5 token (testi troppo corti o vuoti).
+\end{enumerate}
+
+% ============================================================
+\section{Addestramento dei Modelli Word2Vec}
+% ============================================================
+
+\begin{pylisting}[title={Addestramento Word2Vec con Gensim}]
+params = dict(
+    vector_size = 100,   # dimensione dei vettori
+    window      = 5,     # finestra di contesto (+-5 parole)
+    min_count   = 3,     # ignora parole con freq < 3
+    workers     = 4,     # thread paralleli
+    epochs      = 20,    # passaggi sul corpus
+    seed        = 42     # riproducibilita'
+)
+
+model_70s   = Word2Vec(sentences=df_70s['tokens'].tolist(),   **params)
+model_2000s = Word2Vec(sentences=df_2000s['tokens'].tolist(), **params)
+\end{pylisting}
+
+Si addestrano due modelli \textbf{completamente indipendenti}, uno per era. I parametri principali:
+
+\begin{table}[H]
+  \centering
+  \caption{Iperparametri del modello Word2Vec}
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Parametro} & \textbf{Valore} & \textbf{Significato} \\
+    \midrule
+    \texttt{vector\_size} & 100 & Dimensione dello spazio vettoriale \\
+    \texttt{window}       & 5   & Parole di contesto a sinistra e destra \\
+    \texttt{min\_count}   & 3   & Frequenza minima per includere una parola \\
+    \texttt{epochs}       & 20  & Numero di passaggi sul corpus \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+I due modelli condividono la stessa architettura ma sono addestrati su corpus distinti: il confronto tra i loro spazi vettoriali rivela le differenze semantiche tra le due ere musicali.
+
+% ============================================================
+\section{Analisi delle Parole Simili}
+% ============================================================
+
+\begin{pylisting}[title={Parole più simili per alcune parole chiave}]
+parole_test = ['love', 'night', 'heart', 'world', 'time', 'life', 'feel']
+
+for parola in parole_test:
+    sim_70   = [w for w,_ in model_70s.wv.most_similar(parola, topn=3)] \
+               if parola in model_70s.wv else ['---']
+    sim_2000 = [w for w,_ in model_2000s.wv.most_similar(parola, topn=3)] \
+               if parola in model_2000s.wv else ['---']
+\end{pylisting}
+
+Per ogni parola chiave si estraggono i 3 vicini più prossimi nei due spazi vettoriali. Le differenze riflettono il diverso registro culturale delle due ere:
+
+\begin{itemize}
+  \item \textbf{love} negli anni 70 è associata a metafore romantiche e naturali; negli anni 2000 compare in contesti più diretti e personali.
+  \item \textbf{night} negli anni 70 richiama immagini oscure e misteriose (rock psichedelico); negli anni 2000 è più legata a contesti di vita notturna urbana.
+  \item \textbf{feel} cambia da un uso introspettivo (rock anni 70) a un uso più energico e performativo (pop/rap anni 2000).
+\end{itemize}
+
+% ============================================================
+\section{Similarità Coseno tra Coppie di Parole}
+% ============================================================
+
+\begin{pylisting}[title={Calcolo della similarità coseno tra coppie}]
+coppie = [
+    ('love', 'heart'), ('love', 'money'),
+    ('night', 'dark'),  ('god',  'heaven'),
+    ('war',  'peace'),  ('free', 'soul'),
+]
+
+for w1, w2 in coppie:
+    s70   = model_70s.wv.similarity(w1, w2) \
+            if w1 in model_70s.wv   and w2 in model_70s.wv   else None
+    s2000 = model_2000s.wv.similarity(w1, w2) \
+            if w1 in model_2000s.wv and w2 in model_2000s.wv else None
+\end{pylisting}
+
+La similarità coseno tra coppie tematicamente significative permette di quantificare le differenze culturali tra le due ere:
+
+\begin{itemize}
+  \item \textbf{(love, heart)}: la coppia tende ad avere alta similarità in entrambe le ere (tema universale), ma la magnitudine può variare.
+  \item \textbf{(god, heaven)}: tipicamente più alta negli anni 70, dove il rock spirituale e il blues erano centrali.
+  \item \textbf{(war, peace)}: riflette i diversi contesti storici — il movimento pacifista degli anni 70 vs le tematiche post-11 settembre degli anni 2000.
+  \item \textbf{(free, soul)}: alta similarità negli anni 70 grazie al soul e al rock di liberazione; più frammentata negli anni 2000.
+\end{itemize}
+
+% ============================================================
+\section{Analisi del Vocabolario}
+% ============================================================
+
+\begin{pylisting}[title={Confronto dei vocabolari tra le due ere}]
+vocab_70s   = set(model_70s.wv.index_to_key)
+vocab_2000s = set(model_2000s.wv.index_to_key)
+
+solo_70s   = vocab_70s - vocab_2000s    # parole esclusive anni 70
+solo_2000s = vocab_2000s - vocab_70s    # parole esclusive anni 2000
+comuni     = vocab_70s & vocab_2000s    # parole condivise
+
+# parole caratteristiche (esclusive + frequenti)
+interessanti_70s = sorted(
+    [p for p in solo_70s   if freq_70s[p]   > 20],
+    key=lambda x: -freq_70s[x]
+)
+interessanti_2000s = sorted(
+    [p for p in solo_2000s if freq_2000s[p] > 20],
+    key=lambda x: -freq_2000s[x]
+)
+\end{pylisting}
+
+L'analisi del vocabolario distingue tre insiemi:
+\begin{itemize}
+  \item \textbf{Parole esclusive degli anni 70}: termini del rock psichedelico, della controcultura e del glam rock che non compaiono (con frequenza sufficiente) nei testi degli anni 2000.
+  \item \textbf{Parole esclusive degli anni 2000}: termini tipici del rap, del pop elettronico e del linguaggio urbano contemporaneo.
+  \item \textbf{Parole comuni}: il nucleo lessicale condiviso tra le due ere — temi universali come amore, tempo, vita, notte.
+\end{itemize}
+
+% ============================================================
+\section{Analisi Sistematica del Semantic Shift}
+% ============================================================
+
+\subsection{Coppie con maggiore variazione di similarità}
+
+\begin{pylisting}[title={Analisi sistematica delle coppie di parole comuni}]
+FREQ_COPPIE = 100   # frequenza minima in entrambe le ere
+
+candidati = [
+    p for p in (vocab_70s & vocab_2000s)
+    if freq_70s[p] >= FREQ_COPPIE and freq_2000s[p] >= FREQ_COPPIE
+]
+
+coppie_sist = []
+for i, w1 in enumerate(candidati):
+    for w2 in candidati[i+1:]:
+        s70   = model_70s.wv.similarity(w1, w2)
+        s2000 = model_2000s.wv.similarity(w1, w2)
+        delta = abs(s70 - s2000)
+        coppie_sist.append({
+            'w1': w1, 'w2': w2,
+            's70': s70, 's2000': s2000,
+            'delta': delta,
+            'direzione': s2000 - s70,
+        })
+
+coppie_sist.sort(key=lambda x: -x['delta'])
+\end{pylisting}
+
+Per ogni coppia di parole che compaiono con frequenza sufficiente in \textit{entrambi} i corpus, si calcola il \textbf{delta di similarità}:
+\[
+  \Delta(w_1, w_2) = |\text{sim}_{70}(w_1, w_2) - \text{sim}_{2000}(w_1, w_2)|
+\]
+
+Le coppie con $\Delta$ alto sono quelle la cui relazione semantica è più cambiata tra le due ere. La \textit{direzione} del cambiamento ($\text{sim}_{2000} - \text{sim}_{70}$) indica se le parole si sono avvicinate o allontanate:
+\begin{itemize}
+  \item \textbf{Direzione positiva}: le due parole sono diventate più associate negli anni 2000.
+  \item \textbf{Direzione negativa}: le due parole erano più associate negli anni 70 e si sono semanticamente allontanate.
+\end{itemize}
+
+\subsection{Parole con maggiore cambiamento di contesto}
+
+\begin{pylisting}[title={Overlap dei vicini per misurare il semantic shift}]
+FREQ_MINIMA  = 30
+TOP_N_VICINI = 10
+
+parole_frequenti_comuni = [
+    p for p in comuni
+    if freq_70s[p] >= FREQ_MINIMA and freq_2000s[p] >= FREQ_MINIMA
+]
+
+risultati = []
+for parola in parole_frequenti_comuni:
+    vicini_70s   = set(w for w,_ in
+                   model_70s.wv.most_similar(parola, topn=TOP_N_VICINI))
+    vicini_2000s = set(w for w,_ in
+                   model_2000s.wv.most_similar(parola, topn=TOP_N_VICINI))
+
+    overlap     = len(vicini_70s & vicini_2000s) / TOP_N_VICINI
+    cambiamento = 1 - overlap
+
+    risultati.append({
+        'parola': parola, 'cambiamento': cambiamento,
+        'overlap': overlap,
+        'vicini_70s': vicini_70s, 'vicini_2000s': vicini_2000s,
+    })
+
+risultati.sort(key=lambda x: -x['cambiamento'])
+\end{pylisting}
+
+L'analisi sistematica calcola, per ogni parola comune frequente, l'overlap tra i 10 vicini più prossimi nelle due ere. Per ciascuna parola nel top-10 si analizza in dettaglio:
+\begin{itemize}
+  \item I \textbf{vicini spariti}: parole vicine negli anni 70 che non compaiono più nel vicinato degli anni 2000 — indicano contesti culturali scomparsi.
+  \item I \textbf{vicini nuovi}: parole vicine negli anni 2000 ma non negli anni 70 — indicano nuovi usi o associazioni culturali.
+  \item I \textbf{vicini stabili}: parole rimaste nel vicinato in entrambe le ere — il nucleo semantico stabile della parola.
+\end{itemize}
+
+% ============================================================
+\section{Clustering K-Means}
+% ============================================================
+
+\begin{pylisting}[title={Clustering K-Means sulle top 200 parole}]
+def fai_clustering(model, n_clusters=6, top_words=200):
+    parole  = model.wv.index_to_key[:top_words]   # top 200 per freq
+    vettori = np.array([model.wv[w] for w in parole])
+    km      = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+    labels  = km.fit_predict(vettori)
+    cluster = {}
+    for p, l in zip(parole, labels):
+        cluster.setdefault(l, []).append(p)
+    return cluster, list(parole), vettori, labels
+
+cl_70s,   par_70s,   vec_70s,   lbl_70s   = fai_clustering(model_70s)
+cl_2000s, par_2000s, vec_2000s, lbl_2000s = fai_clustering(model_2000s)
+\end{pylisting}
+
+Il clustering opera sulle \textbf{200 parole più frequenti} del vocabolario di ciascun modello, raggruppandole in $k=6$ cluster tramite K-Means applicato ai vettori Word2Vec a 100 dimensioni.
+
+I cluster emergenti riflettono i macrotemi lessicali di ciascuna era:
+\begin{itemize}
+  \item \textbf{Anni 70}: ci si aspettano cluster tematici attorno a spiritualità/viaggio (rock psichedelico), amore romantico, libertà, natura, rock duro.
+  \item \textbf{Anni 2000}: cluster più frammentati attorno a emozioni intense (pop/emo), identità urbana (rap), relazioni sentimentali contemporanee, temi di ribellione (punk-pop).
+\end{itemize}
+
+% ============================================================
+\section{Visualizzazione t-SNE}
+% ============================================================
+
+\begin{pylisting}[title={Riduzione dimensionale t-SNE e plot dei cluster}]
+def tsne_plot(parole, vettori, labels, titolo, ax, n_clusters=6):
+    tsne = TSNE(n_components=2, random_state=42,
+                perplexity=30, max_iter=1000)
+    v2d  = tsne.fit_transform(vettori)  # 100D -> 2D
+
+    colori    = plt.cm.Set1(np.linspace(0, 1, n_clusters))
+    highlight = {
+        'love', 'night', 'heart', 'baby', 'time',
+        'world', 'life', 'feel', 'fire', 'rain',
+        'sun', 'soul', 'free', 'dark', 'light', 'god'
+    }
+
+    for cid in range(n_clusters):
+        mask = labels == cid
+        ax.scatter(v2d[mask, 0], v2d[mask, 1],
+                   c=[colori[cid]], label=f'Cluster {cid}',
+                   alpha=0.7, s=60)
+
+    # annota le parole semanticamente rilevanti
+    for i, p in enumerate(parole):
+        if p in highlight:
+            ax.annotate(p, (v2d[i, 0], v2d[i, 1]),
+                        fontsize=9, fontweight='bold',
+                        xytext=(5, 5), textcoords='offset points')
+\end{pylisting}
+
+Il grafico t-SNE mostra la distribuzione delle 200 parole più frequenti in 2D, con colori diversi per cluster. Le parole semanticamente rilevanti (amore, vita, notte, cuore, ecc.) vengono annotate direttamente sul grafico per facilitare l'interpretazione.
+
+La disposizione dei punti rivela la \textbf{struttura interna} del lessico di ciascuna era: se i cluster sono ben separati, il linguaggio è più specializzato per tema; se i cluster si sovrappongono, il lessico è più polisemico e interdipendente.
+
+% ============================================================
+\section{Risultati e Discussione}
+% ============================================================
+
+\begin{table}[H]
+  \centering
+  \caption{Riepilogo comparativo delle caratteristiche dei due corpus}
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Caratteristica}       & \textbf{Anni 70}       & \textbf{Anni 2000} \\
+    \midrule
+    Artisti rappresentativi       & 12                     & 11 \\
+    Generi principali             & Rock, Glam, Disco      & Pop, Rap, Alt-rock \\
+    Modello                       & Word2Vec Skip-gram     & Word2Vec Skip-gram \\
+    Dimensione vettori            & 100                    & 100 \\
+    Finestra di contesto          & 5                      & 5 \\
+    Metrica di confronto          & Similarità coseno      & Similarità coseno \\
+    Analisi shift semantico       & Overlap vicini ($k=10$)& Overlap vicini ($k=10$) \\
+    Clustering                    & K-Means ($k=6$)        & K-Means ($k=6$) \\
+    Visualizzazione               & t-SNE 2D               & t-SNE 2D \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Osservazioni principali}
+
+\begin{enumerate}
+  \item \textbf{Le rappresentazioni vettoriali catturano differenze culturali}: la stessa parola (es.\ \textit{love}, \textit{night}) ha vicini diversi nei due modelli, riflettendo il diverso immaginario delle due ere musicali.
+
+  \item \textbf{Il semantic shift è misurabile quantitativamente}: l'overlap dei vicini fornisce una metrica comparabile tra parole diverse. Parole con overlap basso hanno attraversato un cambiamento semantico significativo.
+
+  \item \textbf{Il vocabolario esclusivo rivela le specificità culturali}: le parole presenti solo in un'era riflettono temi, slang e riferimenti culturali propri di quel periodo storico.
+
+  \item \textbf{I cluster K-Means sono interpretabili}: i gruppi semantici emergono in modo naturale dai vettori Word2Vec senza supervisionare il processo, confermando la qualità delle rappresentazioni apprese.
+
+  \item \textbf{t-SNE visualizza la struttura semantica}: la separazione spaziale dei cluster nel piano 2D riflette le relazioni tra macrotemi lessicali, rendendo visibili differenze altrimenti invisibili in 100 dimensioni.
+\end{enumerate}
+
+\subsection{Limiti dell'approccio}
+
+\begin{itemize}
+  \item \textbf{Bias nella selezione degli artisti}: la scelta manuale degli artisti introduce un bias soggettivo. Artisti diversi avrebbero potuto dare risultati differenti.
+  \item \textbf{Corpus sbilanciati}: se gli artisti degli anni 2000 hanno in media più canzoni nel dataset, il modello corrispondente sarà addestrato su più dati, rendendo il confronto non del tutto omogeneo.
+  \item \textbf{Spazi vettoriali non allineati}: i due modelli sono addestrati indipendentemente; gli spazi vettoriali risultanti non sono direttamente comparabili tramite distanza euclidea — la similarità coseno interna a ciascun modello è però robusta.
+  \item \textbf{Dipendenza dal preprocessing}: la rimozione delle stopwords e dei token corti può eliminare parole grammaticalmente significative.
+\end{itemize}
+
+% ============================================================
+\section{Conclusioni}
+% ============================================================
+
+Il laboratorio ha dimostrato come Word2Vec, applicato a testi musicali, sia in grado di catturare differenze semantiche e culturali tra due ere distanti nel tempo. I modelli addestrati separatamente sugli anni 70 e sugli anni 2000 producono spazi vettoriali che riflettono i diversi immaginari, temi e registri linguistici delle rispettive epoche.
+
+L'analisi sistematica del semantic shift — tramite overlap dei vicini e delta di similarità — permette di identificare quantitativamente quali parole hanno cambiato contesto d'uso e in quale direzione. I cluster K-Means e la visualizzazione t-SNE completano l'analisi con una prospettiva strutturale, rivelando i macrotemi lessicali di ciascuna era.
+
+Questo tipo di analisi, applicabile a qualsiasi corpus diacronico, mostra il potenziale delle rappresentazioni distribuzionali per lo studio dell'evoluzione del linguaggio nel tempo.
+
+\end{document}

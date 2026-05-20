@@ -63,7 +63,6 @@
 % uso: \begin{pylisting}[title={testo}]
 \newtcblisting{pylisting}[1][]{
   listing only,
-  breakable,
   enhanced,
   colback=codebg,
   colframe=codeframe,
@@ -75,6 +74,7 @@
   arc=2pt,
   left=4pt, right=4pt, top=8pt, bottom=4pt,
   listing options={style=python},
+  before upper={\vspace{-2pt}},
   #1
 }
 
