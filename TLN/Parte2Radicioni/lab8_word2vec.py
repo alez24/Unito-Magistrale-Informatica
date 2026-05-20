@@ -396,95 +396,193 @@ for cid, parole_cl in sorted(cl_2000s.items()):
 
 print("\n Generazione grafici...")
 
-def tsne_plot(parole, vettori, labels, titolo, ax, n_clusters=6):
-    tsne = TSNE(n_components=2, random_state=42,
-                perplexity=30, max_iter=1000)
-    v2d  = tsne.fit_transform(vettori)
+# helper: top-N parole per cluster ordinate per frequenza
+def top_per_cluster(parole, labels, freq_dict, n=7):
+    result = {}
+    for cid in np.unique(labels):
+        words_in = [p for p, l in zip(parole, labels) if l == cid]
+        result[cid] = sorted(words_in, key=lambda w: -freq_dict.get(w, 0))[:n]
+    return result
 
-    colori    = plt.cm.Set1(np.linspace(0, 1, n_clusters))
-    highlight = {
-        'love', 'night', 'heart', 'baby', 'time',
-        'world', 'life', 'feel', 'fire', 'rain',
-        'sun', 'soul', 'free', 'dark', 'light', 'god'
-    }
+# === FIGURA 1: t-SNE migliorato ===
+print("  Generazione t-SNE...")
+fig1, axes1 = plt.subplots(1, 2, figsize=(20, 9))
+fig1.suptitle('Clustering Word2Vec: Anni 70 vs Anni 2000',
+              fontsize=16, fontweight='bold')
+
+def tsne_plot_v2(parole, vettori, labels, freq_dict, titolo, ax, n_clusters=6):
+    n_perp = min(30, max(5, len(parole) - 1))
+    tsne = TSNE(n_components=2, random_state=42, perplexity=n_perp, max_iter=1000)
+    v2d = tsne.fit_transform(vettori)
+
+    colors = plt.cm.tab10(np.linspace(0, 0.9, n_clusters))
+    top_words = top_per_cluster(parole, labels, freq_dict, n=7)
+    annotated = set()
+    for tw_list in top_words.values():
+        annotated.update(tw_list)
 
     for cid in range(n_clusters):
         mask = labels == cid
         ax.scatter(v2d[mask, 0], v2d[mask, 1],
-                   c=[colori[cid]], label=f'Cluster {cid}',
-                   alpha=0.7, s=60)
+                   c=[colors[cid]], label=f'C{cid}',
+                   alpha=0.5, s=50, zorder=2)
 
     for i, p in enumerate(parole):
-        if p in highlight:
+        if p in annotated:
             ax.annotate(p, (v2d[i, 0], v2d[i, 1]),
-                        fontsize=9, fontweight='bold',
-                        xytext=(5, 5),
-                        textcoords='offset points')
+                        fontsize=8.5, fontweight='bold', zorder=5,
+                        bbox=dict(boxstyle='round,pad=0.2', fc='white',
+                                  alpha=0.75, ec='none'),
+                        xytext=(4, 4), textcoords='offset points')
 
     ax.set_title(titolo, fontsize=12, fontweight='bold')
-    ax.legend(fontsize=8)
-    ax.set_xlabel('t-SNE dim 1')
-    ax.set_ylabel('t-SNE dim 2')
+    ax.legend(fontsize=9, loc='best', framealpha=0.7, ncol=2)
+    ax.set_xlabel('t-SNE dim 1', fontsize=10)
+    ax.set_ylabel('t-SNE dim 2', fontsize=10)
+    ax.grid(True, alpha=0.15, linestyle='--')
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
 
-# --- Grafico 1: t-SNE + frequenze ---
-fig, axes = plt.subplots(2, 2, figsize=(18, 14))
-fig.suptitle('Word2Vec - Testi Musicali: Anni 70 vs Anni 2000',
-             fontsize=15, fontweight='bold')
+tsne_plot_v2(par_70s, vec_70s, lbl_70s, freq_70s,
+             'Anni 70 — Led Zeppelin, Pink Floyd, Queen, Eagles…', axes1[0])
+tsne_plot_v2(par_2000s, vec_2000s, lbl_2000s, freq_2000s,
+             'Anni 2000 — Eminem, Coldplay, Taylor Swift, Linkin Park…', axes1[1])
 
-tsne_plot(par_70s, vec_70s, lbl_70s,
-          'Cluster parole anni 70\n(Pink Floyd, Queen, Eagles, Bee Gees...)',
-          axes[0, 0])
+plt.tight_layout(pad=2)
+plt.savefig('word2vec_cluster.png', dpi=150, bbox_inches='tight')
+print("  Salvato: word2vec_cluster.png")
+plt.close()
 
-tsne_plot(par_2000s, vec_2000s, lbl_2000s,
-          'Cluster parole anni 2000\n(Eminem, Coldplay, Lady Gaga, Taylor Swift...)',
-          axes[0, 1])
 
-top15_70s   = freq_70s.most_common(15)
-top15_2000s = freq_2000s.most_common(15)
+# === FIGURA 2: Heatmap similarità ===
+print("  Generazione heatmap similarità...")
+KEYWORDS = ['love', 'life', 'night', 'heart', 'god',
+            'soul', 'free', 'time', 'baby', 'feel', 'world', 'dark']
+kw = [p for p in KEYWORDS if p in model_70s.wv and p in model_2000s.wv]
 
-axes[1, 0].barh([p for p,_ in top15_70s][::-1],
-                [c for _,c in top15_70s][::-1],
-                color='steelblue', alpha=0.8)
-axes[1, 0].set_title('Top 15 parole anni 70', fontweight='bold')
-axes[1, 0].set_xlabel('Frequenza')
+def build_sim_matrix(model, words):
+    n = len(words)
+    mat = np.zeros((n, n))
+    for i, w1 in enumerate(words):
+        for j, w2 in enumerate(words):
+            mat[i, j] = 1.0 if i == j else model.wv.similarity(w1, w2)
+    return mat
 
-axes[1, 1].barh([p for p,_ in top15_2000s][::-1],
-                [c for _,c in top15_2000s][::-1],
-                color='coral', alpha=0.8)
-axes[1, 1].set_title('Top 15 parole anni 2000', fontweight='bold')
-axes[1, 1].set_xlabel('Frequenza')
+mat70  = build_sim_matrix(model_70s, kw)
+mat00  = build_sim_matrix(model_2000s, kw)
+diff_m = mat00 - mat70
+np.fill_diagonal(diff_m, 0)
+
+fig2, axes2 = plt.subplots(1, 3, figsize=(22, 7))
+fig2.suptitle('Similarità coseno tra parole chiave: Anni 70 vs Anni 2000',
+              fontsize=14, fontweight='bold')
+
+for ax_i, (mat, title, cmap, vmin, vmax) in enumerate([
+    (mat70,   'Anni 70',          'RdYlGn', -0.3,  1.0),
+    (mat00,   'Anni 2000',        'RdYlGn', -0.3,  1.0),
+    (diff_m,  'Δ (2000s − 70s)', 'coolwarm', -0.5, 0.5),
+]):
+    ax = axes2[ax_i]
+    im = ax.imshow(mat, cmap=cmap, vmin=vmin, vmax=vmax, aspect='auto')
+    ax.set_xticks(range(len(kw)))
+    ax.set_yticks(range(len(kw)))
+    ax.set_xticklabels(kw, rotation=45, ha='right', fontsize=9)
+    ax.set_yticklabels(kw, fontsize=9)
+    ax.set_title(title, fontsize=13, fontweight='bold', pad=8)
+    plt.colorbar(im, ax=ax, shrink=0.75, pad=0.02)
+
+    for i in range(len(kw)):
+        for j in range(len(kw)):
+            if i == j:
+                continue
+            val = mat[i, j]
+            if ax_i == 2:
+                if abs(val) < 0.05:
+                    continue
+                txt   = f'{val:+.2f}'
+                color = 'white' if abs(val) > 0.3 else 'black'
+            else:
+                txt   = f'{val:.2f}'
+                color = 'white' if (val > 0.6 or val < -0.1) else 'black'
+            ax.text(j, i, txt, ha='center', va='center',
+                    fontsize=7, color=color)
 
 plt.tight_layout()
-plt.savefig('word2vec_analisi.png', dpi=150, bbox_inches='tight')
-print("Salvato: word2vec_analisi.png")
+plt.savefig('word2vec_heatmap.png', dpi=150, bbox_inches='tight')
+print("  Salvato: word2vec_heatmap.png")
+plt.close()
 
-# --- Grafico 2: similarità con "love" ---
-fig2, ax2 = plt.subplots(figsize=(10, 5))
 
-parole_sim = ['heart', 'life', 'night', 'time', 'feel', 'baby']
-parole_sim = [p for p in parole_sim
-              if p in model_70s.wv and p in model_2000s.wv]
+# === FIGURA 3: Deriva semantica ===
+print("  Generazione grafici deriva semantica...")
+fig3, axes3 = plt.subplots(1, 2, figsize=(20, 8))
+fig3.suptitle('Deriva semantica tra le due ere musicali',
+              fontsize=14, fontweight='bold')
 
-x     = np.arange(len(parole_sim))
-width = 0.35
+# 3a: Top 20 parole con maggiore deriva (da analisi sistematica)
+top_n   = 20
+top_d   = risultati[:top_n]
+lbls_d  = [r['parola'] for r in top_d][::-1]
+vals_d  = [r['cambiamento'] for r in top_d][::-1]
 
-ax2.bar(x - width/2,
-        [model_70s.wv.similarity('love', p)   for p in parole_sim],
-        width, label='Anni 70',   color='steelblue', alpha=0.8)
-ax2.bar(x + width/2,
-        [model_2000s.wv.similarity('love', p) for p in parole_sim],
-        width, label='Anni 2000', color='coral', alpha=0.8)
+cmap_d = plt.cm.Reds(np.linspace(0.35, 0.9, top_n))
+axes3[0].barh(range(top_n), vals_d, color=cmap_d, alpha=0.9, height=0.7)
+axes3[0].set_yticks(range(top_n))
+axes3[0].set_yticklabels(lbls_d, fontsize=10)
+axes3[0].set_xlabel('Grado di cambiamento del contesto semantico', fontsize=11)
+axes3[0].set_title(f'Top {top_n} parole con maggiore deriva semantica',
+                    fontsize=12, fontweight='bold')
+axes3[0].set_xlim(0, 1.18)
+for i, v in enumerate(vals_d):
+    axes3[0].text(v + 0.02, i, f'{v:.0%}', va='center', fontsize=9)
+axes3[0].axvline(x=0.5, color='gray', linestyle='--', alpha=0.4, label='soglia 50%')
+axes3[0].legend(fontsize=9)
+axes3[0].spines['top'].set_visible(False)
+axes3[0].spines['right'].set_visible(False)
 
-ax2.set_xticks(x)
-ax2.set_xticklabels(parole_sim, fontsize=11)
-ax2.set_ylabel('Similarità coseno con "love"')
-ax2.set_title('Come cambia il concetto di "love" tra le due ere', fontweight='bold')
-ax2.legend()
-ax2.set_ylim(0, 1)
+# 3b: scatter plot coppie (sim70s vs sim2000s) — top 800 per delta
+ax_s   = axes3[1]
+n_plot = min(800, len(coppie_sist))
+s70_v  = [r['s70']   for r in coppie_sist[:n_plot]]
+s00_v  = [r['s2000'] for r in coppie_sist[:n_plot]]
+d_v    = [r['delta'] for r in coppie_sist[:n_plot]]
 
-plt.tight_layout()
-plt.savefig('word2vec_similarita.png', dpi=150, bbox_inches='tight')
-print("Salvato: word2vec_similarita.png")
+sc = ax_s.scatter(s70_v, s00_v, c=d_v, cmap='YlOrRd',
+                   alpha=0.5, s=18, vmin=0, vmax=0.35, zorder=2)
+
+all_vals = s70_v + s00_v
+lo = min(all_vals) - 0.05
+hi = max(all_vals) + 0.05
+ax_s.plot([lo, hi], [lo, hi], 'k--', alpha=0.4, lw=1.5, label='nessun cambiamento')
+ax_s.fill_between([lo, hi], [lo, hi], [hi, hi], alpha=0.04, color='steelblue')
+ax_s.fill_between([lo, hi], [lo, lo], [lo, hi], alpha=0.04, color='tomato')
+ax_s.text(lo + 0.02, hi - 0.05, 'più vicine\nnei 2000s',
+           fontsize=8, color='steelblue', alpha=0.8)
+ax_s.text(hi - 0.18, lo + 0.02, 'più lontane\nnei 2000s',
+           fontsize=8, color='tomato', alpha=0.8)
+
+for r in coppie_sist[:8]:
+    ax_s.annotate(f"{r['w1']}–{r['w2']}", (r['s70'], r['s2000']),
+                   fontsize=7.5, alpha=0.85,
+                   xytext=(6, 4), textcoords='offset points',
+                   bbox=dict(boxstyle='round,pad=0.1', fc='white', alpha=0.6, ec='none'))
+
+ax_s.set_xlim(lo, hi)
+ax_s.set_ylim(lo, hi)
+ax_s.set_xlabel('Similarità coseno — Anni 70', fontsize=11)
+ax_s.set_ylabel('Similarità coseno — Anni 2000', fontsize=11)
+ax_s.set_title('Coppie di parole: 70s vs 2000s\n(sopra diagonale = più simili nei 2000s)',
+                fontsize=12, fontweight='bold')
+plt.colorbar(sc, ax=ax_s, label='|Δ similarità|', shrink=0.8)
+ax_s.legend(fontsize=9, loc='upper left')
+ax_s.grid(True, alpha=0.2)
+ax_s.spines['top'].set_visible(False)
+ax_s.spines['right'].set_visible(False)
+
+plt.tight_layout(pad=2)
+plt.savefig('word2vec_drift.png', dpi=150, bbox_inches='tight')
+print("  Salvato: word2vec_drift.png")
+plt.close()
 
 
 # STEP 10: Riepilogo
@@ -518,5 +616,6 @@ print(f"In comune:       {len(comuni)}")
 
 print("\nLab completato!")
 print("File generati:")
-print("  - word2vec_analisi.png")
-print("  - word2vec_similarita.png")
+print("  - word2vec_cluster.png   (t-SNE clustering 70s vs 2000s)")
+print("  - word2vec_heatmap.png   (heatmap similarità parole chiave)")
+print("  - word2vec_drift.png     (deriva semantica + scatter coppie)")
