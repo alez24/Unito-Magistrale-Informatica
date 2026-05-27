@@ -1,0 +1,8 @@
+{
+  "size": 4,
+  "wumpus": [3, 1],
+  "pits": [[2, 3], [4, 2]],
+  "gold": [3, 3],
+  "start": [1, 1],
+  "start_energy": 200
+}
