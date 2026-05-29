@@ -1,0 +1,560 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, backgrounds, matrix}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins}
+
+\geometry{margin=2.5cm}
+
+% --- Colori e stile ASP ---
+\definecolor{aspkw}{RGB}{0,0,180}
+\definecolor{aspcomment}{RGB}{60,120,60}
+\definecolor{aspbg}{RGB}{250,252,255}
+\definecolor{aspaggreg}{RGB}{160,0,160}
+
+\lstdefinelanguage{ASP}{
+  keywords={not, count, sum, min, max, minimize, maximize, show},
+  keywordstyle=\color{aspkw}\bfseries,
+  comment=[l]{\%},
+  commentstyle=\color{aspcomment}\itshape,
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{aspbg},
+  frame=single,
+  framerule=0.5pt,
+  rulecolor=\color{gray!60},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+  moredelim=[s][\color{aspaggreg}]{\#}{\ },
+}
+
+\lstset{language=ASP}
+
+\newtcolorbox{defbox}[1]{colback=blue!5,colframe=blue!60!black,fonttitle=\bfseries,title=#1,breakable}
+\newtcolorbox{exbox}[1]{colback=green!5,colframe=green!50!black,fonttitle=\bfseries,title=#1,breakable}
+\newtcolorbox{warnbox}[1]{colback=orange!10,colframe=orange!80!black,fonttitle=\bfseries,title=#1,breakable}
+\newtcolorbox{rulebox}[1]{colback=purple!5,colframe=purple!60!black,fonttitle=\bfseries,title=#1,breakable}
+
+\hypersetup{colorlinks=true,linkcolor=blue!70!black}
+
+\title{
+  \Large\textbf{Intelligenza Artificiale -- Progetto Clingo}\\[0.5em]
+  \large Pianificazione di Torneo Pokémon con Answer Set Programming\\[0.3em]
+  \normalsize Sistema Svizzero -- Relazione Tecnica Dettagliata
+}
+\author{Alessandro Livero}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{Introduzione e Contesto}
+% =====================================================================
+
+\subsection{Il Sistema Svizzero}
+
+Il \textbf{sistema svizzero} è un formato di torneo usato in scacchi, Pokémon
+competitivo, Magic: The Gathering e altri giochi. A ogni turno i giocatori
+vengono abbinati secondo queste regole:
+
+\begin{enumerate}[noitemsep]
+  \item Si abbinano giocatori con punteggio simile (\emph{spareggio}).
+  \item Due giocatori non si affrontano mai due volte.
+  \item Se il numero di giocatori è dispari, uno riceve il \textbf{BYE}
+        (vittoria automatica senza giocare); nessuno lo può ricevere due volte.
+\end{enumerate}
+
+\subsection{Answer Set Programming (ASP)}
+
+L'ASP è un paradigma di programmazione logica orientato alla soluzione di
+problemi combinatori. Il \textbf{grounding + solving} di Clingo funziona in due fasi:
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={draw,rounded corners,minimum width=3cm,minimum height=1cm,align=center,font=\small},
+  arrow/.style={-{Stealth},thick}
+]
+  \node[box,fill=blue!15] (ground) {Grounding\\{\footnotesize sostituisce variabili\\con costanti}};
+  \node[box,fill=green!15, right=2.5cm of ground] (solve) {Solving\\{\footnotesize cerca \emph{answer sets}\\(modelli stabili)}};
+  \node[box,fill=orange!15, right=2.5cm of solve] (opt) {Ottimizzazione\\{\footnotesize seleziona i modelli\\con costo minimo}};
+  \draw[arrow] (ground) -- (solve);
+  \draw[arrow] (solve) -- (opt);
+\end{tikzpicture}
+\end{center}
+
+Un \textbf{answer set} è un insieme di atomi ground che soddisfano tutte le
+regole e i vincoli del programma. Con più answer set, Clingo può restituire
+quello con il valore di ottimizzazione minimo (\texttt{--opt-mode=optN}).
+
+\subsection{File del Progetto}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{File} & \textbf{Tipo} & \textbf{Contenuto} \\
+\midrule
+\texttt{torneo.lp} & Programma ASP & Logica generica del torneo (invariante) \\
+\texttt{turno1.lp} & Istanza & 5 giocatori, tutti a 0 punti, turno 1 \\
+\texttt{turno2.lp} & Istanza & 8 giocatori, punteggi aggiornati, turno 2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Uso da terminale:}
+\begin{lstlisting}[numbers=none,backgroundcolor=\color{black!5}]
+clingo torneo.lp turno1.lp 1 --opt-mode=optN
+clingo torneo.lp turno2.lp 1 --opt-mode=optN
+\end{lstlisting}
+Il parametro \texttt{1} chiede la prima soluzione ottimale; \texttt{0} restituirebbe
+tutte le soluzioni ottimali.
+
+% =====================================================================
+\section{Programma \texttt{torneo.lp} -- Analisi Dettagliata}
+% =====================================================================
+
+\subsection{Sezione 1: Normalizzazione e Ordinamento}
+
+\subsubsection{\texttt{played\_already/2} -- Simmetria degli Incontri}
+
+\begin{lstlisting}
+played_already(P1, P2) :- played(P1, P2).
+played_already(P1, P2) :- played(P2, P1).
+\end{lstlisting}
+
+Il fatto \texttt{played(p1, p2)} nell'istanza è \textbf{direzionale} (per
+comodità di scrittura), ma semanticamente un incontro è simmetrico: se
+Lorenzo ha giocato contro Emma, Emma ha giocato contro Lorenzo. \\
+\texttt{played\_already/2} chiude questa relazione rispetto alla simmetria:
+entrambi gli ordini sono derivati.
+
+\subsubsection{\texttt{pid/2} -- Indice Canonico}
+
+\begin{lstlisting}
+pid(P, I) :- player(P),
+             I = #count{ Q : player(Q), Q != P, Q < P }.
+\end{lstlisting}
+
+\begin{defbox}{Aggregato \texttt{\#count}}
+\texttt{\#count\{ Q : Cond \}} conta il numero di valori distinti di \texttt{Q}
+che soddisfano \texttt{Cond}. Il risultato è un intero $\ge 0$.
+\end{defbox}
+
+\textbf{Cosa calcola \texttt{pid}:}
+\[
+  \texttt{pid}(P, I) \iff I = |\{Q \in \text{player} \mid Q \neq P \land Q < P\}|
+\]
+Poiché Clingo ordina i simboli lessicograficamente (come stringhe), \texttt{pid}
+assegna a ogni giocatore un indice intero univoco basato sull'ordine
+lessicografico dei nomi. Con i giocatori \{diego, emma, giada, lorenzo, simone\}:
+
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+\textbf{Giocatore} & \textbf{pid} \\
+\midrule
+diego & 0 \\
+emma & 1 \\
+giada & 2 \\
+lorenzo & 3 \\
+simone & 4 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Perché serve?} Per garantire che ogni coppia (P1, P2) sia considerata
+\emph{una sola volta} nella generazione: solo la forma con
+$\texttt{pid}(P1) < \texttt{pid}(P2)$ viene usata. Senza questo ordinamento,
+Clingo genererebbe sia \texttt{match(emma, diego)} sia \texttt{match(diego, emma)}.
+
+\subsection{Sezione 2: Generazione (Choice Rules)}
+
+\subsubsection{\texttt{match/2} -- Generazione degli Incontri}
+
+\begin{lstlisting}
+{ match(P1, P2) } :-
+    player(P1), player(P2),
+    pid(P1, I1), pid(P2, I2), I1 < I2,
+    not played_already(P1, P2).
+\end{lstlisting}
+
+\begin{defbox}{Choice Rule \texttt{\{ h \} :- Body}}
+Una \textbf{choice rule} (regola di scelta) in ASP indica che l'atomo \texttt{h}
+\emph{può} essere incluso nell'answer set se il corpo è soddisfatto,
+ma non è obbligatorio. Clingo esplora entrambe le possibilità (incluso / non incluso)
+e mantiene solo i modelli che soddisfano tutti i vincoli.
+\end{defbox}
+
+\textbf{Condizioni per la generazione di \texttt{match(P1, P2)}:}
+\begin{enumerate}[noitemsep]
+  \item Entrambi sono giocatori registrati.
+  \item $\texttt{pid}(P1) < \texttt{pid}(P2)$: forma canonica (evita duplicati).
+  \item \texttt{not played\_already(P1, P2)}: non si sono già affrontati.
+\end{enumerate}
+
+\subsubsection{\texttt{bye/1} -- Generazione del BYE}
+
+\begin{lstlisting}
+{ bye(P) } :- player(P), not had_bye(P).
+\end{lstlisting}
+
+Ogni giocatore che non ha mai ricevuto il BYE \emph{può} riceverlo in questo
+turno. I vincoli hard successivi limitano a zero o uno i BYE effettivi.
+
+\subsection{Sezione 3: Vincoli Hard (Integrity Constraints)}
+
+\begin{defbox}{Integrity Constraint \texttt{:- Body}}
+Un vincolo di integrità \texttt{:- Body} elimina dall'insieme degli answer set
+qualsiasi modello in cui \texttt{Body} è vero. In sostanza: ``è
+\textbf{vietato} che Body sia soddisfatto''.
+\end{defbox}
+
+\subsubsection{Helper \texttt{in\_match/1}}
+
+\begin{lstlisting}
+in_match(P) :- match(P, _).
+in_match(P) :- match(_, P).
+\end{lstlisting}
+
+Deriva che \texttt{P} è impegnato in un match, indipendentemente dal ruolo
+(primo o secondo argomento). Questo semplifica i vincoli successivi.
+
+\subsubsection{Vincolo: Ogni Giocatore Deve Fare Qualcosa}
+
+\begin{lstlisting}
+:- player(P), not in_match(P), not bye(P).
+:- player(P), in_match(P), bye(P).
+\end{lstlisting}
+
+\textbf{Prima riga}: è vietato che un giocatore non sia né in un match né abbia
+il BYE. Ogni giocatore deve partecipare.
+
+\textbf{Seconda riga}: è vietato che un giocatore sia contemporaneamente in un
+match \emph{e} abbia il BYE. Le due alternative sono mutualmente esclusive.
+
+\subsubsection{Vincolo: Un Giocatore in un Solo Match}
+
+\begin{lstlisting}
+:- match(P, Q1), match(P, Q2), Q1 != Q2.
+:- match(P1, Q), match(P2, Q), P1 != P2.
+:- match(P, _),  match(_, P).
+\end{lstlisting}
+
+Tre vincoli che coprono tutti i casi di conflitto:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Vincolo} & \textbf{Proibisce} & \textbf{Esempio vietato} \\
+\midrule
+1 & P appare come P1 in due match diversi & match(emma,diego), match(emma,giada) \\
+2 & Q appare come P2 in due match diversi & match(diego,emma), match(giada,emma) \\
+3 & P appare in entrambi i ruoli & match(emma,diego), match(giada,emma) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Vincolo: Un Solo BYE per Turno}
+
+\begin{lstlisting}
+:- 2 <= #count{ P : bye(P) }.
+\end{lstlisting}
+
+Vietato che due o più giocatori abbiano il BYE nello stesso turno. La sintassi
+\texttt{N \textless= Agg} è equivalente a \texttt{Agg \textgreater= N}.
+
+\subsubsection{Vincolo di Parità: BYE iff Numero Dispari}
+
+\begin{lstlisting}
+player_count(N) :- N = #count{ P : player(P) }.
+:- player_count(N), 0 == N \ 2, bye(_).
+:- player_count(N), 1 == N \ 2, not bye(_).
+\end{lstlisting}
+
+\textbf{\texttt{player\_count/1}}: deriva il numero totale di giocatori usando
+\texttt{\#count}.
+
+\textbf{\texttt{N \textbackslash{} 2}}: operatore modulo in Clingo (resto della
+divisione intera).
+
+\begin{itemize}[noitemsep]
+  \item Se $N \mod 2 = 0$ (numero pari): vietato che esista un BYE.
+  \item Se $N \mod 2 = 1$ (numero dispari): vietato che non esista un BYE.
+\end{itemize}
+
+Il BYE è obbligatorio esattamente quando il numero di giocatori è dispari.
+
+\subsection{Sezione 4: Ottimizzazione}
+
+\subsubsection{\texttt{score\_diff/3} -- Differenza di Punteggio}
+
+\begin{lstlisting}
+score_diff(P1, P2, D) :-
+    match(P1, P2), score(P1, S1), score(P2, S2),
+    S1 >= S2, D = S1 - S2.
+
+score_diff(P1, P2, D) :-
+    match(P1, P2), score(P1, S1), score(P2, S2),
+    S2 > S1, D = S2 - S1.
+\end{lstlisting}
+
+Calcola la \textbf{differenza assoluta} di punteggio tra i due giocatori di ogni
+match. Le due clausole coprono i due casi ($S1 \ge S2$ e $S2 > S1$) per evitare
+valori negativi. Si noti che in ASP le espressioni aritmetiche come
+\texttt{D = S1 - S2} sono valutate solo se \texttt{S1} e \texttt{S2} sono
+già ground (istanziate).
+
+\subsubsection{\texttt{\#minimize} -- Funzione di Ottimizzazione}
+
+\begin{lstlisting}
+#minimize { D, P1, P2 : score_diff(P1, P2, D) }.
+\end{lstlisting}
+
+\begin{defbox}{\texttt{\#minimize \{ peso, chiave1, chiave2, ... : Cond \}}}
+Minimizza la \textbf{somma} dei pesi di tutti gli elementi dell'insieme che
+soddisfano la condizione. La tupla \texttt{(peso, chiave1, chiave2, ...)}
+identifica univocamente ogni elemento (le chiavi evitano conteggi doppi per
+elementi con lo stesso peso ma identità diverse).
+\end{defbox}
+
+In questo caso: si minimizza $\sum_{(P1,P2) \in \text{match}} |S_{P1} - S_{P2}|$.
+
+\textbf{Effetto pratico}: abbinamenti con giocatori a pari punteggio
+hanno differenza 0 (contributo 0 alla somma) e sono preferiti; abbinamenti
+tra giocatori a punteggio molto diverso sono penalizzati.
+
+Questo implementa il principio base del sistema svizzero: gli abbinamenti
+dello stesso ``scoreboard'' giocano tra loro.
+
+\subsection{Sezione 5: Output}
+
+\begin{lstlisting}
+#show match/2.
+#show bye/1.
+\end{lstlisting}
+
+\begin{defbox}{\texttt{\#show predicato/arità}}
+Per default, Clingo mostra \emph{tutti} gli atomi dell'answer set. La direttiva
+\texttt{\#show} limita l'output ai soli predicati elencati. Senza \texttt{\#show},
+verrebbero visualizzati anche \texttt{pid}, \texttt{in\_match},
+\texttt{played\_already}, ecc.
+\end{defbox}
+
+% =====================================================================
+\section{Istanze: \texttt{turno1.lp} e \texttt{turno2.lp}}
+% =====================================================================
+
+\subsection{Turno 1 -- 5 Giocatori, Tutti a 0 Punti}
+
+\begin{lstlisting}
+player(lorenzo). player(emma). player(simone).
+player(diego).   player(giada).
+
+score(lorenzo, 0). score(emma, 0). score(simone, 0).
+score(diego, 0).   score(giada, 0).
+% Nessun played/2, nessun had_bye/1
+\end{lstlisting}
+
+\textbf{Situazione}: torneo appena iniziato.
+\begin{itemize}[noitemsep]
+  \item 5 giocatori (dispari): un BYE obbligatorio.
+  \item Tutti a 0 punti: la differenza di punteggio è 0 per qualsiasi abbinamento.
+  \item Nessun incontro già avvenuto: tutti gli abbinamenti sono validi.
+  \item Nessun BYE precedente: chiunque può riceverlo.
+\end{itemize}
+
+Con tutti i punteggi uguali, l'ottimizzatore minimizza una somma di zeri:
+\emph{qualsiasi} abbinamento è ottimo. Clingo restituirà una soluzione arbitraria
+tra quelle valide (dipende dall'ordine di esplorazione).
+
+\begin{exbox}{Possibile output Turno 1}
+\begin{verbatim}
+match(diego,emma)  match(giada,lorenzo)  bye(simone)
+\end{verbatim}
+oppure qualsiasi altra combinazione di 2 match + 1 bye con giocatori distinti.
+\end{exbox}
+
+\subsection{Turno 2 -- 8 Giocatori, Punteggi Differenziati}
+
+\begin{lstlisting}
+% Vecchi giocatori con punteggi aggiornati
+player(lorenzo). score(lorenzo, 2).
+player(simone).  score(simone,  2).
+player(giada).   score(giada,   2).
+player(emma).    score(emma,    0).
+player(diego).   score(diego,   0).
+% Nuovi iscritti (tutti a 0)
+player(jacopo).  score(jacopo,  0).
+player(thomas).  score(thomas,  0).
+player(desiree). score(desiree, 0).
+
+% Incontri del turno 1
+played(emma, lorenzo).
+played(diego, simone).
+% had_bye: giada non puo' ricevere di nuovo il BYE
+had_bye(giada).
+\end{lstlisting}
+
+\textbf{Analisi}:
+\begin{itemize}[noitemsep]
+  \item 8 giocatori (pari): nessun BYE questo turno.
+  \item I giocatori si raggruppano per punteggio: $\{2\}$ = \{lorenzo, simone, giada\}
+        e $\{0\}$ = \{emma, diego, jacopo, thomas, desiree\}.
+  \item \texttt{played(emma, lorenzo)} e \texttt{played(diego, simone)}: questi
+        abbinamenti non possono ripetersi.
+  \item L'ottimizzatore cercherà di abbinare i ``2'' tra loro e i ``0'' tra loro.
+\end{itemize}
+
+\begin{exbox}{Possibile output ottimale Turno 2}
+\begin{verbatim}
+match(giada,simone)   match(giada,lorenzo)? ...
+\end{verbatim}
+Poiché i ``2'' sono 3 (dispari nel loro gruppo), uno verrà abbinato con un ``0'',
+contribuendo 2 alla somma totale. L'ottimizzatore minimizza questo inevitabile
+"across-group" match.
+\end{exbox}
+
+% =====================================================================
+\section{Concetti ASP Fondamentali Usati nel Progetto}
+% =====================================================================
+
+\subsection{Riepilogo dei Costrutti}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{p{4.5cm}p{4cm}p{5cm}}
+\toprule
+\textbf{Costrutto} & \textbf{Sintassi} & \textbf{Semantica} \\
+\midrule
+Fatto & \texttt{p(a).} & \texttt{p(a)} è sempre vero \\
+Regola normale & \texttt{h :- b1, b2.} & \texttt{h} è vero se \texttt{b1} e \texttt{b2} sono veri \\
+Negazione per fallimento & \texttt{not p} & vero se \texttt{p} non è nell'answer set \\
+Choice rule & \texttt{\{h\} :- b.} & \texttt{h} può o non può essere incluso \\
+Vincolo hard & \texttt{:- b.} & elimina i modelli dove \texttt{b} è vero \\
+Aggregato count & \texttt{\#count\{x : p(x)\}} & numero di \texttt{x} con \texttt{p(x)} \\
+Modulo & \texttt{N \textbackslash{} M} & resto di N diviso M \\
+Minimizzazione & \texttt{\#minimize\{w,k : p\}.} & minimizza la somma dei pesi \\
+Direttiva show & \texttt{\#show p/n.} & mostra solo il predicato \texttt{p} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Ciclo di Vita di un Answer Set}
+
+\begin{enumerate}
+  \item \textbf{Grounding}: ogni variabile è sostituita con tutte le costanti
+        compatibili. Le regole con variabili diventano insiemi di regole ground.
+  \item \textbf{Solving}: il solver esplora esponenzialmente le possibili
+        combinazioni di atomi. Per ogni combinazione verifica:
+        \begin{enumerate}[noitemsep]
+          \item Tutte le regole normali sono soddisfatte (le teste sono derivate
+                quando i corpi sono veri).
+          \item Tutti i vincoli hard sono soddisfatti (nessun corpo vietato è
+                vero).
+          \item Il modello è \emph{minimo}: nessun sottoinsieme è ancora un
+                modello stabile.
+        \end{enumerate}
+  \item \textbf{Ottimizzazione}: tra tutti gli answer set validi, Clingo
+        seleziona quelli con il valore della funzione obiettivo minimo.
+\end{enumerate}
+
+\subsection{Negazione per Fallimento vs Negazione Classica}
+
+\begin{warnbox}{Differenza critica}
+\textbf{Negazione classica} (\texttt{-p}): afferma esplicitamente la falsità di
+\texttt{p}. Richiede che il programma contenga \texttt{-p} come fatto o
+conclusione.
+
+\textbf{Negazione per fallimento} (\texttt{not p}): vera se \texttt{p}
+\emph{non appare} nell'answer set corrente (assunzione del mondo chiuso).
+
+Nel progetto si usa solo \texttt{not}, appropriato perché: se non è noto che
+un giocatore abbia avuto il BYE (\texttt{had\_bye}), si assume che non lo
+abbia avuto.
+\end{warnbox}
+
+% =====================================================================
+\section{Architettura Complessiva e Flusso}
+% =====================================================================
+
+\begin{center}
+\begin{tikzpicture}[
+  node distance=1.2cm,
+  box/.style={draw,rounded corners,align=center,minimum width=3.5cm,
+              minimum height=0.9cm,font=\small},
+  arrow/.style={-{Stealth},thick}
+]
+  \node[box,fill=gray!15] (input) {Input istanza\\{\footnotesize player, score, played, had\_bye}};
+  \node[box,fill=blue!15, below=of input] (norm) {Normalizzazione\\{\footnotesize played\_already, pid}};
+  \node[box,fill=green!15, below=of norm] (gen) {Generazione\\{\footnotesize \{match\}, \{bye\}}};
+  \node[box,fill=red!15, below=of gen] (constr) {Vincoli Hard\\{\footnotesize partecipazione, unicità, parità}};
+  \node[box,fill=purple!15, below=of constr] (opt) {Ottimizzazione\\{\footnotesize \#minimize score\_diff}};
+  \node[box,fill=orange!15, below=of opt] (out) {Output\\{\footnotesize match/2, bye/1}};
+
+  \draw[arrow] (input) -- (norm);
+  \draw[arrow] (norm) -- (gen);
+  \draw[arrow] (gen) -- (constr);
+  \draw[arrow] (constr) -- (opt);
+  \draw[arrow] (opt) -- (out);
+
+  \node[right=1.5cm of constr, font=\footnotesize, text=gray, align=left]
+    (note) {Elimina modelli\\non validi};
+  \draw[->,gray,dashed] (note) -- (constr);
+\end{tikzpicture}
+\end{center}
+
+\subsection{Separazione Programma / Istanza}
+
+La separazione tra \texttt{torneo.lp} (logica) e i file di istanza
+(\texttt{turno1.lp}, \texttt{turno2.lp}) è il punto di forza del paradigma ASP:
+\begin{itemize}[noitemsep]
+  \item Per aggiungere un nuovo turno basta creare un nuovo file istanza.
+  \item La logica del torneo non va mai modificata.
+  \item Diversi tornei (con regole diverse) potrebbero condividere le istanze.
+\end{itemize}
+
+% =====================================================================
+\section{Proprietà Formali e Correttezza}
+% =====================================================================
+
+\subsection{Completezza: Ogni Abbinamento Valido è Generato}
+
+La choice rule \texttt{\{match(P1,P2)\}} genera \emph{ogni} coppia di giocatori
+che non si siano già affrontati (nella forma canonica). I vincoli hard poi
+filtrano le combinazioni non valide. Il solver esplora tutte le possibilità:
+nessun abbinamento valido viene perduto.
+
+\subsection{Unicità della Forma Canonica}
+
+L'uso di \texttt{pid(P1, I1), pid(P2, I2), I1 < I2} garantisce che ogni coppia
+$\{P1, P2\}$ appaia esattamente una volta nella generazione. Senza questo
+ordinamento, il grounding produrrebbe sia \texttt{match(A,B)} che
+\texttt{match(B,A)} come atomi indipendenti, e i vincoli dovrebbero essere
+molto più complessi per eliminarli.
+
+\subsection{Ottimalità dell'Abbinamento}
+
+Il \texttt{\#minimize} non garantisce che l'abbinamento sia ``perfetto'' nel
+senso matematico (problema di accoppiamento pesato su grafo, NP-completo in
+generale), ma trova il \textbf{minimo globale} della somma delle differenze,
+che è la definizione standard di abbinamento ottimale nel sistema svizzero.
+
+\end{document}

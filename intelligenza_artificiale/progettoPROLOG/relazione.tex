@@ -1,0 +1,964 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, matrix, fit, backgrounds}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins}
+
+\geometry{margin=2.5cm}
+
+% --- Stile per codice Prolog ---
+\definecolor{prologkw}{RGB}{0,0,200}
+\definecolor{prologcomment}{RGB}{80,130,80}
+\definecolor{prologstring}{RGB}{180,0,0}
+\definecolor{prologbg}{RGB}{250,250,255}
+
+\lstdefinelanguage{Prolog}{
+  keywords={is, not, true, fail, halt, call, findall, member, memberchk,
+            length, reverse, append, format, write, nl, assert, retract,
+            functor, arg, copy_term, succ, plus, between},
+  keywordstyle=\color{prologkw}\bfseries,
+  comment=[l]{\%\%},
+  morecomment=[l]{\%},
+  commentstyle=\color{prologcomment}\itshape,
+  stringstyle=\color{prologstring},
+  morestring=[b]",
+  sensitive=false,
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{prologbg},
+  frame=single,
+  framerule=0.5pt,
+  rulecolor=\color{gray!60},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+}
+
+\lstset{language=Prolog}
+
+% --- Box per definizioni ---
+\newtcolorbox{defbox}[1]{
+  colback=blue!5!white,
+  colframe=blue!60!black,
+  fonttitle=\bfseries,
+  title=#1,
+  breakable
+}
+
+\newtcolorbox{exbox}[1]{
+  colback=green!5!white,
+  colframe=green!50!black,
+  fonttitle=\bfseries,
+  title=#1,
+  breakable
+}
+
+\newtcolorbox{warnbox}[1]{
+  colback=orange!10!white,
+  colframe=orange!80!black,
+  fonttitle=\bfseries,
+  title=#1,
+  breakable
+}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!70!black,
+  urlcolor=blue,
+  citecolor=green!50!black
+}
+
+% =====================================================================
+\title{
+  \Large\textbf{Intelligenza Artificiale -- Progetto Prolog}\\[0.5em]
+  \large Ricerca in Spazi di Stati: A* e IDA* su Labirinto\\[0.3em]
+  \normalsize Relazione Tecnica Dettagliata
+}
+\author{Alessandro Livero}
+\date{\today}
+% =====================================================================
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{Introduzione e Architettura del Sistema}
+% =====================================================================
+
+Il progetto è composto da due moduli Prolog distinti che separano nettamente la
+\textbf{logica di ricerca generica} dalla \textbf{definizione del dominio}:
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners, minimum width=3.5cm, minimum height=1.2cm,
+              align=center, font=\small},
+  arrow/.style={-{Stealth}, thick}
+]
+  \node[box, fill=blue!15] (search) {\texttt{search.pl}\\[2pt]{\footnotesize Modulo generico}\\{\footnotesize A* / IDA*}};
+  \node[box, fill=green!15, right=3cm of search] (maze) {\texttt{maze.pl}\\[2pt]{\footnotesize Dominio}\\{\footnotesize Labirinto 5×8}};
+  \draw[arrow] (maze) -- node[above,font=\footnotesize]{\texttt{use\_module}} (search);
+  \node[below=0.6cm of search, font=\footnotesize, text=gray] {esporta: \texttt{a\_star/7}, \texttt{ida\_star/7}};
+  \node[below=0.6cm of maze, font=\footnotesize, text=gray] {fornisce: goal, successori, euristica};
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent Questa separazione implementa il \textbf{pattern Strategy}: gli algoritmi di
+\texttt{search.pl} non sanno nulla del labirinto; ricevono i predicati specifici
+del dominio come argomenti di ordine superiore (\emph{higher-order}).
+
+\subsection{Comunicazione tra Moduli}
+
+Quando \texttt{maze.pl} chiama \texttt{a\_star/7} passando il predicato
+\texttt{maze\_goal}, SWI-Prolog aggiunge automaticamente la qualificazione di
+modulo grazie alla dichiarazione \texttt{meta\_predicate}, trasformando
+internamente \texttt{maze\_goal} in \texttt{maze:maze\_goal}. Questo garantisce
+che le chiamate \texttt{call/N} interne al modulo \texttt{search} trovino i
+predicati corretti nel modulo \texttt{maze}.
+
+\begin{defbox}{Meta-predicati in Prolog}
+Una dichiarazione \texttt{:- meta\_predicate f(1, 3, 2, +, -, -, -)} indica che:
+\begin{itemize}[noitemsep]
+  \item il primo argomento è un \emph{callable} a cui verranno passati \textbf{1} argomento aggiuntivo;
+  \item il secondo argomento è un \emph{callable} a cui verranno passati \textbf{3} argomenti aggiuntivi;
+  \item il terzo argomento è un \emph{callable} a cui verranno passati \textbf{2} argomenti aggiuntivi;
+  \item \texttt{+}, \texttt{-} sono argomenti normali (input/output).
+\end{itemize}
+SWI-Prolog usa queste informazioni per la corretta qualificazione dei moduli.
+\end{defbox}
+
+% =====================================================================
+\section{Modulo \texttt{search.pl} -- Algoritmi di Ricerca}
+% =====================================================================
+
+\subsection{Interfaccia Comune}
+
+Entrambi gli algoritmi seguono la stessa \emph{firma}:
+
+\begin{lstlisting}
+a_star(+IsGoal, +Successors, +Heuristic, +Start, -Path, -Cost, -Stats)
+ida_star(+IsGoal, +Successors, +Heuristic, +Start, -Path, -Cost, -Stats)
+\end{lstlisting}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lll}
+\toprule
+\textbf{Parametro} & \textbf{Tipo / Arità} & \textbf{Significato} \\
+\midrule
+\texttt{IsGoal}    & \texttt{callable/1}  & \texttt{call(IsGoal, State)} è vero se \texttt{State} è un goal \\
+\texttt{Successors}& \texttt{callable/3}  & \texttt{call(Successors, S, NS, C)}: \texttt{NS} è successore di \texttt{S} con costo \texttt{C} \\
+\texttt{Heuristic} & \texttt{callable/2}  & \texttt{call(Heuristic, S, H)}: \texttt{H} è la stima euristica da \texttt{S} al goal \\
+\texttt{Start}     & stato                & Nodo di partenza della ricerca \\
+\texttt{Path}      & lista di stati       & Percorso ottimo da \texttt{Start} al goal (inclusi) \\
+\texttt{Cost}      & numero               & Costo totale del percorso (\emph{g-value} al goal) \\
+\texttt{Stats}     & termine              & Statistiche dipendenti dall'algoritmo \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% =====================================================================
+\subsection{Algoritmo A*}
+% =====================================================================
+
+\subsubsection{Principio Teorico}
+
+A* è un algoritmo di ricerca \textbf{ottimale} e \textbf{completo} (con euristica
+ammissibile) che esplora nodi in ordine crescente del valore $f = g + h$, dove:
+\begin{itemize}[noitemsep]
+  \item $g(n)$ = costo effettivo dal nodo iniziale a $n$;
+  \item $h(n)$ = stima euristica (ammissibile: $h(n) \le h^*(n)$) del costo da $n$ al goal.
+\end{itemize}
+
+Utilizza due strutture:
+\begin{itemize}[noitemsep]
+  \item \textbf{Open list}: nodi scoperti ma non ancora espansi, ordinata per $f$;
+  \item \textbf{Closed list}: nodi già espansi (per evitare riesplorazione).
+\end{itemize}
+
+\subsubsection{Struttura Dati: Nodo nell'Open List}
+
+Ogni nodo nell'open list è rappresentato dal termine:
+\[
+  \texttt{f(F, G, State, RevPath)}
+\]
+\begin{itemize}[noitemsep]
+  \item \texttt{F} = valore $f = g + h$ (chiave di ordinamento);
+  \item \texttt{G} = costo $g$ accumulato dal nodo iniziale;
+  \item \texttt{State} = stato corrente;
+  \item \texttt{RevPath} = percorso \emph{inverso} da \texttt{State} a \texttt{Start} (lista in testa al costo $O(1)$).
+\end{itemize}
+
+Il percorso è mantenuto al contrario per efficienza: aggiungere in testa
+(\texttt{[NS|RevPath]}) è $O(1)$, e si inverte solo alla fine.
+
+\subsubsection{Punto di Ingresso}
+
+\begin{lstlisting}
+a_star(IsGoal, Successors, Heuristic, Start, Path, Cost,
+       stats(Expanded, MaxOpen)) :-
+    call(Heuristic, Start, H0),
+    F0 is 0 + H0,
+    Open0 = [f(F0, 0, Start, [Start])],
+    a_star_loop(IsGoal, Successors, Heuristic, Open0, [], 0, 1,
+                Path, Cost, Expanded, MaxOpen).
+\end{lstlisting}
+
+\noindent\textbf{Passo per passo:}
+\begin{enumerate}
+  \item Calcola l'euristica $h_0$ per il nodo iniziale.
+  \item Crea l'open list con un unico elemento: $f = 0 + h_0$, $g = 0$, percorso \texttt{[Start]}.
+  \item Chiama il loop principale con la closed list vuota \texttt{[]},
+        espansi = 0, dimensione massima open = 1.
+\end{enumerate}
+
+\subsubsection{Loop Principale: Caso 1 -- Goal Trovato}
+
+\begin{lstlisting}
+a_star_loop(IsGoal, _, _, [f(_, G, State, RevPath)|_], _, Exp, MaxOpen,
+            Path, G, Exp, MaxOpen) :-
+    call(IsGoal, State),
+    reverse(RevPath, Path).
+\end{lstlisting}
+
+\noindent\textbf{Analisi:}
+\begin{itemize}[noitemsep]
+  \item Il primo elemento dell'open list (quello con $f$ minimo) è estratto.
+  \item Se \texttt{State} è un goal, la ricerca termina.
+  \item \texttt{reverse(RevPath, Path)} ricostruisce il percorso nell'ordine corretto.
+  \item I valori \texttt{Exp} e \texttt{MaxOpen} vengono unificati direttamente
+        (le variabili output prendono il valore di quelle di input).
+\end{itemize}
+
+\begin{warnbox}{Perché si controlla il goal all'estrazione?}
+A* controlla il goal quando il nodo viene \emph{estratto} dall'open list (non
+quando viene inserito). Questo garantisce l'ottimalità: quando un nodo goal è
+estratto, il suo $g$ è il costo minimo possibile (l'open list è ordinata per $f$
+e l'euristica è ammissibile).
+\end{warnbox}
+
+\subsubsection{Loop Principale: Caso 2 -- Espansione}
+
+\begin{lstlisting}
+a_star_loop(IsGoal, Successors, Heuristic,
+            [f(_, G, State, RevPath)|Rest],
+            Closed, Exp0, MaxOpen0,
+            Path, Cost, Expanded, MaxOpen) :-
+    \+ call(IsGoal, State),
+    (memberchk(State, Closed) ->
+        a_star_loop(IsGoal, Successors, Heuristic, Rest,
+                    Closed, Exp0, MaxOpen0,
+                    Path, Cost, Expanded, MaxOpen)
+    ;
+        Exp1 is Exp0 + 1,
+        findall(f(F, G1, NS, [NS|RevPath]),
+                (call(Successors, State, NS, C),
+                 \+ memberchk(NS, Closed),
+                 G1 is G + C,
+                 call(Heuristic, NS, H),
+                 F is G1 + H),
+                Children),
+        insert_all(Children, Rest, Open1),
+        length(Open1, OpenSize),
+        MaxOpen1 is max(MaxOpen0, OpenSize),
+        a_star_loop(IsGoal, Successors, Heuristic, Open1,
+                    [State|Closed],
+                    Exp1, MaxOpen1,
+                    Path, Cost, Expanded, MaxOpen)
+    ).
+\end{lstlisting}
+
+\noindent\textbf{Analisi dettagliata:}
+
+\begin{enumerate}
+  \item \textbf{Controllo duplicati}: Se \texttt{State} è già nella closed list
+        (era stato inserito due volte nell'open list con $f$ diversi), si scarta
+        e si procede con \texttt{Rest}. Questo è il \textbf{lazy deletion}.
+
+  \item \textbf{Generazione successori} con \texttt{findall/3}:
+        \begin{itemize}[noitemsep]
+          \item Per ogni successore \texttt{NS} con costo \texttt{C}:
+          \item Scarta \texttt{NS} se già nella closed list.
+          \item Calcola $g_1 = g + C$.
+          \item Chiama l'euristica per ottenere $h$.
+          \item Calcola $f = g_1 + h$.
+          \item Il percorso inverso di \texttt{NS} è \texttt{[NS|RevPath]}.
+        \end{itemize}
+
+  \item \textbf{Inserimento ordinato}: \texttt{insert\_all} inserisce tutti i
+        figli nell'open list mantenendo l'ordinamento per $f$.
+
+  \item \textbf{Aggiornamento statistiche}: contatore espansi e massimo dimensione open.
+
+  \item \textbf{Ricorsione}: loop con la nuova open list e \texttt{State} aggiunto alla closed.
+\end{enumerate}
+
+\subsubsection{Inserimento Ordinato}
+
+\begin{lstlisting}
+insert_all([], Open, Open).
+insert_all([Node|Nodes], Open, Result) :-
+    insert_sorted(Node, Open, Open1),
+    insert_all(Nodes, Open1, Result).
+
+insert_sorted(Node, [], [Node]).
+insert_sorted(Node, [H|T], [Node, H|T]) :-
+    Node = f(F1,_,_,_), H = f(F2,_,_,_),
+    F1 =< F2, !.
+insert_sorted(Node, [H|T], [H|T1]) :-
+    insert_sorted(Node, T, T1).
+\end{lstlisting}
+
+\texttt{insert\_sorted/3} inserisce un nodo nella posizione corretta:
+\begin{itemize}[noitemsep]
+  \item \textbf{Lista vuota}: il nodo va in fondo.
+  \item \textbf{F1 $\le$ F2}: il nodo va \emph{prima} della testa (il taglio \texttt{!}
+        evita backtracking inutile).
+  \item \textbf{Altrimenti}: si scende ricorsivamente nella coda.
+\end{itemize}
+
+\noindent\textbf{Complessità}: $O(n)$ per inserimento singolo, dove $n$ è la
+dimensione dell'open list. \texttt{insert\_all} di $k$ nodi è $O(k \cdot n)$.
+
+\subsubsection{Statistiche Restituite da A*}
+
+\[
+  \texttt{stats(Expanded, MaxOpen)}
+\]
+\begin{itemize}[noitemsep]
+  \item \texttt{Expanded}: numero totale di nodi \emph{espansi} (non duplicati scartati).
+  \item \texttt{MaxOpen}: dimensione massima raggiunta dall'open list durante la ricerca.
+\end{itemize}
+
+% =====================================================================
+\subsection{Algoritmo IDA* (Iterative Deepening A*)}
+% =====================================================================
+
+\subsubsection{Principio Teorico}
+
+IDA* combina la \textbf{completezza e ottimalità di A*} con il \textbf{consumo di
+memoria di DFS} (profondità in avanti). Non mantiene un'open list esplicita.
+
+\textbf{Idea}: esegue iterazioni di DFS limitate da una soglia $t$ sul valore $f$.
+Alla prima iterazione $t = h(\text{Start})$; se non trova la soluzione, la
+soglia diventa il minimo $f$ che ha superato il limite precedente.
+
+\begin{defbox}{Confronto A* vs IDA*}
+\begin{tabular}{lll}
+\toprule
+\textbf{Proprietà} & \textbf{A*} & \textbf{IDA*} \\
+\midrule
+Memoria & $O(b^d)$ (esponenziale) & $O(b \cdot d)$ (lineare) \\
+Tempo   & $O(b^d)$               & $O(b^d)$ (in teoria $\ge$ A*) \\
+Open list & Sì (ordinata)         & No \\
+Closed list & Sì                  & No (usa stack di ricorsione) \\
+Riesplora nodi & No               & Sì (ad ogni iterazione) \\
+Ottimalità & Sì (h ammissibile)   & Sì (h ammissibile) \\
+\bottomrule
+\end{tabular}
+\end{defbox}
+
+\subsubsection{Punto di Ingresso}
+
+\begin{lstlisting}
+ida_star(IsGoal, Successors, Heuristic, Start, Path, Cost,
+         stats(Iters, TotalExp)) :-
+    call(Heuristic, Start, H0),
+    ida_star_iter(IsGoal, Successors, Heuristic, Start, H0, 0, 0,
+                  Path, Cost, Iters, TotalExp).
+\end{lstlisting}
+
+\begin{itemize}[noitemsep]
+  \item La soglia iniziale è $t_0 = h(\text{Start})$ (il minimo possibile per un'euristica ammissibile).
+  \item Il contatore iterazioni (\texttt{Iters0}) e nodi espansi (\texttt{Exp0}) partono da 0.
+\end{itemize}
+
+\subsubsection{Ciclo delle Iterazioni}
+
+\begin{lstlisting}
+ida_star_iter(IsGoal, Successors, Heuristic, Start, Threshold,
+              Iters0, Exp0, Path, Cost, Iters, TotalExp) :-
+    Iters1 is Iters0 + 1,
+    ida_dfs(IsGoal, Successors, Heuristic, Start, [Start],
+            0, Threshold, Exp0, Result, Exp1),
+    (Result = found(RevPath, Cost) ->
+        reverse(RevPath, Path),
+        Iters = Iters1,
+        TotalExp = Exp1
+    ;
+        Result = next(NextThreshold),
+        ida_star_iter(IsGoal, Successors, Heuristic, Start,
+                      NextThreshold, Iters1, Exp1,
+                      Path, Cost, Iters, TotalExp)
+    ).
+\end{lstlisting}
+
+\noindent\textbf{Analisi:}
+\begin{enumerate}
+  \item Incrementa il contatore delle iterazioni.
+  \item Chiama \texttt{ida\_dfs} con la soglia corrente.
+  \item Se il risultato è \texttt{found(RevPath, Cost)}: inversione del percorso e terminazione.
+  \item Se il risultato è \texttt{next(NextThreshold)}: nuova iterazione con soglia aumentata.
+\end{enumerate}
+
+\noindent Il risultato di \texttt{ida\_dfs} è uno dei due termini:
+\begin{itemize}[noitemsep]
+  \item \texttt{found(RevPath, Cost)}: soluzione trovata.
+  \item \texttt{next(MinExceeded)}: nessuna soluzione entro la soglia; \texttt{MinExceeded}
+        è il minimo valore $f$ che ha superato la soglia (sarà la nuova soglia).
+\end{itemize}
+
+\subsubsection{DFS con Soglia: \texttt{ida\_dfs/10}}
+
+\textbf{Clausola 1 -- Goal raggiunto:}
+\begin{lstlisting}
+ida_dfs(IsGoal, _, _, State, RevPath, G, _, Exp, found(RevPath, G), Exp) :-
+    call(IsGoal, State), !.
+\end{lstlisting}
+Se lo stato corrente è un goal, restituisce immediatamente \texttt{found}.
+
+\textbf{Clausola 2 -- Soglia superata:}
+\begin{lstlisting}
+ida_dfs(_, _, Heuristic, State, _, G, Threshold, Exp, next(F), Exp) :-
+    call(Heuristic, State, H),
+    F is G + H,
+    F > Threshold, !.
+\end{lstlisting}
+Se $f = g + h >$ soglia, la ricerca in questo ramo si ferma e restituisce
+\texttt{next(F)} (questo $f$ potrebbe diventare la prossima soglia).
+
+\textbf{Clausola 3 -- Espansione normale:}
+\begin{lstlisting}
+ida_dfs(IsGoal, Successors, Heuristic, State, RevPath,
+        G, Threshold, Exp0, Result, Exp) :-
+    Exp1 is Exp0 + 1,
+    findall(s(NS, C),
+            (call(Successors, State, NS, C),
+             \+ memberchk(NS, RevPath)),
+            Children),
+    dfs_children(IsGoal, Successors, Heuristic, Children,
+                 RevPath, G, Threshold, Exp1, Result, Exp).
+\end{lstlisting}
+
+\noindent\textbf{Note critiche:}
+\begin{itemize}[noitemsep]
+  \item \texttt{\textbackslash+ memberchk(NS, RevPath)}: evita cicli nel percorso corrente
+        (non è una closed list globale, ma impedisce di ritornare sui propri passi
+        nella \emph{stessa} iterazione).
+  \item Il successore è \texttt{s(NS, C)} -- un termine semplice senza $f$ né $g$
+        (vengono calcolati in \texttt{dfs\_children}).
+\end{itemize}
+
+\subsubsection{Iterazione sui Figli: \texttt{dfs\_children/10}}
+
+\begin{lstlisting}
+dfs_children(_, _, _, [], _, _, _, Exp, next(inf), Exp).
+
+dfs_children(IsGoal, Successors, Heuristic,
+             [s(NS, C)|Rest], RevPath, G, Threshold,
+             Exp0, Result, Exp) :-
+    G1 is G + C,
+    ida_dfs(IsGoal, Successors, Heuristic, NS, [NS|RevPath],
+            G1, Threshold, Exp0, ChildResult, Exp1),
+    (ChildResult = found(_, _) ->
+        Result = ChildResult, Exp = Exp1
+    ;
+        ChildResult = next(T1),
+        dfs_children(IsGoal, Successors, Heuristic, Rest,
+                     RevPath, G, Threshold, Exp1, RestResult, Exp2),
+        (RestResult = found(_, _) ->
+            Result = RestResult, Exp = Exp2
+        ;
+            RestResult = next(T2),
+            (T1 == inf -> Min = T2
+            ; T2 == inf -> Min = T1
+            ; Min is min(T1, T2)),
+            Result = next(Min), Exp = Exp2
+        )
+    ).
+\end{lstlisting}
+
+\noindent\textbf{Logica del minimo tra \texttt{next}:}
+\begin{itemize}[noitemsep]
+  \item \texttt{next(inf)}: lista vuota -- nessun successore oltre soglia (sotto-albero esaurito).
+  \item Se un figlio dà \texttt{found}: propagato immediatamente.
+  \item Se entrambi danno \texttt{next(T1)} e \texttt{next(T2)}: si prende il minimo,
+        gestendo il caso \texttt{inf} con pattern matching ($\equiv$).
+\end{itemize}
+
+\noindent Il minimo dei valori \texttt{next} di tutti i rami diventa la prossima
+soglia, garantendo che la prima soluzione trovata sia ottima.
+
+% =====================================================================
+\section{Modulo \texttt{maze.pl} -- Dominio del Labirinto}
+% =====================================================================
+
+\subsection{Struttura del Labirinto}
+
+\begin{lstlisting}
+maze_cols(5).   %% colonne 0..4
+maze_rows(8).   %% righe 0..7
+\end{lstlisting}
+
+Il labirinto è una griglia $5 \times 8$. Le coordinate sono:
+\[
+  \texttt{pos(Col, Row)} \quad \text{con } 0 \le \text{Col} < 5,\; 0 \le \text{Row} < 8
+\]
+L'origine è in alto a sinistra. Le righe crescono verso il basso.
+
+\subsubsection{Uscite}
+
+\begin{lstlisting}
+exit(pos(0,0)).
+exit(pos(4,7)).
+\end{lstlisting}
+
+Ci sono due uscite:
+\begin{itemize}[noitemsep]
+  \item \texttt{pos(0,0)}: angolo in alto a sinistra.
+  \item \texttt{pos(4,7)}: angolo in basso a destra (nella colonna 4, zona isolata).
+\end{itemize}
+
+\subsubsection{Rappresentazione Grafica}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  % Griglia
+  \foreach \c in {0,...,4} {
+    \foreach \r in {0,...,7} {
+      \draw[gray!40] (\c, -\r) rectangle (\c+1, -\r+1);
+    }
+  }
+  % Uscite
+  \fill[green!40] (0,-0+1) rectangle (0+1, 0);
+  \fill[green!40] (4,-7+1) rectangle (4+1, -7);
+  % Etichette uscite
+  \node[font=\tiny\bfseries] at (0.5, 0.5) {EXIT};
+  \node[font=\tiny\bfseries] at (4.5, -6.5) {EXIT};
+
+  % Mura interne (linee spesse)
+  % maze_wall(pos(0,4), pos(1,4)) -> bordo orizzontale tra col0r4 e col1r4
+  \draw[very thick, red] (1, -4) -- (1, -3);  % tra (0,4)-(1,4) verticale? no
+  % Interpreto: pos(C,R) -> cella (C, R). maze_wall(A,B) significa parete tra A e B.
+  % A = pos(0,4), B = pos(1,4): stessa riga, colonne adiacenti -> parete verticale tra x=1
+  \draw[very thick, red] (1, -4) -- (1, -3);
+  % maze_wall(pos(1,0), pos(1,1)) -> stessa colonna, righe adiacenti -> parete orizzontale
+  \draw[very thick, red] (1, 0) -- (2, 0);
+  % maze_wall(pos(1,2), pos(1,3))
+  \draw[very thick, red] (1, -2) -- (2, -2);
+  % maze_wall(pos(1,4), pos(2,4))
+  \draw[very thick, red] (2, -4) -- (2, -3);
+  % maze_wall(pos(1,6), pos(1,7))
+  \draw[very thick, red] (1, -6) -- (2, -6);
+  % maze_wall(pos(2,4), pos(3,4))
+  \draw[very thick, red] (3, -4) -- (3, -3);
+  % maze_wall(pos(3,1), pos(3,2))
+  \draw[very thick, red] (3, -1) -- (4, -1);
+  % Colonna 4 isolata: mure tra col3 e col4
+  \foreach \r in {0,...,7} {
+    \draw[very thick, blue!70] (4, -\r) -- (4, -\r+1);
+  }
+
+  % Etichette colonne
+  \foreach \c in {0,...,4} {
+    \node[font=\tiny, gray] at (\c+0.5, 1) {col \c};
+  }
+  % Etichette righe
+  \foreach \r in {0,...,7} {
+    \node[font=\tiny, gray] at (-0.5, -\r+0.5) {r \r};
+  }
+
+  % Legenda
+  \draw[very thick, red] (5.5, 0) -- (6.5, 0);
+  \node[right, font=\tiny] at (6.5, 0) {parete interna};
+  \draw[very thick, blue!70] (5.5, -0.5) -- (6.5, -0.5);
+  \node[right, font=\tiny] at (6.5, -0.5) {colonna 4 isolata};
+  \fill[green!40] (5.5, -1.2) rectangle (6.5, -0.8);
+  \node[right, font=\tiny] at (6.5, -1) {uscita};
+\end{tikzpicture}
+\end{center}
+
+\subsection{Pareti del Labirinto}
+
+\begin{lstlisting}
+:- discontiguous maze_wall/2.
+
+maze_wall(pos(0,4), pos(1,4)).
+maze_wall(pos(1,0), pos(1,1)).
+maze_wall(pos(1,2), pos(1,3)).
+maze_wall(pos(1,4), pos(2,4)).
+maze_wall(pos(1,6), pos(1,7)).
+maze_wall(pos(2,4), pos(3,4)).
+maze_wall(pos(3,1), pos(3,2)).
+maze_wall(pos(3,4), pos(4,4)).
+%% Colonna 4 completamente isolata:
+maze_wall(pos(3,0), pos(4,0)).
+maze_wall(pos(3,1), pos(4,1)).
+...
+maze_wall(pos(3,7), pos(4,7)).
+\end{lstlisting}
+
+La direttiva \texttt{:- discontiguous maze\_wall/2} è necessaria perché le
+clausole di \texttt{maze\_wall/2} sono interrotte da un commento che Prolog
+considera una separazione (in alcune implementazioni). Senza questa direttiva,
+si otterrebbe un avviso.
+
+\subsubsection{Predicato \texttt{blocked/2}}
+
+\begin{lstlisting}
+blocked(A, B) :- maze_wall(A, B).
+blocked(A, B) :- maze_wall(B, A).
+\end{lstlisting}
+
+Le pareti in \texttt{maze\_wall} sono \textbf{direzionali} nella rappresentazione
+ma \textbf{bidirezionali} nella semantica. \texttt{blocked/2} astrae questa
+simmetria: è vero se esiste una parete tra \texttt{A} e \texttt{B}
+indipendentemente dall'ordine in cui sono stati dichiarati.
+
+\subsection{Predicato \texttt{in\_bounds/1}}
+
+\begin{lstlisting}
+in_bounds(pos(C, R)) :-
+    maze_cols(Cols), maze_rows(Rows),
+    C >= 0, C < Cols,
+    R >= 0, R < Rows.
+\end{lstlisting}
+
+Verifica che una cella sia all'interno della griglia. Usa i fatti
+\texttt{maze\_cols/1} e \texttt{maze\_rows/1} per essere parametrico
+(cambiare dimensione del labirinto richiede solo modificare quei due fatti).
+
+\subsection{Predicato \texttt{maze\_move/3}}
+
+\begin{lstlisting}
+maze_move(pos(C, R), pos(C1, R), 1) :- C1 is C + 1.  % destra
+maze_move(pos(C, R), pos(C1, R), 1) :- C1 is C - 1.  % sinistra
+maze_move(pos(C, R), pos(C, R1), 1) :- R1 is R + 1.  % giu
+maze_move(pos(C, R), pos(C, R1), 1) :- R1 is R - 1.  % su
+\end{lstlisting}
+
+Genera i quattro movimenti possibili (destra, sinistra, giù, su), ognuno con
+costo 1. Prolog li considera in ordine tramite backtracking: si provano in
+sequenza le 4 clausole.
+
+\begin{warnbox}{Costi unitari}
+Tutti i movimenti hanno costo 1 (griglia uniforme). Se si volesse un labirinto
+con costi non uniformi (ad es. terreno fangoso), basterebbe cambiare il terzo
+argomento di \texttt{maze\_move/3}.
+\end{warnbox}
+
+\subsection{Predicato \texttt{maze\_successors/3}}
+
+\begin{lstlisting}
+maze_successors(State, NS, Cost) :-
+    maze_move(State, NS, Cost),
+    in_bounds(NS),
+    \+ blocked(State, NS).
+\end{lstlisting}
+
+Questo predicato \textbf{compone} i tre vincoli del dominio:
+\begin{enumerate}[noitemsep]
+  \item \texttt{maze\_move}: genera un movimento candidato.
+  \item \texttt{in\_bounds}: filtra le celle fuori griglia.
+  \item \texttt{\textbackslash+ blocked}: filtra i movimenti bloccati da pareti.
+\end{enumerate}
+
+Grazie al backtracking di Prolog, \texttt{findall(s(NS,C), maze\_successors(State,NS,C), Children)}
+raccoglierà tutti e soli i successori validi.
+
+\subsection{Predicato \texttt{maze\_goal/1}}
+
+\begin{lstlisting}
+maze_goal(State) :- exit(State).
+\end{lstlisting}
+
+Semplice: uno stato è un goal se corrisponde a una delle uscite definite
+tramite \texttt{exit/1}. Grazie a questo, \textbf{qualsiasi} delle due uscite
+costituisce un goal valido.
+
+\subsection{Euristica: Distanza di Manhattan Minima}
+
+\begin{lstlisting}
+maze_heuristic(State, H) :-
+    findall(D, (exit(E), manhattan(State, E, D)), Ds),
+    min_list(Ds, H).
+
+manhattan(pos(C1,R1), pos(C2,R2), D) :-
+    D is abs(C1-C2) + abs(R1-R2).
+\end{lstlisting}
+
+\textbf{Distanza di Manhattan} tra due celle $(c_1, r_1)$ e $(c_2, r_2)$:
+\[
+  h = |c_1 - c_2| + |r_1 - r_2|
+\]
+
+\noindent\textbf{Perché è ammissibile?} \\
+In una griglia dove ci si può muovere solo orizzontalmente e verticalmente,
+la distanza di Manhattan è il numero minimo di passi necessari \emph{senza pareti}.
+Ogni passo reale ha costo 1, quindi $h(n) \le h^*(n)$ (non sovrastima mai).
+
+\noindent\textbf{Perché il minimo tra le uscite?} \\
+Con più uscite, si vuole stimare il costo verso la \emph{più vicina}. Usare
+\texttt{findall} per raccogliere tutte le distanze e poi \texttt{min\_list} è
+più leggibile e scalabile che un'unica formula.
+
+\begin{exbox}{Esempio di calcolo euristico}
+Da \texttt{pos(2,5)} con uscite \texttt{pos(0,0)} e \texttt{pos(4,7)}:
+\begin{align*}
+  h(\texttt{pos(2,5)}, \texttt{pos(0,0)}) &= |2-0| + |5-0| = 7\\
+  h(\texttt{pos(2,5)}, \texttt{pos(4,7)}) &= |2-4| + |5-7| = 4\\
+  H &= \min(7, 4) = 4
+\end{align*}
+\end{exbox}
+
+% =====================================================================
+\section{Predicati di Esecuzione e Demo}
+% =====================================================================
+
+\subsection{\texttt{run\_maze/1} -- Confronto A* vs IDA*}
+
+\begin{lstlisting}
+run_maze(Start) :-
+    format("~n=== LABIRINTO: start=~w ===~n", [Start]),
+    % A*
+    statistics(runtime, [T0a|_]),
+    (a_star(maze_goal, maze_successors, maze_heuristic, Start,
+            PathA, CostA, StatsA) ->
+        statistics(runtime, [T1a|_]),
+        TimeA is T1a - T0a,
+        length(PathA, LenA),
+        StatsA = stats(ExpA, MaxOpenA),
+        format("A*   : costo=~w  nodi=~w  espansi=~w  max-open=~w  t=~wms~n",
+               [CostA, LenA, ExpA, MaxOpenA, TimeA])
+    ;
+        statistics(runtime, [T1a|_]),
+        TimeA is T1a - T0a,
+        format("A*   : nessuna soluzione  t=~wms~n", [TimeA])
+    ),
+    % IDA* (struttura analoga)
+    ...
+\end{lstlisting}
+
+\textbf{Costrutti chiave:}
+\begin{itemize}
+  \item \textbf{\texttt{statistics(runtime, [T|\_])}}: legge il tempo di CPU in
+        millisecondi. La differenza \texttt{T1 - T0} dà il tempo impiegato.
+  \item \textbf{If-Then-Else (\texttt{-> ;})}:
+        \[
+          \texttt{(Cond -> Then ; Else)}
+        \]
+        Se \texttt{Cond} riesce (anche solo la prima volta), esegue \texttt{Then};
+        altrimenti esegue \texttt{Else}. Il \texttt{->} \emph{taglia} il backtracking
+        su \texttt{Cond}.
+  \item \textbf{Destructuring di \texttt{Stats}}: \texttt{StatsA = stats(ExpA, MaxOpenA)}
+        estrae i campi dello struct unificando.
+\end{itemize}
+
+\subsection{\texttt{show\_path\_astar/1} -- Visualizzazione del Percorso}
+
+\begin{lstlisting}
+show_path_astar(Start) :-
+    (a_star(maze_goal, maze_successors, maze_heuristic, Start,
+            Path, Cost, _) ->
+        format("Percorso A* da ~w (costo ~w):~n", [Start, Cost]),
+        maplist([P]>>(format("  ~w~n",[P])), Path)
+    ;
+        format("Nessun percorso da ~w~n", [Start])
+    ).
+\end{lstlisting}
+
+\textbf{\texttt{maplist/2} con lambda}: applica un predicato a ogni elemento
+della lista. La sintassi \texttt{[P]>>(Goal)} è una \textbf{lambda} di
+SWI-Prolog (libreria \texttt{yall}):
+\begin{itemize}[noitemsep]
+  \item \texttt{[P]} = variabili libere della lambda (argomento passato da \texttt{maplist});
+  \item \texttt{>>} = separatore;
+  \item \texttt{(Goal)} = corpo da eseguire con \texttt{P} istanziato.
+\end{itemize}
+
+\subsection{\texttt{main/0} -- Entry Point}
+
+\begin{lstlisting}
+:- initialization(main, main).
+
+main :-
+    format("~n*** DOMINIO LABIRINTO ***~n"),
+    run_maze(pos(2,5)),
+    run_maze(pos(4,3)),
+    run_maze(pos(1,1)),
+    halt.
+\end{lstlisting}
+
+\textbf{\texttt{:- initialization(main, main)}}: direttiva che dice a SWI-Prolog
+di eseguire \texttt{main/0} dopo il caricamento completo del programma, nella
+modalità \texttt{main} (eseguibile da riga di comando). Il secondo \texttt{main}
+indica che si tratta di un'invocazione da script, non da REPL.
+
+% =====================================================================
+\section{Output e Analisi dei Risultati}
+% =====================================================================
+
+\subsection{Risultati dell'Esecuzione}
+
+Eseguendo \texttt{swipl maze.pl} si ottiene:
+
+\begin{tcolorbox}[colback=black!90, coltext=green!80, fontupper=\ttfamily\small, title=Output]
+*** DOMINIO LABIRINTO ***\\
+\\
+=== LABIRINTO: start=pos(2,5) ===\\
+A*   : costo=7  nodi-percorso=8  espansi=16  max-open=11  tempo=0ms\\
+IDA* : costo=7  nodi-percorso=8  iterazioni=3  espansi=51  tempo=0ms\\
+\\
+=== LABIRINTO: start=pos(4,3) ===\\
+A*   : costo=4  nodi-percorso=5  espansi=4  max-open=2  tempo=0ms\\
+IDA* : costo=4  nodi-percorso=5  iterazioni=1  espansi=1  tempo=0ms\\
+\\
+=== LABIRINTO: start=pos(1,1) ===\\
+A*   : costo=2  nodi-percorso=3  espansi=2  max-open=4  tempo=0ms\\
+IDA* : costo=2  nodi-percorso=3  iterazioni=1  espansi=1  tempo=0ms
+\end{tcolorbox}
+
+\subsection{Analisi Caso per Caso}
+
+\subsubsection{Caso 1: \texttt{pos(2,5)} -- Percorso verso \texttt{pos(0,0)}}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metrica} & \textbf{A*} & \textbf{IDA*} \\
+\midrule
+Costo soluzione & 7 & 7 \\
+Nodi nel percorso & 8 & 8 \\
+Nodi espansi & 16 & 51 \\
+Iterazioni & -- & 3 \\
+Max open list & 11 & -- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Entrambi trovano la soluzione ottima di costo 7 (7 passi). IDA* espande molti
+più nodi (51 vs 16) perché riesplora i nodi ad ogni iterazione della soglia.
+Le 3 iterazioni di IDA* significano che la soglia è stata aumentata 2 volte
+prima di trovare la soluzione.
+
+\subsubsection{Caso 2: \texttt{pos(4,3)} -- Zona della Colonna 4}
+
+La partenza è nella colonna 4 (zona isolata dal resto del labirinto). Tuttavia
+l'uscita \texttt{pos(4,7)} è anch'essa nella colonna 4: il percorso
+\texttt{pos(4,3)} $\to$ \texttt{pos(4,4)} $\to$ \texttt{pos(4,5)} $\to$
+\texttt{pos(4,6)} $\to$ \texttt{pos(4,7)} è di costo 4. Entrambi gli algoritmi
+lo trovano.
+
+\begin{warnbox}{Nota sulla coerenza con i commenti}
+Il commento nel codice recita ``nessuna uscita raggiungibile'', ma l'uscita
+\texttt{pos(4,7)} è raggiungibile. Se si volesse un caso davvero irrisolvibile,
+bisognerebbe rimuovere \texttt{exit(pos(4,7))} o usare una partenza diversa
+(es. \texttt{pos(4,0)} con solo \texttt{exit(pos(0,0))}).
+\end{warnbox}
+
+\subsubsection{Caso 3: \texttt{pos(1,1)} -- Partenza Vicino all'Uscita}
+
+Distanza minima all'uscita \texttt{pos(0,0)} = $|1-0|+|1-0| = 2$.
+Entrambi trovano immediatamente il percorso ottimo in 1 sola iterazione IDA*.
+
+% =====================================================================
+\section{Proprietà Formali degli Algoritmi}
+% =====================================================================
+
+\subsection{Ammissibilità dell'Euristica}
+
+\begin{defbox}{Euristica Ammissibile}
+Un'euristica $h$ è \textbf{ammissibile} se, per ogni nodo $n$:
+\[h(n) \le h^*(n)\]
+dove $h^*(n)$ è il costo ottimo effettivo da $n$ al goal.
+\end{defbox}
+
+La distanza di Manhattan è ammissibile in una griglia con movimenti ortogonali
+e costo 1 perché:
+\begin{itemize}[noitemsep]
+  \item Conta il numero minimo di passi necessari \emph{senza ostacoli}.
+  \item Le pareti possono solo aumentare il costo reale, mai diminuirlo.
+  \item Quindi $h_{\text{manhattan}}(n) \le h^*(n)$ sempre.
+\end{itemize}
+
+\subsection{Completezza}
+
+\textbf{A*}: completo se il grafo è finito o i costi degli archi sono $> 0$
+(grazie alla closed list, non si entra in loop infiniti).
+
+\textbf{IDA*}: completo se i costi degli archi sono $> 0$ (il costo $g$ cresce
+strettamente, quindi IDA* non si blocca in loop con lo stesso percorso; i cicli
+sono evitati con \texttt{memberchk(NS, RevPath)}).
+
+\subsection{Ottimalità}
+
+Entrambi sono ottimali con euristiche ammissibili:
+\begin{itemize}[noitemsep]
+  \item \textbf{A*}: la prima volta che un goal è estratto dall'open list, il
+        suo $g$ è minimo (per la proprietà dell'ordinamento e l'ammissibilità).
+  \item \textbf{IDA*}: la soglia aumenta in modo tale che la prima soluzione
+        trovata abbia costo $\le$ di tutte le altre (le soluzioni con costo
+        minore sarebbero state trovate in iterazioni precedenti).
+\end{itemize}
+
+% =====================================================================
+\section{Riepilogo e Confronto}
+% =====================================================================
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{p{4cm}p{5cm}p{5cm}}
+\toprule
+\textbf{Aspetto} & \textbf{A*} & \textbf{IDA*} \\
+\midrule
+\textbf{Struttura dati} & Open list (heap/lista ord.) + Closed list & Solo stack di ricorsione \\
+\textbf{Memoria} & $O(b^d)$ -- può essere grande & $O(b \cdot d)$ -- lineare nella profondità \\
+\textbf{Nodi espansi} & Meno (non riesplora) & Più (riesplora a ogni iterazione) \\
+\textbf{Complessità tempo} & $O(b^d)$ nel peggio & $O(b^d)$ nel peggio, ma costante molto più alta \\
+\textbf{Ottimale?} & Sì (con $h$ amm.) & Sì (con $h$ amm.) \\
+\textbf{Completo?} & Sì (grafi finiti) & Sì (costi $> 0$) \\
+\textbf{Quando preferire} & Memoria disponibile, grafi con cicli & Memoria limitata, fattori di ramificazione alti \\
+\textbf{Statistiche} & \texttt{stats(Expanded, MaxOpen)} & \texttt{stats(Iters, TotalExp)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Conclusioni}
+
+Il progetto dimostra come Prolog sia particolarmente adatto per implementare
+algoritmi di ricerca grazie a:
+\begin{itemize}
+  \item \textbf{Higher-order programming}: gli algoritmi in \texttt{search.pl}
+        sono completamente generici e riutilizzabili con qualsiasi dominio.
+  \item \textbf{Backtracking built-in}: la generazione dei successori sfrutta
+        il backtracking di Prolog anziché cicli espliciti.
+  \item \textbf{Pattern matching}: la selezione delle clausole (goal trovato vs
+        espansione vs soglia superata) avviene per unificazione, rendendo il
+        codice dichiarativo e leggibile.
+  \item \textbf{Separazione dominio/algoritmo}: cambiare il problema (ad es.
+        da labirinto a puzzle dell'8) richiede solo scrivere nuovi predicati
+        \texttt{goal}, \texttt{successori} ed \texttt{euristica}, senza toccare
+        \texttt{search.pl}.
+\end{itemize}
+
+\end{document}
