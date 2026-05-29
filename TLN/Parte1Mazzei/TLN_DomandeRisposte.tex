@@ -1,0 +1,689 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{mdframed}
+\usepackage{hyperref}
+\usepackage{parskip}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=3cm, right=3cm}
+
+% Colori
+\definecolor{primary}{RGB}{0, 70, 127}
+\definecolor{accent}{RGB}{220, 50, 47}
+\definecolor{lightgray}{RGB}{245, 245, 245}
+\definecolor{darkgray}{RGB}{80, 80, 80}
+\definecolor{teal}{RGB}{0, 128, 128}
+
+% Titoli sezione
+\titleformat{\section}{\large\bfseries\color{primary}}{}{0em}{\thesection.~}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{teal}}{}{0em}{}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{darkgray}\textit{TLN -- Tecnologie del Linguaggio Naturale}}
+\fancyhead[R]{\small\color{darkgray}\textit{A.A. 2025/26 -- Parte 1}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Box definizione
+\newmdenv[
+  backgroundcolor=lightgray,
+  linecolor=primary,
+  linewidth=1.5pt,
+  leftmargin=0pt,
+  rightmargin=0pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt,
+  skipabove=6pt,
+  skipbelow=6pt
+]{defbox}
+
+% Box formula
+\newmdenv[
+  backgroundcolor=white,
+  linecolor=teal,
+  linewidth=1pt,
+  leftmargin=10pt,
+  rightmargin=10pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt,
+  innertopmargin=6pt,
+  innerbottommargin=6pt,
+  skipabove=4pt,
+  skipbelow=4pt
+]{formulabox}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=primary,
+  urlcolor=teal,
+  pdftitle={TLN - Domande e Risposte A.A. 2025/26},
+  pdfauthor={Alessandro Olivero}
+}
+
+% =====================================================================
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\color{primary}\rule{\linewidth}{2pt}}\\[0.5cm]
+  {\Huge\bfseries\color{primary} Tecnologie del Linguaggio Naturale}\\[0.4cm]
+  {\Large\bfseries\color{darkgray} Domande e Risposte -- Parte 1}\\[0.3cm]
+  {\color{primary}\rule{\linewidth}{2pt}}\\[1cm]
+  {\large Università degli Studi di Torino (UniTO)}\\[0.2cm]
+  {\large Corso di Laurea in Informatica}\\[0.2cm]
+  {\large A.A. 2025/26}\\[2cm]
+  {\large\itshape Alessandro Olivero}\\[4cm]
+  {\small\color{darkgray} Documento generato a scopo di studio}
+  \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{Come funziona il Transition Based Parser (MALT)?}
+
+Il \textbf{MALT Parser} (Maltparser) è un parser per la sintassi a dipendenze basato su un meccanismo di \emph{transizioni}. Il processo di parsing è modellato come una sequenza di azioni su una configurazione composta da:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Stack} ($\sigma$): contiene i token già processati parzialmente.
+  \item \textbf{Buffer} ($\beta$): contiene i token ancora da processare (la frase in input).
+  \item \textbf{Insieme di archi} ($A$): contiene le relazioni di dipendenza già costruite.
+\end{itemize}
+
+\subsection{Configurazione iniziale e finale}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Inizio}: stack con il solo token \texttt{ROOT}, buffer con l'intera frase.
+  \item \textbf{Fine}: buffer vuoto, tutte le dipendenze costruite in $A$.
+\end{itemize}
+
+\subsection{Le tre operazioni (Arc-Standard)}
+
+\begin{defbox}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{SHIFT}: sposta il primo elemento del buffer in cima allo stack.
+  \item \textbf{LEFT-ARC($r$)}: crea un arco $(\text{top}(\sigma), \text{sec}(\sigma), r)$, ovvero il top dello stack diventa la testa del secondo elemento; il secondo viene rimosso dallo stack.
+  \item \textbf{RIGHT-ARC($r$)}: crea un arco $(\text{sec}(\sigma), \text{top}(\sigma), r)$; il top viene rimosso dallo stack.
+\end{itemize}
+\end{defbox}
+
+\subsection{Oracle e modello statistico}
+In fase di training, un \emph{oracle} (basato su un gold treebank) guida le transizioni corrette. A runtime, un \textbf{classificatore} (SVM, perceptron o rete neurale) predice la prossima transizione basandosi su feature estratte dalla configurazione corrente (es. le POS dei token in cima allo stack e in testa al buffer).
+
+La complessità è \textbf{lineare} $O(n)$ rispetto alla lunghezza $n$ della frase, poiché ogni token viene shiftato e rimosso dallo stack al più una volta.
+
+% =====================================================================
+\section{Spiegare l'uso delle HMM nel PoS Tagging}
+
+Un \textbf{Hidden Markov Model} (HMM) modella il PoS Tagging come un problema di \emph{decodifica}: dato il testo osservato $w_1, \dots, w_n$, si vuole trovare la sequenza di tag $t_1, \dots, t_n$ più probabile.
+
+\subsection{Componenti del modello}
+\begin{defbox}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Stati nascosti}: i tag POS ($t_i$).
+  \item \textbf{Osservazioni}: le parole ($w_i$).
+  \item \textbf{Probabilità di transizione}: $P(t_i \mid t_{i-1})$ -- la probabilità che un tag segua il precedente.
+  \item \textbf{Probabilità di emissione}: $P(w_i \mid t_i)$ -- la probabilità che un tag ``emetta'' una parola.
+  \item \textbf{Probabilità iniziale}: $P(t_1)$.
+\end{itemize}
+\end{defbox}
+
+\subsection{Obiettivo}
+\begin{formulabox}
+\[
+\hat{t}_{1:n} = \arg\max_{t_{1:n}} P(t_1) \cdot \prod_{i=2}^{n} P(t_i \mid t_{i-1}) \cdot \prod_{i=1}^{n} P(w_i \mid t_i)
+\]
+\end{formulabox}
+
+\subsection{Algoritmo di Viterbi}
+La decodifica efficiente è realizzata con l'algoritmo di \textbf{Viterbi} (programmazione dinamica), che evita di enumerare esponenzialmente tutte le sequenze possibili, operando in tempo $O(n \cdot |T|^2)$ dove $|T|$ è la dimensione del tagset.
+
+\subsection{Stima dei parametri}
+I parametri vengono stimati da un corpus annotato tramite \emph{Maximum Likelihood Estimation}:
+\[
+P(t_i \mid t_{i-1}) = \frac{C(t_{i-1}, t_i)}{C(t_{i-1})}, \quad P(w_i \mid t_i) = \frac{C(t_i, w_i)}{C(t_i)}
+\]
+Lo \textbf{smoothing} (es. add-one, back-off) è necessario per gestire gli zeri.
+
+% =====================================================================
+\section{Che differenza c'è tra MEMM e HMM?}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Aspetto} & \textbf{HMM} & \textbf{MEMM} \\
+\midrule
+Tipo di modello & Generativo & Discriminativo \\
+Distribuzione modellata & $P(w, t)$ & $P(t \mid w)$ \\
+Feature & Solo parola corrente & Feature arbitrarie sul contesto \\
+Training & Conteggi + smoothing & Ottimizzazione (es. L-BFGS) \\
+Label bias & No & Sì (problema noto) \\
+Complessità & Bassa & Maggiore \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{MEMM -- Maximum Entropy Markov Model}
+Il MEMM modella direttamente la distribuzione condizionale:
+\begin{formulabox}
+\[
+P(t_i \mid t_{i-1}, w_{1:n}) = \frac{1}{Z} \exp\!\left(\sum_k \lambda_k f_k(t_i, t_{i-1}, w_{1:n}, i)\right)
+\]
+\end{formulabox}
+dove $f_k$ sono feature arbitrarie (suffisso della parola, capitalizzazione, parola precedente, ecc.) e $\lambda_k$ sono i pesi appresi.
+
+\subsection{Label Bias Problem}
+Il principale svantaggio del MEMM è il \textbf{label bias problem}: le probabilità di transizione sono normalizzate localmente per ogni stato, favorendo gli stati con pochi successori. Le \textbf{CRF} (Conditional Random Fields) risolvono questo problema con una normalizzazione globale.
+
+% =====================================================================
+\section{Cosa è una Probabilistic CFG (PCFG)?}
+
+Una \textbf{Probabilistic Context-Free Grammar} (PCFG) estende una CFG associando una probabilità a ogni regola di produzione.
+
+\begin{defbox}
+Una PCFG è una tupla $G = (N, \Sigma, R, S, P)$ dove:
+\begin{itemize}[leftmargin=1.5em]
+  \item $N$: insieme dei non-terminali
+  \item $\Sigma$: insieme dei terminali
+  \item $R$: regole di produzione $A \to \alpha$
+  \item $S$: simbolo iniziale
+  \item $P$: funzione che assegna $P(A \to \alpha)$ a ogni regola, con $\sum_\alpha P(A \to \alpha) = 1$
+\end{itemize}
+\end{defbox}
+
+\subsection{Probabilità di un albero sintattico}
+La probabilità di un albero $T$ è il prodotto delle probabilità delle regole usate:
+\begin{formulabox}
+\[
+P(T) = \prod_{(A \to \alpha) \in T} P(A \to \alpha)
+\]
+\end{formulabox}
+
+\subsection{Utilizzo}
+Le PCFG vengono usate per il \textbf{disambiguation sintattico}: tra tutti gli alberi compatibili con la grammatica si sceglie quello con probabilità massima. I parametri si stimano da un treebank con MLE: $P(A \to \alpha) = C(A \to \alpha) / C(A)$.
+
+\subsection{Limitazioni}
+Le PCFG assumono indipendenza dal contesto (la probabilità di una regola non dipende dal contesto in cui appare il non-terminale), il che porta a stime poco accurate. Estensioni come le \textbf{Lexicalized PCFG} (Collins, Charniak) mitigano questo problema.
+
+% =====================================================================
+\section{Cosa è il task della Aggregation?}
+
+L'\textbf{Aggregation} è uno dei task fondamentali della \textbf{Natural Language Generation} (NLG). Si occupa di decidere \emph{come raggruppare e combinare} le informazioni da comunicare in unità testuali coerenti.
+
+\subsection{Problema}
+Dato un insieme di fatti o proposizioni da esprimere, l'aggregation stabilisce:
+\begin{itemize}[leftmargin=1.5em]
+  \item Quante frasi produrre.
+  \item Quali proposizioni unire nella stessa frase (es. coordinazione, subordinazione).
+  \item Come evitare la ripetizione (es. tramite ellissi o pronominalizzazione).
+\end{itemize}
+
+\subsection{Esempio}
+\textbf{Input}: \{``Mario è studente'', ``Mario studia informatica'', ``Mario abita a Torino''\}\\
+\textbf{Senza aggregation}: ``Mario è studente. Mario studia informatica. Mario abita a Torino.''\\
+\textbf{Con aggregation}: ``Mario è uno studente di informatica che abita a Torino.''
+
+\subsection{Tecniche}
+Le principali strategie di aggregation includono:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Set aggregation}: raggruppamento di proposizioni con stesso soggetto o predicato.
+  \item \textbf{Conjunction}: unione con connettivi coordinanti.
+  \item \textbf{Embedding}: inserimento di una proposizione in un'altra come relativa o participiale.
+\end{itemize}
+
+% =====================================================================
+\section{I 5 algoritmi per il parsing delle dipendenze sintattiche}
+
+\begin{enumerate}[leftmargin=1.5em, label=\textbf{\arabic*.}]
+  \item \textbf{Transition-Based Parsing (MALT)} \\
+    Approccio greedy basato su transizioni (SHIFT, LEFT-ARC, RIGHT-ARC). Complessità lineare $O(n)$. Dipende da un classificatore per scegliere la prossima azione. Vedi sezione 1 per dettagli.
+
+  \item \textbf{Graph-Based Parsing (MST -- Eisner/McDonald)} \\
+    Il parsing è formulato come ricerca del \emph{Maximum Spanning Tree} su un grafo completo pesato dei token. L'algoritmo di \textbf{Chu-Liu/Edmonds} (per grafi diretti) o \textbf{Eisner} (per alberi proiettivi) trova l'albero ottimale globale. Complessità $O(n^2)$ o $O(n^3)$.
+
+  \item \textbf{CYK-Based Dependency Parsing} \\
+    Adattamento del CYK per dipendenze. Richiede una fase di conversione tra rappresentazioni (costituenti $\leftrightarrow$ dipendenze). Meno comune nella pratica moderna.
+
+  \item \textbf{Easy-First Parsing} \\
+    Variante del transition-based che processa prima le decisioni più ``facili'' (alta confidenza del classificatore) anziché seguire un ordine sinistro-destro fisso. Riduce la propagazione degli errori.
+
+  \item \textbf{Neural Dependency Parsing (Deep Biaffine)} \\
+    Approccio moderno di \textbf{Dozat \& Manning (2017)}: utilizza una rete BiLSTM + meccanismo \emph{biaffine} per calcolare un punteggio per ogni possibile arco $\text{head} \to \text{dep}$ e per ogni etichetta. Il decoding avviene con MST. Stato dell'arte con feature contestualizzate (BERT, ecc.).
+\end{enumerate}
+
+% =====================================================================
+\section{Il formalismo Lambda-FoL per la Semantica Computazionale}
+
+Il \textbf{Lambda Calcolo applicato alla Logica del Primo Ordine} (\emph{Lambda-FoL}) è un formalismo per associare rappresentazioni semantiche composizionali alle strutture sintattiche.
+
+\subsection{Motivazione}
+Il principio di \textbf{composizionalità di Frege} afferma che il significato di un'espressione è funzione del significato delle sue parti. Il lambda calcolo permette di rappresentare significati come funzioni componibili.
+
+\subsection{Lambda astrazione e applicazione}
+\begin{defbox}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Lambda astrazione}: $\lambda x.\, \varphi(x)$ rappresenta una funzione che, dato $x$, restituisce $\varphi(x)$.
+  \item \textbf{Beta-riduzione}: $(\lambda x.\, \varphi(x))(a) \Rightarrow \varphi(a)$.
+\end{itemize}
+\end{defbox}
+
+\subsection{Esempio}
+Considera la frase ``Every student reads a book'':
+\begin{formulabox}
+\[
+\text{``reads''} \rightsquigarrow \lambda y.\lambda x.\, \mathit{reads}(x,y)
+\]
+\[
+\text{``a book''} \rightsquigarrow \lambda P.\, \exists y[\mathit{book}(y) \wedge P(y)]
+\]
+\[
+\text{``every student''} \rightsquigarrow \lambda Q.\, \forall x[\mathit{student}(x) \Rightarrow Q(x)]
+\]
+\end{formulabox}
+Componendo via applicazione funzionale si ottiene la formula FoL:
+\[
+\forall x[\mathit{student}(x) \Rightarrow \exists y[\mathit{book}(y) \wedge \mathit{reads}(x,y)]]
+\]
+
+\subsection{Integrazione con la sintassi}
+Il formalismo si integra con grammatiche categorie (CCG) o con regole compositiva su alberi sintattici, assegnando a ciascun lessema un'\emph{entrata semantica} in lambda-FoL che viene composta bottom-up.
+
+% =====================================================================
+\section{La rappresentazione Neo-Davidsoniana}
+
+La rappresentazione \textbf{Neo-Davidsoniana} è un'estensione della semantica Davidsoniana classica per gestire in modo uniforme gli argomenti verbali e i modificatori.
+
+\subsection{Semantica Davidsoniana (base)}
+Davidson (1967) propose di introdurre una \textbf{variabile evento} $e$ nelle formule logiche. Ad esempio:
+\[
+\text{``Mario corre velocemente''} \rightsquigarrow \exists e[\mathit{correre}(e) \wedge \mathit{agente}(e, \text{Mario}) \wedge \mathit{veloce}(e)]
+\]
+
+\subsection{Neo-Davidsonismo}
+L'approccio Neo-Davidsoniano (Parsons 1990) tratta \textbf{tutti gli argomenti tematici} come predicati sull'evento, separando completamente la struttura argomentale:
+\begin{defbox}
+\[
+\text{``Mario mangia una mela''} \rightsquigarrow \exists e[\mathit{mangiare}(e) \wedge \theta_{\mathit{ag}}(e, \text{Mario}) \wedge \theta_{\mathit{th}}(e, \text{mela})]
+\]
+\end{defbox}
+dove $\theta_{\mathit{ag}}$ e $\theta_{\mathit{th}}$ sono i ruoli tematici \emph{agente} e \emph{tema}.
+
+\subsection{Vantaggi}
+\begin{itemize}[leftmargin=1.5em]
+  \item Trattamento uniforme di argomenti obbligatori e modificatori opzionali.
+  \item Facilita l'inferenza (es. da ``Mario mangia una mela velocemente'' si può inferire ``Mario mangia una mela'').
+  \item Si integra bene con risorse come VerbNet e PropBank.
+\end{itemize}
+
+% =====================================================================
+\section{Le due ipotesi fondamentali della linguistica computazionale}
+
+\begin{defbox}
+\begin{enumerate}[leftmargin=1.5em, label=\textbf{\Roman*.}]
+  \item \textbf{Ipotesi di regolarità} (o \emph{ipotesi linguistica}): \\
+    Il linguaggio naturale è strutturato e governato da regolarità sistematiche -- fonologiche, morfologiche, sintattiche, semantiche -- che possono essere descritte formalmente e sfruttate computazionalmente.
+
+  \item \textbf{Ipotesi di corpora} (o \emph{ipotesi statistica/empirica}): \\
+    I dati linguistici reali (corpora) contengono informazione sufficiente per apprendere, stimare e valutare modelli del linguaggio. Il comportamento linguistico è in larga misura apprendibile dall'osservazione di grandi quantità di testo.
+\end{enumerate}
+\end{defbox}
+
+Queste due ipotesi giustificano rispettivamente l'approccio \textbf{simbolico/rule-based} (grammatiche, lexicon) e l'approccio \textbf{statistico/empirico} (n-gram, HMM, reti neurali) che convivono e si integrano nella linguistica computazionale moderna.
+
+% =====================================================================
+\section{La Frame-Based Semantics nei Dialogue Systems}
+
+La \textbf{Frame-Based Semantics} nei \emph{Dialogue Systems} (DS) è un approccio alla gestione della comprensione del linguaggio naturale basato sul concetto di \textbf{frame}: strutture dati predefinite che rappresentano domini e intenzioni dell'utente.
+
+\subsection{Struttura di un frame}
+Un frame è composto da:
+\begin{defbox}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Intent (intenzione)}: l'azione che l'utente vuole compiere (es. \texttt{prenota\_volo}).
+  \item \textbf{Slot}: i campi parametrici da riempire (es. \texttt{destinazione}, \texttt{data}, \texttt{classe}).
+  \item \textbf{Valori}: i valori effettivi estratti dall'enunciato (es. \texttt{Roma}, \texttt{15 giugno}, \texttt{economica}).
+\end{itemize}
+\end{defbox}
+
+\subsection{Funzionamento nel dialogo}
+\begin{enumerate}[leftmargin=1.5em, label=\arabic*.]
+  \item L'\textbf{NLU} (Natural Language Understanding) identifica l'intent e riempie i valori degli slot.
+  \item Il \textbf{Dialogue Manager} tiene traccia degli slot mancanti (\emph{slot filling}) e gestisce i turni.
+  \item L'\textbf{NLG} genera le domande per ottenere i valori mancanti (es. ``Qual è la data di partenza?'').
+  \item Quando tutti gli slot obbligatori sono riempiti, viene eseguita l'azione.
+\end{enumerate}
+
+\subsection{Esempio}
+Utente: ``Voglio volare a Milano domani sera''\\
+Frame \texttt{prenota\_volo}: \texttt{destinazione=Milano}, \texttt{data=domani}, \texttt{fascia\_oraria=sera}, \texttt{partenza=??} (mancante $\to$ sistema chiede).
+
+% =====================================================================
+\section{Esempio di ambiguità puramente semantica}
+
+L'ambiguità \textbf{puramente semantica} si manifesta quando una frase ha una struttura sintattica unica ma consente più interpretazioni semantiche.
+
+\subsection{Esempi classici}
+
+\begin{enumerate}[leftmargin=1.5em, label=\arabic*.]
+  \item \textbf{Polisemia lessicale}: \\
+    ``Ho visto \textbf{la banca}.''\\
+    $\to$ istituto finanziario \emph{oppure} riva di un fiume. La struttura sintattica (SN oggetto diretto) è identica in entrambi i casi.
+
+  \item \textbf{Ambiguità di scope quantificazionale}: \\
+    ``Ogni studente ha letto un libro.''\\
+    $\to$ \emph{Lettura 1}: $\forall x[\mathit{stud}(x) \Rightarrow \exists y[\mathit{libro}(y) \wedge \mathit{legge}(x,y)]]$ (ogni studente ha letto un libro qualsiasi, possibilmente diverso)\\
+    $\to$ \emph{Lettura 2}: $\exists y[\mathit{libro}(y) \wedge \forall x[\mathit{stud}(x) \Rightarrow \mathit{legge}(x,y)]]$ (c'è un libro specifico che tutti hanno letto)
+
+  \item \textbf{Ambiguità del pronome (coreference)}: \\
+    ``Mario ha detto a Luca che \textbf{lui} aveva ragione.''\\
+    $\to$ ``lui'' = Mario \emph{oppure} Luca.
+\end{enumerate}
+
+% =====================================================================
+\section{Ambiguità sintattica: PP attachment e coordinazione}
+
+\subsection{PP Attachment (Attacco del Sintagma Preposizionale)}
+
+Il \textbf{PP attachment} è uno dei fenomeni di ambiguità sintattica più studiati. Un sintagma preposizionale può essere associato (``attaccato'') a diversi costituenti nella frase, cambiando il significato.
+
+\textbf{Esempio canonico}: ``I saw the man \underline{with the telescope}.''
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Attacco al VP}: ho usato il telescopio per vedere l'uomo.
+  \item \textbf{Attacco all'NP}: ho visto l'uomo che aveva il telescopio.
+\end{itemize}
+
+In italiano: ``Ho mangiato la torta \underline{con la forchetta}'' (strumento) vs. ``Ho mangiato la torta \underline{con la ciliegia}'' (parte della torta).
+
+Il PP attachment è un problema statistico: la risoluzione dipende dal contesto semantico e lessicale, non solo dalla struttura sintattica. I modelli moderni usano informazioni di \emph{selezional restrictions} e dati di co-occorrenza.
+
+\subsection{Ambiguità della Coordinazione}
+
+La coordinazione con \textbf{``e''} (o \emph{``and''}) può legarsi a costituenti di livello diverso, producendo interpretazioni distinte.
+
+\textbf{Esempio}: ``Ragazze e ragazzi intelligenti''
+\begin{itemize}[leftmargin=1.5em]
+  \item Lettura 1: \emph{[ragazze] e [ragazzi intelligenti]} $\to$ solo i ragazzi sono intelligenti.
+  \item Lettura 2: \emph{[ragazze intelligenti] e [ragazzi intelligenti]} $\to$ entrambi sono intelligenti.
+\end{itemize}
+
+\textbf{Esempio strutturale}: ``Ho mangiato pasta e bevuto vino e acqua''
+\begin{itemize}[leftmargin=1.5em]
+  \item $[\text{pasta}]$ e $[\text{bevuto vino e acqua}]$ (coordinazione di VP e NP)
+  \item Varie strutture ad albero possibili.
+\end{itemize}
+
+% =====================================================================
+\section{Come funziona l'algoritmo CKY?}
+
+Il \textbf{Cocke-Kasami-Younger (CKY)} è un algoritmo di parsing a \emph{chart} per grammatiche in \textbf{Forma Normale di Chomsky} (CNF): ogni regola è della forma $A \to BC$ oppure $A \to w$.
+
+\subsection{Pre-requisito: conversione in CNF}
+Qualsiasi CFG può essere convertita in CNF. I passi principali sono:
+\begin{itemize}[leftmargin=1.5em]
+  \item Eliminare le $\varepsilon$-produzioni.
+  \item Eliminare le produzioni unitarie ($A \to B$).
+  \item Binarizzare le produzioni con più di 2 simboli.
+\end{itemize}
+
+\subsection{Algoritmo (programmazione dinamica)}
+Si costruisce una \textbf{tabella triangolare} $T[i][j]$ che indica i non-terminali che derivano la sottostringa $w_{i+1} \dots w_j$.
+
+\begin{defbox}
+\textbf{Inizializzazione}: per ogni $i$, $T[i][i+1] = \{A \mid A \to w_{i+1} \in R\}$.\\[4pt]
+\textbf{Ricorsione}: per $l = 2, \dots, n$ (lunghezza); $i = 0, \dots, n-l$; $j = i+l$:
+\[
+T[i][j] = \bigcup_{k=i+1}^{j-1} \{A \mid A \to BC \in R,\, B \in T[i][k],\, C \in T[k][j]\}
+\]
+\textbf{Risultato}: la frase è riconosciuta se $S \in T[0][n]$.
+\end{defbox}
+
+\subsection{Esempio rapido}
+Per la frase ``she eats fish'' con regole appropriate, si riempie la tabella bottom-up partendo dagli span di lunghezza 1, poi 2, poi l'intero span.
+
+% =====================================================================
+\section{Complessità dell'algoritmo CKY}
+
+\begin{defbox}
+\textbf{Complessità temporale}: $O(n^3 \cdot |G|)$, dove $n$ è la lunghezza dell'input e $|G|$ è la dimensione della grammatica (numero di regole).
+\end{defbox}
+
+\subsection{Analisi}
+I tre loop annidati sono:
+\begin{itemize}[leftmargin=1.5em]
+  \item $l$ -- lunghezza dello span: $n$ valori.
+  \item $i$ -- posizione di inizio: $O(n)$ valori.
+  \item $k$ -- punto di split: $O(n)$ valori.
+\end{itemize}
+Per ogni tripla $(i,j,k)$ si controllano tutte le regole $A \to BC$: $O(|G|)$.
+
+\subsection{Rispetto alle alternative}
+Il CKY è \textbf{polinomiale} ed è ottimale per CFG generali. Algoritmi come Earley hanno complessità $O(n^3)$ nel caso peggiore ma $O(n^2)$ per grammatiche non ambigue. In pratica, le grammatiche linguisticamente realistiche rendono il CKY pesante su frasi lunghe, spingendo verso parser approssimativi o neurali.
+
+% =====================================================================
+\section{Dipendenze vs. Costituenti}
+
+Le due principali rappresentazioni della struttura sintattica sono le \textbf{grammatiche a costituenti} (phrase structure) e le \textbf{grammatiche a dipendenze}.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Aspetto} & \textbf{Costituenti} & \textbf{Dipendenze} \\
+\midrule
+Struttura & Albero con nodi interni (NP, VP\dots) & Albero con archi testa$\to$dipendente \\
+Nodi & Terminali + non-terminali & Solo terminali (le parole) \\
+Head & Non esplicita (richiede lessicalizzazione) & Esplicita per ogni arco \\
+Ordine & Dipende fortemente dall'ordine delle parole & Più robusto a variazioni d'ordine \\
+Risorse & Penn Treebank (PTB), ATIS & Universal Dependencies (UD) \\
+Parser tipici & CKY, Earley, chart parser & MALT, MST, biaffine \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Convertibilità}
+Le due rappresentazioni sono parzialmente intercambiabili: algoritmi come \emph{head-percolation} permettono di estrarre dipendenze da un albero a costituenti, e viceversa. Le \textbf{Universal Dependencies} (UD) sono oggi il formato standard per le dipendenze multilinguali.
+
+% =====================================================================
+\section{La misura PARSEVAL}
+
+\textbf{PARSEVAL} è la metrica standard per valutare i parser a costituenti (phrase structure parser). È stata introdotta da Black et al. (1991).
+
+\subsection{Definizione}
+Dato un albero prodotto dal parser (\emph{proposed}) e l'albero di riferimento (\emph{gold}), si contano i \textbf{costituenti} corretti, dove un costituente è identificato da una tripla $(\text{non-terminale}, \text{inizio}, \text{fine})$.
+
+\begin{defbox}
+\[
+\text{Precision} = \frac{|\text{proposti corretti}|}{|\text{proposti}|}
+\quad
+\text{Recall} = \frac{|\text{proposti corretti}|}{|\text{gold}|}
+\quad
+F_1 = \frac{2 \cdot P \cdot R}{P + R}
+\]
+\end{defbox}
+
+\subsection{Labeled vs. Unlabeled}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Labeled}: la tripla include l'etichetta del non-terminale (es. \texttt{NP}, \texttt{VP}).
+  \item \textbf{Unlabeled}: conta solo la posizione dello span, ignorando l'etichetta.
+\end{itemize}
+
+\subsection{Limitazioni}
+PARSEVAL non penalizza allo stesso modo tutti gli errori (errori sugli span interni sono contati meno) ed è sensibile alle scelte di annotazione del treebank. Per la sintassi a dipendenze si usano invece \emph{UAS} (Unlabeled Attachment Score) e \emph{LAS} (Labeled Attachment Score).
+
+% =====================================================================
+\section{Cosa è un Treebank?}
+
+Un \textbf{treebank} è un corpus di testo annotato con struttura sintattica (alberi), creato manualmente da linguisti esperti o semi-automaticamente tramite un parser seguito da revisione umana.
+
+\subsection{Caratteristiche}
+\begin{itemize}[leftmargin=1.5em]
+  \item Ogni frase è associata a un albero sintattico (a costituenti o a dipendenze).
+  \item Le annotazioni includono spesso anche informazioni morfologiche e PoS tag.
+  \item La creazione è costosa (tipicamente 1--2 ore per frase nelle prime versioni).
+\end{itemize}
+
+\subsection{Esempi principali}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Treebank} & \textbf{Lingua} & \textbf{Tipo} \\
+\midrule
+Penn Treebank (PTB) & Inglese & Costituenti \\
+Universal Dependencies (UD) & 100+ lingue & Dipendenze \\
+Turin University Treebank & Italiano & Costituenti \\
+Prague Dependency Treebank & Ceco & Dipendenze \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Utilizzo}
+I treebank sono fondamentali per: (1) training di parser supervisionati, (2) stima dei parametri di PCFG, (3) valutazione (gold standard per PARSEVAL, UAS, LAS).
+
+% =====================================================================
+\section{HMM: modello generativo o discriminativo?}
+
+\begin{defbox}
+\textbf{HMM è un modello \emph{generativo}}.
+\end{defbox}
+
+\subsection{Spiegazione}
+Un modello generativo modella la \textbf{distribuzione congiunta} $P(X, Y)$ dove $X$ sono le osservazioni e $Y$ le etichette. Dall'HMM si può \emph{generare} (campionare) una sequenza di tag e una sequenza di parole secondo il processo:
+\[
+P(w_{1:n}, t_{1:n}) = P(t_1) \prod_{i=2}^n P(t_i \mid t_{i-1}) \prod_{i=1}^n P(w_i \mid t_i)
+\]
+
+\subsection{Confronto}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Generativo} (HMM, Naive Bayes): modella $P(X,Y)$; classificazione via Bayes.
+  \item \textbf{Discriminativo} (MEMM, CRF, SVM): modella $P(Y \mid X)$ direttamente; generalmente più accurato in classificazione ma non genera dati.
+\end{itemize}
+
+% =====================================================================
+\section{Anatomia di un Parser}
+
+Con \textbf{``anatomia di un parser''} si intende la struttura modulare di un sistema di parsing, ovvero i componenti che lo compongono e le loro interazioni.
+
+\subsection{Componenti principali}
+
+\begin{defbox}
+\begin{enumerate}[leftmargin=1.5em, label=\arabic*.]
+  \item \textbf{Grammatica / Modello}: specifica le strutture ammissibili (CFG, PCFG, dipendenze) e i loro pesi.
+  \item \textbf{Lessico / Dizionario}: associa le parole del vocabolario ai simboli grammaticali e alle loro proprietà.
+  \item \textbf{Algoritmo di parsing}: procedura che cerca la struttura ottimale (CKY, Earley, Viterbi, MST, Transition-based\dots).
+  \item \textbf{Modello di scoring}: calcola il punteggio di ogni struttura parziale o completa (locale in transition-based, globale in graph-based).
+  \item \textbf{Oracolo / Supervisione}: in training, fornisce il target corretto per apprendere i parametri.
+  \item \textbf{Decoder}: seleziona la struttura con punteggio massimo (argmax, beam search, ecc.).
+\end{enumerate}
+\end{defbox}
+
+\subsection{Flusso di esecuzione}
+\[
+\text{Input} \xrightarrow{\text{tokenizzazione}} \text{Sequenza} \xrightarrow{\text{scoring}} \text{Strutture candidate} \xrightarrow{\text{decoding}} \text{Output}
+\]
+
+% =====================================================================
+\section{I 6 fenomeni notevoli del dialogo tra umani}
+
+\begin{enumerate}[leftmargin=1.5em, label=\textbf{\arabic*.}]
+  \item \textbf{Turn-Taking (gestione dei turni)}: \\
+    I parlanti si alternano in modo ordinato, spesso senza sovrapposizioni. Il cambio di turno è segnalato da cues prosodici, sintattici e gestuali. Modellato da Sacks, Schegloff e Jefferson (1974).
+
+  \item \textbf{Speech Acts (atti linguistici)}: \\
+    Ogni enunciato non trasporta solo contenuto proposizionale ma compie un'\emph{azione}: \emph{asserzione}, \emph{richiesta}, \emph{promessa}, \emph{ringraziamento}, ecc. (Austin, Searle). I dialogue systems devono riconoscere l'atto compiuto dall'utente.
+
+  \item \textbf{Grounding (mutua comprensione)}: \\
+    I parlanti costruiscono attivamente un \emph{Common Ground}: confermano, ripetono, riformulano per assicurarsi che il messaggio sia stato compreso. Segnali di grounding: ``ok'', ``capisco'', cenni del capo.
+
+  \item \textbf{Repair (correzione)}: \\
+    I partecipanti al dialogo correggono errori propri (\emph{self-repair}) o altrui (\emph{other-repair}). Fondamentale per la robustezza: i dialogue systems devono gestire riformulazioni e correzioni.
+
+  \item \textbf{Coerenza e struttura del discorso}: \\
+    Il dialogo ha una struttura a livelli (scambi adiacenti, paires como domanda-risposta, saluto-controsaluto). La \emph{Discourse Representation Theory} (DRT) e la \emph{Rhetorical Structure Theory} (RST) modellano tali strutture.
+
+  \item \textbf{Implicature e massime conversazionali (Grice)}: \\
+    I parlanti comunicano più di quanto dicano letteralmente, seguendo le massime di \emph{quantità}, \emph{qualità}, \emph{relazione} e \emph{modo}. Le \emph{implicature conversazionali} sono inferenze pragmatiche cruciali per la comprensione (es. ``Sai che ore sono?'' = richiesta di dire l'ora).
+\end{enumerate}
+
+% =====================================================================
+\section{Cosa è il PoS Tagging?}
+
+Il \textbf{Part-of-Speech (PoS) Tagging} è il task di assegnare a ciascun token di una frase la sua \textbf{categoria grammaticale} (o parte del discorso).
+
+\subsection{Classi principali}
+Le classi aperte includono \textbf{sostantivi} (N), \textbf{verbi} (V), \textbf{aggettivi} (ADJ), \textbf{avverbi} (ADV). Le classi chiuse includono \textbf{preposizioni} (P), \textbf{determinativi} (DET), \textbf{congiunzioni} (CONJ), \textbf{pronomi} (PRON), ecc.
+
+\subsection{Esempio (Universal POS tagset)}
+\begin{center}
+\texttt{Il/DET gatto/NOUN nero/ADJ dorme/VERB sul/ADP tetto/NOUN ./ PUNCT}
+\end{center}
+
+\subsection{Sfide}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Ambiguità}: ``back'' in inglese può essere NOUN, ADJ, VERB, ADV.
+  \item \textbf{Parole sconosciute}: lemmi non visti in training (gestiti con feature morfologiche).
+\end{itemize}
+
+\subsection{Approcci}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Rule-based}: lessici + regole di disambiguazione.
+  \item \textbf{Statistici}: HMM, MEMM, CRF.
+  \item \textbf{Neurali}: BiLSTM + CRF, Transformer (BERT fine-tuned), stato dell'arte $> 97\%$ su inglese.
+\end{itemize}
+
+% =====================================================================
+\section{Cosa è il NER Tagging?}
+
+Il \textbf{Named Entity Recognition (NER)} è il task di identificare ed etichettare le \emph{entità nominate} nel testo: nomi di persone, luoghi, organizzazioni, date, quantità, ecc.
+
+\subsection{Classi tipiche (CoNLL-2003)}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Etichetta} & \textbf{Significato} \\
+\midrule
+\texttt{PER} & Persona \\
+\texttt{ORG} & Organizzazione \\
+\texttt{LOC} & Luogo geografico \\
+\texttt{MISC} & Altro (es. nazionalità, prodotti) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Schema di annotazione (IOB2)}
+Ogni token riceve un tag nel formato \texttt{B-TYPE} (Begin), \texttt{I-TYPE} (Inside), \texttt{O} (Outside):
+\begin{center}
+\texttt{Mario/B-PER Rossi/I-PER lavora/O per/O Fiat/B-ORG a/O Torino/B-LOC ./ O}
+\end{center}
+
+\subsection{Approcci}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Rule-based}: gazetteers (liste di nomi) + pattern.
+  \item \textbf{Statistici}: CRF con feature morfologiche e di contesto.
+  \item \textbf{Neurali}: BiLSTM-CRF, BERT fine-tuned (stato dell'arte, F1 $\approx$ 93\% su CoNLL-2003 EN).
+\end{itemize}
+
+\subsection{Applicazioni}
+NER è un componente fondamentale in sistemi di Information Extraction, Question Answering, Knowledge Base Population e machine translation.
+
+% =====================================================================
+\vfill
+\begin{center}
+\color{darkgray}\small\itshape
+Documento preparato a scopo di studio per l'esame di TLN -- A.A. 2025/26\\
+Università degli Studi di Torino
+\end{center}
+
+\end{document}
