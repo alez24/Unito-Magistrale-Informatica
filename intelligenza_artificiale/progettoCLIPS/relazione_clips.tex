@@ -1,0 +1,915 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, backgrounds, matrix}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins}
+
+\geometry{margin=2.5cm}
+
+% --- Stile CLIPS ---
+\definecolor{clipskw}{RGB}{0,0,180}
+\definecolor{clipscomment}{RGB}{60,120,60}
+\definecolor{clipsbg}{RGB}{255,252,245}
+\definecolor{clipsstring}{RGB}{160,0,0}
+
+\lstdefinelanguage{CLIPS}{
+  keywords={deftemplate,defrule,defmodule,defglobal,deffacts,deffunction,
+            assert,retract,modify,focus,run,reset,
+            slot,type,default,declare,salience,
+            INTEGER,FLOAT,SYMBOL,STRING,
+            not,and,or,test,import,export},
+  keywordstyle=\color{clipskw}\bfseries,
+  comment=[l]{;;;},
+  morecomment=[l]{;;},
+  morecomment=[l]{;},
+  commentstyle=\color{clipscomment}\itshape,
+  stringstyle=\color{clipsstring},
+  morestring=[b]",
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{clipsbg},
+  frame=single,
+  framerule=0.5pt,
+  rulecolor=\color{gray!60},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+  sensitive=true,
+}
+
+% --- Stile Python ---
+\definecolor{pybg}{RGB}{248,252,248}
+\lstdefinelanguage{Python3}{
+  keywords={def,class,return,if,elif,else,for,while,import,from,
+            as,with,in,not,and,or,True,False,None,try,except,break,continue},
+  keywordstyle=\color{blue!70!black}\bfseries,
+  comment=[l]{\#},
+  commentstyle=\color{green!50!black}\itshape,
+  stringstyle=\color{red!60!black},
+  morestring=[b]",
+  morestring=[b]',
+  morestring=[b]""",
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{pybg},
+  frame=single,framerule=0.5pt,rulecolor=\color{gray!60},
+  breaklines=true,showstringspaces=false,tabsize=4,
+  numbers=left,numberstyle=\tiny\color{gray},numbersep=6pt,
+}
+
+\lstset{language=CLIPS}
+
+\newtcolorbox{defbox}[1]{colback=blue!5,colframe=blue!60!black,fonttitle=\bfseries,title=#1,breakable}
+\newtcolorbox{exbox}[1]{colback=green!5,colframe=green!50!black,fonttitle=\bfseries,title=#1,breakable}
+\newtcolorbox{warnbox}[1]{colback=orange!10,colframe=orange!80!black,fonttitle=\bfseries,title=#1,breakable}
+\newtcolorbox{mathbox}[1]{colback=purple!5,colframe=purple!60!black,fonttitle=\bfseries,title=#1,breakable}
+
+\hypersetup{colorlinks=true,linkcolor=blue!70!black}
+
+\title{
+  \Large\textbf{Intelligenza Artificiale -- Progetto CLIPS}\\[0.5em]
+  \large Agente per il Mondo di Wumpus con Certainty Factors\\[0.3em]
+  \normalsize Relazione Tecnica Dettagliata
+}
+\author{Alessandro Livero}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{Introduzione}
+% =====================================================================
+
+\subsection{Il Mondo di Wumpus}
+
+Il Mondo di Wumpus è un ambiente classico dell'IA (introdotto da Russell \&
+Norvig) usato per studiare agenti in ambienti parzialmente osservabili. La
+griglia $N \times N$ contiene:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Elemento} & \textbf{Percezione adiacente} & \textbf{Effetto sull'agente} \\
+\midrule
+Wumpus & odore (\emph{stench}) nelle 4 celle adiacenti & morte \\
+Pozzo (\emph{pit}) & brezza (\emph{breeze}) nelle 4 celle adiacenti & morte \\
+Oro & luccichio (\emph{glitter}) nella stessa cella & +100 se raccolto \\
+Muro & nessuna percezione & -1 energia per impatto \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+L'agente non conosce la mappa a priori: deve ragionare dalle percezioni.
+
+\subsection{Architettura del Sistema}
+
+Il progetto è composto da tre strati:
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={draw,rounded corners,minimum width=3.8cm,minimum height=1.1cm,
+              align=center,font=\small},
+  arrow/.style={-{Stealth},thick,double}
+]
+  \node[box,fill=red!15]    (world)  {Python \texttt{WumpusWorld}\\{\footnotesize Simulatore del mondo}};
+  \node[box,fill=blue!15, right=2.5cm of world]  (bridge) {Python \texttt{CLIPSAgent}\\{\footnotesize Bridge Python/CLIPS}};
+  \node[box,fill=green!15, right=2.5cm of bridge] (clips)  {CLIPS \texttt{agent.clp}\\{\footnotesize Moduli: MAIN/PERCEPT/INFER/DECIDE}};
+
+  \draw[arrow] (world) -- node[above,font=\tiny]{percept} (bridge);
+  \draw[arrow] (bridge) -- node[above,font=\tiny]{percept} (clips);
+  \draw[arrow] (clips)  |- ++(0,-1.2) -| node[below,font=\tiny,pos=0.3]{action} (bridge);
+  \draw[arrow] (bridge) |- ++(0,-1.8) -| node[below,font=\tiny,pos=0.7]{action} (world);
+\end{tikzpicture}
+\end{center}
+
+\subsection{File del Progetto}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{File} & \textbf{Tipo} & \textbf{Contenuto} \\
+\midrule
+\texttt{wumpus.py} & Python & Simulatore + bridge CLIPS \\
+\texttt{agent.clp} & CLIPS & Agente con Certainty Factors (4 moduli) \\
+\texttt{agent\_greedy.clp} & CLIPS & Agente greedy semplificato (1 modulo) \\
+\texttt{map\_easy.json} & JSON & Mappa 4×4: Wumpus (1,4), Pit (3,4), Oro (2,2) \\
+\texttt{map\_test.json} & JSON & Mappa 4×4: Wumpus (3,1), Pit (2,3)+(4,2), Oro (3,3) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% =====================================================================
+\section{Simulatore Python: \texttt{wumpus.py}}
+% =====================================================================
+
+\subsection{Classe \texttt{WumpusWorld}}
+
+\subsubsection{Inizializzazione}
+
+\begin{lstlisting}[language=Python3]
+class WumpusWorld:
+    def __init__(self, cfg: dict):
+        self.size     = cfg["size"]
+        self.wumpus   = tuple(cfg["wumpus"])
+        self.pits     = {tuple(p) for p in cfg["pits"]}
+        self.gold_pos = tuple(cfg["gold"])
+        self.start    = tuple(cfg["start"])
+        self.energy   = cfg.get("start_energy", 200)
+        self.pos      = list(self.start)
+        self.gold     = 0       # punteggio accumulato
+        self.steps    = 0       # passi compiuti
+        self.alive    = True
+        self.done     = False
+        self.gold_taken = False
+\end{lstlisting}
+
+La mappa è caricata da JSON. I pozzi sono memorizzati come \textbf{set} per
+una ricerca $O(1)$: \texttt{tuple(self.pos) in self.pits}.
+
+\subsubsection{Metodo \texttt{perceive()}}
+
+\begin{lstlisting}[language=Python3]
+def perceive(self) -> dict:
+    x, y = self.pos
+    neighbors = [(x, y+1), (x, y-1), (x+1, y), (x-1, y)]
+    breeze  = any(n in self.pits for n in neighbors)
+    stench  = self.wumpus_alive and any(n == self.wumpus for n in neighbors)
+    glitter = (not self.gold_taken) and tuple(self.pos) == self.gold_pos
+    return dict(x=x, y=y, steps=self.steps, breeze=breeze,
+                stench=stench, glitter=glitter, energy=self.energy)
+\end{lstlisting}
+
+\textbf{Percezioni calcolate:}
+\begin{itemize}[noitemsep]
+  \item \textbf{breeze}: c'è almeno un pozzo nelle 4 celle adiacenti.
+  \item \textbf{stench}: il Wumpus è vivo \emph{e} si trova in una delle 4 celle adiacenti.
+  \item \textbf{glitter}: l'agente è sulla cella dell'oro \emph{e} non l'ha già preso.
+\end{itemize}
+
+\subsubsection{Metodo \texttt{apply\_action()}}
+
+\begin{lstlisting}[language=Python3]
+def apply_action(self, action: str) -> str:
+    if action in ("up", "down", "left", "right"):
+        nx, ny = self._neighbor_in_dir(action)
+        if 1 <= nx <= self.size and 1 <= ny <= self.size:
+            self.pos = [nx, ny]; self.steps += 1
+            if tuple(self.pos) in self.pits:
+                self.alive = False; self.done = True  # caduto nel pozzo
+            elif self.wumpus_alive and tuple(self.pos) == self.wumpus:
+                self.alive = False; self.done = True  # mangiato dal Wumpus
+        else:
+            self.energy -= 1  # impatto con il muro
+
+    elif action == "grab":
+        if (not self.gold_taken) and tuple(self.pos) == self.gold_pos:
+            self.gold += 100; self.gold_taken = True
+
+    elif action in ("pit-north","pit-south","pit-east","pit-west"):
+        dir_map = {"pit-north":"up","pit-south":"down",
+                   "pit-east":"right","pit-west":"left"}
+        target = self._neighbor_in_dir(dir_map[action])
+        if target in self.pits:
+            self.gold += 25   # indovinato
+        else:
+            self.gold -= 25   # sbagliato
+
+    elif action == "quit":
+        self.done = True
+\end{lstlisting}
+
+\textbf{Sistema di punteggio:}
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+\textbf{Azione / Evento} & \textbf{Effetto} \\
+\midrule
+Raccolta oro (\texttt{grab}) & +100 punti \\
+Pit-guess corretta & +25 punti \\
+Pit-guess sbagliata & -25 punti \\
+Impatto col muro & -1 energia \\
+Caduta in un pozzo & game over \\
+Incontro Wumpus & game over \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Classe \texttt{CLIPSAgent} -- Bridge Python/CLIPS}
+
+\subsubsection{Inizializzazione}
+
+\begin{lstlisting}[language=Python3]
+class CLIPSAgent:
+    def __init__(self, clp_file: str, verbose: bool = False, grid_size: int = 0):
+        self.env = clips.Environment()
+        self.env.load(clp_file)
+        self.env.reset()
+        if grid_size > 0:
+            for name in ("MAIN::grid-size", "grid-size"):
+                try:
+                    tmpl = self.env.find_template(name)
+                    tmpl.assert_fact(n=grid_size)
+                    break
+                except Exception:
+                    continue
+        self.env.run()  # esegue le regole init
+\end{lstlisting}
+
+\begin{itemize}[noitemsep]
+  \item \texttt{clips.Environment()}: crea un'istanza isolata del motore CLIPS.
+  \item \texttt{env.load(clp\_file)}: carica il file \texttt{.clp} (definizioni di template e regole).
+  \item \texttt{env.reset()}: inizializza la working memory secondo i \texttt{deffacts}.
+  \item \texttt{env.run()}: esegue le regole di inizializzazione (es. \texttt{MAIN::init}).
+  \item Injection di \texttt{grid-size}: serve all'agente per conoscere i bordi
+        della griglia senza che siano hardcoded nel file CLIPS.
+\end{itemize}
+
+\subsubsection{Metodo \texttt{decide()} -- Ciclo Percezione-Azione}
+
+\begin{lstlisting}[language=Python3]
+def decide(self, percept: dict) -> str:
+    env = self.env
+    # 1. Rimuovi azioni precedenti rimaste
+    for tmpl_name in ("action", "MAIN::action"):
+        try:
+            tmpl = env.find_template(tmpl_name)
+            for f in list(tmpl.facts()):
+                f.retract()
+        except clips.LookupError:
+            pass
+
+    # 2. Asserisci il nuovo percept
+    tmpl = env.find_template("MAIN::percept")
+    def sym(b): return clips.Symbol("yes") if b else clips.Symbol("no")
+    tmpl.assert_fact(x=percept["x"], y=percept["y"],
+                     steps=percept["steps"],
+                     breeze=sym(percept["breeze"]),
+                     stench=sym(percept["stench"]),
+                     glitter=sym(percept["glitter"]),
+                     energy=percept["energy"])
+
+    # 3. Esegui le regole
+    env.run()
+
+    # 4. Leggi l'azione prodotta
+    action = "quit"
+    tmpl = env.find_template("MAIN::action")
+    for f in tmpl.facts():
+        action = str(f["move"])
+        break
+    return action
+\end{lstlisting}
+
+\textbf{Perché rimuovere l'action prima di iniettare il percept?} \\
+L'action del ciclo precedente rimane nella working memory. Se non venisse
+rimossa, la regola \texttt{MAIN::handle-percept} (che attiva il flusso solo
+quando \texttt{(not (action))}) non si attiverebbe.
+
+\textbf{Conversione booleana con \texttt{clips.Symbol}}: la libreria Python
+\texttt{clips} richiede che i valori di tipo \texttt{SYMBOL} siano istanze
+di \texttt{clips.Symbol}. Il semplice booleano Python \texttt{True/False} non
+è accettato.
+
+% =====================================================================
+\section{Agente CLIPS: \texttt{agent.clp} -- Architettura a Moduli}
+% =====================================================================
+
+\subsection{Panoramica dei Moduli}
+
+\begin{defbox}{Moduli CLIPS (\texttt{defmodule})}
+CLIPS suddivide le regole in \textbf{moduli} (simili a namespace). Un solo
+modulo è \emph{attivo} (in focus) alla volta; solo le sue regole possono
+sparare. Il controllo del flusso avviene tramite \texttt{focus}: il modulo
+corrente termina quando non ha più regole attivabili, e si torna al modulo
+precedente nello stack.
+\end{defbox}
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={draw,rounded corners,minimum width=3cm,minimum height=1cm,
+              align=center,font=\small},
+  arrow/.style={-{Stealth},thick}
+]
+  \node[box,fill=gray!20]    (main)    {MAIN\\{\footnotesize Coordinamento}};
+  \node[box,fill=blue!20, right=2cm of main]  (perc)    {PERCEPT\\{\footnotesize Aggiornamento stato}};
+  \node[box,fill=orange!20, right=2cm of perc] (infer)   {INFER\\{\footnotesize Certainty Factors}};
+  \node[box,fill=green!20, right=2cm of infer] (decide)  {DECIDE\\{\footnotesize Selezione azione}};
+
+  \draw[arrow] (main)  -- node[above,font=\tiny]{\texttt{focus}} (perc);
+  \draw[arrow] (perc)  -- node[above,font=\tiny]{\texttt{focus}} (infer);
+  \draw[arrow] (infer) -- node[above,font=\tiny]{\texttt{focus}} (decide);
+  \draw[arrow, dashed, bend right=40] (decide) to node[below,font=\tiny]{return} (main);
+\end{tikzpicture}
+\end{center}
+
+\subsection{Template (Strutture Dati)}
+
+\subsubsection{Modulo MAIN: Template Principali}
+
+\begin{lstlisting}
+(deftemplate MAIN::cell
+    (slot x         (type INTEGER))
+    (slot y         (type INTEGER))
+    (slot visited   (type SYMBOL) (default no))
+    (slot safe      (type SYMBOL) (default unknown))
+    (slot pit-cf    (type FLOAT)  (default 0.0))
+    (slot wumpus-cf (type FLOAT)  (default 0.0))
+)
+\end{lstlisting}
+
+\textbf{Ogni cella della griglia} ha:
+\begin{itemize}[noitemsep]
+  \item \texttt{visited}: \texttt{yes}/\texttt{no} -- l'agente ci è già passato.
+  \item \texttt{safe}: \texttt{yes}/\texttt{no}/\texttt{unknown} -- esito della classificazione.
+  \item \texttt{pit-cf}: Certainty Factor per la presenza di un pozzo ($\in [-1, 1]$).
+  \item \texttt{wumpus-cf}: Certainty Factor per la presenza del Wumpus ($\in [-1, 1]$).
+\end{itemize}
+
+\begin{lstlisting}
+(deftemplate MAIN::percept
+    (slot x)      (slot y)      (slot steps)
+    (slot breeze  (type SYMBOL)) ; yes/no
+    (slot stench  (type SYMBOL)) ; yes/no
+    (slot glitter (type SYMBOL)) ; yes/no
+    (slot energy  (type INTEGER))
+)
+\end{lstlisting}
+
+Il percept viene iniettato da Python a ogni ciclo e rimosso alla fine.
+
+\begin{lstlisting}
+(deftemplate MAIN::pending-action
+    (slot move     (type SYMBOL))
+    (slot priority (type INTEGER) (default 0))
+)
+\end{lstlisting}
+
+Le azioni non vengono emesse direttamente: vengono prima raccolte come
+\texttt{pending-action} con una priorità, poi la più importante vince
+ed è promossa ad \texttt{action}.
+
+\begin{lstlisting}
+(deftemplate MAIN::cf-done
+    (slot x    (type INTEGER))
+    (slot y    (type INTEGER))
+    (slot kind (type SYMBOL))  ; pit o wumpus
+)
+\end{lstlisting}
+
+\begin{warnbox}{Problema del loop da \texttt{modify}}
+In CLIPS, \texttt{(modify ?f ...)} \emph{retract e re-assert} il fatto, rendendo
+il fatto ``nuovo'' e riattivando tutte le regole che lo matchano. Senza
+\texttt{cf-done}, ogni regola CF sparerebbe infinite volte sulla stessa cella.
+\texttt{cf-done} è un flag: ``per questa cella e questo tipo di CF ho già aggiornato''.
+\end{warnbox}
+
+% =====================================================================
+\subsection{Modulo MAIN -- Coordinamento}
+% =====================================================================
+
+\subsubsection{Regola \texttt{init}}
+
+\begin{lstlisting}
+(defrule MAIN::init
+    (not (agent-state))
+=>
+    (assert (agent-state (x 1) (y 1)))
+    (assert (cell (x 1) (y 1) (visited yes) (safe yes)
+                  (pit-cf -1.0) (wumpus-cf -1.0)))
+)
+\end{lstlisting}
+
+Eseguita \textbf{una sola volta} grazie a \texttt{(not (agent-state))}: crea lo
+stato dell'agente e marca la cella iniziale (1,1) come sicura e visitata con
+CF = $-1.0$ (certezza assoluta che non ci siano pericoli: l'agente è già lì).
+
+\subsubsection{Regola \texttt{handle-percept}}
+
+\begin{lstlisting}
+(defrule MAIN::handle-percept
+    (percept)
+    (agent-state)
+    (not (action))
+=>
+    (focus PERCEPT)
+)
+\end{lstlisting}
+
+Quando arriva un nuovo percept (e non c'è già un'azione), si passa il controllo
+al modulo PERCEPT. Le condizioni \texttt{(not (action))} e \texttt{(percept)}
+garantiscono che il ciclo si attivi esattamente una volta per percept.
+
+\subsubsection{Regole di Pulizia (Salience Bassa)}
+
+\begin{lstlisting}
+(defrule MAIN::cleanup-cf-done
+    (declare (salience -90))
+    ?f <- (cf-done)
+    (action)
+=>
+    (retract ?f))
+
+(defrule MAIN::cleanup-percept
+    (declare (salience -100))
+    ?p <- (percept)
+    (action)
+=>
+    (retract ?p))
+\end{lstlisting}
+
+\begin{defbox}{Salience in CLIPS}
+La \textbf{salience} determina l'ordine di attivazione delle regole: valori più
+alti sparano prima. Default: 0. Range: da $-10000$ a $+10000$.
+\end{defbox}
+
+Con salience $-90$ e $-100$, queste regole sparano per ultime: prima si completa
+tutto il ragionamento, poi si pulisce la working memory per il ciclo successivo.
+
+% =====================================================================
+\subsection{Modulo PERCEPT -- Aggiornamento Stato}
+% =====================================================================
+
+\subsubsection{Regole di Aggiornamento (Salience 20 e 10)}
+
+\begin{lstlisting}
+(defrule PERCEPT::update-agent
+    (declare (salience 20))
+    (percept (x ?x) (y ?y) (steps ?s) (energy ?e))
+    ?a <- (agent-state (x ?ax)(y ?ay)(steps ?as)(energy ?ae))
+    (test (or (neq ?ax ?x)(neq ?ay ?y)(neq ?as ?s)(neq ?ae ?e)))
+=>
+    (modify ?a (x ?x) (y ?y) (steps ?s) (energy ?e))
+)
+\end{lstlisting}
+
+Il guard \texttt{(test (or ...))} è fondamentale: modifica l'agent-state
+\emph{solo se almeno un valore è cambiato}. Senza questo guard, \texttt{modify}
+verrebbe chiamato ogni ciclo anche senza cambiamenti, riattivando la regola
+stessa (loop infinito).
+
+\begin{lstlisting}
+(defrule PERCEPT::update-current-cell
+    (declare (salience 10))
+    (percept (x ?x) (y ?y))
+    ?c <- (cell (x ?x) (y ?y) (visited no))
+=>
+    (modify ?c (visited yes)(safe yes)(pit-cf -1.0)(wumpus-cf -1.0))
+)
+\end{lstlisting}
+
+Quando si arriva in una cella non ancora visitata, la si marca sicura
+con CF = $-1.0$ (certezza assoluta: se l'agente è lì, non è morto).
+
+\subsubsection{Creazione delle Celle Vicine (Salience 5)}
+
+\begin{lstlisting}
+(defrule PERCEPT::ensure-north
+    (declare (salience 5))
+    (percept (x ?x) (y ?y))
+    (grid-size (n ?n))
+    (test (<= (+ ?y 1) ?n))
+    (not (cell (x ?x) (y ?ny&:(= ?ny (+ ?y 1)))))
+=>
+    (assert (cell (x ?x) (y (+ ?y 1))
+                  (visited no)(safe unknown)(pit-cf 0.0)(wumpus-cf 0.0)))
+)
+\end{lstlisting}
+
+Quattro regole analoghe (N/S/E/W) creano la cella vicina \emph{solo se non
+esiste già} e \emph{solo se è nei limiti della griglia} (check con
+\texttt{grid-size}). La sintassi \texttt{?ny\&:(= ?ny (+ ?y 1))} è un
+\textbf{field constraint}: matcha la variabile \texttt{?ny} solo se soddisfa
+la condizione \texttt{(= ?ny (+ ?y 1))}.
+
+\subsubsection{Transizione a INFER}
+
+\begin{lstlisting}
+(defrule PERCEPT::to-infer
+    (declare (salience -1))
+    (percept)
+=>
+    (focus INFER)
+)
+\end{lstlisting}
+
+Salience $-1$: ultima regola del modulo PERCEPT. Passa il controllo a INFER.
+
+% =====================================================================
+\subsection{Modulo INFER -- Certainty Factors}
+% =====================================================================
+
+\subsubsection{Teoria dei Certainty Factors}
+
+\begin{mathbox}{Certainty Factors (CF)}
+I CF sono un formalismo per la gestione dell'incertezza, usato storicamente
+nei sistemi esperti (es. MYCIN). Un CF $\in [-1, +1]$ rappresenta:
+\begin{itemize}[noitemsep]
+  \item $-1$: certezza assoluta che l'ipotesi sia \textbf{falsa}.
+  \item $0$: totale ignoranza (equiprobabile).
+  \item $+1$: certezza assoluta che l'ipotesi sia \textbf{vera}.
+\end{itemize}
+
+\textbf{Aggiornamento con evidenza positiva} (brezza/odore):
+\[
+  CF_{\text{new}} = CF + (1 - CF) \times 0.5
+\]
+
+\textbf{Aggiornamento con evidenza negativa} (nessuna brezza/odore):
+\[
+  CF_{\text{new}} = CF + (-1 - CF) \times 0.7
+\]
+\end{mathbox}
+
+\textbf{Proprietà delle formule:}
+
+\emph{Evidenza positiva} ($\alpha = 0.5$): ogni brezza da una cella adiacente
+aumenta il CF verso 1, ma con rendimenti decrescenti (non supera mai 1).
+Partendo da 0: dopo 1 evidenza $\to 0.5$, dopo 2 $\to 0.75$, dopo 3 $\to 0.875$.
+
+\emph{Evidenza negativa} ($\alpha = 0.7$): ogni assenza di brezza abbassa il CF
+verso $-1$ più aggressivamente. Partendo da 0: dopo 1 evidenza $\to -0.7$,
+dopo 2 $\to -0.91$.
+
+\begin{exbox}{Esempio di calcolo CF}
+Cella $(2,2)$ inizialmente a $\texttt{pit-cf} = 0.0$:\\
+Ciclo 1: brezza da $(1,2)$ $\to CF = 0 + (1-0)\times 0.5 = 0.5$\\
+Ciclo 2: brezza da $(2,1)$ $\to CF = 0.5 + (1-0.5)\times 0.5 = 0.75$\\
+Ciclo 3: no-brezza da $(3,2)$ $\to CF = 0.75 + (-1-0.75)\times 0.7 = 0.75 - 1.225 = -0.475$
+
+(L'evidenza negativa ha abbassato notevolmente il CF malgrado le due evidenze
+positive precedenti.)
+\end{exbox}
+
+\subsubsection{Struttura delle Regole CF: Brezza}
+
+\begin{lstlisting}
+(defrule INFER::breeze-north
+    (declare (salience 10))
+    (percept (x ?x) (y ?y) (breeze yes))
+    ?c <- (cell (x ?cx)(y ?cy)(visited no)(pit-cf ?cf))
+    (test (= ?cx ?x))
+    (test (= ?cy (+ ?y 1)))
+    (not (cf-done (x ?cx)(y ?cy)(kind pit)))
+=>
+    (assert (cf-done (x ?cx)(y ?cy)(kind pit)))
+    (modify ?c (pit-cf (+ ?cf (* (- 1.0 ?cf) 0.5))))
+)
+\end{lstlisting}
+
+\textbf{Condizioni:}
+\begin{enumerate}[noitemsep]
+  \item C'è brezza nella cella corrente.
+  \item La cella target è la cella a nord (non visitata).
+  \item Non è già stato aggiornato questo CF in questo ciclo (\texttt{cf-done}).
+\end{enumerate}
+
+\textbf{Azioni:}
+\begin{enumerate}[noitemsep]
+  \item Asserisci \texttt{cf-done} per bloccare la ri-attivazione.
+  \item Aggiorna \texttt{pit-cf} con la formula dell'evidenza positiva.
+\end{enumerate}
+
+Regole analoghe esistono per le 4 direzioni (N/S/E/W), per brezza e no-brezza,
+per stench e no-stench: in totale $4 \times 2 \times 2 = 16$ regole CF.
+
+\subsubsection{Classificazione delle Celle}
+
+\begin{lstlisting}
+(defrule INFER::mark-safe
+    (declare (salience 5))
+    ?c <- (cell (visited no)(safe unknown)(pit-cf ?pcf)(wumpus-cf ?wcf))
+    (test (< ?pcf -0.5))
+    (test (< ?wcf -0.5))
+=>
+    (modify ?c (safe yes))
+)
+
+(defrule INFER::mark-dangerous-pit
+    (declare (salience 5))
+    ?c <- (cell (visited no)(safe unknown)(pit-cf ?pcf))
+    (test (> ?pcf 0.6))
+=>
+    (modify ?c (safe no))
+)
+
+(defrule INFER::mark-dangerous-wumpus
+    (declare (salience 5))
+    ?c <- (cell (visited no)(safe unknown)(wumpus-cf ?wcf))
+    (test (> ?wcf 0.6))
+=>
+    (modify ?c (safe no))
+)
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Condizione} & \textbf{Risultato} & \textbf{Soglia} \\
+\midrule
+$\texttt{pit-cf} < -0.5$ e $\texttt{wumpus-cf} < -0.5$ & \texttt{safe = yes} & entrambe basse \\
+$\texttt{pit-cf} > 0.6$ & \texttt{safe = no} & pozzo probabile \\
+$\texttt{wumpus-cf} > 0.6$ & \texttt{safe = no} & Wumpus probabile \\
+altrimenti & \texttt{safe = unknown} & incertezza \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% =====================================================================
+\subsection{Modulo DECIDE -- Selezione dell'Azione}
+% =====================================================================
+
+\subsubsection{Architettura a Priorità}
+
+Il modulo usa un pattern \textbf{pending-action con priorità}: le regole non
+emettono l'azione direttamente ma asseriscono \texttt{pending-action} con un
+valore numerico di priorità. Alla fine, due regole di pulizia selezionano
+l'azione con priorità massima.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lll}
+\toprule
+\textbf{Priorità} & \textbf{Azione} & \textbf{Condizione} \\
+\midrule
+100 & \texttt{grab} & glitter presente \\
+90  & \texttt{quit} & energia $\le 30$ \\
+80  & \texttt{up/right/down/left} & cella sicura non visitata adiacente \\
+60  & \texttt{pit-north/...} & CF pit moderato ($> 0.3$), CF wumpus basso ($< 0.3$) \\
+10  & \texttt{up/...} (esplora) & CF pit $< 0.5$ e CF wumpus $< 0.5$ \\
+5   & \texttt{up/...} (coraggioso) & cella \texttt{safe $\neq$ no} (incluso unknown) \\
+0   & \texttt{quit} (fallback) & nessun'altra opzione \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Regole di Movimento (Priorità 80 -- Cella Sicura)}
+
+\begin{lstlisting}
+(defrule DECIDE::move-safe-north
+    (declare (salience 80))
+    (agent-state (x ?ax) (y ?ay))
+    (cell (x ?cx)(y ?cy)(visited no)(safe yes))
+    (test (= ?cx ?ax))
+    (test (= ?cy (+ ?ay 1)))
+    (not (action))
+    (not (pending-action (priority ?p&:(>= ?p 80))))
+=>
+    (assert (pending-action (move up) (priority 80)))
+)
+\end{lstlisting}
+
+Il guard \texttt{(not (pending-action (priority ?p\&:(>= ?p 80))))} è fondamentale:
+impedisce di asserire \emph{più} pending-action con la stessa priorità. La
+sintassi \texttt{?p\&:(>= ?p 80)} è un field constraint: matcha solo i valori
+$\ge 80$.
+
+\subsubsection{Regole per Pit-Guess (Priorità 60)}
+
+\begin{lstlisting}
+(defrule DECIDE::pit-guess-north
+    (declare (salience 60))
+    (agent-state (x ?ax) (y ?ay))
+    (cell (x ?cx)(y ?cy)(visited no)(safe unknown)(pit-cf ?pcf)(wumpus-cf ?wcf))
+    (test (= ?cx ?ax))(test (= ?cy (+ ?ay 1)))
+    (test (> ?pcf 0.3))(test (< ?wcf 0.3))
+    (not (action))
+    (not (pending-action (priority ?p&:(>= ?p 60))))
+=>
+    (assert (pending-action (move pit-north) (priority 60)))
+)
+\end{lstlisting}
+
+L'agente indovina la presenza di un pozzo \textbf{solo se} il CF del pozzo è
+moderatamente alto \emph{e} quello del Wumpus è basso. Se entrambi fossero
+alti, la cella sarebbe troppo rischiosa per avvicinarsi.
+
+\subsubsection{Selezione Finale dell'Azione}
+
+\begin{lstlisting}
+;;; Rimuovi le pending-action con priorita' inferiore
+(defrule DECIDE::cleanup-lower
+    (declare (salience 0))
+    ?pa <- (pending-action (priority ?p1))
+    (pending-action (priority ?p2))
+    (test (> ?p2 ?p1))
+=>
+    (retract ?pa)
+)
+
+;;; Emetti l'azione vincente
+(defrule DECIDE::emit-action
+    (declare (salience -1))
+    (not (action))
+    ?pa <- (pending-action (move ?m)(priority ?p))
+    (not (pending-action (priority ?p2&:(> ?p2 ?p))))
+=>
+    (assert (action (move ?m)))
+    (retract ?pa)
+)
+\end{lstlisting}
+
+\texttt{cleanup-lower}: rimuove tutte le pending-action che hanno una priorità
+inferiore a quella massima presente. Si attiva ripetutamente finché rimane
+solo l'azione migliore.
+
+\texttt{emit-action}: converte la pending-action vincente in un fatto
+\texttt{action}, che sarà letto da Python.
+
+% =====================================================================
+\section{Agente \texttt{agent\_greedy.clp} -- Confronto}
+% =====================================================================
+
+\subsection{Differenze Architetturali}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Aspetto} & \textbf{agent.clp (CF)} & \textbf{agent\_greedy.clp} \\
+\midrule
+Moduli & 4 (MAIN/PERCEPT/INFER/DECIDE) & 1 (MAIN) \\
+Rappresentazione cella & \texttt{pit-cf}, \texttt{wumpus-cf}, \texttt{safe} & \texttt{dangerous} (sì/no) \\
+Incertezza & Certainty Factors $\in [-1,+1]$ & Nessuna (binario) \\
+Pit-guess & Sì (priorità 60) & No \\
+Rilevamento Wumpus & CF separato & Unificato con brezza \\
+Posizione da & \texttt{agent-state} (aggiornato) & \texttt{percept} (diretto) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Logica Greedy di Marcatura del Pericolo}
+
+\begin{lstlisting}
+(defrule MAIN::danger-north
+    (declare (salience 85))
+    (percept (x ?x)(y ?y)(breeze ?b)(stench ?s))
+    (test (or (eq ?b yes)(eq ?s yes)))
+    ?c <- (cell (x ?cx)(y ?cy)(visited no)(dangerous no))
+    (test (= ?cx ?x))(test (= ?cy (+ ?y 1)))
+=>
+    (modify ?c (dangerous yes))
+)
+\end{lstlisting}
+
+L'agente greedy è \textbf{conservativo}: se percepisce brezza \emph{o} odore,
+marca \emph{tutti} i vicini come pericolosi, indipendentemente da quante
+evidenze ha. Non c'è aggiornamento incrementale del CF: una singola brezza
+basta per marcare una cella come pericolosa permanentemente.
+
+\begin{warnbox}{Limitazione dell'agente greedy}
+L'agente greedy può bloccarsi: se tutte le celle adiacenti diventano
+\texttt{dangerous}, il solo fallback è \texttt{quit}. Non ha modo di
+``rivalutare'' una cella parzialmente pericolosa come nel modello CF.
+\end{warnbox}
+
+% =====================================================================
+\section{Mappe di Test}
+% =====================================================================
+
+\subsection{\texttt{map\_easy.json} -- Mappa 4×4}
+
+\begin{lstlisting}[language=Python3, numbers=none]
+{"size": 4, "wumpus": [1,4], "pits": [[3,4]], "gold": [2,2],
+ "start": [1,1], "start_energy": 200}
+\end{lstlisting}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \foreach \c in {1,...,4} {
+    \foreach \r in {1,...,4} {
+      \draw[gray!40] (\c-1, \r-1) rectangle (\c, \r);
+    }
+  }
+  % Wumpus a (1,4) -> colonna 1, riga 4
+  \fill[red!30] (0,3) rectangle (1,4);
+  \node[font=\tiny\bfseries] at (0.5, 3.5) {W};
+  % Pit a (3,4)
+  \fill[black!40] (2,3) rectangle (3,4);
+  \node[font=\tiny\bfseries,white] at (2.5, 3.5) {PIT};
+  % Oro a (2,2)
+  \fill[yellow!60] (1,1) rectangle (2,2);
+  \node[font=\tiny\bfseries] at (1.5, 1.5) {ORO};
+  % Start a (1,1)
+  \fill[green!40] (0,0) rectangle (1,1);
+  \node[font=\tiny\bfseries] at (0.5, 0.5) {START};
+  % Assi
+  \foreach \c in {1,...,4} { \node[font=\tiny,gray] at (\c-0.5,-0.3) {x=\c}; }
+  \foreach \r in {1,...,4} { \node[font=\tiny,gray] at (-0.4,\r-0.5) {y=\r}; }
+\end{tikzpicture}
+\end{center}
+
+\subsection{\texttt{map\_test.json} -- Mappa 4×4 (Più Difficile)}
+
+\begin{lstlisting}[language=Python3, numbers=none]
+{"size": 4, "wumpus": [3,1], "pits": [[2,3],[4,2]], "gold": [3,3],
+ "start": [1,1], "start_energy": 200}
+\end{lstlisting}
+
+Due pozzi e l'oro in posizione più lontana richiedono all'agente più
+ragionamento CF per navigare in sicurezza.
+
+% =====================================================================
+\section{Flusso Completo di un Ciclo Percezione-Azione}
+% =====================================================================
+
+\begin{enumerate}
+  \item \textbf{Python} chiama \texttt{world.perceive()} e ottiene le percezioni.
+  \item \textbf{Python} rimuove eventuali \texttt{action} residue dalla WM CLIPS.
+  \item \textbf{Python} asserisce \texttt{(percept ...)} nella WM CLIPS.
+  \item \textbf{CLIPS env.run()} attiva le regole in ordine di salience:
+    \begin{enumerate}[noitemsep,label=4\alph*.]
+      \item \texttt{MAIN::handle-percept} $\to$ \texttt{(focus PERCEPT)}
+      \item \texttt{PERCEPT::update-agent} aggiorna \texttt{agent-state}
+      \item \texttt{PERCEPT::update/create-current-cell} aggiorna la cella corrente
+      \item \texttt{PERCEPT::ensure-N/S/E/W} crea le celle vicine mancanti
+      \item \texttt{PERCEPT::to-infer} $\to$ \texttt{(focus INFER)}
+      \item \texttt{INFER::breeze-*/no-breeze-*/stench-*/no-stench-*} aggiornano CF
+      \item \texttt{INFER::mark-safe/mark-dangerous-*} classificano le celle
+      \item \texttt{INFER::to-decide} $\to$ \texttt{(focus DECIDE)}
+      \item \texttt{DECIDE::grab/quit/move-safe/pit-guess/explore/bold/fallback} asseriscono pending-action
+      \item \texttt{DECIDE::cleanup-lower} elimina le pending-action subottimali
+      \item \texttt{DECIDE::emit-action} asserisce l'azione finale
+      \item \textbf{Ritorno a MAIN}
+      \item \texttt{MAIN::cleanup-cf-done} rimuove i flag cf-done
+      \item \texttt{MAIN::cleanup-percept} rimuove il percept
+    \end{enumerate}
+  \item \textbf{Python} legge l'azione da \texttt{(action ...)} e la applica al mondo.
+\end{enumerate}
+
+% =====================================================================
+\section{Riepilogo e Confronto degli Agenti}
+% =====================================================================
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{p{3.5cm}p{5cm}p{5cm}}
+\toprule
+\textbf{Proprietà} & \textbf{agent.clp (CF)} & \textbf{agent\_greedy.clp} \\
+\midrule
+\textbf{Tipo di ragionamento} & Probabilistico (CF) & Deterministico/binario \\
+\textbf{Aggiornamento credenze} & Incrementale, cumulativo & Irreversibile (una brezza = pericoloso) \\
+\textbf{Capacità di esplorazione} & Alta (livelli di rischio graduali) & Bassa (si blocca facilmente) \\
+\textbf{Pit-guess} & Sì (con stima di rischio) & No \\
+\textbf{Complessità} & Alta (4 moduli, 30+ regole) & Bassa (1 modulo, 15 regole) \\
+\textbf{Quando funziona meglio} & Ambienti complessi con molti pericoli & Ambienti semplici / path libero \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}
