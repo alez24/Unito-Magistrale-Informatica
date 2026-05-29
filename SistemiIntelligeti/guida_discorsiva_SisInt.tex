@@ -1,0 +1,875 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{multicol}
+\usepackage{multirow}
+
+\geometry{margin=2.2cm}
+\hypersetup{colorlinks=true, linkcolor=blue!70!black, urlcolor=blue}
+
+\tcbuselibrary{skins,breakable}
+
+% Box narrativo (azzurro chiaro) -- spiegazioni discorsive
+\newtcolorbox{narrativo}[1]{
+  colback=blue!3, colframe=blue!40!black,
+  title={\textbf{#1}}, fonttitle=\bfseries\small,
+  breakable, left=5pt, right=5pt, top=4pt, bottom=4pt
+}
+% Box esempio (grigio caldo) -- casi concreti con numeri
+\newtcolorbox{esempio}[1]{
+  colback=gray!6, colframe=gray!55,
+  title={\textbf{Esempio: #1}}, fonttitle=\bfseries\small,
+  breakable, left=5pt, right=5pt, top=4pt, bottom=4pt
+}
+% Box analogia (verde) -- paragoni con la vita reale
+\newtcolorbox{analogia}[1]{
+  colback=green!4, colframe=green!50!black,
+  title={\textbf{Analogia: #1}}, fonttitle=\bfseries\small,
+  breakable, left=5pt, right=5pt, top=4pt, bottom=4pt
+}
+% Box ricorda (giallo) -- punti chiave da memorizzare
+\newtcolorbox{ricorda}[1]{
+  colback=yellow!8, colframe=orange!60!black,
+  title={\textbf{Da ricordare: #1}}, fonttitle=\bfseries\small,
+  breakable, left=5pt, right=5pt, top=4pt, bottom=4pt
+}
+% Box attenzione (rosso) -- errori comuni e trappole
+\newtcolorbox{attenzione}[1]{
+  colback=red!4, colframe=red!55!black,
+  title={\textbf{Attenzione: #1}}, fonttitle=\bfseries\small,
+  breakable, left=5pt, right=5pt, top=4pt, bottom=4pt
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\title{\textbf{Guida Discorsiva di Studio}\\[6pt]
+{\large Sistemi Intelligenti}\\[4pt]
+\normalsize Con esempi{,} analogie e spiegazioni intuitive}
+\author{}
+\date{A.A. 2025--2026}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% ====================================================================
+\section{Introduzione all'Intelligenza Artificiale}
+% ====================================================================
+
+\subsection{I quattro modi di vedere l'IA}
+
+\begin{narrativo}{Cosa vuol dire ``intelligenza artificiale''?}
+Immagina di dover costruire una macchina ``intelligente'': in base a come definisci l'intelligenza, costruirai cose molto diverse. Il campo dell'IA si divide proprio su questo punto, e possiamo identificare quattro grandi visioni:
+
+\textbf{1. Agire umanamente} -- La macchina è intelligente se si comporta come un essere umano, al punto che non riesci a distinguerla da uno. Questo è il \textbf{Test di Turing (1950)}: conversi via tastiera con due interlocutori, uno umano e uno macchina, e non sai chi è chi. Se la macchina ti inganna, ha ``superato'' il test.
+
+\textbf{2. Pensare umanamente} -- Non basta comportarsi come un umano; bisogna anche \emph{ragionare} come un umano, avere gli stessi processi mentali (cognitivismo, psicologia cognitiva). Meno utile per l'ingegneria.
+
+\textbf{3. Pensare razionalmente} -- Usare la logica formale per dedurre conclusioni corrette. Il problema è che il mondo reale è spesso incerto e non tutto si formalizza in logica.
+
+\textbf{4. Agire razionalmente} -- Il libro di testo (e il corso) adotta questa visione: un \textbf{agente razionale} è un sistema che, date le informazioni a disposizione, compie le azioni che \emph{massimizzano la misura di prestazione attesa}. Non importa come ragiona internamente: importa che faccia la cosa giusta.
+\end{narrativo}
+
+\begin{analogia}{Il pilota automatico}
+Un agente razionale è come il pilota automatico di un aereo: non ``pensa'' come un pilota umano, non ha paura, non ha intuizioni. Ma dato l'obiettivo (arrivare a destinazione in sicurezza) e le informazioni (quota, vento, carburante), sceglie le azioni che massimizzano il successo. Non dobbiamo chiederci ``ragiona come un umano?'' ma ``raggiunge gli obiettivi nel modo migliore possibile?''
+\end{analogia}
+
+\begin{ricorda}{La distinzione IA Forte vs Debole}
+\begin{itemize}[noitemsep]
+  \item \textbf{IA Debole}: la macchina \emph{simula} l'intelligenza ma non ha vera comprensione. È quello che abbiamo oggi (ChatGPT, AlphaGo\ldots).
+  \item \textbf{IA Forte}: la macchina ha vera comprensione, coscienza, stati mentali come gli umani. È ancora fantascienza.
+  \item \textbf{Argomento della Stanza Cinese (Searle)}: immagina di essere chiuso in una stanza, ti passano foglietti con simboli cinesi, tu segui un manuale di regole e restituisci simboli. Chi ti vede dall'esterno pensa che tu capisca il cinese, ma tu non hai idea di cosa significhino. Questa è l'IA debole: manipola simboli senza capirli.
+\end{itemize}
+\end{ricorda}
+
+\subsection{Agenti intelligenti: come funzionano}
+
+\begin{narrativo}{Anatomia di un agente}
+Qualsiasi sistema IA è un \textbf{agente}: percepisce l'ambiente tramite \textbf{sensori}, elabora le informazioni, e agisce tramite \textbf{attuatori}. Un robot aspirapolvere percepisce lo sporco con sensori ottici e aspira con il motore. Un motore di scacchi percepisce la scacchiera (input) e muove i pezzi (output).
+
+Il \textbf{programma agente} è la funzione che mappa la storia delle percezioni (la \textbf{sequenza percettiva}) a un'azione. L'agente è \textbf{razionale} se questa funzione massimizza la misura di prestazione.
+
+Importante: razionalità $\neq$ onniscienza. L'agente fa del meglio con quello che sa; non può sapere tutto.
+\end{narrativo}
+
+\begin{narrativo}{I cinque tipi di agenti (dal più semplice al più potente)}
+\textbf{1. Agente reattivo semplice}: risponde direttamente alle percezioni con regole ``se-allora''. Il termostato: \emph{se} temperatura $< 20°$ \emph{allora} accendi il riscaldamento. Velocissimo, ma non ha memoria -- ogni percezione è trattata come se fosse la prima.
+
+\textbf{2. Agente reattivo con modello}: mantiene uno \textbf{stato interno} del mondo. È come avere una mappa mentale: anche se non vedo direttamente cosa c'è dietro la curva, so che lì c'era un'auto ferma (l'ho vista 5 secondi fa). Funziona in ambienti parzialmente osservabili.
+
+\textbf{3. Agente goal-driven} (basato su obiettivi): non solo sa come è il mondo, ma sa \emph{dove vuole arrivare}. Pianifica sequenze di azioni per raggiungere il goal. Il navigatore GPS: conosce la mappa \emph{e} la destinazione.
+
+\textbf{4. Agente utility-driven} (basato sull'utilità): ha una funzione di utilità che quantifica quanto è ``buono'' ogni stato. Non solo ``arrivo a destinazione'' ma ``arrivo nel minor tempo, con meno carburante, evitando il traffico''. Gestisce trade-off e incertezza.
+
+\textbf{5. Agente capace di apprendere}: parte da conoscenza iniziale limitata e migliora con l'esperienza. Composto da: \emph{critico} (``stai andando bene?''), \emph{modulo di apprendimento} (``aggiusta il comportamento''), \emph{generatore di problemi} (``esplora cose nuove'').
+\end{narrativo}
+
+\begin{esempio}{Classificare gli ambienti}
+Prima di scegliere il tipo di agente giusto, bisogna capire l'ambiente:
+\begin{itemize}[noitemsep]
+  \item \textbf{Completamente osservabile}: l'agente vede tutto lo stato. Scacchi: sì (vedi tutta la scacchiera). Poker: no (non vedi le carte degli altri).
+  \item \textbf{Deterministico}: le azioni hanno effetti certi e prevedibili. Un braccio robotico in fabbrica: sì. Guida su strada bagnata: no (stocastico).
+  \item \textbf{Episodico}: ogni episodio è indipendente dagli altri. Classificare immagini: sì (classificare un gatto non dipende dal gatto precedente). Scacchi: no (le mosse dipendono dalla storia della partita).
+  \item \textbf{Statico}: il mondo non cambia mentre l'agente ragiona. Cruciverba: sì. Guida autonoma: no (dinamico).
+\end{itemize}
+In ambienti \textbf{deterministici} bastano sistemi ad \textbf{anello aperto} (esegui il piano senza rileggere). In ambienti \textbf{stocastici} servono sistemi ad \textbf{anello chiuso} (monitora e riadatta continuamente).
+\end{esempio}
+
+% ====================================================================
+\section{Ricerca Non Informata (Blind Search)}
+% ====================================================================
+
+\subsection{Il problema della ricerca}
+
+\begin{narrativo}{Come si formula un problema di ricerca}
+Molti problemi si riducono a ``trovare il percorso giusto in uno spazio di stati''. Formalmente un problema ha:
+\begin{itemize}[noitemsep]
+  \item \textbf{Stato iniziale}: da dove partiamo.
+  \item \textbf{Azioni}: cosa possiamo fare in ogni stato.
+  \item \textbf{Modello di transizione}: dove arriviamo applicando un'azione.
+  \item \textbf{Test obiettivo}: come sappiamo di aver finito.
+  \item \textbf{Costo del cammino}: quanto costa ogni sequenza di azioni.
+\end{itemize}
+La soluzione è la sequenza di azioni che porta dallo stato iniziale all'obiettivo.
+
+Gli algoritmi di ricerca costruiscono un \textbf{albero di ricerca} sullo spazio degli stati: la radice è lo stato iniziale, i rami sono le azioni, i nodi figli sono gli stati successivi. La \textbf{frontiera} (o fringe) è l'insieme dei nodi generati ma non ancora ``esplorati'' (espansi). La differenza tra gli algoritmi sta nel \emph{quale nodo della frontiera espandere per primo}.
+\end{narrativo}
+
+\begin{ricorda}{Le quattro metriche degli algoritmi}
+\begin{itemize}[noitemsep]
+  \item \textbf{Completezza}: trova sempre una soluzione se esiste?
+  \item \textbf{Ottimalità}: trova la soluzione di costo minimo?
+  \item \textbf{Complessità temporale}: quanti nodi genera/espande?
+  \item \textbf{Complessità spaziale}: quanta memoria usa (nodi in memoria contemporaneamente)?
+\end{itemize}
+Parametri da ricordare: $b$ = fattore di ramificazione (figli per nodo), $d$ = profondità della soluzione ottima, $m$ = profondità massima dell'albero.
+\end{ricorda}
+
+\subsection{BFS -- Ricerca in Ampiezza}
+
+\begin{narrativo}{Come funziona BFS}
+BFS espande i nodi \textbf{livello per livello}: prima la radice, poi tutti i suoi figli (profondità 1), poi tutti i loro figli (profondità 2), e così via. Usa una coda \textbf{FIFO} (First In First Out): il primo nodo inserito è il primo ad essere espanso.
+\end{narrativo}
+
+\begin{analogia}{Cerchi sull'acqua}
+Butta un sasso in uno stagno: le onde si espandono in cerchi concentrici, colpendo prima le rive vicine e poi quelle lontane. BFS fa esattamente questo: esplora prima gli stati ``vicini'' (pochi passi dall'inizio) e poi quelli ``lontani''.
+\end{analogia}
+
+\begin{esempio}{BFS su un grafo semplice}
+Grafo: A -- B -- D, A -- C -- E, D -- F (il goal è F).
+\begin{enumerate}[noitemsep]
+  \item Frontiera: [A]. Espando A $\to$ genero B, C.
+  \item Frontiera: [B, C]. Espando B $\to$ genero D.
+  \item Frontiera: [C, D]. Espando C $\to$ genero E.
+  \item Frontiera: [D, E]. Espando D $\to$ genero F. \textbf{GOAL trovato!}
+\end{enumerate}
+BFS garantisce di trovare il cammino con meno passi (d=3: A$\to$B$\to$D$\to$F). Però ha usato memoria per tenere tutti i nodi a ogni livello.
+\end{esempio}
+
+\begin{ricorda}{BFS in breve}
+Completo (sì, se $b$ finito). Ottimale (sì, se costi uniformi). Tempo: $O(b^{d+1})$. Spazio: $O(b^{d+1})$ -- il collo di bottiglia. Con $b=10$ e $d=6$: oltre 10 milioni di nodi in memoria!
+\end{ricorda}
+
+\subsection{DFS -- Ricerca in Profondità}
+
+\begin{narrativo}{Come funziona DFS}
+DFS espande sempre il nodo \textbf{più in profondità} nella frontiera. Usa uno stack LIFO (Last In First Out): l'ultimo inserito è il primo espanso. Scende fino in fondo lungo un ramo, poi fa backtrack se non trova il goal.
+\end{narrativo}
+
+\begin{analogia}{Esplorare una grotta}
+Entri in una grotta con molti corridoi. DFS prende sempre il primo corridoio a sinistra, continua fino al fondo, poi torna indietro e prova il corridoio successivo. BFS invece esplorerebbe tutti i corridoi al primo incrocio prima di andare avanti.
+\end{analogia}
+
+\begin{esempio}{Perché DFS usa poca memoria}
+In un albero con $b=3$ e $d=4$: DFS tiene in memoria solo il cammino corrente + i fratelli non espansi. Al massimo $b \times m$ nodi contemporaneamente. BFS invece tiene tutti i nodi del livello corrente: $b^d$ nodi. Per $b=10, m=10$: DFS usa 100 nodi, BFS usa $10^{10}$ nodi!
+\end{esempio}
+
+\begin{attenzione}{Quando DFS fallisce}
+DFS \textbf{non è completo} (può ciclare all'infinito in grafi con cicli, se non controlli i nodi visitati) e \textbf{non è ottimale} (trova la prima soluzione, non la migliore). In un grafo con cicli, DFS senza controllo dei cicli va in loop.
+\end{attenzione}
+
+\subsection{IDDFS -- Approfondimento Iterativo}
+
+\begin{narrativo}{Il meglio dei due mondi}
+IDDFS (Iterative Deepening DFS) combina il \textbf{poco uso di memoria di DFS} con la \textbf{completezza e ottimalità di BFS}. Come? Esegue ripetutamente DFS con un limite di profondità crescente: prima cerca solo fino a profondità 0, poi fino a 1, poi 2, ecc.
+
+Sembra uno spreco ripetere -- ma i nodi ripetuti sono i livelli superficiali, che sono pochi rispetto all'ultimo livello. Per $b=10$: il livello $d$ ha $10^d$ nodi, i livelli da 0 a $d-1$ ne hanno circa $\frac{10^d}{9}$ (trascurabile).
+\end{narrativo}
+
+\begin{esempio}{IDDFS con limite $l=0{,}1{,}2$}
+Goal a profondità 2 in un albero con $b=2$: \\
+\textbf{l=0}: espando solo la radice A. Non trovato.\\
+\textbf{l=1}: espando A$\to$B, A$\to$C. Non trovato.\\
+\textbf{l=2}: espando A$\to$B$\to$D, A$\to$B$\to$E, A$\to$C$\to$\textbf{F} (GOAL!).\\
+Sì, D ed E sono stati esplorati ``invano'' al passo precedente, ma la ridondanza è minima.
+\end{esempio}
+
+\begin{ricorda}{IDDFS è il re della blind search}
+Completo: sì. Ottimale: sì (con costi uniformi). Tempo: $O(b^d)$. Spazio: $O(b \cdot d)$ -- lineare come DFS. È l'\textbf{algoritmo blind preferito} in pratica.
+\end{ricorda}
+
+\subsection{UCS -- Ricerca a Costo Uniforme}
+
+\begin{narrativo}{Quando i costi sono diversi}
+BFS trova il cammino con meno passi, ma se ogni passo ha un costo diverso? UCS (Uniform Cost Search) espande sempre il nodo con il \textbf{costo cumulativo $g(n)$ più basso}, usando una coda con priorità. È praticamente l'algoritmo di Dijkstra applicato alla ricerca con goal.
+\end{narrativo}
+
+\begin{esempio}{UCS vs BFS con costi diversi}
+Grafo: A$\xrightarrow{1}$B$\xrightarrow{1}$C (goal), A$\xrightarrow{10}$C (goal).\\
+BFS trova A$\to$C (2 mosse) che costa 10.\\
+UCS trova A$\to$B$\to$C (3 mosse) che costa 2.\\
+BFS ottimizza il numero di passi, UCS ottimizza il costo.
+\end{esempio}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Algoritmo} & \textbf{Completo} & \textbf{Ottimale} & \textbf{Tempo} & \textbf{Spazio} \\
+\midrule
+BFS & Sì & Sì* & $O(b^{d+1})$ & $O(b^{d+1})$ \\
+DFS & No & No & $O(b^m)$ & $O(bm)$ \\
+IDDFS & Sì & Sì* & $O(b^d)$ & $O(bd)$ \\
+UCS & Sì & Sì & $O(b^{1+C^*/\varepsilon})$ & uguale \\
+\bottomrule
+\end{tabular}
+\end{center}
+{\small *Con costi uniformi.}
+
+% ====================================================================
+\section{Ricerca Informata (A* e Euristiche)}
+% ====================================================================
+
+\subsection{L'idea dell'euristica}
+
+\begin{narrativo}{Usare la conoscenza del dominio}
+La blind search è ``cieca'': non sa in quale direzione si trova il goal. La ricerca informata usa una funzione \textbf{euristica $h(n)$} che \emph{stima} quanto siamo lontani dal goal. Con questa guida, possiamo concentrare la ricerca nelle direzioni più promettenti.
+
+Un'euristica è \textbf{ammissibile} se non \emph{sovrastima mai} il costo reale: $h(n) \leq h^*(n)$. Questo garantisce che A* trovi la soluzione ottimale. Un'euristica è \textbf{consistente (monotona)} se soddisfa la disuguaglianza triangolare: $h(n) \leq c(n,n') + h(n')$.
+\end{narrativo}
+
+\begin{esempio}{Euristiche per il problema dell'8-puzzle}
+Il problema: una griglia 3$\times$3 con 8 tasselli numerati e una casella vuota. Devi raggiunre la configurazione goal muovendo i tasselli.
+
+Due euristiche classiche:
+\begin{itemize}[noitemsep]
+  \item $h_1$ = numero di tasselli \textbf{fuori posto}. Se 4 tasselli non sono nella posizione corretta, $h_1 = 4$. È ammissibile perché ogni tassello richiede almeno 1 mossa.
+  \item $h_2$ = \textbf{distanza di Manhattan}: somma delle distanze (orizzontale + verticale) di ogni tassello dalla posizione corretta. È ammissibile perché i tasselli non si possono teleportare.
+\end{itemize}
+$h_2 \geq h_1$ sempre $\Rightarrow$ $h_2$ \textbf{domina} $h_1$ $\Rightarrow$ A* con $h_2$ espande meno nodi (la euristica più informata, meglio è).
+\end{esempio}
+
+\subsection{Algoritmo A*}
+
+\begin{narrativo}{Come funziona A*}
+A* ordina la frontiera per $f(n) = g(n) + h(n)$:
+\begin{itemize}[noitemsep]
+  \item $g(n)$: costo effettivo per arrivare da start a $n$ (quanto ho già speso).
+  \item $h(n)$: stima euristica da $n$ al goal (quanto prevedo di spendere ancora).
+  \item $f(n)$: stima del costo totale del miglior cammino che passa per $n$.
+\end{itemize}
+A* è una \textbf{fusione intelligente}: UCS usa solo $g$ (conosce il passato ma non il futuro), Greedy usa solo $h$ (guarda il futuro ma ignora il passato). A* usa entrambi.
+
+La \textbf{frontiera di A*} forma ellissi orientate verso il goal (non cerchi concentrici come UCS): esplora ``di più'' nelle direzioni dove $f$ è basso, cioè dove il percorso totale stimato è migliore.
+\end{narrativo}
+
+\begin{esempio}{A* su una mappa numerica}
+Mappa con 5 città. Start = A, Goal = E.
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Nodo & $g(n)$ (costo reale da A) & $h(n)$ (stima al goal) \\
+\midrule
+A & 0 & 10 \\
+B & 3 & 8 \\
+C & 5 & 6 \\
+D & 4 & 9 \\
+E & 12 & 0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+Passo 1: espando A ($f=0+10=10$). Genero B ($f=3+8=11$) e D ($f=4+9=13$).\\
+Passo 2: espando B ($f=11$, il minore). Genero C ($g=3+2=5$, $f=5+6=11$).\\
+Passo 3: B e C hanno entrambi $f=11$; espando C. Genero E ($g=5+7=12$, $f=12+0=12$).\\
+Passo 4: espando D ($f=13$)... ma $f(D)>f(E)$, quindi prima espandiamo E. \textbf{GOAL!} Costo = 12.\\
+A* ha ignorato D perché sapeva già che nessun percorso passante per D poteva essere migliore.
+\end{esempio}
+
+\begin{attenzione}{Ammissibilità vs Consistenza}
+\begin{itemize}[noitemsep]
+  \item Su \textbf{alberi} (senza ricicli): basta l'ammissibilità per garantire l'ottimalità di A*.
+  \item Su \textbf{grafi} (con lista chiusa dei visitati): serve la consistenza. Consistente $\Rightarrow$ ammissibile, ma non viceversa.
+  \item Se usi A* su grafi con euristica solo ammissibile (non consistente): potresti trovare uno stato già espanso con un percorso più economico e doverlo riaprire.
+\end{itemize}
+\end{attenzione}
+
+% ====================================================================
+\section{Ricerca Avversariale (Giochi)}
+% ====================================================================
+
+\subsection{Minimax}
+
+\begin{narrativo}{Giocare contro un avversario razionale}
+Nei giochi a due giocatori (scacchi, tris, dama), ci sono due agenti con obiettivi opposti: \textbf{MAX} vuole massimizzare il valore finale, \textbf{MIN} vuole minimizzarlo. L'idea di Minimax è semplice: MAX deve scegliere la mossa \emph{assumendo che MIN giochi in modo perfetto}.
+
+Si costruisce l'albero di gioco fino agli stati terminali (o a una profondità limite), si assegnano i valori di utilità agli stati terminali, poi si ``propagano'' i valori verso il basso:
+\begin{itemize}[noitemsep]
+  \item Ai nodi MAX: prendo il \textbf{massimo} tra i figli.
+  \item Ai nodi MIN: prendo il \textbf{minimo} tra i figli.
+\end{itemize}
+\end{narrativo}
+
+\begin{esempio}{Minimax su un albero piccolo}
+Albero con radice MAX, due figli MIN, quattro nipoti terminali con valori [3, 5] (sotto MIN di sinistra) e [2, 9] (sotto MIN di destra).
+
+MIN di sinistra sceglie $\min(3,5) = 3$.\\
+MIN di destra sceglie $\min(2,9) = 2$.\\
+MAX sceglie $\max(3,2) = 3$.\\
+Quindi MAX va a sinistra, sapendo che MIN lo porterà al valore 3. Andare a destra darebbe 2 (peggio per MAX).
+
+Nota: il valore 9 non viene mai raggiunto -- MIN non lo permetterebbe.
+\end{esempio}
+
+\begin{analogia}{Giocare a scacchi come un maestro}
+Un giocatore esperto non pensa solo alla propria prossima mossa, ma ragiona: ``se faccio questa mossa, l'avversario risponderà con la sua mossa migliore, e poi io risponderò con la mia, e così via''. Minimax formalizza esattamente questo ragionamento ricorsivo.
+\end{analogia}
+
+\subsection{Potatura Alpha-Beta}
+
+\begin{narrativo}{Tagliare i rami inutili}
+Minimax è corretto ma lento: per gli scacchi, $b \approx 35$ mosse per turno e $m \approx 80$ turni $\Rightarrow 35^{80}$ nodi -- impossibile. La potatura \textbf{Alpha-Beta} mantiene due variabili:
+\begin{itemize}[noitemsep]
+  \item $\alpha$: il \textbf{miglior valore} che MAX può garantirsi nel percorso corrente (inizia a $-\infty$).
+  \item $\beta$: il \textbf{peggior valore} che MIN può garantirsi nel percorso corrente (inizia a $+\infty$).
+\end{itemize}
+Regola: se in un nodo MIN il valore scende sotto $\alpha$, MAX non sceglierà mai quel ramo $\Rightarrow$ \textbf{pota}. Se in un nodo MAX il valore sale sopra $\beta$, MIN non permetterà mai quel ramo $\Rightarrow$ \textbf{pota}.
+
+Il risultato è \textbf{identico a Minimax}: la potatura non cambia la decisione, solo riduce il lavoro.
+\end{narrativo}
+
+\begin{esempio}{Alpha-Beta passo per passo}
+Stessa struttura di prima: radice MAX, due MIN, foglie [3, 5, 2, 9].
+
+Stato iniziale: $\alpha = -\infty$, $\beta = +\infty$.\\
+1. Esploro il MIN di sinistra. Prima foglia = 3. $\beta \leftarrow 3$ (il MIN di sinistra può garantire al più 3 a MAX).\\
+2. Seconda foglia = 5. MIN sceglie $\min(3,5)=3$. Valore del nodo MIN = 3.\\
+3. Risalgo al MAX: $\alpha \leftarrow 3$ (ora MAX sa di poter avere almeno 3).\\
+4. Esploro il MIN di destra. Prima foglia = 2. $\beta_{\text{locale}} \leftarrow 2$. Ma $2 < \alpha = 3$!\\
+   $\Rightarrow$ \textbf{POTA} la seconda foglia (9) del MIN di destra: MAX non sceglierà mai questo ramo (il MIN di destra può dargli al più 2, mentre a sinistra ha già 3).\\
+5. Risultato: MAX sceglie sinistra con valore 3. La foglia 9 non è mai stata esplorata.
+\end{esempio}
+
+\begin{ricorda}{Complessità Alpha-Beta}
+\begin{itemize}[noitemsep]
+  \item Caso \textbf{migliore} (ordine perfetto delle mosse): $O(b^{m/2})$ -- \textbf{raddoppia} la profondità esplorabile a parità di tempo!
+  \item Caso \textbf{medio} (ordine casuale): $O(b^{3m/4})$
+  \item Caso \textbf{peggiore} (ordine inverso): $O(b^m)$ -- come Minimax
+\end{itemize}
+Per questo l'ordinamento delle mosse è fondamentale: provare prima le mosse più promettenti massimizza la potatura.
+\end{ricorda}
+
+\subsection{Tecniche avanzate}
+
+\begin{narrativo}{Quando non puoi esplorare tutto l'albero}
+Negli scacchi non puoi arrivare agli stati terminali. Si usa una \textbf{funzione di valutazione EVAL}:
+\[
+\text{EVAL}(s) = w_1 f_1(s) + w_2 f_2(s) + \cdots + w_n f_n(s)
+\]
+Combinazione lineare di feature (vantaggio di materiale, controllo del centro, sicurezza del re\ldots). EVAL è una \emph{stima} applicata agli stati non terminali; la Utility è il valore \emph{esatto} degli stati terminali.
+
+\textbf{Effetto orizzonte}: l'algoritmo non vede le minacce oltre il limite di profondità. Soluzione: \textbf{ricerca di quiescenza} -- continua oltre il limite nelle posizioni ``turbolente'' (prese, scacchi) finché la posizione si stabilizza.
+
+\textbf{Tabelle di trasposizione}: se la stessa posizione compare da percorsi diversi (es. mosse in ordine diverso), non ricalcolarla. Usa una tabella hash: recupero in $O(1)$.
+\end{narrativo}
+
+% ====================================================================
+\section{Problemi di Soddisfacimento di Vincoli (CSP)}
+% ====================================================================
+
+\subsection{Cos'è un CSP}
+
+\begin{narrativo}{Struttura di un CSP}
+Un CSP è una tripla $\langle X, D, C \rangle$: variabili $X$, domini $D$ (valori possibili per ciascuna variabile), vincoli $C$ (relazioni che i valori devono rispettare). Una \textbf{soluzione} è un assegnamento completo (tutte le variabili hanno un valore) e consistente (nessun vincolo violato).
+
+Differenza dalla ricerca classica: in un CSP lo spazio degli stati è \textbf{strutturato}. I vincoli ci permettono di \textbf{propagare} l'informazione: se assegno un valore a una variabile, posso immediatamente eliminare valori incompatibili dalle variabili adiacenti. Questo pota enormi porzioni dello spazio di ricerca prima ancora di esplorarle.
+\end{narrativo}
+
+\begin{esempio}{Colorazione della mappa australiana}
+Variabili: WA (Western Australia), NT (Northern Territory), SA (South Australia), Q (Queensland), NSW (New South Wales), V (Victoria), T (Tasmania).\\
+Dominio: \{rosso, verde, blu\}.\\
+Vincoli: regioni adiacenti devono avere colori diversi (WA$\neq$NT, WA$\neq$SA, NT$\neq$SA, NT$\neq$Q, SA$\neq$Q, SA$\neq$NSW, SA$\neq$V, Q$\neq$NSW, NSW$\neq$V).
+
+Il grafo dei vincoli ha un arco tra ogni coppia di regioni adiacenti. SA è connessa a 5 regioni -- ha il dominio che si riduce più velocemente. Soluzione: WA=rosso, NT=verde, SA=blu, Q=rosso, NSW=verde, V=rosso, T=qualsiasi.
+\end{esempio}
+
+\begin{esempio}{Sudoku come CSP}
+81 variabili ($S_{i,j}$ per ogni cella). Dominio = $\{1,...,9\}$. Vincoli: tutte le celle di ogni riga diversa ($\text{Alldiff}$), idem per colonne e blocchi $3\times3$. Molte istanze si risolvono \emph{solo per propagazione dei vincoli}, senza backtracking!
+\end{esempio}
+
+\subsection{Propagazione dei vincoli}
+
+\begin{narrativo}{AC-3: arco-consistenza}
+Una variabile $X_i$ è \textbf{arco-consistente} rispetto a $X_j$ se per ogni valore $v$ nel dominio di $X_i$ esiste almeno un valore compatibile nel dominio di $X_j$. Se $v$ non ha supporto, lo eliminiamo dal dominio di $X_i$.
+
+L'algoritmo \textbf{AC-3} mantiene una coda di archi $(X_i, X_j)$ da verificare. Quando eliminiamo un valore da $D_i$, reinserisci tutti gli archi $(X_k, X_i)$ nella coda -- perché potrebbero aver perso il loro supporto.
+
+Complessità: $O(n^2 d^3)$ dove $n$ = variabili, $d$ = dimensione massima del dominio.
+\end{narrativo}
+
+\begin{esempio}{AC-3 sul Sudoku}
+Considera una riga del Sudoku con la cella $X_1=5$ (assegnata). AC-3 rimuove 5 dai domini di tutte le altre celle della stessa riga, colonna e blocco. Se dopo questa rimozione un'altra cella ha dominio con un solo valore, anche quello viene propagato, e così via a cascata. Spesso questo è sufficiente a completare il puzzle!
+\end{esempio}
+
+\subsection{Backtracking con euristiche}
+
+\begin{narrativo}{Come scegliere cosa assegnare}
+Il backtracking puro prova ogni valore per ogni variabile in ordine arbitrario -- lentissimo. Tre euristiche rendono il backtracking molto più efficiente:
+
+\textbf{1. MRV (Minimum Remaining Values)}: scegli la variabile con il \textbf{dominio più piccolo}. Principio \emph{fail-first}: è meglio scoprire presto che una variabile non ha soluzione (e fare backtrack) piuttosto che sprecare tempo assegnando altre variabili. Intuizione: la variabile con dominio minore è quella ``più vincolata'', quindi quella su cui il backtracking è più probabile -- meglio trattarla subito.
+
+\textbf{2. Euristica di Grado}: tra variabili con MRV uguale, scegli quella con \textbf{più vincoli sulle variabili non ancora assegnate}. Riduce il fattore di ramificazione futuro.
+
+\textbf{3. Least Constraining Value}: dopo aver scelto la variabile, assegna il valore che \textbf{elimina meno valori dai domini delle variabili vicine}. Lascia più opzioni aperte per il futuro (principio contrario a MRV: per i valori, vogliamo essere ottimisti).
+\end{narrativo}
+
+\begin{narrativo}{Forward Checking e MAC}
+\textbf{Forward Checking}: ogni volta che assegni $X_i = v$, rimuovi i valori incompatibili dai domini dei vicini non assegnati. Se un dominio si svuota, backtrack subito (senza espandere ulteriormente).
+
+\textbf{MAC (Maintaining Arc Consistency)}: più potente; dopo ogni assegnamento, applica AC-3 all'intero CSP. Pota molto di più ma costa di più per ogni passo.
+
+\textbf{Conflict-Directed Backjumping}: invece di tornare sempre alla variabile precedente (backtracking cronologico), costruisci il \textbf{conflict set} (le variabili già assegnate che causano il fallimento) e salta direttamente all'ultima di esse. Molto più efficiente su problemi complessi.
+\end{narrativo}
+
+% ====================================================================
+\section{Logica Proposizionale}
+% ====================================================================
+
+\subsection{Perché la logica}
+
+\begin{narrativo}{Ragionare con la conoscenza}
+Un agente ``basato sulla conoscenza'' (KB agent) non reagisce a stimoli con regole pre-programmate: mantiene una \textbf{base di conoscenza (KB)} -- un insieme di formule logiche -- e usa la logica per dedurre nuove informazioni e scegliere le azioni. Il ciclo è: percepisce (TELL), ragiona (ASK), agisce.
+
+La logica proposizionale è il livello base: afferma fatti semplici (``P è vero'') e li collega con connettivi ($\land$, $\lor$, $\neg$, $\Rightarrow$, $\Leftrightarrow$).
+\end{narrativo}
+
+\begin{esempio}{Il Mondo del Wumpus}
+Una griglia 4$\times$4. Ci sono:
+\begin{itemize}[noitemsep]
+  \item \textbf{Wumpus}: puzza nelle celle adiacenti (Fetore). Se ci vai, muori.
+  \item \textbf{Pozzi}: brezza nelle celle adiacenti. Se ci cadi, muori.
+  \item \textbf{Oro}: scintilla nella cella in cui si trova. Prendilo e scappa.
+\end{itemize}
+L'agente parte da (1,1). Sente brezza in (1,2) $\Rightarrow$ c'è un pozzo in (1,3) o (2,2). Sente fetore in (2,1) $\Rightarrow$ Wumpus in (1,1) o (3,1) o (2,2). Usando la KB: siccome l'agente è partito da (1,1) e non è morto, (1,1) non è un pozzo né il Wumpus è lì. Quindi per esclusione...
+
+La logica proposizionale ci permette di ragionare su questi fatti in modo formale e rigoroso.
+\end{esempio}
+
+\begin{narrativo}{Concetti fondamentali}
+\begin{itemize}[noitemsep]
+  \item \textbf{Modello}: un'assegnazione di valori di verità a tutte le proposizioni. Con $n$ proposizioni ci sono $2^n$ modelli possibili.
+  \item \textbf{Conseguenza logica}: $KB \models \alpha$ se $\alpha$ è vera in \emph{tutti} i modelli in cui KB è vera.
+  \item \textbf{Tautologia}: vera in tutti i modelli (es: $A \lor \neg A$).
+  \item \textbf{Contraddizione}: falsa in tutti i modelli (es: $A \land \neg A$).
+  \item \textbf{Soddisfacibile}: vera in almeno un modello.
+\end{itemize}
+\end{narrativo}
+
+\subsection{Dimostrazione di teoremi}
+
+\begin{narrativo}{CNF e Risoluzione per refutazione}
+Per dimostrare che $KB \models \alpha$, usiamo la \textbf{dimostrazione per assurdo}: supponiamo $\neg\alpha$ e mostriamo che porta a contraddizione.
+
+Prima convertiamo tutto in \textbf{CNF} (Forma Normale Congiuntiva): congiunzione di clausole, dove ogni clausola è una disgiunzione di letterali. Ogni formula si può convertire in CNF.
+
+Poi applichiamo la \textbf{regola di risoluzione}: da $(A \lor C)$ e $(\neg C \lor B)$ si deriva $(A \lor B)$. I letterali complementari $C$ e $\neg C$ si annullano.
+
+Aggiungiamo $\neg\alpha$ alla KB in CNF e applichiamo ripetutamente la risoluzione. Se deriviamo la \textbf{clausola vuota $\square$} (contraddizione) $\Rightarrow KB \models \alpha$.
+\end{narrativo}
+
+\begin{esempio}{Risoluzione: esempio completo}
+KB = $\{(A \lor B),\; (\neg A \lor C),\; \neg B\}$. Vogliamo dimostrare $C$.\\
+Aggiungiamo $\neg C$: KB' = $\{(A \lor B),\; (\neg A \lor C),\; \neg B,\; \neg C\}$.\\
+1. Da $(A \lor B)$ e $\neg B$: risolviamo su $B$ $\Rightarrow$ \textbf{A}.\\
+2. Da $(\neg A \lor C)$ e $\neg C$: risolviamo su $C$ $\Rightarrow$ $\neg A$.\\
+3. Da $A$ e $\neg A$: \textbf{clausola vuota} $\square$. Contraddizione!\\
+$\Rightarrow KB \models C$. \checkmark
+\end{esempio}
+
+\subsection{Clausole di Horn e Forward/Backward Chaining}
+
+\begin{narrativo}{Perché le clausole di Horn sono speciali}
+Una clausola di Horn ha \textbf{al più un letterale positivo}: $P_1 \land P_2 \land \cdots \land P_k \Rightarrow Q$ (clausola \textbf{definita}) oppure $P_1 \land \cdots \land P_k \Rightarrow \text{false}$ (clausola \textbf{obiettivo}).
+
+Le clausole di Horn sono potenti perché l'inferenza su di esse è \textbf{decidibile in tempo lineare}: si usa Forward Chaining o Backward Chaining invece della risoluzione generale.
+
+\textbf{Forward Chaining} (guidato dai dati): parte dai fatti noti, applica le regole le cui premesse sono soddisfatte, aggiunge le conclusioni, ripete fino al punto fisso. Come l'investigatore che raccoglie indizi e trova nuove connessioni.
+
+\textbf{Backward Chaining} (guidato dall'obiettivo): parte dal goal, cerca le regole che lo provano, trasforma le premesse in sotto-obiettivi, ricorsivamente. Come l'avvocato difensore che parte dalla tesi e cerca le prove per supportarla. È la base di \textbf{Prolog}.
+\end{narrativo}
+
+\begin{esempio}{Forward Chaining}
+KB: ``A è un uccello'' ($\text{Uccello}(A)$); ``Gli uccelli volano'' ($\text{Uccello}(x) \Rightarrow \text{Vola}(x)$); ``Chi vola è leggero'' ($\text{Vola}(x) \Rightarrow \text{Leggero}(x)$).\\
+Query: A è leggero?\\
+Iterazione 1: so $\text{Uccello}(A)$ + regola 1 $\Rightarrow$ derivo $\text{Vola}(A)$.\\
+Iterazione 2: so $\text{Vola}(A)$ + regola 2 $\Rightarrow$ derivo $\text{Leggero}(A)$.\\
+\textbf{Goal raggiunto!}
+\end{esempio}
+
+% ====================================================================
+\section{Logica del Primo Ordine (FOL)}
+% ====================================================================
+
+\subsection{Perché la FOL}
+
+\begin{narrativo}{I limiti della logica proposizionale}
+La logica proposizionale è limitata: devo scrivere una proposizione separata per ogni fatto. ``Mario è studente'', ``Luigi è studente'', ``Maria è studente''... Non posso dire ``tutti gli studenti passano gli esami''. La FOL risolve questo con \textbf{variabili e quantificatori}.
+
+Nella FOL esistono: \textbf{costanti} (oggetti specifici: Mario, Roma), \textbf{variabili} ($x, y, z$), \textbf{predicati} (relazioni: $\text{Studia}(x)$, $\text{Fratello}(x,y)$), \textbf{funzioni} (mappano oggetti: $\text{Padre}(x)$), \textbf{quantificatori} ($\forall$, $\exists$).
+\end{narrativo}
+
+\begin{esempio}{FOL in pratica: relazioni di parentela}
+\begin{itemize}[noitemsep]
+  \item ``Riccardo ha un fratello'': $\exists x\; \text{Fratello}(x, \text{Riccardo})$
+  \item ``Tutti gli umani sono mortali'': $\forall x\; \text{Umano}(x) \Rightarrow \text{Mortale}(x)$
+  \item ``Socrate è umano'': $\text{Umano}(\text{Socrate})$
+  \item Da queste due: $\text{Mortale}(\text{Socrate})$ (via Modus Ponens)
+  \item ``Qualcuno ama tutti'': $\exists x\; \forall y\; \text{Ama}(x, y)$ \\
+    vs ``ognuno ama qualcuno'': $\forall x\; \exists y\; \text{Ama}(x, y)$ \\ -- L'ordine dei quantificatori cambia il significato!
+\end{itemize}
+\end{esempio}
+
+\begin{ricorda}{Regola pratica per i quantificatori}
+\begin{itemize}[noitemsep]
+  \item $\forall x$ si abbina con $\Rightarrow$: ``per ogni $x$, \emph{se} $x$ è umano \emph{allora}\ldots''
+  \item $\exists x$ si abbina con $\land$: ``esiste un $x$ tale che $x$ è umano \emph{e} $x$ vola''
+  \item Sbagliato: $\exists x\; \text{Umano}(x) \Rightarrow \text{Mortale}(x)$ -- è vero anche se nessun umano esiste!
+\end{itemize}
+\end{ricorda}
+
+\subsection{Unificazione}
+
+\begin{narrativo}{Trovare la sostituzione giusta}
+L'unificazione è l'operazione che trova la sostituzione $\theta$ che rende due espressioni FOL identiche. Serve per applicare le regole a fatti concreti.
+
+Il \textbf{MGU} (Most General Unifier) è la sostituzione più ``generale'' (con meno vincoli) che unifica due espressioni.
+\end{narrativo}
+
+\begin{esempio}{Unificazione passo per passo}
+Regola: $\text{Conosce}(x, y) \land \text{Conosce}(y, z) \Rightarrow \text{Conosce}(x, z)$\\
+Fatto1: $\text{Conosce}(\text{Mario}, \text{Luigi})$\\
+Fatto2: $\text{Conosce}(\text{Luigi}, \text{Maria})$\\
+\\
+Unificazione di Fatto1 con $\text{Conosce}(x,y)$: $\theta_1 = \{x/\text{Mario}, y/\text{Luigi}\}$\\
+Unificazione di Fatto2 con $\text{Conosce}(y,z)$ usando $\theta_1$ (y=Luigi): $\theta_2 = \{z/\text{Maria}\}$\\
+\\
+Deriviamo: $\text{Conosce}(\text{Mario}, \text{Maria})$. Mario conosce Maria transitivamente!
+\end{esempio}
+
+\begin{esempio}{Quando l'unificazione fallisce}
+$\text{UNIFY}(\text{Conosce}(\text{Giovanni}, x),\; \text{Conosce}(x, \text{Elisabetta}))$\\
+Serve $x = \text{Giovanni}$ (dal primo argomento) e $x = \text{Elisabetta}$ (dal secondo): impossibile, $x$ non può valere due cose diverse.\\
+Soluzione: \textbf{standardizzare le variabili} rinominando $x$ in una delle due espressioni: $\text{UNIFY}(\text{Conosce}(\text{Giovanni}, x),\; \text{Conosce}(z, \text{Elisabetta})) = \{x/\text{Elisabetta}, z/\text{Giovanni}\}$. Successo!
+\end{esempio}
+
+\subsection{Modus Ponens Generalizzato e Skolemizzazione}
+
+\begin{narrativo}{MPG e conversione in CNF}
+Il \textbf{Modus Ponens Generalizzato (MPG)} estende il Modus Ponens alle formule con variabili: se conosco $P_1, \ldots, P_k$ e ho la regola $P_1' \land \cdots \land P_k' \Rightarrow Q$ con unificatore $\theta$ tale che $P_i\theta = P_i'\theta$, allora derivo $Q\theta$.
+
+Per la risoluzione in FOL, devo convertire in CNF. Il passo cruciale è la \textbf{Skolemizzazione}: elimino i quantificatori esistenziali sostituendo la variabile con una costante/funzione di Skolem.
+
+Esempio: $\exists x\; \text{Madre}(x, \text{Mario})$ diventa $\text{Madre}(\text{c}_1, \text{Mario})$ (c$_1$ è una nuova costante di Skolem). Se c'è un $\forall$ esterno: $\forall x\; \exists y\; \text{Ama}(x,y)$ diventa $\forall x\; \text{Ama}(x, f(x))$ dove $f$ è una \emph{funzione} di Skolem (il ``qualcuno amato'' dipende da $x$).
+\end{narrativo}
+
+% ====================================================================
+\section{Ontologie e Rappresentazione della Conoscenza}
+% ====================================================================
+
+\begin{narrativo}{Cosa sono le ontologie}
+Un'ontologia è una \textbf{specifica formale di una concettualizzazione}: definisce i concetti di un dominio e le relazioni tra loro. Le relazioni fondamentali sono:
+
+\textbf{isa (is-a)}: relazione di sottoclasse. $\text{Cane} \; \mathbf{isa} \; \text{Animale}$ significa che i cani sono un tipo di animali. Permette l'ereditarietà delle proprietà.
+
+\textbf{member-of}: relazione di istanza. $\text{Fido} \; \mathbf{member-of} \; \text{Cane}$ significa che Fido è un individuo della classe Cani.
+
+\textbf{part-of}: relazione di composizione. $\text{Ruota} \; \mathbf{part-of} \; \text{Auto}$.
+\end{narrativo}
+
+\begin{esempio}{Tassonomia degli animali}
+\begin{itemize}[noitemsep]
+  \item Animale $\supseteq$ Mammifero $\supseteq$ Cane; Fido $\in$ Cane.
+  \item \textbf{Partizione}: Mammifero, Rettile, Uccello, Pesce sono \emph{disgiunti} (nessun animale è sia mammifero che rettile) ed \emph{esaustivi} rispetto agli Animali (ogni animale è in almeno una categoria).
+  \item Proprietà di classe: ``I mammiferi allattano i cuccioli'' -- vale per tutta la classe, non solo per qualche istanza.
+\end{itemize}
+\end{esempio}
+
+\begin{narrativo}{Situation Calculus e il Frame Problem}
+Il \textbf{Situation Calculus} è un linguaggio logico per ragionare su azioni e i loro effetti nel tempo. I concetti chiave:
+\begin{itemize}[noitemsep]
+  \item \textbf{Situazione}: storia delle azioni eseguite fino a un certo momento.
+  \item \textbf{Fluente}: proprietà che può cambiare valore (es: la posizione di un blocco).
+  \item \textbf{Do(azione, situazione)}: il risultato di eseguire un'azione in una situazione.
+\end{itemize}
+
+Il \textbf{Frame Problem}: come sapere cosa \emph{non} cambia dopo un'azione? Se sposto un blocco da A a B, il colore del blocco rimane lo stesso -- ma devo specificarlo esplicitamente per ogni fluente! Gli \textbf{assiomi dello stato successore} risolvono questo: un fluente è vero dopo un'azione \emph{se} l'azione lo rende vero, \emph{oppure} era già vero e l'azione non lo ha reso falso.
+
+\textbf{Anomalia di Sussman}: nei piani lineari (perseguire un sotto-obiettivo alla volta), il perseguimento di un obiettivo può disfare il lavoro fatto per un altro. Soluzione: \emph{interleaving} dei passi (pianificazione non lineare).
+\end{narrativo}
+
+% ====================================================================
+\section{Machine Learning}
+% ====================================================================
+
+\subsection{Alberi di Decisione}
+
+\begin{narrativo}{Come costruire un albero di decisione}
+L'algoritmo di Hunt (base di ID3 e C4.5) costruisce l'albero ricorsivamente:
+\begin{enumerate}[noitemsep]
+  \item Se tutti gli esempi nel nodo corrente appartengono alla stessa classe $\Rightarrow$ crea una foglia con quella classe.
+  \item Altrimenti: scegli l'attributo che ``divide meglio'' gli esempi (massimizza il guadagno di informazione).
+  \item Crea un figlio per ogni valore dell'attributo, assegna gli esempi ai figli, ripeti.
+\end{enumerate}
+\end{narrativo}
+
+\begin{esempio}{Giocare a tennis: albero di decisione}
+Dataset: 14 giornate. Attributi: \textit{Meteo} (Sole/Nuvoloso/Pioggia), \textit{Temperatura} (Alta/Media/Bassa), \textit{Umidità} (Alta/Normale), \textit{Vento} (Forte/Debole). Classe: \textit{Gioca} (Sì/No).
+
+L'entropia della radice: $H = -\frac{9}{14}\log_2\frac{9}{14} - \frac{5}{14}\log_2\frac{5}{14} \approx 0.940$.
+
+Per l'attributo \textit{Meteo}:
+\begin{itemize}[noitemsep]
+  \item Sole (5 esempi: 2 sì, 3 no): $H = 0.971$
+  \item Nuvoloso (4 esempi: 4 sì, 0 no): $H = 0$ (puro!)
+  \item Pioggia (5 esempi: 3 sì, 2 no): $H = 0.971$
+\end{itemize}
+$\text{Gain(Meteo)} = 0.940 - (\frac{5}{14} \cdot 0.971 + \frac{4}{14} \cdot 0 + \frac{5}{14} \cdot 0.971) \approx 0.247$
+
+Il ramo \textit{Nuvoloso} diventa subito una foglia ``Gioca=Sì''. Gli altri rami si espandono ulteriormente con altri attributi.
+\end{esempio}
+
+\begin{narrativo}{Overfitting e pruning}
+Un albero costruito completamente su dati di training si adatta al rumore: memorizza le eccezioni invece di catturare i pattern generali (\textbf{overfitting}). Due soluzioni:
+
+\textbf{Pre-Pruning}: interrompi la costruzione se il guadagno di informazione è sotto una soglia. Rischio: ci si ferma troppo presto (\textbf{underfitting}).
+
+\textbf{Post-Pruning}: costruisci l'albero completo, poi \emph{pota} i rami sostituendoli con foglie della classe più frequente. Usa un \textbf{validation set} separato dal training: pota se le prestazioni sul validation set migliorano. È più robusto del pre-pruning.
+
+Il \textbf{Rasoio di Occam}: a parità di errore, il modello più semplice è preferibile. Un albero piccolo generalizza meglio di uno grande.
+\end{narrativo}
+
+\begin{narrativo}{Metriche di valutazione}
+La \textbf{matrice di confusione} riassume le previsioni del modello:
+\begin{center}
+\begin{tabular}{cc|cc}
+& & \multicolumn{2}{c}{\textbf{Previsto}} \\
+& & Positivo & Negativo \\
+\hline
+\multirow{2}{*}{\textbf{Reale}} & Positivo & TP & FN \\
+& Negativo & FP & TN \\
+\end{tabular}
+\end{center}
+\textbf{Accuratezza} = $\frac{TP+TN}{TP+TN+FP+FN}$. \textbf{Attenzione}: con classi sbilanciate, l'accuratezza è ingannevole! Se il 99\% dei campioni è negativo, un classificatore che dice sempre ``negativo'' ha 99\% di accuratezza ma è inutile.
+\end{narrativo}
+
+% ====================================================================
+\section{Reti Neurali}
+% ====================================================================
+
+\subsection{Il Percettrone}
+
+\begin{narrativo}{Come funziona un singolo neurone}
+Il percettrone prende $n$ input $x_1, \ldots, x_n$ con pesi $w_1, \ldots, w_n$ e un bias $b$. Calcola la somma pesata $\text{net} = \sum_i w_i x_i + b$ e applica la funzione di attivazione $f(\text{net})$.
+
+Geometricamente: i pesi definiscono un \textbf{iperpiano} nello spazio degli input. Gli esempi su un lato dell'iperpiano sono classe 1, gli altri classe 0. Per questo il percettrone \textbf{non può risolvere XOR}: XOR non è linearmente separabile (non esiste un piano che separa le due classi).
+\end{narrativo}
+
+\begin{esempio}{Calcolo forward pass con numeri}
+Input: $x_1 = 1$, $x_2 = 0$. Pesi: $w_1 = 0.5$, $w_2 = -0.3$. Bias: $b = 0.1$.
+
+$\text{net} = 0.5 \cdot 1 + (-0.3) \cdot 0 + 0.1 = 0.6$
+
+Con funzione sigmoide: $\sigma(0.6) = \frac{1}{1+e^{-0.6}} \approx \frac{1}{1+0.549} \approx 0.646$
+
+L'output è $\approx 0.646$. Se soglia = 0.5 $\Rightarrow$ classe 1.
+\end{esempio}
+
+\begin{esempio}{Regola Delta: aggiornamento dei pesi}
+Supponi: output desiderato $d = 1$, output ottenuto $o = 0.646$, learning rate $\eta = 0.1$.
+
+Errore: $d - o = 1 - 0.646 = 0.354$
+
+Aggiornamento:
+\begin{align*}
+w_1 &\leftarrow 0.5 + 0.1 \cdot 0.354 \cdot 1 = 0.535 \\
+w_2 &\leftarrow -0.3 + 0.1 \cdot 0.354 \cdot 0 = -0.3 \quad \text{(input zero, nessun aggiornamento)} \\
+b   &\leftarrow 0.1 + 0.1 \cdot 0.354 \cdot 1 = 0.135
+\end{align*}
+Alla prossima iterazione, l'output sarà più vicino a 1.
+\end{esempio}
+
+\subsection{MLP e Backpropagation}
+
+\begin{narrativo}{Perché servono più strati}
+Un singolo percettrone può classificare solo funzioni linearmente separabili. Un \textbf{MLP} (Multi-Layer Perceptron) con almeno un hidden layer può approssimare qualsiasi funzione continua (\textbf{Universal Approximation Theorem}). Gli hidden layer imparano \emph{rappresentazioni intermedie} -- caratteristiche sempre più astratte degli input.
+
+L'architettura:
+\begin{itemize}[noitemsep]
+  \item \textbf{Input layer}: un neurone per feature (identità).
+  \item \textbf{Hidden layer(s)}: neuroni con sigmoide. Trasformano l'input in rappresentazioni utili.
+  \item \textbf{Output layer}: produce la classificazione finale.
+  \item Per $k$ classi: $k$ neuroni di output (uno per classe).
+\end{itemize}
+\end{narrativo}
+
+\begin{narrativo}{Backpropagation: come impara la rete}
+Il training è in due fasi, ripetute per ogni esempio o mini-batch:
+
+\textbf{1. Forward Pass}: calcola l'output di ogni neurone layer per layer, fino all'output. Calcola l'errore $E = \frac{1}{2}\sum_i (t_i - y_i)^2$.
+
+\textbf{2. Backward Pass}: propaga l'errore \emph{all'indietro} usando la \textbf{regola della catena}. Calcola il gradiente $\frac{\partial E}{\partial w}$ per ogni peso e aggiornalo nella direzione che riduce l'errore:
+\[
+w \leftarrow w - \eta \frac{\partial E}{\partial w}
+\]
+
+La \emph{regola della catena} permette di calcolare come ogni peso influenza l'errore finale, anche se il peso è molti layer ``lontano'' dall'output.
+\end{narrativo}
+
+\begin{attenzione}{Problemi pratici dell'addestramento}
+\begin{itemize}[noitemsep]
+  \item \textbf{Vanishing gradient}: con sigmoidi profonde, il gradiente si azzera verso i layer iniziali (la derivata della sigmoide è al massimo 0.25). Soluzione: \textbf{ReLU} ($f(x) = \max(0,x)$, derivata = 1 per $x>0$).
+  \item \textbf{Learning rate}: troppo grande $\Rightarrow$ divergenza (i pesi oscillano). Troppo piccolo $\Rightarrow$ convergenza lentissima. Soluzione: Adam, RMSProp (adattativi).
+  \item \textbf{Overfitting}: la rete memorizza il training set. Soluzione: dropout (disattiva casualmente alcuni neuroni durante il training), regolarizzazione L1/L2.
+\end{itemize}
+\end{attenzione}
+
+% ====================================================================
+\section{Apprendimento per Rinforzo}
+% ====================================================================
+
+\subsection{Il framework MDP}
+
+\begin{narrativo}{Imparare dall'interazione}
+Nel reinforcement learning, un agente interagisce con un ambiente: sceglie azioni, riceve reward, aggiorna la sua strategia. Non c'è un dataset di esempi etichettati: l'agente scopre cosa funziona attraverso l'esperienza.
+
+Il framework formale è il \textbf{Markov Decision Process (MDP)}: $\langle S, A, T, R, \gamma \rangle$.
+\begin{itemize}[noitemsep]
+  \item $S$: stati. $A$: azioni. $T(s, a, s')$: probabilità di transizione.
+  \item $R(s, a, s')$: reward ricevuto. $\gamma$: fattore di sconto ($0 \leq \gamma < 1$).
+  \item \textbf{Proprietà di Markov}: il futuro dipende solo dallo stato corrente, non dalla storia.
+\end{itemize}
+\end{narrativo}
+
+\begin{analogia}{Il topo nel labirinto}
+Un topo in un labirinto esplora a caso inizialmente. Trova il formaggio (reward +10) in alcune celle, sbatte contro i muri (-1 per ogni mossa), cadono trappole (-10). Col tempo impara il percorso migliore verso il formaggio, evitando le trappole. Questa è l'essenza del RL.
+\end{analogia}
+
+\begin{narrativo}{Policy{,} Value Function e Q-value}
+\textbf{Policy} $\pi$: la strategia dell'agente -- data uno stato, quale azione compiere.
+
+\textbf{Value function} $V^\pi(s)$: valore atteso dei reward futuri (scontati) partendo da $s$ e seguendo $\pi$.
+
+\textbf{Q-value} $Q^\pi(s,a)$: valore atteso partendo da $s$, facendo $a$, poi seguendo $\pi$.
+
+Il $\gamma$ (fattore di sconto) gestisce l'orizzonte temporale: $\gamma = 0$ considera solo il reward immediato (miope), $\gamma \to 1$ considera tutti i reward futuri ugualmente (lungimirante). In pratica $\gamma \approx 0.9$--$0.99$.
+
+La \textbf{policy ottimale}: $\pi^*(s) = \arg\max_a Q^*(s,a)$.
+\end{narrativo}
+
+\subsection{Algoritmi di apprendimento}
+
+\begin{narrativo}{Value Iteration}
+Se conosco $T$ e $R$ (model-based), posso calcolare $V^*$ iterativamente:
+\[
+V_{k+1}(s) \leftarrow \max_{a} \sum_{s'} T(s,a,s') \left[ R(s,a,s') + \gamma \cdot V_k(s') \right]
+\]
+Inizia con $V_0 = 0$ per tutti gli stati. A ogni iterazione, il valore ``si propaga'' dagli stati con reward alto agli stati vicini. Converge a $V^*$ perché la funzione è una contrazione (con $\gamma < 1$).
+\end{narrativo}
+
+\begin{esempio}{Value Iteration su una griglia 3x3}
+Griglia 3x3. Goal in (3,3) con reward +1, trappola in (2,2) con reward -1. $\gamma = 0.9$.
+
+Iterazione 0: tutti i valori = 0.\\
+Iterazione 1: $V(3,3) \leftarrow 1$, $V(2,2) \leftarrow -1$ (reward immediato).\\
+Iterazione 2: le celle adiacenti a (3,3) ricevono $\gamma \cdot 1 = 0.9$; le adiacenti a (2,2) ricevono $\gamma \cdot (-1) = -0.9$.\\
+Iterazione 3: le celle a distanza 2 da (3,3) ricevono $\gamma^2 \approx 0.81$\ldots\\
+Dopo alcune iterazioni emerge la policy ottimale: ogni cella ``punta'' verso (3,3) evitando (2,2).
+\end{esempio}
+
+\begin{narrativo}{Q-Learning: imparare senza modello}
+Q-Learning è \textbf{model-free}: non conosce $T$ e $R$. Impara direttamente dall'esperienza. Ad ogni step $(s, a, r, s')$:
+\[
+Q(s,a) \leftarrow Q(s,a) + \alpha \left[ r + \gamma \max_{a'} Q(s',a') - Q(s,a) \right]
+\]
+Dove $\alpha$ è il learning rate. La formula dice: aggiorna $Q(s,a)$ nella direzione del \textbf{target} $r + \gamma \max_{a'} Q(s',a')$ (reward immediato + valore futuro stimato).
+
+Q-Learning converge a $Q^*$ con sufficiente esplorazione (tutte le coppie stato-azione visitate infinite volte). È \textbf{off-policy}: converge a $Q^*$ indipendentemente dalla policy di esplorazione.
+
+\textbf{Esplorazione $\varepsilon$-greedy}: con probabilità $\varepsilon$ scegli un'azione casuale (esplorazione); con probabilità $1-\varepsilon$ scegli $\arg\max_a Q(s,a)$ (sfruttamento). $\varepsilon$ decresce nel tempo.
+\end{narrativo}
+
+% ====================================================================
+\section{Riepilogo -- Mappa concettuale}
+% ====================================================================
+
+\begin{narrativo}{Come collegare tutto}
+Il corso segue un filo logico: come costruire agenti intelligenti che risolvono problemi sempre più complessi.
+
+\textbf{Ricerca (Cap. 2--4)}: l'agente conosce lo spazio degli stati e cerca un cammino. Blind search quando non ha informazioni; informed search (A*) quando ha un'euristica; adversarial search nei giochi.
+
+\textbf{CSP (Cap. 5)}: l'agente deve trovare un assegnamento consistente. La struttura del problema (vincoli) permette di potare enormi porzioni dello spazio prima di esplorarle.
+
+\textbf{Logica (Cap. 6--8)}: l'agente ragiona con una base di conoscenza formale. Proposizionale per il mondo semplice, FOL per generalizzare su oggetti e relazioni.
+
+\textbf{Ontologie (Cap. 9)}: come organizzare la conoscenza del dominio in modo riusabile e strutturato.
+
+\textbf{ML, Reti Neurali, RL (Cap. 10--12)}: l'agente \emph{apprende} dalla esperienza invece di essere programmato esplicitamente. Supervisioned learning (alberi, reti), reinforcement learning (MDP, Q-Learning).
+\end{narrativo}
+
+\begin{ricorda}{Formule chiave da portare all'esame}
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{ll}
+\toprule
+\textbf{Concetto} & \textbf{Formula / Proprietà chiave} \\
+\midrule
+A* & $f(n) = g(n) + h(n)$; ottimale se $h$ ammissibile \\
+Ammissibilità & $h(n) \leq h^*(n)$ (non sovrastima mai) \\
+Manhattan & $\sum_i |x_i-x_i^*|+|y_i-y_i^*|$ \\
+IDDFS & Spazio $O(bd)$, Tempo $O(b^d)$ -- il migliore blind \\
+Alpha-Beta & Caso migliore $O(b^{m/2})$ -- ordine perfetto delle mosse \\
+AC-3 & Complessità $O(n^2 d^3)$ \\
+Entropia & $H(t) = -\sum_i p(i|t)\log_2 p(i|t)$ \\
+Information Gain & $\text{Gain} = H(\text{parent}) - \sum_v \frac{|D_v|}{|D|} H(D_v)$ \\
+Regola Delta & $\Delta w_j = \eta \cdot (d-o) \cdot x_j$ \\
+Backprop & $\Delta w = -\eta \frac{\partial E}{\partial w}$ (discesa del gradiente) \\
+Bellman & $V^*(s) = \max_a \sum_{s'} T(s,a,s')[R + \gamma V^*(s')]$ \\
+Q-Learning & $Q(s,a) \mathrel{+}= \alpha[r + \gamma\max_{a'}Q(s',a') - Q(s,a)]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{ricorda}
+
+\begin{ricorda}{Trappole frequenti all'esame}
+\begin{itemize}[noitemsep]
+  \item BFS ottimale \textbf{solo} con costi uniformi. Con costi diversi $\Rightarrow$ UCS.
+  \item Una clausola di Horn può avere \textbf{zero} letterali positivi (clausola obiettivo) o \textbf{uno} (clausola definita). NON può averne due o più.
+  \item MPG (Modus Ponens Generalizzato) richiede che le premesse della KB \emph{unifichino} con le premesse della regola -- non devono essere identiche.
+  \item Alpha-Beta dà lo \textbf{stesso risultato} di Minimax: la potatura non cambia la decisione, solo il tempo di calcolo.
+  \item $\forall x \; P(x) \Rightarrow Q(x)$ si legge ``per ogni $x$, se $P(x)$ allora $Q(x)$'' -- $\Rightarrow$ si usa con $\forall$, \textbf{non} $\land$.
+  \item Nella Skolemizzazione, se $\exists$ è all'interno di un $\forall y$, usa una \textbf{funzione} di Skolem $f(y)$, non una semplice costante.
+  \item Q-Learning converge a $Q^*$ anche se non segui la policy ottimale durante l'esplorazione (off-policy). Value Iteration invece richiede il modello completo.
+\end{itemize}
+\end{ricorda}
+
+\end{document}
