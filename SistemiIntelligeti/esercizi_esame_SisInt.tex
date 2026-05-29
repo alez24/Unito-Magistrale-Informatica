@@ -1,0 +1,921 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{multicol}
+\usepackage{tabularx}
+
+\geometry{margin=2.2cm}
+\hypersetup{colorlinks=true, linkcolor=blue!70!black}
+
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{domanda}[1]{
+  colback=white, colframe=blue!50!black,
+  title={\textbf{#1}}, fonttitle=\small\bfseries,
+  breakable, left=4pt, right=4pt, top=3pt, bottom=3pt
+}
+\newtcolorbox{risposta}[1]{
+  colback=green!5, colframe=green!50!black,
+  title={\textbf{Soluzione -- #1}}, fonttitle=\small\bfseries,
+  breakable, left=4pt, right=4pt, top=3pt, bottom=3pt
+}
+\newtcolorbox{regola}[1]{
+  colback=yellow!8, colframe=orange!60!black,
+  title={\textbf{#1}}, fonttitle=\small\bfseries,
+  breakable, left=4pt, right=4pt, top=3pt, bottom=3pt
+}
+\newtcolorbox{vfbox}[1]{
+  colback=gray!5, colframe=gray!60,
+  title={\textbf{#1}}, fonttitle=\small\bfseries,
+  breakable, left=4pt, right=4pt, top=3pt, bottom=3pt
+}
+\newtcolorbox{assocbox}[1]{
+  colback=white, colframe=purple!50!black,
+  title={\textbf{#1}}, fonttitle=\small\bfseries,
+  breakable, left=4pt, right=4pt, top=3pt, bottom=3pt
+}
+
+\newcommand{\corr}[1]{\textcolor{green!60!black}{\textbf{#1}}}
+\newcommand{\V}{\textcolor{green!60!black}{\textbf{VERO}}}
+\newcommand{\F}{\textcolor{red!70!black}{\textbf{FALSO}}}
+\newcommand{\blank}{\underline{\hspace{4cm}}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\title{\textbf{Fascicolo Esercizi d'Esame}\\[6pt]
+{\large Sistemi Intelligenti}\\[4pt]
+\normalsize Basato sulle domande reali della professoressa}
+\author{}
+\date{A.A. 2025--2026}
+
+\begin{document}
+\maketitle
+
+\begin{tcolorbox}[colback=blue!5, colframe=blue!40!black]
+\textbf{Come usare questo fascicolo.} Fai tutti gli esercizi di ogni sezione \emph{prima} di guardare le soluzioni. Le soluzioni di ogni sezione si trovano tutte in fondo al documento, separate, in modo da non vederle mentre lavori.
+\end{tcolorbox}
+
+\tableofcontents
+\newpage
+
+% ====================================================================
+%  ██████╗ ██╗   ██╗███████╗███████╗████████╗██╗ ██████╗ ███╗   ██╗██╗
+% ██╔═══██╗██║   ██║██╔════╝██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██║
+% ██║   ██║██║   ██║█████╗  ███████╗   ██║   ██║██║   ██║██╔██╗ ██║██║
+% ██║▄▄ ██║██║   ██║██╔══╝  ╚════██║   ██║   ██║██║   ██║██║╚██╗██║██║
+% ╚██████╔╝╚██████╔╝███████╗███████║   ██║   ██║╚██████╔╝██║ ╚████║██║
+%  ╚══▀▀═╝  ╚═════╝ ╚══════╝╚══════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝
+% ====================================================================
+
+\section{Domande a Scelta Multipla}
+
+\subsection{Ricerca e algoritmi}
+
+\begin{domanda}{D1 -- Algoritmo informato vs non informato}
+Considerando un problema di ricerca in uno spazio degli stati, che cosa differenzia un algoritmo informato da uno non informato?
+\begin{enumerate}[label=\alph*.]
+  \item L'utilizzo di una funzione costo
+  \item L'utilizzo di un modello
+  \item L'utilizzo di una funzione euristica
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D2 -- Complessità spaziale dell'Iterative Deepening}
+La complessità spaziale dell'Iterative Deepening è ($br$ = branching factor, $d$ = profondità della soluzione):
+\begin{enumerate}[label=\alph*.]
+  \item $O(br^d)$
+  \item $O(br^{d+1})$
+  \item $O(br \cdot d)$
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D3 -- Algoritmo ottimo}
+Un algoritmo di ricerca in uno spazio degli stati è \textbf{ottimo} quando:
+\begin{enumerate}[label=\alph*.]
+  \item Restituisce sempre una soluzione nel minor numero di passi
+  \item Restituisce sempre una soluzione che minimizza il valore di $h$
+  \item Restituisce sempre una soluzione di costo minimo
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D4 -- Algoritmo più efficiente in spazio}
+Quale fra i seguenti è il più efficiente in termini di \textbf{spazio}?
+\begin{enumerate}[label=\alph*.]
+  \item UCS (Ricerca a costo uniforme)
+  \item BFS (Ricerca in ampiezza)
+  \item DFS (Ricerca in profondità)
+\end{enumerate}
+\end{domanda}
+
+\subsection{Euristiche}
+
+\begin{domanda}{D5 -- Euristica ammissibile}
+Cosa significa che un'euristica è \textbf{ammissibile}?
+\begin{enumerate}[label=\alph*.]
+  \item Approssima $h^*(n)$ in maniera ottimale
+  \item È sempre minore o uguale a $h^*(n)$ (non sovrastima mai)
+  \item Fa stime conservative (può sottostimare)
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D6 -- Euristica dominante}
+Date due euristiche ammissibili $h_1$ e $h_2$, quando $h_1$ \textbf{domina} $h_2$?
+\begin{enumerate}[label=\alph*.]
+  \item Per ogni nodo $n$: $h_1(n) \geq h_2(n)$
+  \item Per almeno un nodo $n$: $h_1(n) \geq h_2(n)$
+  \item Per almeno un nodo $n$: $h_1(n) < h_2(n)$
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D7 -- Euristica che non guida la ricerca}
+Quale delle seguenti euristiche \textbf{non} guida l'algoritmo verso la soluzione?
+\begin{enumerate}[label=\alph*.]
+  \item Distanza in linea d'aria
+  \item Funzione costante $h(n) = 0$
+  \item Distanza di Manhattan
+\end{enumerate}
+\end{domanda}
+
+\subsection{Minimax e giochi}
+
+\begin{domanda}{D8 -- Cosa fa Minimax}
+L'algoritmo Minimax\ldots
+\begin{enumerate}[label=\alph*.]
+  \item Costruisce un percorso che porta il giocatore Max a vincere
+  \item Sceglie la prossima mossa che il giocatore Max dovrebbe eseguire
+  \item Costruisce un percorso che porta il giocatore Min a perdere
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D9 -- Come si calcolano i valori in Minimax}
+I valori dei nodi di un albero costruito dall'algoritmo Minimax vengono calcolati:
+\begin{enumerate}[label=\alph*.]
+  \item Risalendo dalle foglie verso la radice
+  \item Discendendo dalla radice verso le foglie
+  \item Non si calcolano: sono dati dalla funzione di valutazione definita insieme al problema
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D10 -- Alpha-Beta: utilità per quali nodi}
+In Minimax con alpha-beta pruning, l'utilità viene calcolata:
+\begin{enumerate}[label=\alph*.]
+  \item Per i nodi foglia
+  \item Per i nodi interni dell'albero
+  \item Per la radice dell'albero
+\end{enumerate}
+\end{domanda}
+
+\subsection{CSP}
+
+\begin{domanda}{D11 -- Definizione di soluzione in un CSP}
+Cos'è una \textbf{soluzione} di un CSP (problema di soddisfacimento di vincoli)?
+\begin{enumerate}[label=\alph*.]
+  \item Un assegnamento consistente (anche parziale)
+  \item Una sequenza di passi che permette di raggiungere il goal minimizzando il costo
+  \item Un assegnamento di tutte le variabili che soddisfa tutti i vincoli
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D12 -- Algoritmo più efficiente per CSP}
+Quale fra i seguenti è il \textbf{più efficiente} in termini di tempo per risolvere un CSP?
+\begin{enumerate}[label=\alph*.]
+  \item Ricerca con backtracking che sfrutta la commutatività
+  \item Back-jumping
+  \item Backward chaining
+  \item Generate and test
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D13 -- Algoritmo meno efficiente per CSP}
+Quale fra i seguenti è il \textbf{meno efficiente} in termini di tempo per risolvere un CSP?
+\begin{enumerate}[label=\alph*.]
+  \item Ricerca con backtracking che sfrutta la commutatività
+  \item Back-jumping
+  \item Generate and test
+\end{enumerate}
+\end{domanda}
+
+\subsection{Machine Learning e reti neurali}
+
+\begin{domanda}{D14 -- Criterio di terminazione alberi di decisione}
+Quale dei seguenti può essere usato come criterio di terminazione nella costruzione di alberi di decisione (pre-pruning)?
+\begin{enumerate}[label=\alph*.]
+  \item Il valore della funzione di valutazione calcolata nel nodo è maggiore di una certa soglia
+  \item Il nodo presenta overfitting
+  \item Il numero delle istanze associate al nodo è minore di una certa soglia
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D15 -- Matrice di confusione: distribuzione ottimale}
+Quale distribuzione dei valori in una matrice di confusione denota una \textbf{prestazione ottimale}?
+\begin{enumerate}[label=\alph*.]
+  \item Distribuzione uniforme del numero di istanze su tutte le celle
+  \item Ogni cella contiene il numero di istanze diviso l'entropia della classe
+  \item Diagonale principale che somma al numero totale delle istanze, 0 nelle altre celle
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D16 -- Cosa calcola la matrice di confusione}
+Quale delle seguenti misure viene calcolata tramite una matrice di confusione?
+\begin{enumerate}[label=\alph*.]
+  \item Information gain
+  \item Accuratezza
+  \item Entropia
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D17 -- Cosa misura l'entropia}
+Cosa misura l'entropia in un albero di decisione?
+\begin{enumerate}[label=\alph*.]
+  \item La presenza di più classi in un insieme di dati (grado di impurità)
+  \item L'errore calcolato sull'output prodotto dalla rete neurale
+  \item Un valore che permette di aggiornare i pesi di una rete neurale
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D18 -- Cosa misura l'information gain}
+Cosa misura l'information gain?
+\begin{enumerate}[label=\alph*.]
+  \item Il grado di purezza di un insieme di dati
+  \item La riduzione di overfitting comportata dal pruning
+  \item La riduzione di entropia prodotta da uno split
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D19 -- Problema rilevante nello studio del percettrone}
+Quale dei seguenti problemi è stato rilevante nello studio del percettrone?
+\begin{enumerate}[label=\alph*.]
+  \item Problema dell'or esclusivo (XOR)
+  \item Problema della colorazione della mappa dell'Australia
+  \item Anomalia di Sussman
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D20 -- K-NN: su cosa si basa}
+Sulla base di cosa l'algoritmo K Nearest Neighbour restituisce la classe di un'istanza?
+\begin{enumerate}[label=\alph*.]
+  \item Combinazione lineare dei pesi delle connessioni moltiplicati per gli input
+  \item Soddisfacimento dell'antecedente di una regola indotta dal learning set
+  \item Somiglianza dell'istanza alle $k$ istanze memorizzate più simili
+\end{enumerate}
+\end{domanda}
+
+\subsection{Logica e FOL}
+
+\begin{domanda}{D21 -- Test di Turing}
+Il test di Turing dice che un computer è intelligente se:
+\begin{enumerate}[label=\alph*.]
+  \item Comprende le domande che gli vengono poste
+  \item Imita il comportamento umano nel rispondere alle domande
+  \item Risponde correttamente alle domande che gli vengono poste
+  \item È in grado di manifestare emozioni
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D22 -- Frame problem}
+Per ``frame problem'' si intende:
+\begin{enumerate}[label=\alph*.]
+  \item Il fatto che solo alcuni concetti di un'ontologia hanno un corrispondente in un'altra
+  \item L'incapacità di sapere quali proprietà di una situazione si preservano dopo l'applicazione di un'azione
+  \item L'imposizione di un orizzonte temporale alla ricerca di una soluzione
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D23 -- Unificatore nella FOL}
+Qual è la definizione di \textbf{unificatore} di due formule nella logica del primo ordine?
+\begin{enumerate}[label=\alph*.]
+  \item Associazione fra i concetti affini di due KB differenti
+  \item Sostituzione delle variabili che rende identiche le due formule
+  \item Regola di inferenza che, date due clausole, restituisce il loro risolvente
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D24 -- Cosa richiede la risoluzione}
+La regola di risoluzione richiede formule espresse come:
+\begin{enumerate}[label=\alph*.]
+  \item Clausole di Horn
+  \item Clausole qualsiasi (in CNF)
+  \item Formule in forma normale disgiuntiva
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D25 -- Path consistency}
+La path consistency (consistenza di cammino):
+\begin{enumerate}[label=\alph*.]
+  \item Verifica la possibilità di assegnare a una variabile un valore consistente rispetto ad altre \textbf{due} variabili
+  \item Verifica la possibilità di assegnare a una variabile un valore consistente rispetto ad \textbf{un'altra sola} variabile
+  \item Verifica la possibilità di assegnare a una variabile un valore consistente (senza riferimento ad altre)
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D26 -- Situation Calculus: elemento non incluso nell'azione}
+Quale dei seguenti \textbf{non} fa parte della definizione di un'azione nel situation calculus?
+\begin{enumerate}[label=\alph*.]
+  \item Proprietà che devono valere per applicare l'azione (precondizioni)
+  \item Proprietà atemporali (eternali)
+  \item Proprietà che l'applicazione dell'azione modifica (effetti)
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D27 -- RDF (Resource Description Framework)}
+Considerando RDF, quale delle seguenti affermazioni è vera?
+\begin{enumerate}[label=\alph*.]
+  \item La conoscenza è costituita da triple $\langle$soggetto, predicato, oggetto$\rangle$
+  \item La conoscenza è costituita da relazioni IS-A e MEMBER
+  \item La conoscenza è costituita da clausole di Horn
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D28 -- Tassonomie}
+Quale delle seguenti affermazioni è corretta quando si parla di tassonomie?
+\begin{enumerate}[label=\alph*.]
+  \item L'insieme di tutte le categorie costituisce una partizione
+  \item Le sottocategorie di ciascuna categoria costituiscono una partizione
+  \item Tutte le categorie di una tassonomia sono disgiunte
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D29 -- Modello nella logica proposizionale}
+Quale dei seguenti potrebbe essere un modello nella logica proposizionale?
+\begin{enumerate}[label=\alph*.]
+  \item $X$ vale \textit{true}, $Y$ vale \textit{false}
+  \item $X$ vale Giovanni, $Y$ vale Riccardo
+  \item $X$ vale 4, $Y$ vale 2
+\end{enumerate}
+\end{domanda}
+
+\begin{domanda}{D30 -- In quale contesto abbiamo parlato di post-pruning?}
+In quale contesto abbiamo parlato di post-pruning?
+\begin{enumerate}[label=\alph*.]
+  \item Problemi di soddisfacimento dei vincoli
+  \item Apprendimento automatico
+  \item Problemi con avversario
+\end{enumerate}
+\end{domanda}
+
+\newpage
+
+% ====================================================================
+\section{Esercizi Vero/Falso su Formule FOL}
+% ====================================================================
+
+\begin{regola}{Regole chiave -- leggi prima di fare gli esercizi}
+\begin{itemize}[noitemsep]
+  \item \textbf{Clausola:} qualsiasi disgiunzione di letterali (atomi positivi o negati).
+  \item \textbf{Clausola di Horn:} clausola con \textbf{al più un} letterale positivo (non negato).
+  \item \textbf{Clausola definita:} clausola di Horn con \textbf{esattamente uno} letterale positivo (ha una ``testa'').
+  \item \textbf{Forward chaining / MPG applicabile:} serve una clausola definita + fatti ground che soddisfano \emph{tutte} le premesse.
+  \item \textbf{Risoluzione applicabile:} servono due clausole con letterali complementari unificabili.
+\end{itemize}
+\end{regola}
+
+\begin{vfbox}{Esercizio F1 -- Due formule{,} premessa incompleta}
+\textbf{A)} $\neg\text{Pred1}(x) \lor \text{Pred2}(x) \lor \neg\text{Pred3}(x)$ \qquad
+\textbf{B)} $\text{Pred1}(\text{ID0})$
+\smallskip
+
+Indica VERO o FALSO per ciascuna affermazione:
+\begin{enumerate}[label=\arabic*.]
+  \item La formula A è una clausola \hfill \underline{\hspace{2cm}}
+  \item Il forward chaining è applicabile \hfill \underline{\hspace{2cm}}
+  \item La formula A è una clausola di Horn \hfill \underline{\hspace{2cm}}
+  \item La risoluzione è applicabile \hfill \underline{\hspace{2cm}}
+  \item Il modus ponens generalizzato è applicabile \hfill \underline{\hspace{2cm}}
+\end{enumerate}
+\end{vfbox}
+
+\begin{vfbox}{Esercizio F2 -- Tre formule{,} clausola di Horn definita con fatti completi}
+\textbf{A)} $\neg\text{Alfa}(x) \lor \text{Beta}(x) \lor \neg\text{Gamma}(x)$ \qquad
+\textbf{B)} $\text{Alfa}(\text{ID0})$ \qquad
+\textbf{C)} $\text{Gamma}(\text{ID0})$
+\smallskip
+
+Indica VERO o FALSO per ciascuna affermazione:
+\begin{enumerate}[label=\arabic*.]
+  \item La formula A è una clausola di Horn \hfill \underline{\hspace{2cm}}
+  \item Il forward chaining è applicabile \hfill \underline{\hspace{2cm}}
+  \item La formula A è una clausola \hfill \underline{\hspace{2cm}}
+  \item La risoluzione è applicabile \hfill \underline{\hspace{2cm}}
+  \item Il modus ponens generalizzato è applicabile \hfill \underline{\hspace{2cm}}
+\end{enumerate}
+\end{vfbox}
+
+\begin{vfbox}{Esercizio F3 -- Tre formule{,} clausola con DUE letterali positivi}
+\textbf{A)} $\text{Alfa}(\text{ID1}) \lor \neg\text{Beta}(x) \lor \text{Gamma}(x)$ \qquad
+\textbf{B)} $\text{Alfa}(\text{ID0})$ \qquad
+\textbf{C)} $\text{Beta}(\text{ID1})$
+\smallskip
+
+Indica VERO o FALSO per ciascuna affermazione:
+\begin{enumerate}[label=\arabic*.]
+  \item La formula A è una clausola di Horn \hfill \underline{\hspace{2cm}}
+  \item Il forward chaining è applicabile \hfill \underline{\hspace{2cm}}
+  \item La formula A è una clausola \hfill \underline{\hspace{2cm}}
+  \item Si può derivare $\text{Gamma}(\text{ID1})$ \hfill \underline{\hspace{2cm}}
+  \item Il modus ponens generalizzato è applicabile \hfill \underline{\hspace{2cm}}
+\end{enumerate}
+\end{vfbox}
+
+\begin{vfbox}{Esercizio F4 -- Applicare il MPG (con funzione Proprietario)}
+\textbf{A)} $\text{Cane}(\text{Asso})$ \qquad
+\textbf{B)} $\text{Custode}(\text{Proprietario}(z),\; z)$ \qquad
+\textbf{C)} $\text{Cane}(x) \land \text{Custode}(y, x) \Rightarrow \text{Responsabile}(y)$
+\smallskip
+
+Indica VERO o FALSO per ciascuna affermazione:
+\begin{enumerate}[label=\arabic*.]
+  \item Il MPG non è applicabile \hfill \underline{\hspace{2cm}}
+  \item Sostituzione corretta: $\{x/\text{Asso},\; z/z,\; y/\text{Proprietario}(\text{Asso})\}$ \hfill \underline{\hspace{2cm}}
+  \item Risultato: $\text{Cane}(\text{Asso}) \land \text{Custode}(y, \text{Asso})$ \hfill \underline{\hspace{2cm}}
+  \item Risultato: $\text{Responsabile}(\text{Proprietario}(\text{Asso}))$ \hfill \underline{\hspace{2cm}}
+  \item Sostituzione corretta: $\{x/\text{Asso},\; z/\text{Asso},\; y/\text{Proprietario}(\text{Asso})\}$ \hfill \underline{\hspace{2cm}}
+\end{enumerate}
+\end{vfbox}
+
+\begin{vfbox}{Esercizio F5 -- Applicare la Risoluzione FOL}
+\textbf{A)} $\neg\text{Ottone}(x) \lor \text{Percussione}(x) \lor \neg\text{Arco}(x)$ \qquad
+\textbf{B)} $\text{Ottone}(\text{ID0})$
+\smallskip
+
+Indica VERO o FALSO per ciascuna affermazione:
+\begin{enumerate}[label=\arabic*.]
+  \item L'unificatore è $\{x/\text{ID0}\}$ \hfill \underline{\hspace{2cm}}
+  \item La risoluzione non è applicabile \hfill \underline{\hspace{2cm}}
+  \item Risolvente: $\text{Ottone}(\text{ID0})$ \hfill \underline{\hspace{2cm}}
+  \item Risolvente: $\text{Percussione}(\text{ID0}) \lor \neg\text{Arco}(\text{ID0})$ \hfill \underline{\hspace{2cm}}
+  \item Risolvente: $\text{Percussione}(x) \lor \neg\text{Arco}(x)$ \hfill \underline{\hspace{2cm}}
+\end{enumerate}
+\end{vfbox}
+
+\newpage
+
+% ====================================================================
+\section{Esercizi di Associazione}
+% ====================================================================
+
+\begin{assocbox}{Associazione A1 -- Meccanismi logici e tipi di ragionamento}
+Collega ogni meccanismo al tipo di ragionamento che supporta:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lll}
+\textbf{Meccanismo} & & \textbf{Tipo di ragionamento} \\
+\hline
+Model checking & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Modus Ponens Generalizzato & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Proposizionalizzazione & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Modus Ponens (proposizionale) & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Binary Resolution & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+\end{tabular}
+\end{center}
+
+\smallskip
+\textit{Opzioni:} conseguenza logica $\cdot$ forward chaining FOL $\cdot$ traduzione KB FOL in logica proposizionale $\cdot$ forward chaining proposizionale $\cdot$ ragionamento per refutazione in FOL
+\end{assocbox}
+
+\begin{assocbox}{Associazione A2 -- Algoritmi e compiti}
+Collega ogni algoritmo al compito che svolge:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lll}
+\textbf{Algoritmo} & & \textbf{Compito} \\
+\hline
+Algoritmo di Hunt & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+K-NN & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Back-jumping & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+RBFS & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Alpha-beta pruning & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Minimax & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Forward chaining & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Backward chaining & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+\end{tabular}
+\end{center}
+
+\smallskip
+\textit{Opzioni:} costruzione alberi di decisione $\cdot$ classificazione senza modello esplicito $\cdot$ risoluzione CSP con conflict set $\cdot$ ricerca in spazio degli stati con memoria limitata $\cdot$ riduzione spazio di ricerca in giochi $\cdot$ suggerimento prossima mossa con avversario $\cdot$ inferenza da KB in clausole di Horn $\cdot$ verifica se un goal è derivabile da KB e fatti
+\end{assocbox}
+
+\begin{assocbox}{Associazione A3 -- Euristiche e proprietà}
+Collega ogni euristica/concetto alla proprietà corrispondente:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lll}
+\textbf{Euristica / Concetto} & & \textbf{Proprietà} \\
+\hline
+Euristica dominante & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Euristica ammissibile & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Euristica MRV & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Euristica di grado & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+Euristica monotona (consistente) & $\longrightarrow$ & \underline{\hspace{5cm}} \\
+\end{tabular}
+\end{center}
+
+\smallskip
+\textit{Opzioni:} approssima meglio $h^*(n)$ $\cdot$ è ottimistica (non sovrastima) $\cdot$ facilita il fallimento precoce $\cdot$ identifica la variabile coinvolta in più vincoli $\cdot$ garantisce ottimalità su grafi con lista chiusa
+\end{assocbox}
+
+\begin{assocbox}{Associazione A4 -- Ontologia ambito medico}
+Effettua le corrette associazioni (X è una variabile):
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lll}
+\textbf{Espressione} & & \textbf{Tipo di relazione} \\
+\hline
+\texttt{Capsomero part-of Virus} & $\longrightarrow$ & \underline{\hspace{4cm}} \\
+\texttt{Virologo isa Microbiologo} & $\longrightarrow$ & \underline{\hspace{4cm}} \\
+\texttt{HIV member Virus} & $\longrightarrow$ & \underline{\hspace{4cm}} \\
+\texttt{member(X, positivo) $\Rightarrow$ quarantenato(X)} & $\longrightarrow$ & \underline{\hspace{4cm}} \\
+\texttt{\{virus, batterio, fungo, protozoo\}} rispetto a Microrganismo & $\longrightarrow$ & \underline{\hspace{4cm}} \\
+\end{tabular}
+\end{center}
+
+\smallskip
+\textit{Opzioni:} relazione di composizione $\cdot$ relazione di sottoclasse $\cdot$ relazione di istanza $\cdot$ proprietà di classe $\cdot$ partizione
+\end{assocbox}
+
+\begin{assocbox}{Associazione A5 -- Ontologia ambito astronomico}
+Effettua le corrette associazioni (X è una variabile):
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lll}
+\textbf{Espressione} & & \textbf{Tipo di relazione} \\
+\hline
+\texttt{Mercurio member Pianeta} & $\longrightarrow$ & \underline{\hspace{4cm}} \\
+\texttt{member(X, pianeta) $\Rightarrow$ sferoidale(X)} & $\longrightarrow$ & \underline{\hspace{4cm}} \\
+\texttt{Astrometria isa Astronomia} & $\longrightarrow$ & \underline{\hspace{4cm}} \\
+\texttt{Magnetosfera part-of Pianeta} & $\longrightarrow$ & \underline{\hspace{4cm}} \\
+\texttt{\{solare, extrasolare, interstellare\}} rispetto a Pianeta & $\longrightarrow$ & \underline{\hspace{4cm}} \\
+\end{tabular}
+\end{center}
+
+\smallskip
+\textit{Opzioni:} relazione di composizione $\cdot$ relazione di sottoclasse $\cdot$ relazione di istanza $\cdot$ proprietà di classe $\cdot$ partizione
+\end{assocbox}
+
+\newpage
+
+% ====================================================================
+\section{Domande Aperte}
+% ====================================================================
+
+\begin{domanda}{O1 -- Tautologie{,} contraddizioni{,} soddisfacibilità}
+Definisci i tre concetti e fornisci un esempio per ciascuno.
+
+\vspace{3cm}
+\end{domanda}
+
+\begin{domanda}{O2 -- Funzioni di Skolem e termine ground}
+Spiega cosa sono e come si usano nella conversione in CNF nella FOL.
+
+\vspace{3cm}
+\end{domanda}
+
+\begin{domanda}{O3 -- Forward chaining: algoritmo e quando è applicabile}
+Descrivi l'algoritmo e le condizioni necessarie per applicarlo.
+
+\vspace{3cm}
+\end{domanda}
+
+\begin{domanda}{O4 -- Definizione di gioco a somma zero e funzionamento di Minimax}
+\vspace{4cm}
+\end{domanda}
+
+\begin{domanda}{O5 -- Clausole di Horn: definizione{,} tipi e perché sono efficienti}
+\vspace{4cm}
+\end{domanda}
+
+\begin{domanda}{O6 -- Overfitting: definizione{,} cause e soluzioni per gli alberi di decisione}
+\vspace{4cm}
+\end{domanda}
+
+\begin{domanda}{O7 -- Back-jumping e conflict set: come funziona e perché è meglio del backtracking cronologico}
+\vspace{4cm}
+\end{domanda}
+
+\begin{domanda}{O8 -- Perceptron: architettura{,} apprendimento{,} limiti}
+\vspace{4cm}
+\end{domanda}
+
+% ====================================================================
+% ╔═══════════════════════════════════════════════╗
+% ║            SOLUZIONI -- LEGGILE DOPO          ║
+% ╚═══════════════════════════════════════════════╝
+% ====================================================================
+
+\newpage
+\begin{tcolorbox}[colback=red!8, colframe=red!60!black, fonttitle=\Large\bfseries,
+  title=SOLUZIONI -- Apri questa sezione solo dopo aver completato tutti gli esercizi]
+\end{tcolorbox}
+
+% ====================================================================
+\section*{Soluzioni Sezione 1 -- Domande a Scelta Multipla}
+\addcontentsline{toc}{section}{Soluzioni}
+% ====================================================================
+
+\begin{risposta}{D1}
+\textbf{Risposta: c.} Un algoritmo \emph{informato} usa una funzione euristica $h(n)$ che stima il costo residuo verso il goal. La funzione costo $g(n)$ è usata da entrambi i tipi.
+\end{risposta}
+
+\begin{risposta}{D2}
+\textbf{Risposta: c} -- $O(br \cdot d)$. IDDFS mantiene in memoria solo il cammino corrente, come DFS. Il tempo è $O(b^d)$ come BFS, ma lo spazio è lineare.
+\end{risposta}
+
+\begin{risposta}{D3}
+\textbf{Risposta: c.} Ottimalità = trovare sempre la \textbf{soluzione di costo minimo} (somma dei costi degli archi), non il numero minimo di passi.
+\end{risposta}
+
+\begin{risposta}{D4}
+\textbf{Risposta: c (DFS).} DFS usa $O(b \cdot m)$: mantiene solo il cammino corrente + i fratelli non espansi. BFS e UCS usano $O(b^d)$.
+\end{risposta}
+
+\begin{risposta}{D5}
+\textbf{Risposta: b.} Ammissibile $\Leftrightarrow$ $h(n) \leq h^*(n)$ per ogni $n$. Non sovrastima mai il costo reale. Questo garantisce l'ottimalità di A*.
+\end{risposta}
+
+\begin{risposta}{D6}
+\textbf{Risposta: a.} $h_1$ domina $h_2$ se $h_1(n) \geq h_2(n)$ per \textbf{tutti} i nodi. Con $h_1$ dominante, A* espande meno nodi (stime più alte = più informative, ma ancora ammissibili).
+\end{risposta}
+
+\begin{risposta}{D7}
+\textbf{Risposta: b.} Con $h(n) = 0$, A* si riduce a UCS: esplora per costo $g$ crescente senza alcuna guida verso il goal. È ammissibile ma non direzionale.
+\end{risposta}
+
+\begin{risposta}{D8}
+\textbf{Risposta: b.} Minimax \emph{sceglie la prossima mossa} ottimale per Max, assumendo che Min giochi perfettamente. Non garantisce la vittoria -- suggerisce la mossa migliore \emph{qui e ora}.
+\end{risposta}
+
+\begin{risposta}{D9}
+\textbf{Risposta: a.} I valori si assegnano prima alle foglie (stati terminali) e si propagano \textbf{risalendo}: nodi MAX = max dei figli, nodi MIN = min dei figli.
+\end{risposta}
+
+\begin{risposta}{D10}
+\textbf{Risposta: a.} La funzione Utility si calcola solo nei nodi \textbf{foglia} (stati terminali). I valori dei nodi interni sono propagati dal basso, non calcolati direttamente.
+\end{risposta}
+
+\begin{risposta}{D11}
+\textbf{Risposta: c.} La soluzione deve essere \textbf{completa} (tutte le variabili valorizzate) \emph{e} \textbf{consistente} (nessun vincolo violato). Un assegnamento solo parzialmente consistente non è una soluzione.
+\end{risposta}
+
+\begin{risposta}{D12}
+\textbf{Risposta: a.} Il backtracking con commutatività è il più efficiente tra quelli elencati. Il backward chaining non è per CSP. Il generate and test è il peggiore.
+\end{risposta}
+
+\begin{risposta}{D13}
+\textbf{Risposta: c.} Generate and test genera \emph{tutte} le assegnazioni complete possibili ($O(d^n)$) poi verifica i vincoli: nessuna potatura.
+\end{risposta}
+
+\begin{risposta}{D14}
+\textbf{Risposta: c.} Numero di istanze sotto soglia è un criterio valido di pre-pruning. La ``funzione di valutazione'' è dei giochi. Rilevare l'overfitting a priori non è praticabile.
+\end{risposta}
+
+\begin{risposta}{D15}
+\textbf{Risposta: c.} Diagonale principale = solo classificazioni corrette (TP e TN). Se la diagonale somma al totale e le altre celle sono 0 $\Rightarrow$ accuratezza 100\%.
+\end{risposta}
+
+\begin{risposta}{D16}
+\textbf{Risposta: b.} Dalla matrice di confusione si calcola: accuratezza, error rate, precisione, recall. Information gain ed entropia sono per gli alberi di decisione (split).
+\end{risposta}
+
+\begin{risposta}{D17}
+\textbf{Risposta: a.} $H(t) = -\sum_i p(i|t)\log_2 p(i|t)$. $H=0$ se puro, massima se classi equiprobabili. Misura il \textbf{grado di impurità} (disordine) di un nodo.
+\end{risposta}
+
+\begin{risposta}{D18}
+\textbf{Risposta: c.} $\text{Gain} = H(\text{padre}) - \sum_v \frac{|D_v|}{|D_t|} H(D_v)$. Misura quanto lo split \emph{riduce} l'entropia. Si sceglie l'attributo con gain massimo.
+\end{risposta}
+
+\begin{risposta}{D19}
+\textbf{Risposta: a.} Minsky e Papert (1969) dimostrarono che il percettrone singolo non può risolvere XOR (non linearmente separabile). Questo provocò il primo AI winter. Serve MLP.
+\end{risposta}
+
+\begin{risposta}{D20}
+\textbf{Risposta: c.} K-NN è lazy learning: memorizza tutto il training set e classifica in base alla similarità con le $k$ istanze più vicine. Non costruisce un modello esplicito.
+\end{risposta}
+
+\begin{risposta}{D21}
+\textbf{Risposta: b.} Il test è comportamentale: la macchina deve \emph{imitare} il comportamento umano abbastanza bene da ingannare il giudice. Non si richiede comprensione vera (IA forte).
+\end{risposta}
+
+\begin{risposta}{D22}
+\textbf{Risposta: b.} Il frame problem è la difficoltà di rappresentare ciò che \emph{non cambia} dopo un'azione. Soluzione: assioma di stato successore nel situation calculus.
+\end{risposta}
+
+\begin{risposta}{D23}
+\textbf{Risposta: b.} L'unificatore (MGU) è una sostituzione $\theta$ che rende due espressioni sintatticamente identiche: $\alpha\theta = \beta\theta$.
+\end{risposta}
+
+\begin{risposta}{D24}
+\textbf{Risposta: b.} La risoluzione si applica a qualsiasi coppia di \textbf{clausole} (qualsiasi, non solo di Horn) con letterali complementari. Il MPG invece richiede clausole di Horn.
+\end{risposta}
+
+\begin{risposta}{D25}
+\textbf{Risposta: a.} Path consistency (3-consistenza): per ogni assegnamento consistente di $X_i$ e $X_j$, esiste un valore per $X_m$ compatibile con entrambe. Coinvolge 3 variabili.
+\end{risposta}
+
+\begin{risposta}{D26}
+\textbf{Risposta: b.} Le proprietà atemporali (eternali) non cambiano con le azioni -- non fanno parte della definizione di azione. Un'azione è descritta da precondizioni + effetti.
+\end{risposta}
+
+\begin{risposta}{D27}
+\textbf{Risposta: a.} RDF rappresenta la conoscenza come grafo di triple $\langle$soggetto, predicato, oggetto$\rangle$. Ogni tripla è una asserzione.
+\end{risposta}
+
+\begin{risposta}{D28}
+\textbf{Risposta: b.} Le sottocategorie di \emph{ciascuna} categoria formano una partizione (disgiunte + esaustive rispetto al padre). L'insieme di tutte le categorie non è necessariamente una partizione.
+\end{risposta}
+
+\begin{risposta}{D29}
+\textbf{Risposta: a.} Nella logica proposizionale un modello assegna valori \textit{true}/\textit{false} ai simboli proposizionali. Valori oggetto (``Giovanni'', ``4'') appartengono alla FOL.
+\end{risposta}
+
+\begin{risposta}{D30}
+\textbf{Risposta: b.} Il post-pruning si applica agli \textbf{alberi di decisione}: si costruisce l'albero completo poi si potano i rami ridondanti per ridurre l'overfitting.
+\end{risposta}
+
+% ====================================================================
+\section*{Soluzioni Sezione 2 -- Vero/Falso FOL}
+% ====================================================================
+
+\begin{risposta}{F1}
+\begin{enumerate}[noitemsep, label=\arabic*.]
+  \item \V\ -- È una disgiunzione di letterali.
+  \item \F\ -- Forward chaining richiede che \textbf{tutte} le premesse siano soddisfatte. A come regola: $\text{Pred1}(x) \land \text{Pred3}(x) \Rightarrow \text{Pred2}(x)$. Abbiamo B = $\text{Pred1}(\text{ID0})$ ma non $\text{Pred3}(\text{ID0})$ $\Rightarrow$ non applicabile.
+  \item \V\ -- Un solo letterale positivo: \texttt{Pred2(x)}.
+  \item \V\ -- A contiene $\neg\text{Pred1}(x)$, B contiene $\text{Pred1}(\text{ID0})$: complementari con $\{x/\text{ID0}\}$. Risolvente: $\text{Pred2}(\text{ID0}) \lor \neg\text{Pred3}(\text{ID0})$.
+  \item \F\ -- Stessa ragione del punto 2: manca Pred3.
+\end{enumerate}
+\end{risposta}
+
+\begin{risposta}{F2}
+\begin{enumerate}[noitemsep, label=\arabic*.]
+  \item \V\ -- Un solo letterale positivo: \texttt{Beta(x)}.
+  \item \V\ -- Regola: $\text{Alfa}(x) \land \text{Gamma}(x) \Rightarrow \text{Beta}(x)$. B dà $\text{Alfa}(\text{ID0})$, C dà $\text{Gamma}(\text{ID0})$: entrambe le premesse soddisfatte con $\{x/\text{ID0}\}$. Si deriva $\text{Beta}(\text{ID0})$.
+  \item \V\ -- Disgiunzione di letterali.
+  \item \V\ -- A e B hanno letterali complementari $\neg\text{Alfa}(x)$ / $\text{Alfa}(\text{ID0})$ con $\{x/\text{ID0}\}$.
+  \item \V\ -- Tutte le premesse soddisfatte (vedi punto 2).
+\end{enumerate}
+\end{risposta}
+
+\begin{risposta}{F3}
+\begin{enumerate}[noitemsep, label=\arabic*.]
+  \item \F\ -- A ha \textbf{due} letterali positivi: \texttt{Alfa(ID1)} e \texttt{Gamma(x)}. Non è di Horn.
+  \item \F\ -- Forward chaining e MPG richiedono clausole di Horn definite.
+  \item \V\ -- È una disgiunzione di letterali.
+  \item \F\ -- Non è derivabile con le regole disponibili: A non è una clausola definita.
+  \item \F\ -- Come punto 2.
+\end{enumerate}
+\end{risposta}
+
+\begin{risposta}{F4}
+Regola C: $\text{Cane}(x) \land \text{Custode}(y, x) \Rightarrow \text{Responsabile}(y)$. Unifico le premesse:
+$\text{Cane}(x)$ con A $\Rightarrow$ $\{x/\text{Asso}\}$.
+$\text{Custode}(y, \text{Asso})$ con B = $\text{Custode}(\text{Proprietario}(z), z)$ $\Rightarrow$ $\{y/\text{Proprietario}(z), z/\text{Asso}\}$.
+Sostituzione completa: $\{x/\text{Asso}, z/\text{Asso}, y/\text{Proprietario}(\text{Asso})\}$.
+\begin{enumerate}[noitemsep, label=\arabic*.]
+  \item \F\ -- Il MPG è applicabile.
+  \item \F\ -- La $z$ deve essere istanziata a \texttt{Asso}, non rimane variabile libera.
+  \item \F\ -- Il risultato del MPG è la conclusione istanziata, non un fatto già noto.
+  \item \V\ -- Risultato corretto: $\text{Responsabile}(\text{Proprietario}(\text{Asso}))$.
+  \item \V\ -- Sostituzione corretta.
+\end{enumerate}
+\end{risposta}
+
+\begin{risposta}{F5}
+A contiene $\neg\text{Ottone}(x)$; B contiene $\text{Ottone}(\text{ID0})$: complementari con $\{x/\text{ID0}\}$.
+\begin{enumerate}[noitemsep, label=\arabic*.]
+  \item \V\ -- L'unificatore è $\{x/\text{ID0}\}$ (la variabile è $x$).
+  \item \F\ -- La risoluzione è applicabile (ci sono letterali complementari).
+  \item \F\ -- Il risolvente non è uno dei fatti originali; si eliminano i letterali complementari.
+  \item \V\ -- Risolvente corretto: $\text{Percussione}(\text{ID0}) \lor \neg\text{Arco}(\text{ID0})$ (le restanti parti di A, istanziate).
+  \item \F\ -- Il risolvente è istanziato ($x$ viene sostituita da \texttt{ID0}), non rimane con variabili libere.
+\end{enumerate}
+\end{risposta}
+
+% ====================================================================
+\section*{Soluzioni Sezione 3 -- Associazioni}
+% ====================================================================
+
+\begin{risposta}{A1 -- Meccanismi logici}
+\begin{itemize}[noitemsep]
+  \item Model checking $\to$ \textbf{conseguenza logica}
+  \item MPG $\to$ \textbf{forward chaining FOL}
+  \item Proposizionalizzazione $\to$ \textbf{traduzione KB FOL in logica proposizionale}
+  \item Modus Ponens $\to$ \textbf{forward chaining proposizionale}
+  \item Binary Resolution $\to$ \textbf{ragionamento per refutazione in FOL}
+\end{itemize}
+\end{risposta}
+
+\begin{risposta}{A2 -- Algoritmi e compiti}
+\begin{itemize}[noitemsep]
+  \item Algoritmo di Hunt $\to$ \textbf{costruzione alberi di decisione}
+  \item K-NN $\to$ \textbf{classificazione senza modello esplicito (lazy learning)}
+  \item Back-jumping $\to$ \textbf{risoluzione CSP con conflict set}
+  \item RBFS $\to$ \textbf{ricerca in spazio degli stati con memoria limitata}
+  \item Alpha-beta pruning $\to$ \textbf{riduzione spazio di ricerca in giochi}
+  \item Minimax $\to$ \textbf{suggerimento prossima mossa con avversario}
+  \item Forward chaining $\to$ \textbf{inferenza da KB in clausole di Horn}
+  \item Backward chaining $\to$ \textbf{verifica se un goal è derivabile da KB e fatti}
+\end{itemize}
+\end{risposta}
+
+\begin{risposta}{A3 -- Euristiche e proprietà}
+\begin{itemize}[noitemsep]
+  \item Dominante $\to$ \textbf{approssima meglio $h^*(n)$} (stima più alta, ancora ammissibile)
+  \item Ammissibile $\to$ \textbf{è ottimistica} (non sovrastima mai)
+  \item MRV $\to$ \textbf{facilita il fallimento precoce} (fail-first)
+  \item Di grado $\to$ \textbf{identifica la variabile coinvolta in più vincoli}
+  \item Monotona $\to$ \textbf{garantisce ottimalità su grafi} con lista chiusa
+\end{itemize}
+\end{risposta}
+
+\begin{risposta}{A4 -- Ontologia medica}
+\begin{itemize}[noitemsep]
+  \item \texttt{Capsomero part-of Virus} $\to$ \textbf{relazione di composizione}
+  \item \texttt{Virologo isa Microbiologo} $\to$ \textbf{relazione di sottoclasse}
+  \item \texttt{HIV member Virus} $\to$ \textbf{relazione di istanza}
+  \item \texttt{member(X, positivo) $\Rightarrow$ quarantenato(X)} $\to$ \textbf{proprietà di classe}
+  \item \texttt{\{virus, batterio, fungo, protozoo\}} $\to$ \textbf{partizione} rispetto a Microrganismo
+\end{itemize}
+\end{risposta}
+
+\begin{risposta}{A5 -- Ontologia astronomica}
+\begin{itemize}[noitemsep]
+  \item \texttt{Mercurio member Pianeta} $\to$ \textbf{relazione di istanza}
+  \item \texttt{member(X, pianeta) $\Rightarrow$ sferoidale(X)} $\to$ \textbf{proprietà di classe}
+  \item \texttt{Astrometria isa Astronomia} $\to$ \textbf{relazione di sottoclasse}
+  \item \texttt{Magnetosfera part-of Pianeta} $\to$ \textbf{relazione di composizione}
+  \item \texttt{\{solare, extrasolare, interstellare\}} $\to$ \textbf{partizione} rispetto a Pianeta
+\end{itemize}
+\end{risposta}
+
+% ====================================================================
+\section*{Soluzioni Sezione 4 -- Domande Aperte}
+% ====================================================================
+
+\begin{risposta}{O1 -- Tautologie{,} contraddizioni{,} soddisfacibilità}
+\textbf{Tautologia:} vera in tutti i modelli. Es: $A \lor \neg A$. \\
+\textbf{Contraddizione:} falsa in tutti i modelli. Es: $A \land \neg A$. \\
+\textbf{Soddisfacibile:} vera in almeno un modello. Es: $A \land B$ (vera se entrambi true). \\
+Ogni tautologia è soddisfacibile. Una contraddizione non è soddisfacibile. SAT è NP-completo.
+\end{risposta}
+
+\begin{risposta}{O2 -- Funzioni di Skolem e termine ground}
+\textbf{Funzione di Skolem:} nella conversione in CNF, si elimina $\exists y$ sostituendo $y$ con una funzione $f(x_1,\ldots,x_k)$ dove $x_1,\ldots,x_k$ sono le variabili universali che contengono l'$\exists$. Se l'$\exists$ non è dentro un $\forall$, si usa una costante di Skolem $k$. \\
+\textbf{Termine ground:} termine senza variabili (completamente istanziato). Es: \texttt{Padre(Giovanni)}, \texttt{Asso}. Contrapposto a \texttt{Padre(x)} (con variabile).
+\end{risposta}
+
+\begin{risposta}{O3 -- Forward chaining}
+\textbf{Algoritmo:} parte dai fatti noti nella KB. Cerca clausole definite (Horn con testa) le cui premesse siano tutte soddisfatte dai fatti. Aggiunge la conclusione come nuovo fatto. Ripete fino al goal o al punto fisso (nessun nuovo fatto). \\
+\textbf{Condizioni:} serve almeno una clausola definita e fatti che unifichino con \emph{tutte} le sue premesse. \\
+\textbf{Proprietà:} corretto e completo per clausole definite. Diretto ai dati (data-driven).
+\end{risposta}
+
+\begin{risposta}{O4 -- Gioco a somma zero e Minimax}
+\textbf{Somma zero:} ciò che guadagna MAX è perso da MIN. Informazione perfetta (tutto visibile). \\
+\textbf{Minimax:} esplora l'albero in profondità. Foglie = valori di utilità. Si propaga verso l'alto: MAX prende il massimo dei figli, MIN prende il minimo. La radice ha il valore della mossa ottimale per MAX assumendo Min perfetto. Complessità: $O(b^m)$ tempo, $O(bm)$ spazio.
+\end{risposta}
+
+\begin{risposta}{O5 -- Clausole di Horn}
+\textbf{Clausola di Horn:} al più un letterale positivo. Forma: $\neg P_1 \lor \cdots \lor \neg P_k \lor Q$ $\equiv$ $P_1 \land \cdots \land P_k \Rightarrow Q$. \\
+\textbf{Tipi:} clausola definita (esattamente 1 positivo -- ha testa); clausola obiettivo (0 positivi); fatto (1 positivo, 0 premesse). \\
+\textbf{Efficienza:} l'inferenza su clausole di Horn è lineare (polinomiale); molto più efficiente della risoluzione generale su CNF arbitraria.
+\end{risposta}
+
+\begin{risposta}{O6 -- Overfitting}
+\textbf{Definizione:} il modello si adatta troppo al training set (incluso rumore) e generalizza male. \\
+\textbf{Cause:} modello troppo complesso, training set troppo piccolo, presenza di rumore. \\
+\textbf{Soluzioni per alberi di decisione:}
+\begin{itemize}[noitemsep]
+  \item \textbf{Pre-pruning:} interrompere se il nodo ha poche istanze (sotto soglia) o gain troppo basso.
+  \item \textbf{Post-pruning:} costruire l'albero completo poi sostituire sottoalberi con foglie (classe più frequente).
+\end{itemize}
+Rasoio di Occam: a parità di errore, preferire il modello più semplice.
+\end{risposta}
+
+\begin{risposta}{O7 -- Back-jumping e conflict set}
+\textbf{Problema del backtracking cronologico:} torna sempre alla variabile precedente anche se non è la causa del fallimento. \\
+\textbf{Back-jumping:} quando $X$ fallisce, si costruisce il \textbf{conflict set} $CS(X)$ = variabili già assegnate che causano l'incompatibilità. L'algoritmo salta direttamente all'ultima variabile in $CS(X)$, saltando variabili irrilevanti. \\
+\textbf{Implementazione:} ogni livello riceve il CS dai figli falliti, aggiunge la propria variabile e lo passa al padre.
+\end{risposta}
+
+\begin{risposta}{O8 -- Perceptron}
+\textbf{Architettura:} singolo neurone. Calcola $y = f(\mathbf{w}\cdot\mathbf{x} + b)$. I pesi definiscono un iperpiano: istanze sopra $\to$ classe 1, sotto $\to$ classe 0. \\
+\textbf{Apprendimento:} regola delta -- $\Delta w_j = \eta(d-o)x_j$. Aggiornamento passo per passo su ogni istanza. Converge se il problema è linearmente separabile (Teorema di Novikoff). \\
+\textbf{Limiti:} non risolve XOR (non linearmente separabile). Serve MLP (con hidden layer) per funzioni non lineari.
+\end{risposta}
+
+\end{document}
