@@ -1,0 +1,614 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{bookmark}
+
+\geometry{margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    urlcolor=blue
+}
+
+\titleformat{\section}{\large\bfseries\color{blue!70!black}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{}{0em}{}
+
+\title{\textbf{Riassunto -- Parte 4 TIPA}\\
+\large NLP applicato alla sanit\`a: dataset, modelli, bias e assistenti conversazionali}
+\author{Materiale: Barbara Di Eugenio et al.\ (UIC)}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% ===========================================================================
+\section{Biomedical / Healthcare NER \& Relation Extraction}
+\textit{File: \texttt{biomedical\_IR (1).pdf} -- 30 slide}
+
+\subsection{Strumenti per l'estrazione di entit\`a}
+\begin{itemize}
+    \item \textbf{MetaMap (2001)}: mappa testo biomedico al Metathesaurus UMLS.
+    \item \textbf{Apache cTAKES (2010)}: pipeline completa (sentence boundary detector, tokenizer, normalizer, POS tagger, shallow parser, NER annotator con stato e negazione). Estrae concetti clinici e li mappa a CUI (Concept Unique Identifier) in UMLS.
+    \item \textbf{MedSpacy}: toolkit Python moderno per testo clinico.
+    \item \textbf{LLM}: versioni varie per estrazione generica.
+\end{itemize}
+
+\subsection{UMLS -- Unified Medical Language System}
+Release 2026: 18M nomi, 3.5M concetti, 9.3M codici, 31 lingue, 195 vocabolari. Tre componenti:
+\begin{itemize}
+    \item \textbf{Metathesaurus}: raggruppa sinonimi sotto un unico CUI con termine preferito. Es.: ``Addison's disease'', ``Bronzed disease'', ``Primary Adrenal Insufficiency'' $\to$ C0001403.
+    \item \textbf{Semantic Network}: 135 tipi semantici (es.\ \textit{Disease or Syndrome}) e 54 relazioni gerarchiche e non (es.\ \textit{treats}, \textit{causes}, \textit{isa}).
+    \item \textbf{SPECIALIST Lexicon \& Tools}: risorse lessicali per NLP clinico.
+\end{itemize}
+
+\subsection{Task comuni di Relation Extraction biomedica}
+\begin{enumerate}
+    \item Protein--protein interaction
+    \item Chemical--protein interaction (dataset CHEMPROT)
+    \item Gene--disease relations
+    \item Chemical--disease relations
+    \item Medical problem -- treatment (migliora / peggiora / causa / somministrata per / controindicata per)
+    \item Medical problem -- test e medical problem -- medical problem
+\end{enumerate}
+
+\subsection{Approcci alla Relation Extraction}
+\begin{itemize}
+    \item \textbf{Rule-based}: regole su pattern sintattici (path nel parse tree, sequenze tra entit\`a); scarsa generalizzabilit\`a su relazioni a lunga distanza.
+    \item \textbf{Supervised (SVM, Naive Bayes, CRF)}: richiedono feature engineering (path nel dependency parse, tipo entit\`a, distanza); buona generalizzabilit\`a.
+    \item \textbf{Deep learning (LSTM, RNN, GRU)}: migliore generalizzabilit\`a; richiedono grandi quantit\`a di dati annotati.
+    \item \textbf{Distant supervision}: ricava etichette da una Knowledge Base esistente (es.\ entit\`a correlate in KB $\to$ esempio positivo). Limiti: non tutte le frasi con entit\`a correlate sono esempi positivi; richiede una KB di partenza.
+\end{itemize}
+
+\subsection{Relazioni Temporali in testo clinico}
+Il testo clinico contiene informazioni temporali implicite ed esplicite. Le entit\`a principali sono:
+
+\subsubsection{Tipi di evento (EVENT)}
+\begin{itemize}
+    \item \textbf{PROBLEM}: malattia, infezione (es.\ ``knee pain'')
+    \item \textbf{TREATMENT}: farmaco, procedura terapeutica
+    \item \textbf{TEST}: esame diagnostico, esame di laboratorio
+    \item \textbf{CLINICAL\_DEPT}: trasferimento a reparto
+    \item \textbf{EVIDENTIAL}: report, evidenza (es.\ ``shows'', ``reports'')
+    \item \textbf{OCCURRENCE}: tutti gli altri eventi
+\end{itemize}
+
+\subsubsection{Espressioni temporali (TIMEX)}
+DATE, TIME, DURATION, FREQUENCY.
+
+\subsubsection{Tipi di relazione temporale (TLINK)}
+BEFORE, AFTER, SIMULTANEOUS, OVERLAP, BEGUN\_BY, ENDED\_BY, DURING, BEFORE\_OVERLAP.
+
+Esempio: \textit{``Knee pain has increased over the last two or three weeks prior to the admission''} $\to$ EVENT (knee pain) -- TIMEX (two or three weeks) -- EVENT (admission), TLINK: BEFORE.
+
+% ===========================================================================
+\section{I Dati Clinici e i Loro Problemi}
+\textit{File: \texttt{data-resources.pdf} -- 41 slide}
+
+\subsection{Tipi di dati biomedici}
+\begin{enumerate}
+    \item \textbf{Letteratura biomedica}: MEDLINE/PubMed (33M record), PMC.
+    \item \textbf{Electronic Medical Records (EMR/EHR)}.
+    \item \textbf{Social media}: X/Twitter, forum medici, blog.
+\end{enumerate}
+
+\subsection{Task principali su testo biomedico}
+\begin{itemize}
+    \item \textbf{Gene Mention Identification}: identificare nomi di geni/proteine nel testo.
+    \item \textbf{Gene Normalization}: collegare menzioni di geni a identificatori standard (es.\ FlyBase $\to$ NCBI Entrez Gene ID).
+    \item \textbf{Chemical Disease Recognition}: identificare e normalizzare entit\`a chimiche e malattie (da abstract PubMed).
+\end{itemize}
+
+\subsection{Sfide nel testo biomedico}
+\begin{itemize}
+    \item \textbf{Ambiguit\`a}: stessa sigla, significati diversi (NACT = Neoadjuvant chemotherapy / N-acetyltransferase / Na\textsuperscript{+}-coupled citrate transporter).
+    \item \textbf{NE molto lunghe}: ``human hematopoietic progenitor cells''.
+    \item \textbf{Costruzioni complesse}: due NE condividono lo stesso head noun (``91 and 84 kDa proteins'').
+    \item \textbf{Inconsistenza di denominazione}: NF-$\kappa$B, NFKappaB, NF-kappa B.
+    \item \textbf{Nested NE}: \verb|<Protein><DNA>Kappa 3</DNA> binding factor</Protein>|.
+    \item \textbf{Abbreviazioni}: TCEd, IFN, TPA.
+    \item \textbf{Ambiguit\`a contestuale}: IL-2 pu\`o essere proteina o DNA.
+\end{itemize}
+
+\subsection{Electronic Medical Records (EMR): note cliniche}
+Le note cliniche contengono linguaggio informale, abbreviazioni mediche, date pseudonimizzate, strutture senza frasi complete. Ulteriori sfide:
+\begin{itemize}
+    \item Formattazione variabile (altezza/peso/pressione su una riga).
+    \item Punteggiatura mancante.
+    \item Gergo medico e abbreviazioni ad hoc: \textit{``septic picture likely aspiration pneumonia secondary to dobhoff placement''}.
+    \item Acronimi: \textit{``recent tension PTX at OSH''}.
+    \item Errori ortografici: \textit{``definate''} (sic), \textit{``abcess''} (sic).
+\end{itemize}
+
+Il progetto \textbf{i2b2/n2c2} ha prodotto dataset annotati per concetti, asserzioni e relazioni cliniche. Caso clinico italiano annotato per: malattia, sintomo, procedura, sito anatomico, farmaco (corpus E3C).
+
+\subsection{De-identificazione: 18 identificatori HIPAA}
+I record medici devono essere de-identificati (es.\ nomi, date, ospedali sostituiti con \verb|<XXX_Patient>|, \verb|<XXX_DATE>|, ecc.) prima di poter essere condivisi per la ricerca.
+
+\subsection{Social media}
+Sfide aggiuntive rispetto al testo clinico:
+\begin{itemize}
+    \item \textbf{Contesto multiplo}: stessa parola con effetti opposti in tweet diversi (Advil cura il dolore / provoca upset stomach).
+    \item \textbf{Forme abbreviate}: \textit{``CIT''} per Citopram, slang (\textit{``seroquel knocked me out''}), senso implicito (\textit{``hard time getting some Zs''}).
+    \item \textbf{Linguaggio figurato}: \textit{``My skin is paper, razor is the pen''}.
+    \item Conversazioni paziente-provider: dinamiche di turno, overlap, particelle, linguaggio implicito.
+\end{itemize}
+
+\subsection{Sfide di annotazione}
+\begin{itemize}
+    \item Il supervised learning richiede corpus di grandi dimensioni.
+    \item \textbf{Annotation bottleneck}: annotazione manuale da esperti non scalabile; crowdsourcing manca di competenza di dominio.
+    \item \textbf{Annotazione con LLM}: approccio emergente per ridurre il collo di bottiglia.
+\end{itemize}
+
+\subsection{Intercoder Agreement -- Cohen's Kappa}
+Misura la concordanza tra annotatori al netto del caso.
+\[
+\kappa = \frac{P(A) - P(E)}{1 - P(E)}
+\]
+dove $P(A)$ = accordo osservato, $P(E)$ = accordo atteso per caso.
+
+\textbf{Esempio}: 2 annotatori classificano 150 occorrenze di ``S\`i'' in Accept / Ack.
+\begin{itemize}
+    \item $P(A) = 125/150 = 83.3\%$
+    \item $P(E) = (95/150)(70/150) + (55/150)(80/150) = 0.491$
+    \item $\kappa = (0.833 - 0.491) / (1 - 0.491) = 0.67$
+\end{itemize}
+
+\textbf{Interpretazione} (Landis \& Koch 1977 / Krippendorff 1980):
+\begin{center}
+\begin{tabular}{ll|ll}
+\toprule
+$\kappa$ & Giudizio (L\&K) & $\kappa$ & Giudizio (K) \\
+\midrule
+$< 0.20$ & Poor & $< 0.67$ & Bad \\
+$0.20$--$0.40$ & Fair & $0.67$--$0.80$ & Tentative \\
+$0.40$--$0.60$ & Moderate & $\geq 0.80$ & Definite \\
+$0.60$--$0.80$ & Substantial & & \\
+$> 0.80$ & Almost perfect & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Shared Tasks di riferimento}
+BioCreative, National NLP Clinical Challenges (n2c2), BioNLP Workshop, ClinicalNLP Workshop, Text Retrieval Conference (TREC).
+
+% ===========================================================================
+\section{Assistenti Conversazionali in Sanit\`a: Heart Failure}
+\textit{File: \texttt{heart-failure-ca.pdf} -- 24 slide}
+
+\subsection{Panoramica}
+\textbf{Barbara Di Eugenio} (University of Illinois Chicago). Progetto \textbf{HFChat} (NSF 2232307, 2022--2025): agente conversazionale per l'educazione di pazienti afroamericani con insufficienza cardiaca (HF).
+
+\subsection{Motivazione e obiettivi}
+Ipotesi: pazienti AA con accesso a informazioni culturalmente competenti faranno scelte di self-care pi\`u consapevoli. Obiettivi: scoprire preoccupazioni dei pazienti, esplorare approcci neuro-simbolici, valutare LLM. Sfida: nessun metodo formalizzato per modellare la competenza culturale.
+
+\subsection{Dataset: 20 interazioni paziente--educatore}
+Contenuto HF standard: definizione HF, farmaci (diuretici, ``water pill''), dieta a basso sodio, attivit\`a fisica, sintomi, follow-up.
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+ & \textbf{Turni} & \textbf{Frasi} & \textbf{Parole} \\
+\midrule
+Paziente (48\%) & 108 & 131 & 850 \\
+Educatore (52\%) & 117 & 205 & 2280 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Tre prototipi sul contenuto di sale}
+\begin{enumerate}
+    \item \textbf{HFChat} (Google DialogFlow): solo 32\% delle domande risposto correttamente. Pilota con 9 pazienti.
+    \item \textbf{HFFood-NS} (neuro-simbolico, PPTOD/T5): dataset sintetico da 87.425 dialoghi, 525.392 turni. Slot: food, cook, type, part, food weight, metric (da USDA). Regole simboliche per recupero e calcolo del valore di sodio.
+    \item \textbf{HFFood-GPT} (GPT-4, ``Sodium Scout''): prompt con limite di 40 parole; usa file JSON con dati USDA.
+\end{enumerate}
+
+\subsection{Studio utente (within-subject): HFFood-NS vs HFFood-GPT}
+20 pazienti AA ospedalizzati; sistemi identificati come ``Lion'' (NS) e ``Shark'' (GPT). Stessa speech recognition (OpenAI Whisper-1).
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metrica} & \textbf{HFFood-NS} & \textbf{HFFood-GPT} \\
+\midrule
+Task completion & 84\% & 62\% \\
+Salt value accuracy & 37\% & 24\% \\
+Slot accuracy & 56\% & 89\% \\
+\midrule
+SMOG [grado] $\downarrow$ & 7.05 & 10.58 \\
+FKGL [grado] $\downarrow$ & 2.71 & 7.10 \\
+FKRE [facilit\`a] $\uparrow$ & 91.21 & 71.79 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Il target sanitario \`e il 6\textdegree{} grado (scuola media inferiore). \textbf{NS vince} su completamento, accuratezza sodio e leggibilit\`a. GPT vince su slot accuracy ma risponde in media 51 parole (prompt: max 40), ed \`e pedante su unit\`a di misura errate. Nessuna preferenza utente significativa al questionario.
+
+% ===========================================================================
+\section{Intro agli Assistenti Virtuali per la Salute}
+\textit{File: \texttt{intro-virtual-coach.pdf} -- 39 slide}
+
+\subsection{Panoramica}
+Due sistemi: \textbf{Virtual Health Coach} (SMART goals via SMS) e \textbf{HFChat} (educazione HF). Sfide generali: dati scarsi/non condivisibili, modelli devono essere esplicabili, equi, non biased; LLM con allucinazioni, opacit\`a; valutazione senza SOTA da battere.
+
+\subsection{Virtual Health Coach (NSF 1838770, 2018--2025)}
+Obiettivo: motivare a uno stile di vita attivo tramite obiettivi \textbf{SMART} (Specific, Measurable, Attainable, Realistic, Time-bound) via SMS. Es.: \textit{``I will walk on my lunch break for 20 mins Wed and Thurs this week.''}
+
+\textbf{Dataset}:
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{Dataset 1} & \textbf{Dataset 2} \\
+\midrule
+Health coaches & 1 & 3 \\
+Pazienti & 30 & 28 \\
+Durata & 4 settimane & 8 settimane \\
+Messaggi totali & 2853 & 4134 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Fasi del dialogo: \textbf{Goal Identification} $\to$ \textbf{Goal Refining} $\to$ \textbf{Anticipate Barrier}. Annotazione a tre livelli; 10 attributi SMART da estrarre (attivit\`a, luogo, giorni, orario, \ldots).
+
+\subsection{Approcci NLU: estrazione dell'obiettivo}
+
+\subsubsection{Approccio classico (Goal Extraction)}
+\textbf{Joint Goal Accuracy} (tutti e 10 gli attributi corretti): \textbf{20\%} [Gupta et al.\ SigDIAL 20--21]. Nessuna generazione di risposta.
+
+\subsubsection{Neural NLU v1}
+Architettura neurale per riassumere l'obiettivo e generare risposta [Zhou et al.\ COLING 22].\\
+Joint Goal Accuracy: \textbf{21.7\%}.
+
+\subsubsection{Neural NLU v2 -- Approccio Neuro-Simbolico [Zhou et al.\ LREC-COLING 24]}
+Workflow end-to-end:
+\begin{enumerate}
+    \item \textbf{Neurale}: genera un'istruzione eseguibile (es.\ \texttt{Copy\{Days\}}) ed estrae un obiettivo parziale (es.\ ``Walk 2,500 steps'').
+    \item \textbf{Simbolico}: edita l'obiettivo parziale sulla base dell'obiettivo precedente e dell'istruzione.
+\end{enumerate}
+Joint Goal Accuracy: \textbf{52.8\%} -- miglioramento netto rispetto ai precedenti.
+
+\subsection{NLG: generazione della risposta}
+
+\subsubsection{Risposte empatiche [Zhou et al.\ COLING 22]}
+Basate su tre meccanismi di comunicazione (Sharma et al.\ 2020):
+\begin{itemize}
+    \item \textbf{EMOR} (Emotional Reactions): \textit{``I would be very worried''}
+    \item \textbf{INTER} (Interpretations): \textit{``I know anxiety is scary''}
+    \item \textbf{EXPL} (Explorations): \textit{``What happened? How come?''}
+\end{itemize}
+Classificatore BERT per rilevamento emozione nel turno del paziente; GPT-2 fine-tunato per generare risposte empatiche con token di meccanismo \texttt{[EMOR]}.
+
+\subsubsection{Text-Unit-Text generation [Zhou et al.\ LREC-COLING 24]}
+Generazione di risposta attraverso una rappresentazione intermedia strutturata.
+
+\subsection{Confronto con LLM}
+GPT-3.5-turbo (two-shot ICL): qualitativamente le risposte risultano incomplete o incoerenti rispetto all'approccio neuro-simbolico.
+
+\subsection{Valutazione con nursing students}
+45 studenti di infermieristica valutano 900 item totali ($\sim$20/studente): risposta \textit{senza modifiche / con modifiche minori / con modifiche maggiori} e \textit{irrilevante / dannosa / incoerente}. Risultato: nessuna risposta dannosa o incoerente.
+
+\subsection{Take-aways del Virtual Coach}
+\begin{itemize}
+    \item Dataset raccolto e parzialmente condivisibile.
+    \item Approccio neuro-simbolico con le prestazioni pi\`u alte.
+    \item LLM (GPT-3.5) qualitativamente inferiori.
+    \item Valutazione con studio utente su studenti infermieristica.
+\end{itemize}
+
+% ===========================================================================
+\section{LLM, Bias e Fairness in Sanit\`a}
+\textit{File: \texttt{llm-fairness-healthcare\_coling25.pdf} -- 23 slide (COLING 2025)}
+
+\subsection{Definizioni}
+\begin{itemize}
+    \item \textbf{Bias}: inclinazione o pregiudizio verso o contro una persona/gruppo in modo considerato ingiusto (Oxford Languages).
+    \item \textbf{Fairness}: trattamento imparziale e giusto senza favoritismi o discriminazioni.
+\end{itemize}
+
+\subsection{Domande di ricerca}
+Gli LLM saranno efficaci in sanit\`a come in altri domini? Aiuteranno a ridurre le disparit\`a sanitarie?
+
+\subsection{6 Benchmark su 4 Dataset}
+\begin{enumerate}
+    \item Medical QA (MedQA -- US Medical Licensing Exam)
+    \item Predizione raggiungimento obiettivi (Health Coaching)
+    \item Predizione mortalit\`a a 1 anno (MIMIC-IV)
+    \item Predizione riammissione a 90 giorni (MIMIC-IV)
+    \item Predizione Schizofrenia/Bipolare/Sano -- ``Meeting New Neighbor''
+    \item Predizione Schizofrenia/Bipolare/Sano -- ``Complaining to a Landlord''
+\end{enumerate}
+
+\subsection{Tre approcci, tre LLM}
+\begin{itemize}
+    \item \textbf{ICL con Chain-of-Thought}: GPT-4, Claude-3 Sonnet, LLaMA-3 8b.
+    \item \textbf{PEFT (LoRA)}: LLaMA-3 8b.
+    \item \textbf{LLM as Agents (ReAct + Reflexion + conoscenza esterna)}: GPT-4.
+\end{itemize}
+
+\subsection{Risultati di accuratezza}
+Prestazioni eterogenee: alcuni modelli superano di poco il random. L'approccio agente funziona per MedQA (86.9\% GPT-4) ma fallisce sui casi reali. Il framework migliore varia per task. Close-source $>$ open-source in generale.
+
+\subsection{Metriche di Fairness}
+\begin{itemize}
+    \item \textbf{DPD (Demographic Parity Difference)}:
+    $\text{DPD} = P(\hat{Y}=1|Z=z) - P(\hat{Y}=1|Z\neq z)$. Non considera la ground truth.
+    \item \textbf{EOD (Equal Opportunity Difference)}:
+    $\text{EOD} = P(\hat{Y}=1|Y=1,Z=z) - P(\hat{Y}=1|Y=1,Z\neq z)$. Considera la ground truth.
+\end{itemize}
+
+\subsection{Risultati di Fairness}
+\begin{itemize}
+    \item Disparit\`a presenti in tutti i task; pi\`u marcate per razza che per genere.
+    \item I pazienti \textbf{afroamericani ricevono sistematicamente previsioni meno favorevoli}.
+    \item Fine-tuning: migliora fairness su riammissione, peggiora su mortalit\`a e health coaching.
+    \item GPT-4 rifiuta di predire la razza (14--28\%); Claude-3 rifiuta su razza e genere; LLaMA-3 predice con stereotipi espliciti nell'appendice del paper.
+    \item Accuracy nella predizione della razza da dialogo: GPT-4 75.3\%, LLaMA-3 $\sim$60\%, Claude-3 rifiuta.
+\end{itemize}
+
+\subsection{Conclusioni}
+LLM non performanti su task sanitari reali; disparit\`a demografiche sostanziali. Serve: pi\`u dati sanitari con informazioni demografiche. Domanda aperta: come mitigare il bias e migliorare la fairness?
+
+% ===========================================================================
+\section{NLP e Visualizzazione: EDA Collaborativa}
+\textit{File: \texttt{nlp-visualization.pdf} -- 58 slide (tesi Abari Bhattacharya, difesa apr.\ 2026)}
+
+\subsection{Panoramica}
+Studio sull'impatto di un assistente conversazionale (CA) nell'analisi esplorativa dei dati (EDA) collaborativa. Dati COVID-19 per contee USA. Gap nei sistemi esistenti: mancanza di conversazionalit\`a, valutazione con utenti reali, supporto alla collaborazione.
+
+\subsection{Studio 1: impatto del CA sulla EDA collaborativa}
+15 gruppi di 2 partecipanti, 2 task da 25 min. Due sistemi a confronto:
+\begin{itemize}
+    \item \textbf{PE (Property Extractor)}: proattivo, genera grafici spontaneamente.
+    \item \textbf{DM (Dialogue Manager)}: pi\`u lento, pi\`u spazio alla riflessione.
+\end{itemize}
+
+\textbf{RQ1}: PE $\to$ pi\`u utterance processate e grafici generati (soprattutto line chart COVID); DM $\to$ esplorazione pi\`u ampia di propriet\`a del DB.
+
+\textbf{RQ2}: PE $\to$ conclusioni su casi COVID; DM $\to$ fattori come diabete e malattie cardiovascolari. L'architettura del sistema influenza le inferenze degli utenti.
+
+\textbf{RQ3}: 72\% trova i grafici utili; 40\% facile da usare; apprendimento on-the-fly aumenta carico cognitivo in task collaborativo.
+
+\subsection{Clarification Requests (CR)}
+Le CR sono fondamentali nella comunicazione per negoziare il significato. \textbf{Grounded Clarification}: legata a specifico contesto/modalit\`a percettiva.
+
+Tre modalit\`a di grounding:
+\begin{itemize}
+    \item \textbf{Visiva} (49\%): difficolt\`a a interpretare la visualizzazione generata.
+    \item \textbf{Uditiva} (28\%): difficolt\`a a recuperare informazione parlata.
+    \item \textbf{Cinestesica} (23\%): incertezza sulle capacit\`a/procedura del sistema.
+\end{itemize}
+
+\textbf{Dataset ClarVis}: 29 trascritti, $\sim$6.9K turni totali, 445 CR (6.4\% dei turni); 73.5\% delle CR riferita al turno precedente. $\kappa = 0.89$ per CR identification.
+
+\textbf{Baseline}: DistilBERT+Prev1 per CR-ID (F1=0.66); TF-IDF+LR per modalit\`a visiva (F1=0.73); pattern: Visivo $>$ Cinestesico $>$ Uditivo.
+
+\subsection{Parte 3 -- CA Clarification-Aware (Studio 2)}
+
+\subsubsection{Pipeline CA clarification-aware}
+Architettura a pipeline modulare (pi\`u controllabile e interpretabile):
+\begin{enumerate}
+    \item Intent detection (CR / VIS / None)
+    \item Reference resolution
+    \item Visualization construction and generation
+    \item Clarification response generation
+\end{enumerate}
+
+\textbf{Backend -- Intent Classification}: DistilBERT + focal loss + Prev3 (addestrato su ClarVis). Performance: CR (75.0/73.1/74.0 P/R/F1), VIS (79.2/81.0/80.1), None (92.5/92.1/92.3). Lexicon appreso di 394 frasi CR-V.
+
+\textbf{Backend -- Generazione risposte CR}: GPT-4o-mini con prompt strutturato (tipo CR: spiegazione / significato elemento chart / confronto); output ancorato a dati e chart.
+
+\subsubsection{Studio 2: 38 partecipanti, 19 gruppi}
+Task: EDA collaborativa su COVID-19 (warm-up 5 min + 3 task da 15 min). Istruzioni: fare domande come domande sui dati, usare grafici come evidenza, parlare apertamente.
+
+\textbf{RQ4 -- Interaction flow e task progress}:
+\begin{itemize}
+    \item Le CR svolgono un ruolo secondario e di supporto (VIS = uso primario).
+    \item Pattern tipico: CR $\to$ VIS (62\% dei casi dopo una CR).
+    \item Le CR emergono a momenti di incertezza/interpretazione, non uniformemente.
+    \item I partecipanti raggiungono conclusioni pi\`u solide nelle task principali rispetto al warm-up.
+\end{itemize}
+
+\textbf{RQ5 -- Perceived usefulness}:
+\begin{itemize}
+    \item Usefulness: da Neutro (13/38) a Positivo (18/38).
+    \item Risposte percepite come ancorate ai dati/chart.
+    \item Alcune difficolt\`a interpretative (unclear/unexpected responses): soprattutto restating (12/19 gruppi).
+    \item Strategie utenti: task decomposition + visual feedback iterativo; preferenza per heatmap e bar chart.
+\end{itemize}
+
+\subsection{Conclusioni}
+CA clarification-aware supporta l'EDA collaborativa combinando accessibilit\`a + visualizzazione + supporto alle CR. L'EDA con CA \`e un ciclo: risposte CR $\to$ generazione chart $\to$ interazione $\to$ interpretazione $\to$ nuove domande.
+
+% ===========================================================================
+\section{Temporal Reasoning in Clinical Narratives: T2D}
+\textit{File: \texttt{temporal-rels-t2D.pdf} -- 60 slide (tesi Rochana Chaturvedi)}
+
+\subsection{Problema}
+\textbf{Type 2 Diabetes (T2D)}: 500M malati nel mondo; diagnosi precoce fondamentale; 50\% dei pazienti di pronto soccorso UIC non diagnosticati. Serve uno \textbf{screening opportunistico} automatico, specialmente per popolazioni svantaggiate.
+
+Limiti attuali: EHR strutturato rumoroso e decontestualizzato (HbA1c mancante nel 56.8\% delle osservazioni); note cliniche non analizzate automaticamente in modo da catturare il contesto temporale.
+
+\subsection{Dataset: UI Health}
+EHR longitudinale (gen.\ 2010 -- lug.\ 2021). Dopo filtraggio: $\sim$1M note, 1717 pazienti T2D, 106K pazienti NoD. LLM usato per raffinare la data di prima diagnosi (intersezione di due prompt per ridurre falsi positivi).
+
+\subsection{Parte 1 -- Predizione T2D con cue temporali a livello di visita}
+
+\textbf{Architettura del modello}:
+\begin{itemize}
+    \item \textbf{BoCUI encoder (CNN)}: bag-of-CUI per ogni visita (embedding cui2vec).
+    \item \textbf{Visit Sequence Encoder (LSTM)}: modella la sequenza temporale delle visite.
+    \item \textbf{HbA1c time-series (GRU + Attention)}: modella i valori HbA1c nel tempo.
+    \item \textbf{Sensitive Attributes (SA)}: genere, razza, etnia, fascia d'et\`a.
+    \item \textbf{Decoder (DNN)}: classificazione T2D vs.\ NoD.
+\end{itemize}
+
+\textbf{Risultati}:
+\begin{itemize}
+    \item HbA1c time-series = migliore tra i modelli strutturati.
+    \item Concetti clinici da note migliorano le prestazioni.
+    \item \textbf{Temporal modeling} dei concetti da le prestazioni migliori.
+    \item Combinare strutturato + non strutturato riduce il recall sulla classe T2D.
+    \item \textbf{Bias}: prestazioni pi\`u basse per le donne; modelli ibridi con HbA1c favoriscono solo il gruppo White.
+    \item Interpretabilit\`a (LRP): chronic kidney disease e disoccupazione contribuiscono positivamente alla predizione T2D.
+\end{itemize}
+
+\subsection{Parte 2 -- Temporal Relation Extraction (TREx) da testo clinico (ACL 2025)}
+
+\subsubsection{Definizione del task}
+Estrarre entit\`a (eventi e TIMEX) e le loro relazioni temporali (TLINK: BEFORE, AFTER, OVERLAP, ecc.) da note cliniche. Sfide: jargon, abbreviazioni, sinonimi/omonimi, dipendenze temporali implicite ($A < B, B < C \Rightarrow A < C$), documenti lunghi ($O(n^2)$ coppie).
+
+\subsubsection{GraphTREx -- Graph-based Temporal Relation Extraction}
+Combina:
+\begin{itemize}
+    \item \textbf{LPLM (BioMedBERT)}: rappresentazioni contestualizzate locali.
+    \item \textbf{GNN (Heterogeneous Graph Transformer -- HGT)}: ragionamento relazionale globale su dipendenze a lunga distanza.
+    \item \textbf{Sliding windows}: gestione di documenti lunghi.
+    \item \textbf{Landmark nodes}: Context nodes (catturano contesto tra due entit\`a) e Window nodes (collegano entit\`a distanti).
+\end{itemize}
+
+\textbf{SpanTREx}: versione senza GNN (baseline neurale).
+
+\subsubsection{Dataset}
+\begin{itemize}
+    \item \textbf{I2B2 2012}: 310 dimissioni, $\sim$35K entit\`a, $\sim$61K relazioni.
+    \item \textbf{E3C}: 84 case report clinici (italiano), $\sim$5K entit\`a, $\sim$4K relazioni.
+\end{itemize}
+
+\subsubsection{Risultati}
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Modello} & \textbf{I2B2 F1} & \textbf{E3C F1} \\
+\midrule
+Rules + ML Hybrid & 63.4 & -- \\
+SPERT & 61.1 & 13.6 \\
+SpanTREx & 66.6 & 22.6 \\
+\textbf{GraphTREx} & \textbf{68.8} & \textbf{23.5} \\
+\bottomrule
+\end{tabular}
+\end{center}
+Nuovo stato dell'arte su I2B2 2012 ($>$5\% di miglioramento end-to-end). I landmark nodes migliorano le relazioni a lunga distanza: $+8.9\%$ su coppie molto distanti ($d > 1$).
+
+\subsubsection{Trasferimento a UI Health}
+Annotazione di 9 note cliniche reali (2 pazienti): de-identificazione, estrazione entit\`a con SpanTREx + Metamap, coreference, TLINK. GraphTREx ottiene F1=52.0\% sulle TLINK (vs 38.0\% di SpanTREx), con $+14\%$ di miglioramento.
+
+\subsection{Parte 3 -- Disease Risk Prediction con Temporal Graphs}
+
+\subsubsection{HiT-GNN (Hierarchical Temporal GNN)}
+Pipeline completa:
+\begin{enumerate}
+    \item BiLSTM per codifica delle note per visita.
+    \item TREx (GraphTREx) per costruire grafi temporali.
+    \item Aggregazione dei grafi + GNN per embedding del documento.
+    \item FC + Sigmoid per classificazione T2D/NoD.
+\end{enumerate}
+
+\subsubsection{ReVeAL -- Reasoning with Verifier Aided Labeling}
+Framework di inference-time scaling per predizione esplicabile con LLM:
+\begin{itemize}
+    \item \textbf{Large Reasoner (Llama-3.1 8B)}: genera predizione con spiegazione, 5 reasoning paths per training, 10 per test.
+    \item \textbf{Small Verifier (Llama-3.2 1B, fine-tunato con LoRA)}: valida il ragionamento del modello grande (assegna confidence score).
+    \item Training: hard cases (reasoner sbaglia su almeno un path); inferenza: majority vote top-k (3).
+\end{itemize}
+
+\subsubsection{Risultati su UI Health e MIMIC-IV}
+\begin{center}
+\begin{tabular}{llcc}
+\toprule
+\textbf{Dataset} & \textbf{Modello} & \textbf{AUC} & \textbf{F1} \\
+\midrule
+UI Health & HiT-GNN & 72.2\% (+4\% vs CLSTM) & -- \\
+UI Health & Llama-1b-ft & 65.1\% & -- \\
+UI Health & ReVeAL & -- & 65.2\% \\
+MIMIC-IV & HiT-GNN & -- & T2D recall 63.3\% \\
+MIMIC-IV & Llama-1b-ft & 64.4\% & -- \\
+\bottomrule
+\end{tabular}
+\end{center}
+Nota: Llama-1b senza fine-tuning \`e il modello pi\`u debole; il fine-tuning sacrifica l'esplicabilit\`a. ReVeAL fornisce il migliore trade-off tra performance ed esplicabilit\`a.
+
+\subsection{Conclusioni e contributi chiave}
+\begin{itemize}
+    \item \textbf{SpanTREx / GraphTREx}: nuovo SOTA per TREx end-to-end su testo clinico.
+    \item \textbf{HiT-GNN}: prima applicazione di TREx per risk detection temporale.
+    \item \textbf{ReVeAL}: LLM scaling scalabile ed esplicabile per basse risorse.
+    \item Nuovo corpus annotato di note cliniche reali per validare la portabilit\`a dei modelli.
+    \item Framework privacy-aware con bilanciamento demografico per valutazione trasparente.
+\end{itemize}
+
+% ===========================================================================
+\section{Veracity Bias negli LLM}
+\textit{File: \texttt{veracity-bias-slides-acl25.pdf} -- 16 slide (ACL 2025)}
+
+\subsection{Panoramica}
+\textbf{Yue Zhou e Barbara Di Eugenio} (UIC). Due nuove forme di bias negli LLM legate alla \textit{veridicit\`a} delle soluzioni, senza provocazioni sociali esplicite nel prompt.
+
+\subsection{Due nuove forme di bias}
+\begin{enumerate}
+    \item \textbf{Attribution Bias}: il modello attribuisce soluzioni a gruppi demografici in base alla veridicit\`a inferita -- soluzioni corrette $\to$ gruppo ``positivo''; errate $\to$ gruppo ``negativo''.
+    \item \textbf{Evaluation Bias}: il modello valuta la veridicit\`a di soluzioni \textit{identiche} in modo diverso a seconda del gruppo demografico percepito dell'autore.
+\end{enumerate}
+
+\subsection{Setup sperimentale}
+\textbf{Dataset}: Math (GSM8K, MATH500), Coding (HumanEval), Commonsense (CommonsenseQA, ARC-easy), Essay (ASAP-AES, rubrica 1--6).
+
+\textbf{LLM testati}: GPT-3.5-turbo, GPT-4o, Claude-3 Sonnet, Gemini-Pro-1.5, LLaMA-3-8b.
+
+\textbf{Metriche}:
+\begin{itemize}
+    \item \textbf{Correctness Attribution Bias} ($AB^{cor}$): quanto pi\`u spesso un gruppo \`e associato a soluzioni corrette.
+    \item \textbf{Incorrectness Attribution Bias} ($AB^{inc}$): quanto pi\`u spesso a soluzioni errate.
+    \item \textbf{Evaluation Preference} (EP): quante volte il modello favorisce un gruppo rispetto a un altro nella valutazione.
+\end{itemize}
+
+\subsection{Risultati: Attribution Bias (razza)}
+Il gruppo \textbf{Black} \`e sistematicamente il meno associato a soluzioni corrette in tutti i task e modelli. Es.\ [Math, GPT-4o]: Asiatici associati a soluzioni corrette 14\% pi\`u di errate; Neri associati a soluzioni errate 21\% pi\`u di corrette.
+
+\textbf{Refusal rates}: GPT-4o rifiuta su razza (14--28\%); Claude-3 rifiuta su razza e genere (2\% commonsense); con nomi indiretti \textbf{nessun modello rifiuta}.
+
+\subsection{Risultati: Attribution Bias (genere)}
+Risultati misti. GPT-4o, GPT-3.5, Gemini favoriscono il femminile; Claude-3 e LLaMA-3 il maschile.
+
+\subsection{Risultati: Evaluation Bias}
+Meno severo dell'attribution bias. Il gruppo \textbf{Asian} riceve mediamente i punteggi pi\`u bassi per lo stesso elaborato.
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Modello} & \textbf{EP razziale} & \textbf{EP genere} \\
+\midrule
+GPT-4o & 13.3\% (Hispanic $>$ Asian) & 3.3\% (F $>$ M) \\
+Claude-3 & 6.7\% (Hispanic $>$ Asian) & 6.7\% (F $>$ M) \\
+Gemini-1.5-Pro & 6.7\% (White $>$ Asian) & 10\% (F $>$ M) \\
+LLaMA-3-8b & 13.3\% (Hispanic $>$ Asian) & 3.3\% (M $>$ F) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Studio aggiuntivo}
+Gli LLM assegnano colori stereotipici ai gruppi razziali nel codice Matplotlib generato, rivelando bias nascosti anche nel codice.
+
+\subsection{Conclusioni}
+\begin{itemize}
+    \item Nuova prospettiva sul bias: ragionamento sulla veridicit\`a senza prompt sociali.
+    \item Rilevanza della fairness nei task di ragionamento (educazione, valutazione).
+    \item Necessit\`a di ampliare il discorso sul bias oltre i test tradizionali.
+\end{itemize}
+
+\end{document}
