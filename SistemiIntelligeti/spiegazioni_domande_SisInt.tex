@@ -9,6 +9,7 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{xcolor}
+\usepackage{tabularx}
 \usepackage{tcolorbox}
 
 \geometry{top=2.5cm, bottom=2.5cm, left=3cm, right=3cm}
@@ -89,6 +90,48 @@ La differenza fondamentale è l'utilizzo di una \textbf{funzione euristica} $h(n
 
 È importante chiarire che la funzione costo $g(n)$ -- il costo del cammino percorso finora -- è usata anche dagli algoritmi non informati come UCS. Quello che distingue gli algoritmi informati non è quindi il costo, ma proprio la stima euristica del costo futuro.
 
+\begin{domandabox}{Descrivi BFS, DFS, IDDFS e UCS: completezza, ottimalità, complessità}
+\end{domandabox}
+
+Il \textbf{BFS} (Breadth-First Search) esplora il grafo per livelli: espande prima tutti i nodi a profondità $d$, poi quelli a profondità $d+1$, e così via. Usa una coda FIFO come frontiera. È \textbf{completo} -- trova sempre una soluzione se esiste -- e \textbf{ottimale} quando i costi degli archi sono tutti uguali, perché il primo cammino trovato è anche il più corto in numero di passi. Il difetto principale è la \textbf{complessità spaziale}: mantiene in memoria tutti i nodi del livello corrente, il che con fattore di ramificazione $b$ e soluzione a profondità $d$ richiede $O(b^d)$ nodi. Questo lo rende impraticabile per problemi con grandi spazi degli stati.
+
+Il \textbf{DFS} (Depth-First Search) esplora in profondità lungo un ramo fino alla foglia, poi torna indietro e prova il successivo. Usa uno stack. Ha complessità spaziale $O(bm)$, dove $m$ è la profondità massima -- molto più efficiente del BFS. Tuttavia \textbf{non è completo} su grafi con cicli (può girare indefinitamente) e \textbf{non è ottimale}: può trovare soluzioni molto profonde prima di scoprirne di più vicine.
+
+L'\textbf{IDDFS} (Iterative Deepening DFS) combina i vantaggi di BFS e DFS nel modo più elegante possibile: esegue ripetutamente una ricerca DFS limitata a profondità crescente $l = 0, 1, 2, \ldots$ fino a trovare la soluzione. Il vantaggio è che ha la \textbf{completezza e l'ottimalità di BFS} (con costi uniformi) ma la \textbf{complessità spaziale di DFS}: $O(bd)$. Il costo di riesaminare i nodi già visitati nelle iterazioni precedenti è sorprendentemente basso -- asintoticamente non cambia la complessità temporale $O(b^d)$ -- ed è di gran lunga preferibile al BFS per grandi spazi degli stati.
+
+L'\textbf{UCS} (Uniform Cost Search) è BFS con priorità: la frontiera è una coda a priorità ordinata per $g(n)$, il costo del cammino percorso. Estrae sempre il nodo di costo minimo. È \textbf{completo e ottimale} anche con archi a costo variabile, purché i costi siano non negativi. Quando tutti i costi sono uguali a 1, degenerata esattamente in BFS.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Algoritmo} & \textbf{Completo} & \textbf{Ottimale} & \textbf{Tempo} & \textbf{Spazio} \\
+\midrule
+BFS       & Sì & Sì (costi uguali) & $O(b^d)$   & $O(b^d)$ \\
+DFS       & No & No                & $O(b^m)$   & $O(bm)$ \\
+IDDFS     & Sì & Sì (costi uguali) & $O(b^d)$   & $O(bd)$ \\
+UCS       & Sì & Sì                & $O(b^{C^*/\varepsilon})$ & $O(b^{C^*/\varepsilon})$ \\
+A*        & Sì & Sì (euristica ammiss.) & $O(b^d)$ & $O(b^d)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{domandabox}{Come funziona A*? Perché è ottimale?}
+\end{domandabox}
+
+A* è un algoritmo di ricerca informata che ordina la frontiera in base alla funzione $f(n) = g(n) + h(n)$, dove $g(n)$ è il costo del cammino già percorso da radice a $n$ e $h(n)$ è la stima euristica del costo rimanente per raggiungere il goal. A ogni passo espande il nodo con $f$ minimo.
+
+L'ottimalità di A* dipende dalla proprietà dell'euristica. Su \textbf{alberi di ricerca}, basta l'ammissibilità: $h(n) \leq h^*(n)$. Su \textbf{grafi con lista chiusa}, dove i nodi espansi non vengono rivisitati, serve la \textbf{consistenza}: $h(n) \leq c(n,n') + h(n')$ per ogni arco. La consistenza garantisce che $f$ non diminuisca mai lungo un cammino, ovvero che il primo percorso con cui si espande un nodo sia già quello ottimale.
+
+La differenza tra A* e UCS è proprio questa: UCS usa solo $g(n)$ e non sfrutta nessuna conoscenza del goal, mentre A* usa anche $h(n)$ per orientare la ricerca. Con $h = 0$, A* degenera in UCS.
+
+\begin{domandabox}{Cos'è RBFS e quando si usa?}
+\end{domandabox}
+
+RBFS (Recursive Best-First Search) è una versione di A* progettata per operare con \textbf{memoria lineare}: mantiene in memoria solo il cammino corrente dalla radice al nodo attivo e i valori $f$ dei nodi fratelli non ancora esplorati. Quando un ramo supera una soglia $f_{limit}$, l'algoritmo torna indietro, aggiorna il valore del nodo con il miglior $f$ trovato nel sottoalbero esplorato, e poi ricomincia dal ramo con $f$ minore.
+
+Rispetto ad A*, RBFS può riesaminare nodi più volte a causa dei ritorni all'indietro, aumentando il costo temporale; però la complessità spaziale è solo $O(bd)$ -- analoga a IDDFS. È l'algoritmo da preferire quando la memoria disponibile è il fattore limitante.
+
 \begin{domandabox}{Cos'è un'euristica ammissibile? E una dominante?}
 \end{domandabox}
 
@@ -127,6 +170,22 @@ Quando una variabile $X_k$ non può ricevere alcun valore senza violare un vinco
 
 Il back-jumping salta direttamente all'ultima variabile nel conflict set, bypassando tutte le variabili intermedie che non hanno contribuito al fallimento. Questo lo rende molto più efficiente del semplice backtracking cronologico, specialmente in problemi con molte variabili e vincoli distribuiti in modo sparso.
 
+\begin{domandabox}{Cos'è il Forward Checking nel CSP?}
+\end{domandabox}
+
+Il forward checking è una tecnica di \textbf{propagazione dei vincoli} che opera \emph{durante} la costruzione dell'assegnamento: ogni volta che si assegna un valore alla variabile $X_i$, si controllano immediatamente tutti i vincoli che coinvolgono $X_i$ e una variabile ancora non assegnata $X_j$, eliminando dal dominio di $X_j$ i valori incompatibili con il valore appena scelto per $X_i$.
+
+Il vantaggio è che questo rileva fallimenti molto prima del backtracking puro: se il dominio di una variabile futura diventa vuoto, si può già fare backtracking senza dover assegnare altre variabili. Tuttavia il forward checking non è completo nel propagare le inconsistenze: non rileva le incompatibilità tra variabili future non ancora assegnate. Per questo, una tecnica più potente è l'\textbf{arc consistency}.
+
+\begin{domandabox}{Cos'è l'Arc Consistency (AC-3)?}
+\end{domandabox}
+
+Un arco $(X_i, X_j)$ in un CSP è \textbf{arc-consistent} se per ogni valore nel dominio di $X_i$ esiste almeno un valore nel dominio di $X_j$ che è compatibile con il vincolo tra $X_i$ e $X_j$. L'arc consistency si ottiene eliminando iterativamente i valori che violano questa condizione.
+
+L'algoritmo \textbf{AC-3} gestisce una coda di archi da verificare. Prende un arco $(X_i, X_j)$, rimuove da $D_i$ i valori per cui non esiste alcun supporto in $D_j$. Se $D_i$ si riduce, aggiunge alla coda tutti gli archi $(X_k, X_i)$ con $k \neq j$, perché la riduzione del dominio di $X_i$ potrebbe rendere inconsistenti archi già controllati. L'algoritmo termina quando la coda è vuota o quando un dominio diventa vuoto (inconsistenza rilevata).
+
+La differenza con il forward checking è che AC-3 propaga le riduzioni a cascata tra tutte le coppie di variabili, non solo tra la variabile appena assegnata e le future: è quindi molto più potente nel rilevare fallimenti anticipatamente, a costo di più computazione. L'arc consistency si può applicare sia come pre-processo prima del backtracking, sia interleaved durante la ricerca.
+
 % =====================================================================
 \section{Ricerca Avversariale}
 % =====================================================================
@@ -153,6 +212,17 @@ Il punto cruciale è che i valori vengono poi propagati \textbf{dalle foglie ver
 \]
 Complessità temporale: $O(b^m)$. Con alpha-beta pruning nel caso migliore: $O(b^{m/2})$.
 \end{formulabox}
+
+\begin{domandabox}{Cos'è l'Alpha-Beta Pruning? Come migliora Minimax?}
+\end{domandabox}
+
+L'alpha-beta pruning è un'ottimizzazione di Minimax che \textbf{elimina rami dell'albero di gioco che non possono influenzare la decisione finale}, senza cambiare il risultato. L'idea è mantenere due valori durante la visita: $\alpha$ (il miglior valore garantito finora per MAX) e $\beta$ (il miglior valore garantito finora per MIN, ovvero il più basso).
+
+La regola di potatura è la seguente: se durante l'esplorazione di un nodo MIN troviamo un valore $\leq \alpha$, possiamo smettere di espandere quel nodo (potatura beta), perché MAX non sceglierà mai questo ramo -- ha già un'alternativa migliore. Simmetricamente, se durante un nodo MAX troviamo un valore $\geq \beta$, possiamo tagliare (potatura alfa), perché MIN non permetterà mai a MAX di arrivare qui.
+
+Nel \textbf{caso migliore} -- quando i nodi sono ordinati in modo ottimale, con le mosse migliori esaminate per prime -- l'alpha-beta dimezza la profondità effettiva dell'albero: la complessità scende da $O(b^m)$ a $O(b^{m/2})$, il che equivale a poter cercare al doppio della profondità con la stessa quantità di calcolo. Nel \textbf{caso peggiore} (ordinamento pessimo) non dà nessun vantaggio.
+
+È fondamentale capire che alpha-beta \emph{non cambia la mossa scelta da Minimax}: produce esattamente lo stesso risultato, solo esplorando meno nodi. La potatura non influenza la correttezza perché i rami tagliati non avrebbero mai potuto essere scelti da un giocatore razionale.
 
 % =====================================================================
 \section{Logica del Primo Ordine}
@@ -191,6 +261,26 @@ Il \textbf{Modus Ponens Generalizzato} (MPG) è la versione del forward chaining
 \]
 dove $\theta$ è la sostituzione che unifica $P_i$ con $p_i$ per ogni $i$.
 \end{formulabox}
+
+\begin{domandabox}{Cos'è il Backward Chaining? Differenze con il Forward Chaining?}
+\end{domandabox}
+
+Il backward chaining è un algoritmo di inferenza \textbf{guidato dall'obiettivo}: parte dalla query che si vuole dimostrare e cerca \emph{a ritroso} le regole la cui conclusione corrisponde alla query, tentando poi di dimostrare le premesse di quelle regole ricorsivamente. È la strategia alla base di \textbf{Prolog}.
+
+La differenza fondamentale con il forward chaining è la direzione dell'inferenza. Il forward chaining parte dai fatti e deriva tutte le conseguenze possibili finché non si raggiunge il goal -- può derivare molti fatti inutili lungo il percorso. Il backward chaining parte dal goal e determina solo quali fatti servono per dimostrarlo -- è molto più efficiente quando la query è specifica e lo spazio degli obiettivi parziali è piccolo rispetto all'insieme di tutti i fatti derivabili.
+
+Entrambi richiedono clausole di Horn per funzionare correttamente. La scelta tra i due dipende dal problema: il forward chaining è preferibile quando si hanno pochi fatti e molte query, mentre il backward chaining è preferibile con molti fatti e query specifiche.
+
+\begin{domandabox}{Cos'è l'unificazione? Cosa si intende per MGU?}
+\end{domandabox}
+
+L'unificazione è il processo di trovare una \textbf{sostituzione} $\theta$ -- un'associazione di variabili a termini -- tale che due espressioni diventino sintatticamente identiche dopo aver applicato $\theta$. Per esempio, $P(x, f(y))$ e $P(a, f(b))$ si unificano con la sostituzione $\{x/a, y/b\}$: applicando $\theta$, entrambe diventano $P(a, f(b))$.
+
+Il \textbf{Most General Unifier} (MGU) è la sostituzione più generale tra tutte quelle che unificano due espressioni: non vincola le variabili più del necessario. Se esistono più sostituzioni unificanti, l'MGU è quella da cui si possono derivare tutte le altre. Per esempio, $\{x/y\}$ è più generale di $\{x/a, y/a\}$ perché la seconda si ottiene dalla prima con un'ulteriore sostituzione.
+
+L'unificazione fallisce quando si incontra l'\textbf{occur check}: non si può unificare $x$ con $f(x)$ perché si creerebbe una struttura infinita. In molte implementazioni pratiche (come Prolog) l'occur check viene omesso per motivi di efficienza, a rischio di risultati errati in casi particolari.
+
+L'unificazione è il meccanismo fondamentale che rende possibile il Modus Ponens Generalizzato e la risoluzione in FOL: senza di essa non potremmo applicare regole universali a fatti specifici.
 
 \begin{domandabox}{Cos'è la risoluzione e come si usa per la refutazione?}
 \end{domandabox}
