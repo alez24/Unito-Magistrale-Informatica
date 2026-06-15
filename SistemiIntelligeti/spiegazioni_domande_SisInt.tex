@@ -164,13 +164,6 @@ Questi elementi non vanno confusi con un CSP: in un problema di ricerca cerchiam
 \section{Algoritmi di Ricerca}
 % =====================================================================
 
-\begin{domandabox}{Cosa differenzia un algoritmo informato da uno non informato?}
-\end{domandabox}
-
-La differenza fondamentale è l'utilizzo di una \textbf{funzione euristica} $h(n)$. Un algoritmo non informato come BFS, DFS o UCS non sa nulla sulla posizione del goal rispetto allo stato corrente: esplora il grafo in modo cieco, seguendo solo la struttura dello spazio degli stati. Un algoritmo informato, come A* o la ricerca greedy, dispone invece di una stima $h(n)$ del costo per raggiungere il goal da $n$ e la usa per guidare l'esplorazione verso le zone più promettenti.
-
-È importante chiarire che la funzione costo $g(n)$ -- il costo del cammino percorso finora -- è usata anche dagli algoritmi non informati come UCS. Quello che distingue gli algoritmi informati non è quindi il costo, ma proprio la stima euristica del costo futuro.
-
 \begin{domandabox}{Descrivi BFS, DFS, IDDFS e UCS: completezza, ottimalità, complessità}
 \end{domandabox}
 
@@ -180,7 +173,7 @@ Il \textbf{DFS} (Depth-First Search) esplora in profondità lungo un ramo fino a
 
 L'\textbf{IDDFS} (Iterative Deepening DFS) combina i vantaggi di BFS e DFS nel modo più elegante possibile: esegue ripetutamente una ricerca DFS limitata a profondità crescente $l = 0, 1, 2, \ldots$ fino a trovare la soluzione. Il vantaggio è che ha la \textbf{completezza e l'ottimalità di BFS} (con costi uniformi) ma la \textbf{complessità spaziale di DFS}: $O(bd)$. Il costo di riesaminare i nodi già visitati nelle iterazioni precedenti è sorprendentemente basso -- asintoticamente non cambia la complessità temporale $O(b^d)$ -- ed è di gran lunga preferibile al BFS per grandi spazi degli stati.
 
-L'\textbf{UCS} (Uniform Cost Search) è BFS con priorità: la frontiera è una coda a priorità ordinata per $g(n)$, il costo del cammino percorso. Estrae sempre il nodo di costo minimo. È \textbf{completo e ottimale} anche con archi a costo variabile, purché i costi siano non negativi. Quando tutti i costi sono uguali a 1, degenerata esattamente in BFS.
+L'\textbf{UCS} (Uniform Cost Search) è BFS con priorità: la frontiera è una coda a priorità ordinata per $g(n)$, il costo del cammino percorso. Estrae sempre il nodo di costo minimo. È \textbf{completo e ottimale} anche con archi a costo variabile, purché i costi siano non negativi. Quando tutti i costi sono uguali a 1, degenera esattamente in BFS.
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
@@ -196,6 +189,24 @@ A*        & Sì & Sì (euristica ammiss.) & $O(b^d)$ & $O(b^d)$ \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\begin{domandabox}{Cosa differenzia un algoritmo informato da uno non informato?}
+\end{domandabox}
+
+La differenza fondamentale è l'utilizzo di una \textbf{funzione euristica} $h(n)$. Un algoritmo non informato come BFS, DFS o UCS non sa nulla sulla posizione del goal rispetto allo stato corrente: esplora il grafo in modo cieco, seguendo solo la struttura dello spazio degli stati. Un algoritmo informato, come A* o la ricerca greedy, dispone invece di una stima $h(n)$ del costo per raggiungere il goal da $n$ e la usa per guidare l'esplorazione verso le zone più promettenti.
+
+È importante chiarire che la funzione costo $g(n)$ -- il costo del cammino percorso finora -- è usata anche dagli algoritmi non informati come UCS. Quello che distingue gli algoritmi informati non è quindi il costo, ma proprio la stima euristica del costo futuro.
+
+\begin{domandabox}{Cos'è un'euristica ammissibile? E una dominante?}
+\end{domandabox}
+
+Un'euristica $h(n)$ è \textbf{ammissibile} se non sovrastima mai il costo reale per raggiungere il goal: formalmente $h(n) \leq h^*(n)$ per ogni nodo $n$, dove $h^*(n)$ è il costo ottimo reale. Questo la rende ``ottimistica'': preferisce sempre soluzioni buone. La proprietà fondamentale è che A* con un'euristica ammissibile garantisce l'ottimalità su alberi di ricerca.
+
+Se però lavoriamo su grafi con una lista chiusa -- dove i nodi già espansi non vengono riesaminati -- abbiamo bisogno di una condizione più forte: la \textbf{consistenza} (o monotonicità). Un'euristica è consistente se $h(n) \leq c(n, n') + h(n')$ per ogni arco $(n, n')$. La consistenza implica l'ammissibilità, ma non viceversa. Un'euristica consistente garantisce l'ottimalità di A* anche su grafi.
+
+Un'euristica $h_1$ \textbf{domina} $h_2$ se $h_1(n) \geq h_2(n)$ per \emph{ogni} nodo $n$. Questo significa che $h_1$ è più informativa: fa stime più alte (senza mai superare il valore reale), e quindi A* con $h_1$ espande meno nodi rispetto ad A* con $h_2$.
+
+Una funzione costante zero, $h(n) = 0$, è tecnicamente ammissibile ma completamente non informativa: A* con questa euristica degenera in UCS e non guida in alcun modo la ricerca verso il goal.
 
 \begin{domandabox}{Come funziona A*? Perché è ottimale?}
 \end{domandabox}
@@ -220,17 +231,6 @@ La ricerca bidirezionale esegue simultaneamente \textbf{due ricerche in parallel
 
 La difficoltà pratica è definire come effettuare la ricerca all'indietro: bisogna avere azioni invertibili e sapere in anticipo lo stato obiettivo (o essere in grado di generare i predecessori di uno stato).
 
-\begin{domandabox}{Cos'è un'euristica ammissibile? E una dominante?}
-\end{domandabox}
-
-Un'euristica $h(n)$ è \textbf{ammissibile} se non sovrastima mai il costo reale per raggiungere il goal: formalmente $h(n) \leq h^*(n)$ per ogni nodo $n$, dove $h^*(n)$ è il costo ottimo reale. Questo la rende ``ottimistica'': preferisce sempre soluzioni buone. La proprietà fondamentale è che A* con un'euristica ammissibile garantisce l'ottimalità su alberi di ricerca.
-
-Se però lavoriamo su grafi con una lista chiusa -- dove i nodi già espansi non vengono riesaminati -- abbiamo bisogno di una condizione più forte: la \textbf{consistenza} (o monotonicità). Un'euristica è consistente se $h(n) \leq c(n, n') + h(n')$ per ogni arco $(n, n')$. La consistenza implica l'ammissibilità, ma non viceversa. Un'euristica consistente garantisce l'ottimalità di A* anche su grafi.
-
-Un'euristica $h_1$ \textbf{domina} $h_2$ se $h_1(n) \geq h_2(n)$ per \emph{ogni} nodo $n$. Questo significa che $h_1$ è più informativa: fa stime più alte (senza mai superare il valore reale), e quindi A* con $h_1$ espande meno nodi rispetto ad A* con $h_2$.
-
-Una funzione costante zero, $h(n) = 0$, è tecnicamente ammissibile ma completamente non informativa: A* con questa euristica degenera in UCS e non guida in alcun modo la ricerca verso il goal.
-
 % =====================================================================
 \section{CSP -- Problemi di Soddisfacimento di Vincoli}
 % =====================================================================
@@ -242,21 +242,30 @@ Un problema di soddisfacimento di vincoli (CSP) è una tripla $\langle X, D, C \
 
 Una soluzione di un CSP è un \textbf{assegnamento completo e consistente}: completo perché ogni variabile deve avere un valore, consistente perché nessun vincolo deve essere violato. Questo lo distingue nettamente dalla ricerca classica, dove la soluzione è una sequenza di azioni. Nel CSP non abbiamo né un cammino né un costo: vogliamo solo trovare una configurazione valida.
 
+\begin{domandabox}{Cos'è la commutatività nel CSP? Perché riduce l'ampiezza dell'albero?}
+\end{domandabox}
+
+La commutatività nei CSP afferma che l'\textbf{ordine in cui si assegnano le variabili non influenza la soluzione}: se $\{X_1 = a, X_2 = b\}$ è una soluzione, lo è indipendentemente dal fatto che si sia assegnato prima $X_1$ o prima $X_2$.
+
+Questa proprietà è cruciale perché permette di costruire l'albero di ricerca assegnando \emph{una variabile alla volta} invece di considerare tutte le possibili sequenze di assegnamento. Senza sfruttare la commutatività, l'albero avrebbe $n!$ percorsi distinti per ogni soluzione (uno per ogni permutazione dell'ordine); con la commutatività se ne considera uno solo. Questo riduce drasticamente l'\textbf{ampiezza} dell'albero (il fattore di ramificazione passa da $n \cdot d$ a $d$).
+
 \begin{domandabox}{Quali algoritmi si usano per risolvere un CSP? Qual è il più e il meno efficiente?}
 \end{domandabox}
 
 L'approccio più basilare -- e meno efficiente -- è il \textbf{generate and test}: si generano tutti i possibili assegnamenti completi dell'intero set di variabili, e per ciascuno si verifica se i vincoli sono soddisfatti. La complessità è $O(d^n)$ dove $d$ è la dimensione del dominio e $n$ è il numero di variabili, perché non sfrutta i vincoli durante la costruzione.
 
-Il \textbf{backtracking} migliora notevolmente questo approccio: si assegnano le variabili una alla volta e, non appena un assegnamento parziale viola un vincolo, si torna indietro senza esplorare tutte le sue estensioni. Sfruttare la \emph{commutatività} degli assegnamenti -- ovvero il fatto che l'ordine in cui si assegnano le variabili non influenza il risultato -- riduce ulteriormente l'ampiezza dell'albero.
+Il \textbf{backtracking} migliora notevolmente questo approccio: si assegnano le variabili una alla volta e, non appena un assegnamento parziale viola un vincolo, si torna indietro senza esplorare tutte le sue estensioni. Sfruttare la commutatività degli assegnamenti riduce ulteriormente l'ampiezza dell'albero.
 
 L'algoritmo più efficiente tra quelli tipicamente discussi è il \textbf{back-jumping}. Mentre il backtracking cronologico, in caso di fallimento, torna sempre alla variabile assegnata immediatamente prima (anche se non è la responsabile del conflitto), il back-jumping identifica il \textbf{conflict set} -- l'insieme delle variabili già assegnate che hanno causato il fallimento -- e torna direttamente alla più recente tra queste. Questo evita di esplorare rami che non avrebbero comunque portato a una soluzione.
 
-\begin{domandabox}{Cos'è il back-jumping e il conflict set?}
+\begin{domandabox}{Cosa sono MRV e l'euristica di grado nel CSP?}
 \end{domandabox}
 
-Quando una variabile $X_k$ non può ricevere alcun valore senza violare un vincolo, il suo conflict set è l'insieme delle variabili già assegnate che sono in conflitto con $X_k$. Formalmente: $CS(X_k) = \{X_j : j < k, \exists \text{ vincolo tra } X_j \text{ e } X_k\}$.
+Queste sono due euristiche per scegliere in quale ordine assegnare le variabili durante il backtracking, con l'obiettivo di rilevare i fallimenti il prima possibile.
 
-Il back-jumping salta direttamente all'ultima variabile nel conflict set, bypassando tutte le variabili intermedie che non hanno contribuito al fallimento. Questo lo rende molto più efficiente del semplice backtracking cronologico, specialmente in problemi con molte variabili e vincoli distribuiti in modo sparso.
+La \textbf{MRV} (Minimum Remaining Values), detta anche euristica ``fail-first'', sceglie la variabile con il \textbf{dominio residuo più piccolo}: si preferisce la variabile che ha meno valori ammissibili rimanenti, perché è quella che con più probabilità porterà a un fallimento. Rilevare il fallimento presto significa non sprecare tempo a espandere rami inutili.
+
+L'\textbf{euristica di grado} (degree heuristic) serve come criterio di spareggio quando due o più variabili hanno lo stesso numero di valori residui: si sceglie la variabile coinvolta nel maggior numero di vincoli con le variabili ancora non assegnate. L'idea è che la variabile con più connessioni avrà un impatto maggiore sulle scelte future, quindi è meglio vincolarla subito.
 
 \begin{domandabox}{Cos'è il Forward Checking nel CSP?}
 \end{domandabox}
@@ -281,21 +290,12 @@ La path consistency (o 3-consistenza) estende il concetto di arc consistency a \
 
 La gerarchia è: node consistency (1 variabile) $\subset$ arc consistency (2 variabili) $\subset$ path consistency (3 variabili) $\subset \ldots$ Più si sale nella gerarchia, più si rilevano inconsistenze in anticipo ma a costo computazionale crescente. Nella pratica, arc consistency è spesso il miglior compromesso.
 
-\begin{domandabox}{Cos'è la commutatività nel CSP? Perché riduce l'ampiezza dell'albero?}
+\begin{domandabox}{Cos'è il back-jumping e il conflict set?}
 \end{domandabox}
 
-La commutatività nei CSP afferma che l'\textbf{ordine in cui si assegnano le variabili non influenza la soluzione}: se $\{X_1 = a, X_2 = b\}$ è una soluzione, lo è indipendentemente dal fatto che si sia assegnato prima $X_1$ o prima $X_2$.
+Quando una variabile $X_k$ non può ricevere alcun valore senza violare un vincolo, il suo conflict set è l'insieme delle variabili già assegnate che sono in conflitto con $X_k$. Formalmente: $CS(X_k) = \{X_j : j < k, \exists \text{ vincolo tra } X_j \text{ e } X_k\}$.
 
-Questa proprietà è cruciale perché permette di costruire l'albero di ricerca assegnando \emph{una variabile alla volta} invece di considerare tutte le possibili sequenze di assegnamento. Senza sfruttare la commutatività, l'albero avrebbe $n!$ percorsi distinti per ogni soluzione (uno per ogni permutazione dell'ordine); con la commutatività se ne considera uno solo. Questo riduce drasticamente l'\textbf{ampiezza} dell'albero (il fattore di ramificazione passa da $n \cdot d$ a $d$).
-
-\begin{domandabox}{Cosa sono MRV e l'euristica di grado nel CSP?}
-\end{domandabox}
-
-Queste sono due euristiche per scegliere in quale ordine assegnare le variabili durante il backtracking, con l'obiettivo di rilevare i fallimenti il prima possibile.
-
-La \textbf{MRV} (Minimum Remaining Values), detta anche euristica ``fail-first'', sceglie la variabile con il \textbf{dominio residuo più piccolo}: si preferisce la variabile che ha meno valori ammissibili rimanenti, perché è quella che con più probabilità porterà a un fallimento. Rilevare il fallimento presto significa non sprecare tempo a espandere rami inutili.
-
-L'\textbf{euristica di grado} (degree heuristic) serve come criterio di spareggio quando due o più variabili hanno lo stesso numero di valori residui: si sceglie la variabile coinvolta nel maggior numero di vincoli con le variabili ancora non assegnate. L'idea è che la variabile con più connessioni avrà un impatto maggiore sulle scelte future, quindi è meglio vincolarla subito.
+Il back-jumping salta direttamente all'ultima variabile nel conflict set, bypassando tutte le variabili intermedie che non hanno contribuito al fallimento. Questo lo rende molto più efficiente del semplice backtracking cronologico, specialmente in problemi con molte variabili e vincoli distribuiti in modo sparso.
 
 % =====================================================================
 \section{Ricerca Avversariale}
@@ -339,12 +339,19 @@ Nel \textbf{caso migliore} -- quando i nodi sono ordinati in modo ottimale, con 
 \section{Logica del Primo Ordine}
 % =====================================================================
 
+\begin{domandabox}{Quali simboli della FOL richiedono interpretazione?}
+\end{domandabox}
+
+In FOL distinguiamo simboli logici (quantificatori, connettivi, uguaglianza) che hanno un significato fisso, e simboli \textbf{non logici} che richiedono un'interpretazione, ovvero una mappatura verso il dominio del discorso.
+
+I simboli non logici che richiedono interpretazione sono tre: i \textbf{simboli di costante} (denotano un oggetto specifico del dominio), i \textbf{simboli di funzione} (denotano una funzione dal dominio a sé stesso) e i \textbf{simboli di predicato} (denotano una relazione sul dominio). Le variabili non richiedono interpretazione perché sono legate dai quantificatori: il loro significato dipende dall'assegnamento corrente, non dall'interpretazione del modello.
+
 \begin{domandabox}{Cos'è la Forma Normale Congiuntiva (CNF)?}
 \end{domandabox}
 
 La Forma Normale Congiuntiva è una rappresentazione standard delle formule logiche come \textbf{congiunzione di clausole}, dove ogni clausola è una \textbf{disgiunzione di letterali}. Un letterale è un atomo o la sua negazione. Per esempio: $(A \lor \neg B) \land (B \lor C \lor \neg A)$ è in CNF.
 
-La CNF è fondamentale perché è la forma richiesta dall'algoritmo di \textbf{risoluzione}. Qualsiasi formula della logica proposizionale o del primo ordine può essere convertita in CNF attraverso una procedura standard: si eliminano prima i bicondizioanli ($\Leftrightarrow$) e le implicazioni ($\Rightarrow$), poi si porta la negazione verso l'interno usando le leggi di De Morgan, e infine si distribuisce la disgiunzione sulla congiunzione.
+La CNF è fondamentale perché è la forma richiesta dall'algoritmo di \textbf{risoluzione}. Qualsiasi formula della logica proposizionale o del primo ordine può essere convertita in CNF attraverso una procedura standard: si eliminano prima i bicondizionali ($\Leftrightarrow$) e le implicazioni ($\Rightarrow$), poi si porta la negazione verso l'interno usando le leggi di De Morgan, e infine si distribuisce la disgiunzione sulla congiunzione.
 
 \begin{domandabox}{Cosa sono le clausole di Horn e perché sono importanti?}
 \end{domandabox}
@@ -392,13 +399,6 @@ Il \textbf{Most General Unifier} (MGU) è la sostituzione più generale tra tutt
 L'unificazione fallisce quando si incontra l'\textbf{occur check}: non si può unificare $x$ con $f(x)$ perché si creerebbe una struttura infinita. In molte implementazioni pratiche (come Prolog) l'occur check viene omesso per motivi di efficienza, a rischio di risultati errati in casi particolari.
 
 L'unificazione è il meccanismo fondamentale che rende possibile il Modus Ponens Generalizzato e la risoluzione in FOL: senza di essa non potremmo applicare regole universali a fatti specifici.
-
-\begin{domandabox}{Quali simboli della FOL richiedono interpretazione?}
-\end{domandabox}
-
-In FOL distinguiamo simboli logici (quantificatori, connettivi, uguaglianza) che hanno un significato fisso, e simboli \textbf{non logici} che richiedono un'interpretazione, ovvero una mappatura verso il dominio del discorso.
-
-I simboli non logici che richiedono interpretazione sono tre: i \textbf{simboli di costante} (denotano un oggetto specifico del dominio), i \textbf{simboli di funzione} (denotano una funzione dal dominio a sé stesso) e i \textbf{simboli di predicato} (denotano una relazione sul dominio). Le variabili non richiedono interpretazione perché sono legate dai quantificatori: il loro significato dipende dall'assegnamento corrente, non dall'interpretazione del modello.
 
 \begin{domandabox}{Cos'è la risoluzione e come si usa per la refutazione?}
 \end{domandabox}
