@@ -31,6 +31,16 @@
   title=\textbf{Attenzione: #1}, fonttitle=\bfseries\small,
   breakable, left=5pt, right=5pt, top=4pt, bottom=4pt
 }
+\newtcolorbox{esempiobox}{
+  colback=teal!5, colframe=teal!55!black,
+  title=\textbf{Esempio}, fonttitle=\bfseries\small,
+  breakable, left=5pt, right=5pt, top=4pt, bottom=4pt
+}
+\newtcolorbox{ricordabox}{
+  colback=pink!8, colframe=red!55!black,
+  title=\textbf{Come ricordarlo}, fonttitle=\bfseries\small,
+  breakable, left=5pt, right=5pt, top=4pt, bottom=4pt
+}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{7pt}
@@ -139,6 +149,14 @@ La cosa importante da sottolineare è che il test non richiede che la macchina r
 
 Le capacità che un sistema dovrebbe avere per superare il test riguardano l'elaborazione del linguaggio naturale, la rappresentazione della conoscenza, il ragionamento automatico e l'apprendimento. John Searle ha criticato il test con l'argomento della Stanza Cinese: una persona che segue regole per manipolare simboli cinesi senza capirne il significato starebbe ``superando'' il test senza alcuna vera comprensione. Questo ha aperto il dibattito tra IA forte e IA debole.
 
+\begin{esempiobox}
+ELIZA (1966) era un programma che simulava uno psicoterapeuta riformulando le frasi dell'utente in domande: ``Ho mal di testa'' $\to$ ``Perché dici di avere mal di testa?''. Molti utenti si convincevano di parlare con un essere umano -- un precursore del Test di Turing. Non capiva nulla: seguiva solo pattern di testo.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Turing = imita, non capisce.} Il test misura il comportamento esterno, non l'intelligenza interna. Una fotocopia di un libro non ``capisce'' il libro -- ma supera il test se la gente non sa distinguerla dall'originale.
+\end{ricordabox}
+
 \vspace{6pt}
 \begin{domandabox}{Qual è la differenza tra IA Forte e IA Debole?}
 \end{domandabox}
@@ -146,6 +164,10 @@ Le capacità che un sistema dovrebbe avere per superare il test riguardano l'ela
 Quando parliamo di IA debole intendiamo sistemi che \emph{simulano} comportamenti intelligenti per uno scopo specifico, senza possedere comprensione reale o stati mentali propri. Un motore di scacchi, un sistema di riconoscimento vocale, un chatbot: questi sono tutti esempi di IA debole perché risolvono problemi definiti, ma non ``capiscono'' quello che stanno facendo nel senso in cui lo fa un essere umano.
 
 L'IA forte, al contrario, ipotizza che una macchina possa possedere vera intelligenza, coscienza e stati mentali equivalenti a quelli umani. Non si tratta di simulare, ma di \emph{essere} intelligente. È ancora un obiettivo teorico e filosofico, non raggiunto. Il libro di testo adotta l'approccio \textbf{``agire razionalmente''}: costruire agenti che massimizzano la misura di prestazione attesa, indipendentemente dal fatto che lo facciano ``come un umano''.
+
+\begin{ricordabox}
+\textbf{Debole = fa una cosa bene (ma non sa perché).} Deep Blue batte Kasparov a scacchi $\to$ IA debole: è bravissimo a scacchi ma non sa allacciare le scarpe. \textbf{Forte = capisce, ragiona su tutto come un umano} $\to$ ancora fantascienza.
+\end{ricordabox}
 
 % =====================================================================
 \section{Agenti e Ricerca}
@@ -159,6 +181,14 @@ Un agente è qualsiasi entità capace di percepire l'ambiente attraverso sensori
 Quando formuliamo un problema di ricerca dobbiamo definire cinque elementi fondamentali. Lo \textbf{stato iniziale} è la configurazione di partenza dell'agente nel mondo. La \textbf{funzione successore} (o modello di transizione) descrive gli effetti di ogni azione: dato uno stato $s$ e un'azione $a$, restituisce il nuovo stato risultante. Il \textbf{test obiettivo} determina se uno stato è una soluzione. Il \textbf{costo del cammino} è la somma dei costi di ogni passo compiuto. Infine, una \textbf{soluzione} è la sequenza di azioni che porta dallo stato iniziale a uno stato obiettivo.
 
 Questi elementi non vanno confusi con un CSP: in un problema di ricerca cerchiamo una \emph{sequenza di azioni}, mentre in un CSP cerchiamo un \emph{assegnamento} che soddisfi dei vincoli, senza la nozione di cammino o costo.
+
+\begin{esempiobox}
+\textbf{8-puzzle:} stato iniziale = configurazione iniziale delle tessere; funzione successore = sposta la tessera vuota su/giù/sinistra/destra; test obiettivo = tessere in ordine 1--8; costo = numero di mosse. La soluzione è la \emph{sequenza} di spostamenti, non un singolo valore.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Ricerca = ``come ci arrivo?''} (sequenza di azioni). \textbf{CSP = ``cosa vale ogni variabile?''} (assegnamento). Nel problema dell'8-puzzle cerchi le mosse; nel Sudoku cerchi i numeri nelle celle.
+\end{ricordabox}
 
 % =====================================================================
 \section{Algoritmi di Ricerca}
@@ -174,6 +204,15 @@ Il \textbf{DFS} (Depth-First Search) esplora in profondità lungo un ramo fino a
 L'\textbf{IDDFS} (Iterative Deepening DFS) combina i vantaggi di BFS e DFS nel modo più elegante possibile: esegue ripetutamente una ricerca DFS limitata a profondità crescente $l = 0, 1, 2, \ldots$ fino a trovare la soluzione. Il vantaggio è che ha la \textbf{completezza e l'ottimalità di BFS} (con costi uniformi) ma la \textbf{complessità spaziale di DFS}: $O(bd)$. Il costo di riesaminare i nodi già visitati nelle iterazioni precedenti è sorprendentemente basso -- asintoticamente non cambia la complessità temporale $O(b^d)$ -- ed è di gran lunga preferibile al BFS per grandi spazi degli stati.
 
 L'\textbf{UCS} (Uniform Cost Search) è BFS con priorità: la frontiera è una coda a priorità ordinata per $g(n)$, il costo del cammino percorso. Estrae sempre il nodo di costo minimo. È \textbf{completo e ottimale} anche con archi a costo variabile, purché i costi siano non negativi. Quando tutti i costi sono uguali a 1, degenera esattamente in BFS.
+
+\begin{esempiobox}
+Immagina un labirinto con corridoi di lunghezza diversa. \textbf{BFS} trova l'uscita con meno svolte; \textbf{DFS} imbocca il primo corridoio e va fino in fondo (può sbagliare tutto); \textbf{IDDFS} prova prima entro 1 corridoio, poi 2, poi 3\ldots\ trovando la soluzione più breve; \textbf{UCS} tiene conto della lunghezza reale di ogni corridoio e trova il percorso più corto in metri.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Memoria}: BFS = \textbf{B}ello ma \textbf{B}ulimica di RAM. DFS = \textbf{D}iscende \textbf{D}ritto ma si perde. IDDFS = il migliore dei due mondi. UCS = BFS con bilancia (pesa i costi).\\[3pt]
+\textbf{Tabella da ricordare}: DFS è l'unico \emph{non} completo e \emph{non} ottimale. IDDFS è completo+ottimale con spazio di DFS. UCS è completo+ottimale con costi variabili.
+\end{ricordabox}
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
@@ -207,6 +246,16 @@ Se però lavoriamo su grafi con una lista chiusa -- dove i nodi già espansi non
 Un'euristica $h_1$ \textbf{domina} $h_2$ se $h_1(n) \geq h_2(n)$ per \emph{ogni} nodo $n$. Questo significa che $h_1$ è più informativa: fa stime più alte (senza mai superare il valore reale), e quindi A* con $h_1$ espande meno nodi rispetto ad A* con $h_2$.
 
 Una funzione costante zero, $h(n) = 0$, è tecnicamente ammissibile ma completamente non informativa: A* con questa euristica degenera in UCS e non guida in alcun modo la ricerca verso il goal.
+
+\begin{esempiobox}
+Nell'\textbf{8-puzzle}: $h_1$ = numero di tessere fuori posto (ammissibile: non sovrastima mai le mosse necessarie). $h_2$ = distanza di Manhattan di ogni tessera dalla sua posizione finale (ammissibile e \emph{dominante} su $h_1$: stima più alta ma ancora ottimistica). A* con $h_2$ espande molti meno nodi che con $h_1$.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Ammissibile = ottimista = non mente mai per eccesso.} Come un GPS che dice ``arrivi in 10 minuti'': può sbagliare per difetto (arrivare in 12) ma non per eccesso.\\[3pt]
+\textbf{Consistente = monotona}: $f(n)$ non scende mai lungo il cammino. Se la stima cambia ogni volta che aggiungi un passo, sei inconsistente.\\[3pt]
+\textbf{Domina}: $h_1 \geq h_2$ ovunque $\Rightarrow$ $h_1$ sa di più $\Rightarrow$ A* con $h_1$ è più furbo.
+\end{ricordabox}
 
 \begin{domandabox}{Come funziona A*? Perché è ottimale?}
 \end{domandabox}
@@ -242,12 +291,24 @@ Un problema di soddisfacimento di vincoli (CSP) è una tripla $\langle X, D, C \
 
 Una soluzione di un CSP è un \textbf{assegnamento completo e consistente}: completo perché ogni variabile deve avere un valore, consistente perché nessun vincolo deve essere violato. Questo lo distingue nettamente dalla ricerca classica, dove la soluzione è una sequenza di azioni. Nel CSP non abbiamo né un cammino né un costo: vogliamo solo trovare una configurazione valida.
 
+\begin{esempiobox}
+\textbf{Colorazione mappa Australia}: variabili $X = \{WA, NT, SA, Q, NSW, V, T\}$, domini $D = \{Rosso, Verde, Blu\}$, vincoli: ogni coppia di regioni adiacenti deve avere colori diversi (es. $WA \neq NT$, $WA \neq SA$, \ldots). Una soluzione: $WA=R, NT=G, SA=B, Q=R, NSW=G, V=R, T=G$.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{CSP = Sudoku}: hai celle (variabili), valori 1--9 (domini), regole di riga/colonna/quadrato (vincoli). Non cerchi come arrivare alla soluzione -- cerchi i valori giusti.
+\end{ricordabox}
+
 \begin{domandabox}{Cos'è la commutatività nel CSP? Perché riduce l'ampiezza dell'albero?}
 \end{domandabox}
 
 La commutatività nei CSP afferma che l'\textbf{ordine in cui si assegnano le variabili non influenza la soluzione}: se $\{X_1 = a, X_2 = b\}$ è una soluzione, lo è indipendentemente dal fatto che si sia assegnato prima $X_1$ o prima $X_2$.
 
 Questa proprietà è cruciale perché permette di costruire l'albero di ricerca assegnando \emph{una variabile alla volta} invece di considerare tutte le possibili sequenze di assegnamento. Senza sfruttare la commutatività, l'albero avrebbe $n!$ percorsi distinti per ogni soluzione (uno per ogni permutazione dell'ordine); con la commutatività se ne considera uno solo. Questo riduce drasticamente l'\textbf{ampiezza} dell'albero (il fattore di ramificazione passa da $n \cdot d$ a $d$).
+
+\begin{ricordabox}
+\textbf{Sudoku}: assegnare prima la cella A1 e poi B1 è lo stesso che assegnare B1 e poi A1. L'ordine in cui compili le celle non cambia la soluzione finale -- ma scegliere \emph{quale} cella compilare prima (MRV) può risparmiarti un sacco di tentativi.
+\end{ricordabox}
 
 \begin{domandabox}{Quali algoritmi si usano per risolvere un CSP? Qual è il più e il meno efficiente?}
 \end{domandabox}
@@ -266,6 +327,14 @@ Queste sono due euristiche per scegliere in quale ordine assegnare le variabili 
 La \textbf{MRV} (Minimum Remaining Values), detta anche euristica ``fail-first'', sceglie la variabile con il \textbf{dominio residuo più piccolo}: si preferisce la variabile che ha meno valori ammissibili rimanenti, perché è quella che con più probabilità porterà a un fallimento. Rilevare il fallimento presto significa non sprecare tempo a espandere rami inutili.
 
 L'\textbf{euristica di grado} (degree heuristic) serve come criterio di spareggio quando due o più variabili hanno lo stesso numero di valori residui: si sceglie la variabile coinvolta nel maggior numero di vincoli con le variabili ancora non assegnate. L'idea è che la variabile con più connessioni avrà un impatto maggiore sulle scelte future, quindi è meglio vincolarla subito.
+
+\begin{esempiobox}
+Australia: $SA$ (South Australia) tocca 5 altre regioni. Se assegni prima $SA$, riduci immediatamente le scelte di tutte le sue vicine. MRV direbbe: scegli chi ha meno colori rimasti; euristica di grado dice: a parità, scegli $SA$ perché ha più vincoli.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{MRV = fail-first}: scegli chi rischia di bloccarti prima, così fallisci subito e risparmi lavoro inutile. \textbf{Euristica di grado = chi comanda}: scegli chi ha più vincoli con gli altri = chi influenza di più il resto.
+\end{ricordabox}
 
 \begin{domandabox}{Cos'è il Forward Checking nel CSP?}
 \end{domandabox}
@@ -297,6 +366,14 @@ Quando una variabile $X_k$ non può ricevere alcun valore senza violare un vinco
 
 Il back-jumping salta direttamente all'ultima variabile nel conflict set, bypassando tutte le variabili intermedie che non hanno contribuito al fallimento. Questo lo rende molto più efficiente del semplice backtracking cronologico, specialmente in problemi con molte variabili e vincoli distribuiti in modo sparso.
 
+\begin{esempiobox}
+Variabili $X_1, X_2, X_3, X_4, X_5$. Assegni $X_1, X_2, X_3, X_4$ e poi $X_5$ fallisce perché in conflitto solo con $X_1$ e $X_3$. Il backtracking cronologico torna a $X_4$ (inutile). Il back-jumping salta direttamente a $X_3$ (l'ultimo nel conflict set $\{X_1, X_3\}$), risparmiando tutta l'esplorazione di $X_4$.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Backtracking = torna dal vicino. Back-jumping = torna dal colpevole.} Se litighi con qualcuno ma l'intermediario non c'entra, vai direttamente dal responsabile.
+\end{ricordabox}
+
 % =====================================================================
 \section{Ricerca Avversariale}
 % =====================================================================
@@ -311,6 +388,23 @@ Il funzionamento di Minimax si basa sull'assunzione che entrambi i giocatori gio
 Il punto cruciale è che i valori vengono poi propagati \textbf{dalle foglie verso la radice}: i nodi MAX scelgono il valore massimo tra i figli, i nodi MIN scelgono il minimo. In questo modo la radice dell'albero acquisisce il valore della mossa ottimale che MAX dovrebbe eseguire.
 
 È importante chiarire che Minimax non costruisce un percorso che porta MAX a vincere: \textbf{suggerisce soltanto la prossima mossa ottimale}, assumendo che l'avversario risponda nel modo migliore possibile. La vittoria non è garantita se la posizione di partenza è già sfavorevole.
+
+\begin{esempiobox}
+Albero a 2 livelli: MAX è alla radice, MIN ai figli, foglie = valori di utilità.
+\begin{center}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{ccc}
+& \textbf{MAX} & \\
+\textbf{MIN}: $\min(3,5)=3$ & & \textbf{MIN}: $\min(2,9)=2$ \\
+foglie: 3, 5 & & foglie: 2, 9
+\end{tabular}
+\end{center}
+MAX sceglie $\max(3,2)=3$: va a sinistra. MIN avrebbe risposto con il valore 3, non 5.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Le foglie risalgono: MIN taglia i rami alti, MAX taglia i rami bassi.} Immagina MAX come te che vuoi il voto più alto possibile, e MIN come il professore che cerca di darti il minimo. Alla fine vince il meglio raggiungibile in uno scenario in cui il prof fa del suo peggio.
+\end{ricordabox}
 
 \begin{formulabox}{Formula Minimax}
 \[
@@ -334,6 +428,11 @@ La regola di potatura è la seguente: se durante l'esplorazione di un nodo MIN t
 Nel \textbf{caso migliore} -- quando i nodi sono ordinati in modo ottimale, con le mosse migliori esaminate per prime -- l'alpha-beta dimezza la profondità effettiva dell'albero: la complessità scende da $O(b^m)$ a $O(b^{m/2})$, il che equivale a poter cercare al doppio della profondità con la stessa quantità di calcolo. Nel \textbf{caso peggiore} (ordinamento pessimo) non dà nessun vantaggio.
 
 È fondamentale capire che alpha-beta \emph{non cambia la mossa scelta da Minimax}: produce esattamente lo stesso risultato, solo esplorando meno nodi. La potatura non influenza la correttezza perché i rami tagliati non avrebbero mai potuto essere scelti da un giocatore razionale.
+
+\begin{ricordabox}
+\textbf{$\alpha$ = il meglio garantito a MAX finora} (cresce). \textbf{$\beta$ = il meglio garantito a MIN finora} (decresce). Taglia quando $\alpha \geq \beta$: MAX non sceglierà mai un ramo dove MIN può già fare di meglio altrove.\\[3pt]
+\textbf{Analogia}: stai comprando un'auto (MAX vuoi spendere poco, MIN = concessionario vuole guadagnare). Hai già un'offerta a 10k€. Se trovi un concessionario che parte da 15k€ senza sconti, non perdi tempo a trattare: tagli quel ramo.
+\end{ricordabox}
 
 % =====================================================================
 \section{Logica del Primo Ordine}
@@ -362,6 +461,15 @@ Le clausole di Horn sono importanti per due ragioni principali. Prima di tutto, 
 
 In forma implicativa, una clausola di Horn con un letterale positivo si scrive come $P_1 \land P_2 \land \cdots \land P_k \Rightarrow Q$: le parti negative sono le premesse, la parte positiva è la conclusione. Questo corrisponde esattamente alla struttura delle regole nei sistemi esperti e in Prolog.
 
+\begin{esempiobox}
+$\neg \text{Umano}(x) \lor \text{Mortale}(x)$ è di Horn (un solo positivo: Mortale). Equivale a $\text{Umano}(x) \Rightarrow \text{Mortale}(x)$.\\
+$\text{Umano}(x) \lor \text{Robot}(x) \lor \neg\text{Costruito}(x)$ \emph{non} è di Horn: due letterali positivi (Umano e Robot).
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Horn = al più 1 testa = al più 1 conclusione.} Le clausole di Horn sono le regole ``SE...ALLORA...''. Se ci fossero due teste, la regola direbbe ``allora A oppure B'' -- ambigua, non più Horn. Prolog lavora solo con clausole di Horn: ogni clausola ha esattamente una testa (o nessuna, per i fatti).
+\end{ricordabox}
+
 \begin{domandabox}{Come funziona il Forward Chaining?}
 \end{domandabox}
 
@@ -389,6 +497,16 @@ La differenza fondamentale con il forward chaining è la direzione dell'inferenz
 
 Entrambi richiedono clausole di Horn per funzionare correttamente. La scelta tra i due dipende dal problema: il forward chaining è preferibile quando si hanno pochi fatti e molte query, mentre il backward chaining è preferibile con molti fatti e query specifiche.
 
+\begin{esempiobox}
+KB: Umano(Socrate), $\text{Umano}(x) \Rightarrow \text{Mortale}(x)$.\\
+\textbf{Forward chaining}: parto da Umano(Socrate), applico la regola $\Rightarrow$ derivo Mortale(Socrate). Continuo finché non raggiungo il goal.\\
+\textbf{Backward chaining}: voglio dimostrare Mortale(Socrate). Cerco regole con testa Mortale(x): trovo $\text{Umano}(x) \Rightarrow \text{Mortale}(x)$. Sostituisco $\{x/\text{Socrate}\}$ e mi chiedo: Umano(Socrate)? Sì, è in KB. Fine.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Forward = detective che parte dagli indizi e vede dove porta.} \textbf{Backward = avvocato che parte dalla tesi e cerca le prove.} Se la domanda è specifica (``Socrate è mortale?'') il backward è più diretto; se hai pochi fatti e vuoi tutto il deducibile, il forward è meglio.
+\end{ricordabox}
+
 \begin{domandabox}{Cos'è l'unificazione? Cosa si intende per MGU?}
 \end{domandabox}
 
@@ -400,6 +518,16 @@ L'unificazione fallisce quando si incontra l'\textbf{occur check}: non si può u
 
 L'unificazione è il meccanismo fondamentale che rende possibile il Modus Ponens Generalizzato e la risoluzione in FOL: senza di essa non potremmo applicare regole universali a fatti specifici.
 
+\begin{esempiobox}
+UNIFY($\text{Conosce}(\text{Anna}, x)$,\; $\text{Conosce}(\text{Anna}, \text{Giovanni})$) $= \{x/\text{Giovanni}\}$ \\
+UNIFY($P(x, f(y))$,\; $P(a, f(b))$) $= \{x/a,\; y/b\}$ \\
+UNIFY($P(x)$,\; $P(f(x))$) $=$ \textbf{fallisce} (occur check: $x$ apparirebbe dentro $f(x)$, struttura infinita)
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Unificazione = trovare i valori delle variabili che rendono due espressioni identiche.} È come risolvere un'equazione: $P(x, 5) = P(3, y)$ $\Rightarrow$ $x=3, y=5$. MGU = la soluzione più generale: non dire $x=3$ se basta dire $x=y$.
+\end{ricordabox}
+
 \begin{domandabox}{Cos'è la risoluzione e come si usa per la refutazione?}
 \end{domandabox}
 
@@ -409,12 +537,33 @@ In FOL, si usa prima l'\textbf{unificazione} per rendere complementari i lettera
 
 La \textbf{dimostrazione per refutazione} sfrutta questo principio: per dimostrare che $KB \models \alpha$, si aggiunge $\neg\alpha$ alla base di conoscenza convertita in CNF, e si applicano ripetutamente le risoluzioni. Se si arriva alla \textbf{clausola vuota} $\square$ -- ovvero a una contraddizione -- significa che $KB \land \neg\alpha$ è insoddisfacibile, e quindi $\alpha$ è conseguenza logica di KB.
 
+\begin{esempiobox}
+KB: (1) $A \lor B$\quad (2) $\neg B \lor C$\quad Voglio dimostrare $C$ assumendo $A$ falsa.\\
+Aggiungo $\neg A$ e $\neg C$ (la negazione della tesi).\\
+Risolvo (1) con $\neg A$: ottengo $B$. Risolvo $B$ con (2): ottengo $C$. Risolvo $C$ con $\neg C$: ottengo $\square$. Contraddizione! Quindi $C$ è dimostrato.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Refutazione = dimostrazione per assurdo.} ``Supponiamo che $\alpha$ sia falso. Questo porta a contraddizione. Quindi $\alpha$ è vero.'' Clausola vuota $\square$ = hai trovato la contraddizione.
+\end{ricordabox}
+
 \begin{domandabox}{Cosa sono i termini ground e le funzioni di Skolem?}
 \end{domandabox}
 
 Un termine è \textbf{ground} se non contiene variabili: contiene solo costanti o applicazioni di funzioni a costanti. Per esempio, $\text{Padre}(\text{Giovanni})$ e $\text{Anna}$ sono termini ground, mentre $\text{Padre}(x)$ non lo è perché contiene la variabile $x$. Una formula è ground se tutti i suoi termini lo sono.
 
 Le \textbf{funzioni di Skolem} emergono durante la conversione di formule FOL in CNF, precisamente nella fase di \emph{skolemizzazione}: l'eliminazione dei quantificatori esistenziali. Quando incontriamo $\exists x\; P(x)$ in una formula senza quantificatori universali esterni, sostituiamo $x$ con una nuova costante di Skolem $k$. Quando invece il quantificatore esistenziale è dentro uno universale -- per esempio $\forall y\; \exists x\; P(x, y)$ -- sostituiamo $x$ con una \textbf{funzione di Skolem} $f(y)$, perché il valore di $x$ può dipendere da $y$. La skolemizzazione preserva la soddisfacibilità della formula, non la validità.
+
+\begin{esempiobox}
+$\exists x\; \text{Gatto}(x)$ $\xrightarrow{\text{Skolem}}$ $\text{Gatto}(k)$ \quad (k = nome di un gatto specifico, ad es. ``Whiskers'')\\
+$\forall y\; \exists x\; \text{Padre}(x, y)$ $\xrightarrow{\text{Skolem}}$ $\forall y\; \text{Padre}(f(y), y)$ \quad (f = ``il padre di'')\\
+Un termine ground non ha variabili: $\text{Padre}(\text{Mario}, \text{Luigi})$ è ground; $\text{Padre}(x, \text{Luigi})$ non lo è.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Costante di Skolem}: ``qualcuno esiste'' $\to$ dagli un nome. \textbf{Funzione di Skolem}: ``per ogni Y esiste qualcuno'' $\to$ quel qualcuno dipende da Y $\to$ usa una funzione $f(Y)$.\\
+\textbf{Ground = senza variabili} = tutto istanziato = puoi valutarlo direttamente.
+\end{ricordabox}
 
 \begin{domandabox}{Cosa sono tautologie e contraddizioni?}
 \end{domandabox}
@@ -436,6 +585,16 @@ La bontà di uno split si misura con il \textbf{guadagno di informazione}: si ca
 
 È essenziale distinguere il criterio di terminazione: il \textbf{numero di istanze sotto una soglia} è un valido criterio di pre-pruning. Non lo è invece l'overfitting del nodo (non rilevabile durante la costruzione) né un valore della funzione di valutazione (quella appartiene a Minimax, non agli alberi di decisione).
 
+\begin{esempiobox}
+\textbf{Dataset Tennis}: attributi = Outlook, Temperatura, Umidità, Vento; classe = Gioco/Non gioco. \\
+Al nodo radice: entropia = $H = -\frac{9}{14}\log_2\frac{9}{14} - \frac{5}{14}\log_2\frac{5}{14} \approx 0.94$. \\
+Split su Outlook: ramo ``Sunny'' ha 2 Sì e 3 No (entropia 0.97), ramo ``Overcast'' ha 4 Sì (entropia 0), ramo ``Rain'' ha 3 Sì e 2 No (entropia 0.97). Gain(Outlook) $\approx 0.246$ -- il più alto, quindi Outlook è la radice.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Costruzione = scegli sempre l'attributo che ``pulisce'' di più i nodi} (massimizza l'information gain). \textbf{Terminazione = foglia quando nodo puro OPPURE poche istanze} (pre-pruning). Mai fermarsi ``perché c'è overfitting'': non lo puoi sapere durante la costruzione.
+\end{ricordabox}
+
 \begin{domandabox}{Cosa misura l'entropia? E l'Information Gain?}
 \end{domandabox}
 
@@ -451,6 +610,11 @@ L'\textbf{information gain} misura invece la \emph{riduzione di entropia} prodot
 \]
 Si sceglie l'attributo con gain massimo perché è quello che riduce di più l'incertezza. Una cosa importante da ricordare è che né l'entropia né il guadagno di informazione si calcolano dalla matrice di confusione: appartengono alla fase di costruzione del modello sul training set, non alla fase di valutazione.
 
+\begin{ricordabox}
+\textbf{Entropia alta = disordine = non sai niente.} Lanciare una moneta: $H = 1$ bit (massima incertezza). Moneta che dà sempre testa: $H = 0$ (certezza assoluta).\\[3pt]
+\textbf{Information gain = quanto ordine guadagni splittando.} Se dopo lo split tutti i nodi figli sono puri ($H=0$), il gain è uguale all'entropia del padre: hai guadagnato tutto. Se i figli sono mescolati quanto il padre, gain = 0: non hai imparato niente.
+\end{ricordabox}
+
 \begin{domandabox}{Cosa si intende per overfitting? Cosa sono pre-pruning e post-pruning?}
 \end{domandabox}
 
@@ -459,6 +623,11 @@ L'\textbf{overfitting} si verifica quando un modello si adatta troppo perfettame
 Il \textbf{pre-pruning} è una strategia per prevenire l'overfitting durante la costruzione dell'albero: si interrompe la ramificazione prima del completamento, quando il numero di istanze nel nodo scende sotto una soglia o il guadagno di informazione è troppo basso. Il rischio è l'underfitting: fermarsi troppo presto.
 
 Il \textbf{post-pruning} è invece applicato dopo aver costruito l'albero completo: si esaminano i sottoalberi e si sostituiscono quelli che generalizzano male -- verificato su un validation set -- con semplici foglie etichettate con la classe maggioritaria. È in generale più affidabile del pre-pruning perché si dispone di una visione globale dell'albero. Il contesto del pruning è \emph{esclusivamente} l'apprendimento automatico, non i CSP né i giochi.
+
+\begin{ricordabox}
+\textbf{Overfitting = ``sa la lezione a memoria ma non capisce''.} Un albero che impara ogni singolo esempio di training ha errore 0 sul training ma generalizza male -- come studiare solo gli esercizi svolti e sbagliare all'esame con varianti.\\[3pt]
+\textbf{Pre-pruning = smetti di studiare in anticipo} (rischi di non aver capito abbastanza). \textbf{Post-pruning = studia tutto, poi dimentica i dettagli inutili} (più sicuro ma più costoso).
+\end{ricordabox}
 
 \begin{domandabox}{Cos'è il Perceptron? Quale problema lo ha reso famoso?}
 \end{domandabox}
@@ -470,6 +639,15 @@ w_j(t+1) = w_j(t) + \eta \cdot (d - o) \cdot x_j
 Il percettrone implementa un \emph{test lineare}: i pesi definiscono un iperpiano nello spazio degli input, e le istanze vengono classificate in base a quale lato dell'iperpiano si trovano.
 
 Il problema che ha messo in luce i suoi limiti è il \textbf{problema dell'OR esclusivo (XOR)}. Minsky e Papert dimostrarono nel 1969 che il percettrone non può imparare la funzione XOR perché le sue quattro combinazioni di input non sono linearmente separabili: non esiste nessun iperpiano che separi correttamente i casi positivi da quelli negativi. Questo portò al primo ``inverno dell'IA'', fino allo sviluppo del backpropagation per reti multistrato negli anni '80.
+
+\begin{esempiobox}
+XOR: (0,0)$\to$0, (0,1)$\to$1, (1,0)$\to$1, (1,1)$\to$0. Nel piano 2D i punti positivi sono (0,1) e (1,0); i negativi sono (0,0) e (1,1). Non esiste nessuna retta che li separi: i positivi sono agli angoli opposti di un quadrato. Il percettrone traccia solo rette, quindi fallisce.\\
+AND invece: (0,0)$\to$0, (0,1)$\to$0, (1,0)$\to$0, (1,1)$\to$1. Bastano rette: la retta $x_1 + x_2 > 1.5$ separa perfettamente.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Percettrone = righello.} Se puoi separare i dati con un righello (una linea retta / iperpiano), il percettrone impara. Se i dati si intrecciano come XOR, nessun righello funziona. Soluzione: più strati (reti neurali multilayer) che creano confini curvi.
+\end{ricordabox}
 
 \begin{domandabox}{Cos'è K-NN? Che differenza c'è con gli algoritmi che inducono regole?}
 \end{domandabox}
@@ -493,6 +671,14 @@ Una prestazione ottimale corrisponde a tutti i valori concentrati sulla \textbf{
 
 Le metriche che si calcolano dalla matrice di confusione includono l'\textbf{accuratezza} $= (TP + TN) / \text{totale}$, l'error rate $= 1 - \text{accuratezza}$, la precisione e il richiamo. Ciò che \emph{non} si calcola dalla matrice è l'entropia, l'information gain o l'overfitting: queste grandezze appartengono alla costruzione del modello, non alla sua valutazione sulle predizioni.
 
+\begin{esempiobox}
+100 email: 90 spam, 10 normali. Un classificatore dice ``tutto spam'': TP=90, FP=10, FN=0, TN=0. Accuratezza = 90\% -- sembra ottimo! Ma precision = 90/100 = 90\%, recall = 90/90 = 100\%, ma TN = 0: non riconosce mai un'email normale. Diagonale principale: solo TP e TN, FP e FN tutti zero = classificatore perfetto.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Matrice di confusione = tabella ``previsto vs reale''.} Diagonale = indovinato, fuori diagonale = sbagliato. \textbf{FP = allarme falso} (dici positivo ma è negativo). \textbf{FN = mancato allarme} (dici negativo ma è positivo). In medicina preferisci FP a FN: meglio un esame in più che una malattia mancata.
+\end{ricordabox}
+
 % =====================================================================
 \section{Ontologie}
 % =====================================================================
@@ -508,6 +694,15 @@ Un insieme di sottocategorie che sono sia \emph{disgiunte} che \emph{esaustive} 
 
 RDF, il Resource Description Framework alla base del Web Semantico, rappresenta la conoscenza come \textbf{triple $\langle$soggetto, predicato, oggetto$\rangle$} e non tramite clausole di Horn.
 
+\begin{esempiobox}
+\textbf{Ontologia medica}: Socrate \textbf{member} Filosofo (istanza). Filosofo \textbf{isa} Umano (sottoclasse). Cervello \textbf{part-of} Umano (composizione). member(X, Umano) $\Rightarrow$ Mortale(X) (proprietà di classe). $\{$Greco, Romano, Egiziano$\}$ rispetto ad Antico = \textbf{partizione} (disgiunti ed esaustivi).\\[3pt]
+Conseguenza per ereditarietà: Socrate member Filosofo, Filosofo isa Umano $\Rightarrow$ Socrate è Umano $\Rightarrow$ Socrate è Mortale.
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{isa = ``è un tipo di''} (Filosofo è un tipo di Umano -- vale per tutta la categoria). \textbf{member = ``è un individuo di''} (Socrate è un individuo della categoria Filosofo). \textbf{part-of = ``è un pezzo di''} (il cervello è un pezzo dell'umano). Confondere isa con member è l'errore tipico: Socrate non è una \emph{categoria} di Filosofo, è un \emph{membro}.
+\end{ricordabox}
+
 % =====================================================================
 \section{Frame Problem e Situation Calculus}
 % =====================================================================
@@ -522,5 +717,13 @@ Per esempio, se un robot sposta un blocco, intuitivamente tutto il resto del mon
 Nel \textbf{situation calculus} questo si risolve con gli \textbf{assiomi del successore di stato}: un fluente è vero nella situazione risultante dall'azione se e solo se l'azione lo ha reso vero, oppure era già vero e l'azione non lo ha reso falso. Questi assiomi catturano in modo compatto sia gli effetti sia la persistenza.
 
 La definizione di un'azione nel situation calculus include le \textbf{precondizioni} (le proprietà che devono valere per applicare l'azione) e gli \textbf{effetti} (le proprietà che l'azione modifica). Le ``proprietà atemporali'' non fanno parte di questa definizione: sono assiomi della KB generale, non specifici di una singola azione.
+
+\begin{esempiobox}
+Azione \textsc{Sposta}(blocco, da, a): precondizione = blocco è in posizione ``da'' e ``a'' è libera; effetto positivo = blocco è in ``a''; effetto negativo = blocco non è più in ``da''. Assioma del successore di stato: On(b, a, Do(\textsc{Sposta}(b,x,a), S)) $\Leftrightarrow$ [l'azione l'ha reso vero] $\lor$ [era già vero e l'azione non l'ha reso falso].
+\end{esempiobox}
+
+\begin{ricordabox}
+\textbf{Frame problem = il problema del ``tutto il resto rimane uguale''.} Quando sposti un blocco, il colore del soffitto non cambia -- ma devi dirlo esplicitamente in logica! Gli assiomi del successore di stato del situation calculus risolvono questo: ``vero dopo = l'azione l'ha reso vero OPPURE era già vero e l'azione non l'ha cancellato''. Questo cattura sia gli effetti sia la persistenza in una sola formula.
+\end{ricordabox}
 
 \end{document}
