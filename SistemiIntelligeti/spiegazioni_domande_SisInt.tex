@@ -46,51 +46,83 @@
 \newpage
 
 % =====================================================================
-\section*{Glossario degli Acronimi}
-\addcontentsline{toc}{section}{Glossario degli Acronimi}
+\section{Glossario degli Acronimi}
 % =====================================================================
 
-\begin{tcolorbox}[colback=gray!4, colframe=gray!55, title=\textbf{Tutti gli acronimi usati nel corso}, fonttitle=\bfseries, breakable]
+{\small
+\renewcommand{\arraystretch}{1.4}
+\setlength{\tabcolsep}{5pt}
 
-\renewcommand{\arraystretch}{1.45}
-\begin{tabular}{p{2.2cm} p{5.5cm} p{7cm}}
+\begin{tcolorbox}[colback=blue!3, colframe=blue!45!black,
+  title=\textbf{Generali e Logica}, fonttitle=\bfseries\small, breakable]
+\begin{tabularx}{\linewidth}{@{}p{1.5cm} p{4.6cm} X@{}}
 \toprule
-\textbf{Acronimo} & \textbf{Significato} & \textbf{In breve} \\
+\textbf{Sigla} & \textbf{Significato} & \textbf{Spiegazione rapida} \\
 \midrule
-
-\textbf{IA} & Intelligenza Artificiale & Il campo di studio di questo corso. \\
-\textbf{ML} & Machine Learning & Apprendimento automatico: sistemi che imparano dai dati. \\
-\textbf{KB} & Knowledge Base & Base di conoscenza: insieme di fatti e regole della logica. \\
-\textbf{FOL} & First-Order Logic & Logica del Primo Ordine: estende la logica proposizionale con quantificatori ($\forall$, $\exists$) e funzioni. \\
-\textbf{CNF} & Conjunctive Normal Form & Forma Normale Congiuntiva: formula scritta come congiunzione ($\land$) di clausole, ogni clausola è disgiunzione ($\lor$) di letterali. Richiesta dalla risoluzione. \\
-\textbf{CSP} & Constraint Satisfaction Problem & Problema di Soddisfacimento di Vincoli: trovare valori per variabili che rispettino tutti i vincoli. \\
-\midrule
-\textbf{BFS} & Breadth-First Search & Ricerca in ampiezza: esplora per livelli. Completa e ottimale (costi uguali), ma costosa in memoria $O(b^d)$. \\
-\textbf{DFS} & Depth-First Search & Ricerca in profondità: esplora un ramo fino in fondo. Poco memoria $O(bm)$, ma non completa né ottimale. \\
-\textbf{IDDFS} & Iterative Deepening DFS & DFS con profondità limite crescente: combina memoria di DFS ($O(bd)$) e ottimalità di BFS. \\
-\textbf{UCS} & Uniform Cost Search & Ricerca a costo uniforme: BFS con coda a priorità su $g(n)$. Ottimale anche con costi variabili. \\
-\textbf{RBFS} & Recursive Best-First Search & Versione di A* a memoria lineare $O(bd)$: riespande nodi ma non tiene tutta la frontiera. \\
-\textbf{A*} & A-star & Ricerca informata con $f(n) = g(n) + h(n)$. Ottimale con euristica ammissibile (alberi) o consistente (grafi). \\
-\midrule
-\textbf{MRV} & Minimum Remaining Values & Euristica CSP ``fail-first'': sceglie la variabile con meno valori rimasti nel dominio. \\
-\textbf{AC-3} & Arc Consistency 3 & Algoritmo che rende arc-consistent un CSP eliminando valori senza supporto; propaga le riduzioni a cascata. \\
-\midrule
-\textbf{MPG} & Modus Ponens Generalizzato & Versione FOL del modus ponens: usa l'unificazione per applicare regole universali a fatti specifici. \\
-\textbf{MGU} & Most General Unifier & Unificatore più generale: la sostituzione $\theta$ che unifica due espressioni senza vincolare le variabili più del necessario. \\
-\textbf{RDF} & Resource Description Framework & Standard del Web Semantico: rappresenta la conoscenza come triple $\langle$soggetto, predicato, oggetto$\rangle$. \\
-\midrule
-\textbf{TP} & True Positive & Vero positivo: istanza positiva predetta correttamente come positiva. \\
-\textbf{TN} & True Negative & Vero negativo: istanza negativa predetta correttamente come negativa. \\
-\textbf{FP} & False Positive & Falso positivo: istanza negativa predetta erroneamente come positiva. \\
-\textbf{FN} & False Negative & Falso negativo: istanza positiva predetta erroneamente come negativa. \\
-\midrule
-\textbf{K-NN} & K-Nearest Neighbours & Classificatore pigro (lazy): classifica basandosi sui $k$ esempi più vicini nel training set, senza costruire un modello. \\
-\textbf{XOR} & eXclusive OR & OR esclusivo: vero solo se i due input sono diversi. Funzione che il perceptron non riesce a imparare (non linearmente separabile). \\
-\textbf{ID3} & Iterative Dichotomiser 3 & Algoritmo classico per costruire alberi di decisione (variante dell'algoritmo di Hunt) basato sull'information gain. \\
+\textbf{IA}  & Intelligenza Artificiale    & Campo di studio: sistemi che esibiscono comportamento intelligente. \\
+\textbf{ML}  & Machine Learning            & Apprendimento automatico: il sistema impara dai dati senza regole esplicite. \\
+\textbf{KB}  & Knowledge Base              & Base di conoscenza: insieme di fatti e regole in forma logica. \\
+\textbf{FOL} & First-Order Logic           & Logica del Primo Ordine: logica con variabili, quantificatori ($\forall$, $\exists$) e funzioni. \\
+\textbf{CNF} & Conjunctive Normal Form     & Forma Normale Congiuntiva: congiunzione ($\land$) di clausole, ognuna disgiunzione ($\lor$) di letterali. Necessaria per la risoluzione. \\
+\textbf{CSP} & Constraint Satisfaction Problem & Problema di Soddisfacimento di Vincoli: trovare un assegnamento completo e consistente per tutte le variabili. \\
 \bottomrule
-\end{tabular}
-
+\end{tabularx}
 \end{tcolorbox}
+
+\vspace{6pt}
+
+\begin{tcolorbox}[colback=green!3, colframe=green!50!black,
+  title=\textbf{Algoritmi di Ricerca}, fonttitle=\bfseries\small, breakable]
+\begin{tabularx}{\linewidth}{@{}p{1.5cm} p{4.6cm} X@{}}
+\toprule
+\textbf{Sigla} & \textbf{Significato} & \textbf{Spiegazione rapida} \\
+\midrule
+\textbf{BFS}   & Breadth-First Search        & Ricerca in ampiezza: livello per livello. Completa e ottimale (costi uguali), spazio $O(b^d)$. \\
+\textbf{DFS}   & Depth-First Search          & Ricerca in profondità: esplora un ramo fino in fondo. Spazio $O(bm)$, ma non completa né ottimale. \\
+\textbf{IDDFS} & Iterative Deepening DFS     & DFS con limite di profondità crescente. Unisce la memoria di DFS ($O(bd)$) e la completezza/ottimalità di BFS. \\
+\textbf{UCS}   & Uniform Cost Search         & Ricerca a costo uniforme: frontiera ordinata per $g(n)$. Ottimale con costi variabili non negativi. \\
+\textbf{RBFS}  & Recursive Best-First Search & A* a memoria lineare $O(bd)$: può riesaminare nodi ma non mantiene tutta la frontiera in memoria. \\
+\textbf{A*}    & A-star                      & Ricerca con $f(n)=g(n)+h(n)$. Ottimale se $h$ è ammissibile (alberi) o consistente (grafi). \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+\vspace{6pt}
+
+\begin{tcolorbox}[colback=orange!3, colframe=orange!60!black,
+  title=\textbf{CSP e Inferenza Logica}, fonttitle=\bfseries\small, breakable]
+\begin{tabularx}{\linewidth}{@{}p{1.5cm} p{4.6cm} X@{}}
+\toprule
+\textbf{Sigla} & \textbf{Significato} & \textbf{Spiegazione rapida} \\
+\midrule
+\textbf{MRV}  & Minimum Remaining Values    & Euristica CSP ``fail-first'': sceglie la variabile col dominio residuo più piccolo. \\
+\textbf{AC-3} & Arc Consistency 3           & Algoritmo per l'arc consistency: elimina valori senza supporto e propaga le riduzioni a cascata. \\
+\textbf{MPG}  & Modus Ponens Generalizzato  & Modus ponens per FOL: usa l'unificazione per applicare regole universali a fatti specifici. \\
+\textbf{MGU}  & Most General Unifier        & Unificatore più generale: sostituzione $\theta$ che unifica due espressioni nel modo meno restrittivo possibile. \\
+\textbf{RDF}  & Resource Description Framework & Standard Web Semantico: conoscenza come triple $\langle$soggetto, predicato, oggetto$\rangle$. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+\vspace{6pt}
+
+\begin{tcolorbox}[colback=purple!3, colframe=purple!50!black,
+  title=\textbf{Machine Learning e Matrice di Confusione}, fonttitle=\bfseries\small, breakable]
+\begin{tabularx}{\linewidth}{@{}p{1.5cm} p{4.6cm} X@{}}
+\toprule
+\textbf{Sigla} & \textbf{Significato} & \textbf{Spiegazione rapida} \\
+\midrule
+\textbf{TP}   & True Positive               & Vero positivo: istanza positiva classificata correttamente come positiva. \\
+\textbf{TN}   & True Negative               & Vero negativo: istanza negativa classificata correttamente come negativa. \\
+\textbf{FP}   & False Positive              & Falso positivo: istanza negativa classificata erroneamente come positiva. \\
+\textbf{FN}   & False Negative              & Falso negativo: istanza positiva classificata erroneamente come negativa. \\
+\textbf{K-NN} & K-Nearest Neighbours        & Classificatore lazy: non costruisce un modello, usa i $k$ esempi più vicini nel training set. \\
+\textbf{XOR}  & eXclusive OR                & OR esclusivo: vero solo se i due input differiscono. Il perceptron non riesce ad impararlo perché non è linearmente separabile. \\
+\textbf{ID3}  & Iterative Dichotomiser 3    & Algoritmo classico per alberi di decisione (variante dell'algoritmo di Hunt) basato sull'information gain. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+} % fine \small
 
 \newpage
 
