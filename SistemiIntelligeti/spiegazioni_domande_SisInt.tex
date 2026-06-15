@@ -1,0 +1,645 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{multicol}
+
+\geometry{margin=2.1cm}
+\hypersetup{colorlinks=true, linkcolor=blue!70!black}
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{defbox}[1]{
+  colback=blue!4, colframe=blue!50!black,
+  title=\textbf{#1}, fonttitle=\bfseries\small,
+  breakable, left=4pt, right=4pt, top=3pt, bottom=3pt
+}
+\newtcolorbox{rispbox}[1]{
+  colback=green!5, colframe=green!55!black,
+  title=\textbf{Risposta: #1}, fonttitle=\bfseries\small,
+  breakable, left=4pt, right=4pt, top=3pt, bottom=3pt
+}
+\newtcolorbox{warnbox}[1]{
+  colback=orange!6, colframe=orange!65!black,
+  title=\textbf{#1}, fonttitle=\bfseries\small,
+  breakable, left=4pt, right=4pt, top=3pt, bottom=3pt
+}
+\newtcolorbox{formulabox}[1]{
+  colback=yellow!8, colframe=yellow!65!black,
+  title=\textbf{#1}, fonttitle=\bfseries\small,
+  breakable, left=4pt, right=4pt, top=3pt, bottom=3pt
+}
+\newtcolorbox{esbox}[1]{
+  colback=gray!5, colframe=gray!50,
+  title=\textbf{Esempio: #1}, fonttitle=\bfseries\small,
+  breakable, left=4pt, right=4pt, top=3pt, bottom=3pt
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\textbf{Spiegazioni Dettagliate -- Sistemi Intelligenti}\\[4pt]
+{\large Tutte le domande di esame con risposta approfondita}\\[2pt]
+\normalsize Crocette, Vero/Falso, Aperte e Orali}
+\author{}
+\date{A.A. 2025--2026}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{Intelligenza Artificiale: Basi}
+% =====================================================================
+
+\subsection{Test di Turing}
+
+\begin{rispbox}{Il test di Turing dice che un computer è intelligente se...}
+\textbf{imita il comportamento umano nel rispondere alle domande.}
+
+Il test (1950) prevede un giudice umano che conversa via tastiera con due interlocutori: un umano e una macchina. Se il giudice non riesce a distinguerli, la macchina supera il test.
+
+\textbf{Perché le altre risposte sono sbagliate:}
+\begin{itemize}[noitemsep]
+  \item ``Comprende le domande'' $\Rightarrow$ la comprensione semantica \textbf{non è verificabile} dal test (argomento della Stanza Cinese di Searle).
+  \item ``Risponde correttamente'' $\Rightarrow$ sbagliato: non servono risposte esatte, serve \textbf{sembrare umano} (un umano sbaglia spesso).
+\end{itemize}
+\end{rispbox}
+
+\subsection{IA Forte vs IA Debole}
+
+\begin{defbox}{IA Debole (Weak AI)}
+La macchina \emph{simula} l'intelligenza per compiti specifici. Non ha comprensione reale, coscienza o stati mentali. Esempio: chatbot, sistemi esperti, motori di scacchi.
+\end{defbox}
+
+\begin{defbox}{IA Forte (Strong AI)}
+La macchina possiede vera comprensione, coscienza e stati mentali equivalenti a quelli umani. È un obiettivo teorico, non ancora raggiunto.
+
+\textbf{Argomento della Stanza Cinese} (Searle): seguire regole sintattiche non implica comprensione semantica. Un operatore che traduce simboli cinesi seguendo un manuale non \emph{capisce} il cinese.
+\end{defbox}
+
+% =====================================================================
+\section{Ricerca nello Spazio degli Stati}
+% =====================================================================
+
+\subsection{Componenti di un problema di ricerca}
+
+\begin{defbox}{Stato iniziale, Funzione Successore, Test Obiettivo}
+\begin{itemize}[noitemsep]
+  \item \textbf{Stato iniziale} $s_0$: configurazione di partenza del problema.
+  \item \textbf{Funzione successore} (modello di transizione): $\text{Result}(s, a)$ -- dato uno stato $s$ e un'azione $a$, restituisce il nuovo stato.
+  \item \textbf{Test obiettivo} $\text{IsGoal}(s)$: verifica se lo stato corrente è una soluzione.
+  \item \textbf{Costo del cammino}: somma dei costi delle azioni intraprese.
+\end{itemize}
+Una \textbf{soluzione} è una sequenza di azioni che porta da $s_0$ a uno stato obiettivo.
+\end{defbox}
+
+\subsection{Algoritmi di ricerca: confronto}
+
+\begin{formulabox}{Tabella complessità -- da memorizzare}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Algoritmo} & \textbf{Completo} & \textbf{Ottimale} & \textbf{Tempo} & \textbf{Spazio} \\
+\midrule
+BFS & Sì & Sì* & $O(b^{d+1})$ & $O(b^{d+1})$ \\
+DFS & No & No & $O(b^m)$ & $O(b \cdot m)$ \\
+IDDFS & Sì & Sì* & $O(b^d)$ & $O(b \cdot d)$ \\
+UCS & Sì & Sì & $O(b^{1+C^*/\varepsilon})$ & uguale \\
+Greedy & No & No & $O(b^m)$ & $O(b^m)$ \\
+A* & Sì & Sì & $O(b^d)$ & $O(b^d)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\small *Con costi uniformi. $b$=branching factor, $d$=profondità soluzione, $m$=profondità massima.
+\end{formulabox}
+
+\begin{rispbox}{Complessità spaziale minore: DFS e IDDFS}
+\textbf{DFS} ha complessità spaziale $O(b \cdot m)$: mantiene solo il \emph{cammino corrente} dalla radice al nodo espanso + i fratelli non ancora esplorati.
+
+\textbf{IDDFS} ha $O(b \cdot d)$: combina il vantaggio spaziale di DFS con la completezza e ottimalità di BFS. Per questo è considerato il \textbf{miglior algoritmo blind} in generale.
+
+BFS e A* sono i peggiori come spazio ($O(b^d)$): mantengono tutta la frontiera in memoria.
+\end{rispbox}
+
+\subsection{Euristiche}
+
+\begin{defbox}{Euristica ammissibile}
+$h(n)$ è ammissibile se $h(n) \leq h^*(n)$ per ogni nodo $n$, dove $h^*(n)$ è il costo \textbf{reale ottimo} per raggiungere il goal da $n$.
+
+\textbf{Non sovrastima mai} il costo $\Rightarrow$ è ``ottimistica''. A* con euristica ammissibile è ottimale su alberi.
+\end{defbox}
+
+\begin{defbox}{Euristica consistente (monotona)}
+$h(n) \leq c(n, n') + h(n')$ per ogni arco $(n, n')$.
+
+Consistente $\Rightarrow$ Ammissibile (non vale il contrario). A* con euristica consistente è ottimale anche su grafi (con lista chiusa).
+\end{defbox}
+
+\begin{warnbox}{Euristica dominante}
+$h_1$ \textbf{domina} $h_2$ se $h_1(n) \geq h_2(n)$ per \textbf{ogni} nodo $n$.
+
+Dominante = più informativa = A* espande meno nodi = più efficiente. La distanza di Manhattan domina i pezzi fuori posto nell'8-puzzle.
+
+\textbf{Funzione costante zero}: $h(n) = 0$ è ammissibile ma totalmente non informativa. A* degenera in UCS, non guida verso il goal.
+\end{warnbox}
+
+\begin{defbox}{Euristiche MRV e di Grado (per CSP)}
+\begin{itemize}[noitemsep]
+  \item \textbf{MRV (Minimum Remaining Values)}: scegliere la variabile con il \textbf{dominio più piccolo} -- \emph{fail-first}, scopre i fallimenti prima.
+  \item \textbf{Euristica di grado}: tra variabili con MRV uguale, scegliere quella con \textbf{più vincoli} sulle variabili non ancora assegnate $\Rightarrow$ identifica la variabile coinvolta in più vincoli.
+  \item \textbf{Euristica monotona}: garantisce l'ottimalità nella ricerca su grafo con lista chiusa.
+\end{itemize}
+\end{defbox}
+
+% =====================================================================
+\section{CSP -- Problemi di Soddisfacimento di Vincoli}
+% =====================================================================
+
+\subsection{Definizione}
+
+\begin{defbox}{CSP -- tripla $\langle X, D, C \rangle$}
+\begin{itemize}[noitemsep]
+  \item $X = \{X_1, \ldots, X_n\}$: variabili
+  \item $D = \{D_1, \ldots, D_n\}$: domini (valori possibili per ciascuna variabile)
+  \item $C = \{C_1, \ldots, C_m\}$: vincoli
+\end{itemize}
+\textbf{Assegnamento consistente}: non viola alcun vincolo. \\
+\textbf{Assegnamento completo}: tutte le variabili hanno un valore. \\
+\textbf{Soluzione CSP}: assegnamento \textbf{completo E consistente}.
+\end{defbox}
+
+\begin{warnbox}{Attenzione: differenza tra soluzione CSP e soluzione di ricerca}
+Nella ricerca in spazio degli stati, la soluzione è una \emph{sequenza di azioni} a costo minimo.\\
+Nel CSP, la soluzione è un \emph{assegnamento} (non una sequenza di passi): non si minimizza un costo, si soddisfano i vincoli.
+\end{warnbox}
+
+\subsection{Algoritmi per CSP -- efficienza comparata}
+
+\begin{rispbox}{Ordine di efficienza (dal meno al più efficiente)}
+\begin{enumerate}[noitemsep]
+  \item \textbf{Generate and test} (PEGGIORE): genera tutti gli assegnamenti completi, poi verifica. Complessità $O(d^n)$.
+  \item \textbf{Backtracking con commutatività}: migliore, evita permutazioni equivalenti.
+  \item \textbf{Back-jumping} (MIGLIORE): al fallimento, torna direttamente alla variabile responsabile (conflict set), evitando backtrack inutili.
+\end{enumerate}
+
+\textbf{Backward chaining} non è un algoritmo per CSP: è per la FOL (logica).
+\end{rispbox}
+
+\subsection{Back-jumping e Conflict Set}
+
+\begin{defbox}{Back-jumping}
+Quando una variabile $X_k$ fallisce (il suo dominio è vuoto), invece di tornare alla variabile precedente ($X_{k-1}$), si torna alla variabile più recente nel \textbf{conflict set} di $X_k$:
+
+\[ CS(X_k) = \{X_j : j < k, \exists \text{ vincolo tra } X_j \text{ e } X_k\} \]
+
+Il back-jumping \textbf{salta} tutte le variabili intermedie che non hanno causato il conflitto, riducendo drasticamente il numero di backtrack.
+\end{defbox}
+
+\subsection{Path Consistency}
+
+\begin{defbox}{Gerarchia di consistenza}
+\begin{itemize}[noitemsep]
+  \item \textbf{1-consistenza (node)}: ogni valore nel dominio soddisfa i vincoli unari.
+  \item \textbf{2-consistenza (arc)}: per ogni valore di $X_i$, esiste un valore compatibile in $X_j$.
+  \item \textbf{3-consistenza (path)}: per ogni coppia $(X_i, X_j)$ consistente, esiste un valore per $X_m$ che soddisfa i vincoli con entrambe.
+\end{itemize}
+La \textbf{path consistency} considera \textbf{triple} di variabili (non coppie come arc consistency).
+\end{defbox}
+
+\subsection{Forward Checking}
+
+\begin{defbox}{Forward Checking}
+Dopo ogni assegnamento, si eliminano dai domini delle variabili \emph{non ancora assegnate} i valori incompatibili con l'assegnamento appena fatto. Se un dominio si svuota $\Rightarrow$ backtrack immediato.
+
+\textbf{MAC (Maintaining Arc Consistency)}: versione più potente che applica AC-3 completo dopo ogni assegnamento. Pota di più ma è computazionalmente più costoso.
+\end{defbox}
+
+% =====================================================================
+\section{Ricerca Avversariale}
+% =====================================================================
+
+\subsection{Giochi a somma zero}
+
+\begin{defbox}{Gioco a somma zero -- definizione}
+Un gioco è a \textbf{somma zero} se il guadagno di un giocatore corrisponde esattamente alla perdita dell'altro: $\text{Utility}(\text{MAX}) + \text{Utility}(\text{MIN}) = \text{costante}$.
+
+Caratteristiche: \textbf{informazione perfetta} (entrambi vedono lo stato completo), \textbf{deterministico}, \textbf{due giocatori} (MAX e MIN), \textbf{a turni}.
+
+Esempi: tris, scacchi, dama, go.
+\end{defbox}
+
+\subsection{Funzionamento di Minimax}
+
+\begin{defbox}{Algoritmo Minimax -- come funziona}
+\begin{enumerate}[noitemsep]
+  \item Si espande l'albero di gioco fino alle foglie (o alla profondità limite).
+  \item Le foglie ricevono il valore dalla \textbf{funzione di utilità} (stati terminali) o dalla \textbf{funzione di valutazione} EVAL (profondità limite).
+  \item Si propagano i valori \textbf{dal basso verso l'alto} (dalle foglie alla radice):
+    \begin{itemize}[noitemsep]
+      \item Nodi MAX: scelgono il \textbf{massimo} tra i figli.
+      \item Nodi MIN: scelgono il \textbf{minimo} tra i figli.
+    \end{itemize}
+  \item La radice indica la mossa ottimale per MAX.
+\end{enumerate}
+\textbf{Minimax suggerisce la prossima mossa, non costruisce un percorso verso la vittoria}: MAX potrebbe non vincere se l'avversario è molto forte o la posizione è già perdente.
+\end{defbox}
+
+\begin{formulabox}{Formula Minimax}
+\[
+\text{MiniMax}(s) =
+\begin{cases}
+\text{Utility}(s) & \text{se } s \text{ è terminale} \\
+\max_{a} \text{MiniMax}(\text{Result}(s,a)) & \text{se Player}(s) = \text{MAX} \\
+\min_{a} \text{MiniMax}(\text{Result}(s,a)) & \text{se Player}(s) = \text{MIN}
+\end{cases}
+\]
+Complessità: Tempo $O(b^m)$, Spazio $O(b \cdot m)$. Con alpha-beta pruning (caso migliore): $O(b^{m/2})$.
+\end{formulabox}
+
+% =====================================================================
+\section{Agenti Logici e Logica Proposizionale}
+% =====================================================================
+
+\subsection{Tautologie, Contraddizioni, Soddisfacibilità}
+
+\begin{defbox}{Classificazione delle formule logiche}
+\begin{itemize}[noitemsep]
+  \item \textbf{Tautologia (formula valida)}: vera in \textbf{tutti} i modelli. Es: $A \lor \neg A$.
+  \item \textbf{Contraddizione (insoddisfacibile)}: falsa in \textbf{tutti} i modelli. Es: $A \land \neg A$.
+  \item \textbf{Soddisfacibile}: vera in \textbf{almeno un} modello. SAT è NP-completo.
+  \item \textbf{Contingente}: né tautologia né contraddizione (dipende dal modello).
+\end{itemize}
+\textbf{Teorema di deduzione:} $KB \models \alpha \Leftrightarrow (KB \Rightarrow \alpha)$ è valida (tautologia).\\
+\textbf{Refutazione:} $KB \models \alpha \Leftrightarrow KB \land \neg\alpha$ è insoddisfacibile (contraddizione).
+\end{defbox}
+
+\subsection{Forma Normale Congiuntiva (CNF)}
+
+\begin{defbox}{CNF e conversione}
+La \textbf{CNF} è una congiunzione di \textbf{clausole}, dove ogni clausola è una \textbf{disgiunzione di letterali}.
+
+Es: $(A \lor \neg B) \land (B \lor C \lor \neg A)$
+
+\textbf{Conversione in CNF:}
+\begin{enumerate}[noitemsep]
+  \item Eliminare $\Leftrightarrow$: $\alpha \Leftrightarrow \beta \to (\alpha \Rightarrow \beta) \land (\beta \Rightarrow \alpha)$
+  \item Eliminare $\Rightarrow$: $\alpha \Rightarrow \beta \to \neg\alpha \lor \beta$
+  \item Portare $\neg$ verso l'interno (De Morgan): $\neg(\alpha \land \beta) \to \neg\alpha \lor \neg\beta$
+  \item Distribuire $\lor$ su $\land$: $(A \lor (B \land C)) \to (A \lor B) \land (A \lor C)$
+\end{enumerate}
+Serve per applicare la \textbf{risoluzione}.
+\end{defbox}
+
+\subsection{Clausole di Horn e Forward Chaining}
+
+\begin{defbox}{Clausole di Horn -- definizione}
+Una clausola con \textbf{al più un letterale positivo} (non negato).
+
+\textbf{Forma implicativa:} $P_1 \land P_2 \land \cdots \land P_k \Rightarrow Q$
+
+\textbf{Tipi:}
+\begin{itemize}[noitemsep]
+  \item \textbf{Clausola definita}: esattamente un letterale positivo (regola con testa).
+  \item \textbf{Clausola obiettivo/fatto}: zero letterali positivi (solo negazioni = goal negato).
+  \item \textbf{Fatto}: letterale positivo senza premesse (es. $Q$ da solo).
+\end{itemize}
+
+\textbf{Importante}: l'inferenza su clausole di Horn è decidibile in \textbf{tempo polinomiale}.
+\end{defbox}
+
+\begin{warnbox}{Come riconoscere clausole di Horn -- trucco rapido}
+Scrivi la clausola come disgiunzione di letterali e conta i letterali \textbf{positivi} (non negati):
+\begin{itemize}[noitemsep]
+  \item $\neg P(x) \lor Q(x) \lor \neg R(x)$: un solo positivo ($Q$) $\Rightarrow$ \textbf{Horn} \checkmark
+  \item $P(x) \lor Q(x) \lor \neg R(x)$: due positivi ($P$, $Q$) $\Rightarrow$ \textbf{NON Horn} \texttimes
+  \item $\neg P(x) \lor \neg Q(x)$: zero positivi $\Rightarrow$ \textbf{Horn} \checkmark (clausola obiettivo)
+\end{itemize}
+\end{warnbox}
+
+\begin{defbox}{Forward Chaining (concatenazione in avanti)}
+\textbf{Algoritmo:}
+\begin{enumerate}[noitemsep]
+  \item Parti dai fatti noti nella KB.
+  \item Per ogni regola di Horn le cui premesse sono tutte soddisfatte, aggiungi la conclusione ai fatti noti.
+  \item Ripeti fino al \emph{punto fisso} (nessun nuovo fatto deducibile) o fino a trovare il goal.
+\end{enumerate}
+\textbf{Guidato dai dati.} Corretto e completo per clausole definite.\\
+\textbf{Richiede:} (1) la clausola sia di Horn, (2) \textbf{tutti} i fatti nelle premesse siano noti in KB.
+
+\textbf{Modus Ponens Generalizzato (MPG):} versione lifted del forward chaining con unificazione.
+\end{defbox}
+
+\begin{formulabox}{Modus Ponens -- formula}
+\[
+\frac{\alpha \quad \alpha \Rightarrow \beta}{\beta}
+\]
+In FOL (MPG):
+\[
+\frac{p_1, p_2, \ldots, p_k \quad (P_1 \land \cdots \land P_k \Rightarrow Q)[\theta]}{Q\theta}
+\]
+dove $\theta$ è la sostituzione che unifica $P_i$ con $p_i$.
+\end{formulabox}
+
+% =====================================================================
+\section{Logica del Primo Ordine (FOL)}
+% =====================================================================
+
+\subsection{Funzioni di Skolem e termini ground}
+
+\begin{defbox}{Termini ground}
+Un termine è \textbf{ground} (senza variabili) se contiene solo costanti e funzioni applicate a costanti.
+
+Es: $\text{Padre}(\text{Giovanni})$, $\text{Anna}$, $\text{Proprietario}(\text{Asso})$ $\Rightarrow$ ground.\\
+Es: $\text{Padre}(x)$, $P(y)$ $\Rightarrow$ \textbf{non} ground (contengono variabili).
+
+Una formula è \textbf{ground} se non contiene variabili libere.
+\end{defbox}
+
+\begin{defbox}{Funzioni di Skolem -- skolemizzazione}
+Nella conversione in CNF per FOL, si elimina il quantificatore esistenziale $\exists$:
+
+\begin{itemize}[noitemsep]
+  \item $\exists x\; P(x)$ (senza $\forall$ esterno): si sostituisce $x$ con una \textbf{costante di Skolem} $k$.
+  \item $\forall y\; \exists x\; P(x, y)$ ($\exists$ sotto $\forall$): si sostituisce $x$ con una \textbf{funzione di Skolem} $f(y)$.
+\end{itemize}
+
+\textbf{Perché?} I quantificatori universali sono impliciti in CNF. La skolemizzazione preserva la soddisfacibilità (non la validità).
+
+Esempio: $\forall y\; \exists x\; \text{Madre}(x, y)$ $\to$ $\text{Madre}(m(y), y)$ dove $m$ è la funzione di Skolem.
+\end{defbox}
+
+\subsection{Risoluzione in FOL}
+
+\begin{defbox}{Risoluzione (Binary Resolution)}
+Date due clausole con letterali complementari (uno è la negazione dell'altro), la \textbf{risoluzione} produce il \textbf{risolvente}: la clausola ottenuta eliminando i letterali complementari.
+
+\textbf{In FOL:} si usa l'\textbf{unificatore} per rendere complementari i letterali.
+
+Es: $(A \lor C)$ e $(\neg C \lor B)$ $\to$ risolvente $(A \lor B)$.
+
+\textbf{Dimostrazione per refutazione:} per dimostrare $KB \models \alpha$:
+\begin{enumerate}[noitemsep]
+  \item Si aggiunge $\neg\alpha$ alla KB.
+  \item Si applicano ripetutamente le risoluzioni.
+  \item Se si deriva la \textbf{clausola vuota} $\square$ $\Rightarrow$ contraddizione $\Rightarrow$ $KB \models \alpha$.
+\end{enumerate}
+\end{defbox}
+
+\subsection{Analisi sistematica degli esercizi V/F su FOL}
+
+\begin{defbox}{Schema per rispondere agli esercizi V/F}
+Data una formula A (clausola) e formule B, C (fatti):
+
+\textbf{Domanda 1 -- ``A è una clausola?''}\\
+Quasi sempre VERO: qualsiasi disgiunzione di letterali è una clausola. Verificare solo che sia scritta in forma normale (disgiunzione).
+
+\textbf{Domanda 2 -- ``A è una clausola di Horn?''}\\
+Conta i letterali positivi in A:
+\begin{itemize}[noitemsep]
+  \item 0 o 1 positivi $\Rightarrow$ VERO (Horn)
+  \item 2+ positivi $\Rightarrow$ FALSO (non Horn)
+\end{itemize}
+
+\textbf{Domanda 3 -- ``La risoluzione è applicabile?''}\\
+VERO se esiste almeno una coppia di letterali complementari tra A e le altre formule (con unificazione). Non richiede Horn.
+
+\textbf{Domanda 4 -- ``Il forward chaining è applicabile?''}\\
+VERO solo se:
+\begin{enumerate}[noitemsep]
+  \item A è una clausola di Horn (al più un letterale positivo)
+  \item \textbf{Tutti} i fatti nelle premesse di A sono presenti in KB (come B, C, ...)
+\end{enumerate}
+
+\textbf{Domanda 5 -- ``Il MPG è applicabile?''}\\
+Stesse condizioni del forward chaining.
+\end{defbox}
+
+\begin{esbox}{Caso tipico all'esame: NOT Alfa(x) or Beta(x) or NOT Gamma(x)}
+A) $\neg$Alfa(x) $\lor$ Beta(x) $\lor$ $\neg$Gamma(x) \quad [equivale a: Alfa(x) $\land$ Gamma(x) $\Rightarrow$ Beta(x)]\\
+B) Alfa(ID0) \quad C) Gamma(ID0)
+
+\begin{itemize}[noitemsep]
+  \item A è clausola: \textbf{VERO} (disgiunzione di letterali)
+  \item A è clausola di Horn: \textbf{VERO} (un solo positivo: Beta(x))
+  \item Risoluzione applicabile: \textbf{VERO} ($\neg$Alfa(x) si unifica con Alfa(ID0))
+  \item FC applicabile: \textbf{VERO} se B e C entrambi in KB; \textbf{FALSO} se manca uno dei due
+  \item MPG applicabile: stessa risposta del FC
+\end{itemize}
+Con sostituzione $\{x/\text{ID0}\}$ e B, C: si deriva \textbf{Beta(ID0)}.
+\end{esbox}
+
+% =====================================================================
+\section{Machine Learning}
+% =====================================================================
+
+\subsection{Alberi di Decisione}
+
+\begin{defbox}{Costruzione dell'albero di decisione (Algoritmo di Hunt / ID3)}
+\begin{enumerate}[noitemsep]
+  \item Se tutte le istanze nel nodo appartengono alla stessa classe $\Rightarrow$ \textbf{foglia}.
+  \item Se non ci sono istanze $\Rightarrow$ foglia con classe di default.
+  \item Altrimenti: scegli l'attributo che massimizza il \textbf{guadagno di informazione}.
+  \item Crea un nodo figlio per ogni valore dell'attributo scelto.
+  \item Applica ricorsivamente ai figli.
+\end{enumerate}
+\textbf{Criterio di terminazione (pre-pruning):} numero di istanze nel nodo $<$ soglia, oppure guadagno $<$ soglia, oppure profondità massima raggiunta.
+\end{defbox}
+
+\subsection{Entropia e Information Gain}
+
+\begin{formulabox}{Entropia e Information Gain -- formule}
+\textbf{Entropia} (misura di impurezza/disordine):
+\[
+H(t) = -\sum_{i=0}^{c-1} p(i|t) \log_2 p(i|t)
+\]
+$H = 0$: nodo puro (una sola classe). $H = 1$: massima confusione (2 classi equiprobabili).
+
+\textbf{Cosa misura l'entropia:} la presenza di più classi in un insieme di dati (impurezza).
+
+\textbf{Information Gain:}
+\[
+\text{Gain}(A) = H(\text{padre}) - \sum_{v \in \text{valori}(A)} \frac{|D_v|}{|D|} \cdot H(D_v)
+\]
+\textbf{Cosa misura l'IG:} la \textbf{riduzione di entropia} prodotta dallo split sull'attributo $A$.
+Si sceglie l'attributo con \textbf{Gain massimo}.
+\end{formulabox}
+
+\begin{warnbox}{Attenzione: entropia $\neq$ information gain}
+\begin{itemize}[noitemsep]
+  \item \textbf{Entropia} misura l'\textbf{impurezza} di un nodo (quanto sono mescolate le classi).
+  \item \textbf{Information Gain} misura la \textbf{riduzione di entropia} dopo uno split.
+  \item Entrambe si calcolano \textbf{prima della matrice di confusione} (sul training set, non sulle predizioni).
+  \item La \textbf{matrice di confusione} calcola accuratezza, error rate, precision, recall -- \textbf{non} entropia né IG.
+\end{itemize}
+\end{warnbox}
+
+\subsection{Overfitting e Pre/Post-Pruning}
+
+\begin{defbox}{Overfitting}
+Il modello si adatta \textbf{troppo bene} al training set (memorizza anche il rumore) e \textbf{generalizza male} sui dati nuovi.
+
+\textbf{Cause:} troppi parametri, pochi dati, rumore nel dataset.\\
+\textbf{Sintomo:} accuratezza alta sul training, bassa sul test.\\
+\textbf{Principio di Occam:} a parità di errore, preferire il modello \textbf{più semplice}.
+\end{defbox}
+
+\begin{defbox}{Pre-Pruning vs Post-Pruning}
+\textbf{Pre-Pruning:}
+\begin{itemize}[noitemsep]
+  \item Si interrompe la costruzione \emph{prima} del completamento.
+  \item Criteri: numero di istanze $<$ soglia, guadagno $<$ soglia, profondità massima.
+  \item Rischio: underfitting (si ferma troppo presto).
+\end{itemize}
+\textbf{Post-Pruning:}
+\begin{itemize}[noitemsep]
+  \item Si costruisce l'albero completo, poi si \emph{potano} i rami che peggiorano le prestazioni sul validation set.
+  \item Si sostituisce un sottoalbero con una foglia (classe più frequente nelle sue foglie).
+  \item Contesto: \textbf{apprendimento automatico} (non CSP, non giochi).
+\end{itemize}
+\end{defbox}
+
+\subsection{Percettrone}
+
+\begin{defbox}{Percettrone (Rosenblatt, 1957)}
+Singolo neurone artificiale: $y = f(\mathbf{w} \cdot \mathbf{x} + b)$.
+
+\textbf{Regola di apprendimento (Regola Delta):}
+\[
+w_j(t+1) = w_j(t) + \eta \cdot (d - o) \cdot x_j
+\]
+dove $\eta$ è il learning rate, $d$ è il valore desiderato, $o$ è l'output.
+
+\textbf{Problema rilevante: OR esclusivo (XOR).}\\
+Il percettrone non può imparare XOR perché \textbf{non è linearmente separabile}. Minsky e Papert (1969) lo dimostrarono, portando al primo ``inverno dell'IA''.
+
+\textbf{Base di K-NN vs percettrone:}
+\begin{itemize}[noitemsep]
+  \item K-NN: classificazione basata sulla \textbf{somiglianza} (senza modello, lazy).
+  \item Percettrone: apprende un \textbf{modello} (iperpiano separatore) dal training set.
+\end{itemize}
+\end{defbox}
+
+% =====================================================================
+\section{Matrice di Confusione}
+% =====================================================================
+
+\begin{defbox}{Matrice di confusione -- struttura e metriche}
+Per classificazione binaria (classi: Positivo/Negativo):
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{c|cc}
+ & \textbf{Predetto +} & \textbf{Predetto --} \\
+\hline
+\textbf{Reale +} & TP (Vero Positivo) & FN (Falso Negativo) \\
+\textbf{Reale --} & FP (Falso Positivo) & TN (Vero Negativo) \\
+\end{tabular}
+\end{center}
+
+\textbf{Accuratezza:} $\displaystyle\frac{TP + TN}{TP + TN + FP + FN}$
+
+\textbf{Error rate:} $1 - \text{Accuratezza}$
+
+\textbf{Prestazione ottimale:} tutta la diagonale principale (TP e TN), zero fuori dalla diagonale.
+
+\textbf{Cosa NON si calcola:} entropia, information gain, overfitting, complessità del modello.
+\end{defbox}
+
+% =====================================================================
+\section{Ontologie}
+% =====================================================================
+
+\begin{defbox}{Relazioni nelle ontologie -- riassunto}
+\begin{itemize}[noitemsep]
+  \item \textbf{isa} (is-a): \textbf{relazione di sottoclasse}. ``Virologo isa microbiologo'' = virologo è una sottoclasse di microbiologo. Eredita le proprietà della superclasse.
+  \item \textbf{part-of}: \textbf{relazione di composizione}. ``Capsomero part-of virus'' = il capsomero è una parte del virus.
+  \item \textbf{member}: \textbf{relazione di istanza}. ``HIV member virus'' = HIV è un'istanza (esemplare specifico) della classe virus.
+  \item \textbf{member(X, C) $\Rightarrow$ P(X)}: \textbf{proprietà di classe}. Ogni membro della classe C ha la proprietà P.
+  \item \textbf{Partizione}: insieme di sottocategorie disgiunte ed esaustive rispetto alla sovracategoria.
+  \item \textbf{Decomposizione esaustiva}: le sottocategorie coprono tutti i casi (ma non necessariamente disgiunte).
+\end{itemize}
+\end{defbox}
+
+\begin{defbox}{Tassonomia -- affermazione corretta}
+In una tassonomia: \textbf{``Le sottocategorie di ciascuna categoria costituiscono una partizione''}.
+
+Cioè, per ogni categoria $C$: le sue immediate sottocategorie sono disgiunte tra loro ed esaustive rispetto a $C$.
+
+\textbf{Sbagliato:} ``L'insieme di tutte le categorie è una partizione'' (non è vero: le categorie possono sovrapporsi tra livelli diversi).
+\end{defbox}
+
+\begin{defbox}{RDF (Resource Description Framework)}
+RDF rappresenta la conoscenza come \textbf{triple $\langle$soggetto, predicato, oggetto$\rangle$}.
+
+Es: $\langle\text{HIV}, \text{isa}, \text{Virus}\rangle$, $\langle\text{Roma}, \text{capitaleOf}, \text{Italia}\rangle$.
+
+Non usa clausole di Horn (quelle sono per la logica proposizionale/FOL), non solo IS-A e MEMBER.
+\end{defbox}
+
+% =====================================================================
+\section{Frame Problem e Situation Calculus}
+% =====================================================================
+
+\begin{defbox}{Frame Problem -- definizione precisa}
+Il \textbf{frame problem} è l'incapacità di sapere quali proprietà di una situazione si \textbf{preservano} (non cambiano) dopo l'applicazione di un'azione.
+
+\textbf{Problema:} se sposto un oggetto, devo specificare esplicitamente che tutto il resto rimane uguale? Senza assiomi del frame, questo richiederebbe infinite formule.
+
+\textbf{Soluzione nel Situation Calculus:} assiomi del successore di stato:
+``Un fluente $F$ è vero in $\text{Result}(a, s)$ se e solo se $a$ lo ha reso vero, oppure era già vero e $a$ non lo ha reso falso.''
+
+\textbf{Non confondere con:}
+\begin{itemize}[noitemsep]
+  \item I limiti del perceptron (XOR) -- quello è il \emph{problema dell'OR esclusivo}.
+  \item L'anomalia di Sussman -- quella riguarda la pianificazione non-lineare.
+\end{itemize}
+\end{defbox}
+
+\begin{defbox}{Situation Calculus -- definizione di azione}
+Un'azione nel Situation Calculus è definita da:
+\begin{enumerate}[noitemsep]
+  \item \textbf{Precondizioni}: proprietà che devono valere per applicare l'azione.
+  \item \textbf{Effetti}: proprietà che l'applicazione dell'azione modifica.
+\end{enumerate}
+\textbf{NON fa parte della definizione di azione:} le ``proprietà atemporali'' (quelle sono fatti permanenti della KB, non di una specifica azione).
+\end{defbox}
+
+% =====================================================================
+\section{Associazioni -- Schema Completo}
+% =====================================================================
+
+\begin{defbox}{Associazioni algoritmi $\to$ compiti (da sapere a memoria)}
+\begin{tabular}{ll}
+\toprule
+\textbf{Algoritmo/meccanismo} & \textbf{Compito} \\
+\midrule
+Model checking & conseguenza logica \\
+Modus Ponens (MP) & forward chaining \textbf{proposizionale} \\
+Modus Ponens Generalizzato (MPG) & forward chaining \textbf{FOL} \\
+Risoluzione & refutazione \textbf{proposizionale} \\
+Binary resolution & refutazione \textbf{FOL} \\
+\midrule
+Alpha-beta pruning & riduzione spazio di ricerca in gioco con avversario \\
+Minimax & suggerimento prossima mossa con avversario \\
+RBFS & ricerca informata in spazio degli stati \\
+k-NN & classificazione senza un modello \\
+Algoritmo di Hunt & costruzione alberi di decisione \\
+Back-jumping & risoluzione CSP \\
+Forward chaining (logica) & inferenza da KB in clausole di Horn \\
+Forward checking (CSP) & ricerca soluzione per un CSP \\
+Ricerca bidirezionale & ricerca soluzione in spazio degli stati \\
+\bottomrule
+\end{tabular}
+\end{defbox}
+
+\end{document}
