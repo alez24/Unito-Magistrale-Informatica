@@ -46,6 +46,55 @@
 \newpage
 
 % =====================================================================
+\section*{Glossario degli Acronimi}
+\addcontentsline{toc}{section}{Glossario degli Acronimi}
+% =====================================================================
+
+\begin{tcolorbox}[colback=gray!4, colframe=gray!55, title=\textbf{Tutti gli acronimi usati nel corso}, fonttitle=\bfseries, breakable]
+
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{p{2.2cm} p{5.5cm} p{7cm}}
+\toprule
+\textbf{Acronimo} & \textbf{Significato} & \textbf{In breve} \\
+\midrule
+
+\textbf{IA} & Intelligenza Artificiale & Il campo di studio di questo corso. \\
+\textbf{ML} & Machine Learning & Apprendimento automatico: sistemi che imparano dai dati. \\
+\textbf{KB} & Knowledge Base & Base di conoscenza: insieme di fatti e regole della logica. \\
+\textbf{FOL} & First-Order Logic & Logica del Primo Ordine: estende la logica proposizionale con quantificatori ($\forall$, $\exists$) e funzioni. \\
+\textbf{CNF} & Conjunctive Normal Form & Forma Normale Congiuntiva: formula scritta come congiunzione ($\land$) di clausole, ogni clausola è disgiunzione ($\lor$) di letterali. Richiesta dalla risoluzione. \\
+\textbf{CSP} & Constraint Satisfaction Problem & Problema di Soddisfacimento di Vincoli: trovare valori per variabili che rispettino tutti i vincoli. \\
+\midrule
+\textbf{BFS} & Breadth-First Search & Ricerca in ampiezza: esplora per livelli. Completa e ottimale (costi uguali), ma costosa in memoria $O(b^d)$. \\
+\textbf{DFS} & Depth-First Search & Ricerca in profondità: esplora un ramo fino in fondo. Poco memoria $O(bm)$, ma non completa né ottimale. \\
+\textbf{IDDFS} & Iterative Deepening DFS & DFS con profondità limite crescente: combina memoria di DFS ($O(bd)$) e ottimalità di BFS. \\
+\textbf{UCS} & Uniform Cost Search & Ricerca a costo uniforme: BFS con coda a priorità su $g(n)$. Ottimale anche con costi variabili. \\
+\textbf{RBFS} & Recursive Best-First Search & Versione di A* a memoria lineare $O(bd)$: riespande nodi ma non tiene tutta la frontiera. \\
+\textbf{A*} & A-star & Ricerca informata con $f(n) = g(n) + h(n)$. Ottimale con euristica ammissibile (alberi) o consistente (grafi). \\
+\midrule
+\textbf{MRV} & Minimum Remaining Values & Euristica CSP ``fail-first'': sceglie la variabile con meno valori rimasti nel dominio. \\
+\textbf{AC-3} & Arc Consistency 3 & Algoritmo che rende arc-consistent un CSP eliminando valori senza supporto; propaga le riduzioni a cascata. \\
+\midrule
+\textbf{MPG} & Modus Ponens Generalizzato & Versione FOL del modus ponens: usa l'unificazione per applicare regole universali a fatti specifici. \\
+\textbf{MGU} & Most General Unifier & Unificatore più generale: la sostituzione $\theta$ che unifica due espressioni senza vincolare le variabili più del necessario. \\
+\textbf{RDF} & Resource Description Framework & Standard del Web Semantico: rappresenta la conoscenza come triple $\langle$soggetto, predicato, oggetto$\rangle$. \\
+\midrule
+\textbf{TP} & True Positive & Vero positivo: istanza positiva predetta correttamente come positiva. \\
+\textbf{TN} & True Negative & Vero negativo: istanza negativa predetta correttamente come negativa. \\
+\textbf{FP} & False Positive & Falso positivo: istanza negativa predetta erroneamente come positiva. \\
+\textbf{FN} & False Negative & Falso negativo: istanza positiva predetta erroneamente come negativa. \\
+\midrule
+\textbf{K-NN} & K-Nearest Neighbours & Classificatore pigro (lazy): classifica basandosi sui $k$ esempi più vicini nel training set, senza costruire un modello. \\
+\textbf{XOR} & eXclusive OR & OR esclusivo: vero solo se i due input sono diversi. Funzione che il perceptron non riesce a imparare (non linearmente separabile). \\
+\textbf{ID3} & Iterative Dichotomiser 3 & Algoritmo classico per costruire alberi di decisione (variante dell'algoritmo di Hunt) basato sull'information gain. \\
+\bottomrule
+\end{tabular}
+
+\end{tcolorbox}
+
+\newpage
+
+% =====================================================================
 \section{Test di Turing e IA Forte vs Debole}
 % =====================================================================
 
@@ -132,6 +181,13 @@ RBFS (Recursive Best-First Search) è una versione di A* progettata per operare 
 
 Rispetto ad A*, RBFS può riesaminare nodi più volte a causa dei ritorni all'indietro, aumentando il costo temporale; però la complessità spaziale è solo $O(bd)$ -- analoga a IDDFS. È l'algoritmo da preferire quando la memoria disponibile è il fattore limitante.
 
+\begin{domandabox}{Cos'è la ricerca bidirezionale?}
+\end{domandabox}
+
+La ricerca bidirezionale esegue simultaneamente \textbf{due ricerche in parallelo}: una in avanti dallo stato iniziale e una all'indietro dallo stato obiettivo, fermandosi quando le due frontiere si incontrano. L'idea è che invece di esplorare un albero di profondità $d$ con complessità $O(b^d)$, si esplorano due alberi di profondità $d/2$ ciascuno, riducendo la complessità a $O(b^{d/2})$ -- un risparmio esponenziale.
+
+La difficoltà pratica è definire come effettuare la ricerca all'indietro: bisogna avere azioni invertibili e sapere in anticipo lo stato obiettivo (o essere in grado di generare i predecessori di uno stato).
+
 \begin{domandabox}{Cos'è un'euristica ammissibile? E una dominante?}
 \end{domandabox}
 
@@ -185,6 +241,29 @@ Un arco $(X_i, X_j)$ in un CSP è \textbf{arc-consistent} se per ogni valore nel
 L'algoritmo \textbf{AC-3} gestisce una coda di archi da verificare. Prende un arco $(X_i, X_j)$, rimuove da $D_i$ i valori per cui non esiste alcun supporto in $D_j$. Se $D_i$ si riduce, aggiunge alla coda tutti gli archi $(X_k, X_i)$ con $k \neq j$, perché la riduzione del dominio di $X_i$ potrebbe rendere inconsistenti archi già controllati. L'algoritmo termina quando la coda è vuota o quando un dominio diventa vuoto (inconsistenza rilevata).
 
 La differenza con il forward checking è che AC-3 propaga le riduzioni a cascata tra tutte le coppie di variabili, non solo tra la variabile appena assegnata e le future: è quindi molto più potente nel rilevare fallimenti anticipatamente, a costo di più computazione. L'arc consistency si può applicare sia come pre-processo prima del backtracking, sia interleaved durante la ricerca.
+
+\begin{domandabox}{Cos'è la Path Consistency?}
+\end{domandabox}
+
+La path consistency (o 3-consistenza) estende il concetto di arc consistency a \textbf{triple di variabili}. Un insieme di tre variabili $\{X_i, X_j, X_k\}$ è path-consistent se per ogni assegnamento consistente di $X_i$ e $X_j$ esiste un valore di $X_k$ che è compatibile con entrambi.
+
+La gerarchia è: node consistency (1 variabile) $\subset$ arc consistency (2 variabili) $\subset$ path consistency (3 variabili) $\subset \ldots$ Più si sale nella gerarchia, più si rilevano inconsistenze in anticipo ma a costo computazionale crescente. Nella pratica, arc consistency è spesso il miglior compromesso.
+
+\begin{domandabox}{Cos'è la commutatività nel CSP? Perché riduce l'ampiezza dell'albero?}
+\end{domandabox}
+
+La commutatività nei CSP afferma che l'\textbf{ordine in cui si assegnano le variabili non influenza la soluzione}: se $\{X_1 = a, X_2 = b\}$ è una soluzione, lo è indipendentemente dal fatto che si sia assegnato prima $X_1$ o prima $X_2$.
+
+Questa proprietà è cruciale perché permette di costruire l'albero di ricerca assegnando \emph{una variabile alla volta} invece di considerare tutte le possibili sequenze di assegnamento. Senza sfruttare la commutatività, l'albero avrebbe $n!$ percorsi distinti per ogni soluzione (uno per ogni permutazione dell'ordine); con la commutatività se ne considera uno solo. Questo riduce drasticamente l'\textbf{ampiezza} dell'albero (il fattore di ramificazione passa da $n \cdot d$ a $d$).
+
+\begin{domandabox}{Cosa sono MRV e l'euristica di grado nel CSP?}
+\end{domandabox}
+
+Queste sono due euristiche per scegliere in quale ordine assegnare le variabili durante il backtracking, con l'obiettivo di rilevare i fallimenti il prima possibile.
+
+La \textbf{MRV} (Minimum Remaining Values), detta anche euristica ``fail-first'', sceglie la variabile con il \textbf{dominio residuo più piccolo}: si preferisce la variabile che ha meno valori ammissibili rimanenti, perché è quella che con più probabilità porterà a un fallimento. Rilevare il fallimento presto significa non sprecare tempo a espandere rami inutili.
+
+L'\textbf{euristica di grado} (degree heuristic) serve come criterio di spareggio quando due o più variabili hanno lo stesso numero di valori residui: si sceglie la variabile coinvolta nel maggior numero di vincoli con le variabili ancora non assegnate. L'idea è che la variabile con più connessioni avrà un impatto maggiore sulle scelte future, quindi è meglio vincolarla subito.
 
 % =====================================================================
 \section{Ricerca Avversariale}
@@ -282,6 +361,13 @@ L'unificazione fallisce quando si incontra l'\textbf{occur check}: non si può u
 
 L'unificazione è il meccanismo fondamentale che rende possibile il Modus Ponens Generalizzato e la risoluzione in FOL: senza di essa non potremmo applicare regole universali a fatti specifici.
 
+\begin{domandabox}{Quali simboli della FOL richiedono interpretazione?}
+\end{domandabox}
+
+In FOL distinguiamo simboli logici (quantificatori, connettivi, uguaglianza) che hanno un significato fisso, e simboli \textbf{non logici} che richiedono un'interpretazione, ovvero una mappatura verso il dominio del discorso.
+
+I simboli non logici che richiedono interpretazione sono tre: i \textbf{simboli di costante} (denotano un oggetto specifico del dominio), i \textbf{simboli di funzione} (denotano una funzione dal dominio a sé stesso) e i \textbf{simboli di predicato} (denotano una relazione sul dominio). Le variabili non richiedono interpretazione perché sono legate dai quantificatori: il loro significato dipende dall'assegnamento corrente, non dall'interpretazione del modello.
+
 \begin{domandabox}{Cos'è la risoluzione e come si usa per la refutazione?}
 \end{domandabox}
 
@@ -309,10 +395,10 @@ Una \textbf{contraddizione} (formula insoddisfacibile) è l'opposto: è falsa in
 \section{Machine Learning}
 % =====================================================================
 
-\begin{domandabox}{Come si costruisce un albero di decisione?}
+\begin{domandabox}{Come si costruisce un albero di decisione? Cos'è l'algoritmo di Hunt?}
 \end{domandabox}
 
-La costruzione di un albero di decisione segue un approccio ricorsivo. Si parte dall'intero insieme di training e si verifica la condizione di terminazione: se tutte le istanze appartengono alla stessa classe, si crea una foglia con quella classe. Se il nodo contiene poche istanze (sotto una soglia di pre-pruning) si crea una foglia con la classe maggioritaria. Altrimenti, si sceglie l'attributo che produce lo split migliore.
+L'\textbf{algoritmo di Hunt} è il nome del metodo ricorsivo classico per costruire alberi di decisione, da cui derivano algoritmi più noti come ID3 e C4.5. La costruzione di un albero di decisione segue un approccio ricorsivo. Si parte dall'intero insieme di training e si verifica la condizione di terminazione: se tutte le istanze appartengono alla stessa classe, si crea una foglia con quella classe. Se il nodo contiene poche istanze (sotto una soglia di pre-pruning) si crea una foglia con la classe maggioritaria. Altrimenti, si sceglie l'attributo che produce lo split migliore.
 
 La bontà di uno split si misura con il \textbf{guadagno di informazione}: si calcola l'entropia del nodo padre, poi la media pesata delle entropie dei nodi figli, e si sceglie l'attributo che massimizza la differenza. Si creano quindi tanti nodi figli quanti sono i valori dell'attributo scelto, si partizionano le istanze tra di essi, e si applica la procedura ricorsivamente.
 
@@ -352,6 +438,15 @@ w_j(t+1) = w_j(t) + \eta \cdot (d - o) \cdot x_j
 Il percettrone implementa un \emph{test lineare}: i pesi definiscono un iperpiano nello spazio degli input, e le istanze vengono classificate in base a quale lato dell'iperpiano si trovano.
 
 Il problema che ha messo in luce i suoi limiti è il \textbf{problema dell'OR esclusivo (XOR)}. Minsky e Papert dimostrarono nel 1969 che il percettrone non può imparare la funzione XOR perché le sue quattro combinazioni di input non sono linearmente separabili: non esiste nessun iperpiano che separi correttamente i casi positivi da quelli negativi. Questo portò al primo ``inverno dell'IA'', fino allo sviluppo del backpropagation per reti multistrato negli anni '80.
+
+\begin{domandabox}{Cos'è K-NN? Che differenza c'è con gli algoritmi che inducono regole?}
+\end{domandabox}
+
+Il K-Nearest Neighbours è un classificatore \textbf{lazy} (pigro): non costruisce nessun modello esplicito durante la fase di training, ma si limita a memorizzare tutto il dataset. Quando arriva una nuova istanza da classificare, calcola la distanza da tutti gli esempi noti, identifica i $k$ più vicini e assegna all'istanza la classe maggioritaria tra questi $k$ vicini.
+
+Questa è la differenza fondamentale rispetto agli algoritmi che \textbf{inducono regole}: algoritmi come ID3 (alberi di decisione), o le strategie Specific-to-General e General-to-Specific, costruiscono un modello generalizzato durante il training -- un albero, un insieme di regole, un iperpiano -- che poi applicano alle nuove istanze. K-NN invece non generalizza nulla: il ``modello'' è l'intero training set.
+
+Le strategie \textbf{Specific-to-General} partono da ipotesi molto specifiche (es. una singola istanza positiva) e le generalizzano gradualmente fino a coprire tutti gli esempi positivi. Le strategie \textbf{General-to-Specific} fanno l'opposto: partono da ipotesi molto generali (che coprono tutto) e le specializzano per escludere gli esempi negativi. Entrambe inducono regole esplicite, cosa che K-NN non fa mai.
 
 % =====================================================================
 \section{Matrice di Confusione}
