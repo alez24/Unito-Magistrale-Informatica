@@ -329,7 +329,7 @@ Sono gestiti tre casi distinti:
     \quad \Longrightarrow \quad
     S\_yoda \rightarrow NP\ V
 \]
-(nessuna trasposizione, l'ordine resta invariato poiché non c'è complemento da anteporre)  Trasformazione Caso 1 -- VP con complemento diretto
+(nessuna trasposizione, l'ordine resta invariato poiché non c'è complemento da anteporre)
 
 \begin{figure}[H] % [H] forza l'immagine esattamente in questo punto
     \centering % Centra l'immagine
@@ -450,8 +450,8 @@ Le frasi riportate di seguito sono state elaborate correttamente, poiché i lemm
 \hline
 \textbf{Tipologia} & \textbf{Input Italiano} & \textbf{Output Yodish} & \textbf{Analisi} \\ \hline
 Semplice & \textit{Luke usa la forza} & La forza Luke usa & Il complemento oggetto "la forza" viene correttamente anteposto al soggetto. \\ \hline
-Con Numerale & \textit{Vader distrugge due droni} & Due droni Vader distrugge & Il sintagma nominale (NP) composto da numerale e nome viene spostato integralmente. \\ \hline
-Con Avverbio & \textit{Io vedo sith qui} & Sith io vedo qui & L'avverbio "qui" mantiene la posizione finale secondo la logica del Caso 2. \\ \hline
+Con Numerale & \textit{Vader distrugge due jedi} & Due jedi Vader distrugge & Il sintagma nominale (NP) composto da numerale e nome viene spostato integralmente. \\ \hline
+Con Avverbio & \textit{Yoda vede sith qui} & Sith Yoda vede qui & L'avverbio "qui" mantiene la posizione finale secondo la logica del Caso 2. \\ \hline
 Sogg. Pronome & \textit{Lui mangia la mela} & La mela lui mangia & Corretto riconoscimento dei pronomi personali come sintagmi nominali. \\ \hline
 \end{tabular}
 \caption{Esempi di trasformazioni eseguite con successo dal sistema.}
@@ -464,7 +464,7 @@ Attraverso una fase di "stress test" con parole estratte esclusivamente dal less
 \begin{itemize}
     \item \textbf{Posizionamento degli Aggettivi:} Sebbene termini come \textit{"oscuro"} o \textit{"potente"} siano presenti nel lessico come \texttt{Adj}, la grammatica attuale fallisce il parsing di frasi come \textit{"Il lato oscuro vince"}. Ciò è dovuto alla mancanza di una regola binaria che gestisca la sequenza \texttt{N, Adj} all'interno di un NP.
     \item \textbf{Ambiguità Lessicale:} Parole come \textit{"rosso"} o \textit{"nero"} sono caricate con doppio tag (\texttt{Adj} e \texttt{N}). Il parser restituisce solo il primo albero derivato trovato, ignorando potenziali interpretazioni alternative che potrebbero influenzare la qualità della traduzione.
-    \item \textbf{Mancanza di Flessione (Lemmatizzazione):} Il sistema fallisce se viene inserita una forma verbale non esplicitamente mappata. Ad esempio, mentre \textit{"Noi abbiamo speranza"} viene riconosciuto, \textit{"Noi avevamo speranza"} produce un errore poiché "avevamo" non figura nel \texttt{Lexicon.json}.
+    \item \textbf{Mancanza di Flessione (Lemmatizzazione):} Il sistema fallisce se viene inserita una forma verbale non esplicitamente mappata. Ad esempio, mentre \textit{"Noi abbiamo la pace"} viene riconosciuto, \textit{"Noi avevamo la pace"} produce un errore poiché "avevamo" non figura nel \texttt{Lexicon.json}.
     \item \textbf{Strutture Complesse:} Il sistema non è in grado di processare complementi introdotti da preposizioni articolate (es. \textit{"della"}, \textit{"nella"}) a meno che non vengano inserite manualmente come token singoli, limitando di fatto il linguaggio naturale arbitrario.
 \end{itemize}
 
