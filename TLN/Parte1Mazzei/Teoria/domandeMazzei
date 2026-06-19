@@ -1,29 +1,17 @@
  Domande TLN A.A.25/26 - Parte 1
 
 # Come funciona il Transition Based Parser (MALT)?
-
-# Spiegare l'uso delle HMM nel PoS Tagging
-
+# Spiegare l'uso delle HMM nel PoS Taggin
 # Che differenza c'è tra MEMM e HMM?
-
 # Cosa è una Probabilistic CFG?
-
 # Cosa è il task della Aggregation?
-
 # Elencare i 5 algoritmi per il parsing delle dipendenze sintattiche
-
 # Spiegare l'uso del formalismo Lambda-FoL per la Semantica Computazionale
-
 # Cosa è la rappresentazione Neo-davidsoniana?
-
 # Quali sono le due ipotesi fondamentali della linguistica computazionale?
-
 # Cosa è la Frame-Based Semantcis nei DS?
-
 # Fare un esempio di ambiguità puramente semantica
-
 # Ambiguità sintattica: spiegare i fenomeni del  PP attachment e dell'ambiguità della coordinazione nell'ambigità sintattica
-
 # Come funziona l'algoritmo CKY?
 
 # Quale è la complessità dell'algoritmo CKY rispetto alla lunghezza N dell'input?

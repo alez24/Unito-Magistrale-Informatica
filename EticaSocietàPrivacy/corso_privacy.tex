@@ -1,0 +1,1744 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{microtype}
+
+\geometry{margin=2.5cm}
+
+\tcbuselibrary{theorems, skins, breakable}
+
+\newtcolorbox{definizione}[1][]{colback=red!5!white, colframe=red!60!black,
+  fonttitle=\bfseries, title={Definizione: #1}, breakable}
+\newtcolorbox{teorema}[1][]{colback=yellow!5!white, colframe=orange!80!black,
+  fonttitle=\bfseries, title={Teorema: #1}, breakable}
+\newtcolorbox{esempio}[1][]{colback=green!5!white, colframe=green!50!black,
+  fonttitle=\bfseries, title={Esempio: #1}, breakable}
+\newtcolorbox{nota}[1][]{colback=blue!5!white, colframe=blue!40!black,
+  fonttitle=\bfseries, title={Nota: #1}, breakable}
+
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+\title{\textbf{Etica, Societ\`{a} e Privacy}\\[0.5em]
+\large Note Complete del Corso\\[0.3em]
+\normalsize Universit\`{a} di Torino -- Magistrale Informatica -- A.A. 2024/2025}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================================================
+\section{Privacy: Definizioni e Leggi}
+%=============================================================================
+
+\subsection{Cos'\`{e} la Privacy?}
+
+La privacy \`{e} un concetto fondamentale con diverse definizioni complementari:
+
+\begin{definizione}[Definizioni di Privacy]
+\begin{itemize}
+  \item \textbf{Warren \& Brandeis (1890)}: \emph{``The right to be alone''} -- uno dei saggi più influenti nella storia del diritto americano; gli autori cercavano di trovare una base giuridica per proteggere la privacy nell'ambito delle leggi e dei princìpi già esistenti. Esempi di applicazione: il diritto di una persona di scegliere la solitudine lontano dall'attenzione degli altri; il diritto di essere immune dallo scrutinio o dall'essere osservati in contesti privati, come la propria abitazione.
+  \item \textbf{Godkin (1880)}: \emph{``Nothing is better worthy of legal protection than private life, or the right of every man to keep his affairs to himself, and to decide for himself to what extent they shall be the subject of public observation and discussion.''} -- accesso limitato alle informazioni personali.
+  \item \textbf{Bok (1989)}: \emph{``The condition of being protected from unwanted access by others -- either physical access, personal information, or attention.''} -- protezione da accessi indesiderati.
+  \item \textbf{Westin \& Blom-Cooper (1970)}: \emph{``Privacy is the claim of individuals, groups, or institutions to determine for themselves when, how, and to what extent information about them is communicated to others.''} -- controllo sull'informazione.
+  \item \textbf{Fried (1968)}: \emph{``Privacy is not simply an absence of information about us in the minds of others; rather it is the control we have over information about ourselves.''} -- controllo sulle proprie informazioni.
+  \item \textbf{FIPS PUB 41} (NIST -- \emph{Computer Security Guidelines for Implementing the Privacy Act of 1974}): \emph{``The right of an entity to determine the degree to which it will interact with its environment, including the degree to which the entity is willing to share its personal information with others.''}
+  \item \textbf{ISO}: Il diritto di un individuo a controllare o influenzare quali informazioni collegate a loro possono essere collezionate e salvate.
+\end{itemize}
+\end{definizione}
+
+\begin{definizione}[Definizione Operativa Adottata]
+La privacy \`{e} l'abilit\`{a} di una persona di:
+\begin{enumerate}
+  \item Controllare la disponibilit\`{a} di \emph{informazioni} su s\'{e} stessa e la propria \emph{esposizione}.
+  \item Funzionare \emph{anonimamente} nella societ\`{a}.
+\end{enumerate}
+\end{definizione}
+
+\subsection{Perch\'{e} la Privacy \`{e} Importante?}
+
+La privacy \`{e} importante per molteplici ragioni:
+\begin{itemize}
+  \item \textbf{Sentimenti individuali}: non confortabile essere sorvegliati; rischio di furto d'identit\`{a} e uso improprio dei dati.
+  \item \textbf{Esigenze aziendali}: le aziende devono proteggere la reputazione, soddisfare i clienti e rispettare le leggi.
+  \item \textbf{Dignit\`{a} umana}: Stefano Rodat\`{a} associa la privacy alla dignit\`{a} umana -- la perdita dei dati personali ha un costo immenso.
+  \item \textbf{Libert\`{a} civile}: come sottolinea Edward Snowden, rinunciare alla privacy non \`{e} ``non avere nulla da nascondere'', ma rinunciare a un diritto fondamentale. Glenn Greenwald -- uno dei primi giornalisti ad avere accesso ai file Snowden e a scrivere delle estese attivit\`{a} di sorveglianza degli USA sui cittadini privati -- sostiene nel suo TED talk che la privacy \`{e} fondamentale \textbf{anche se non si ha ``nulla da nascondere''}: la sorveglianza di massa altera il comportamento delle persone e distrugge la libert\`{a} di pensiero.
+\end{itemize}
+
+\textbf{Citazioni di Stefano Rodat\`{a}}:
+\begin{itemize}
+  \item \emph{``Emerge un legame profondo tra libert\`{a}, dignit\`{a} e privacy, che ci impone di guardare a quest'ultima al di l\`{a} della sua storica definizione come diritto ad essere lasciato solo.''}
+  \item \emph{``Quale dignit\`{a} rimane ad una persona divenuta prigioniera di un passato interamente in mani altrui, di cui deve rassegnarsi ad essere espropriato?''}
+\end{itemize}
+
+\textbf{Privacy sotto attacco -- statistiche}: Nel 1996, il 24\% degli americani dichiarava di aver subito una violazione della propria privacy (vs. il 19\% nel 1978). Questo evidenzia una crescente erosione della privacy nonostante (o a causa di) l'avanzamento tecnologico.
+
+\subsection{Privacy vs. Sicurezza}
+
+\begin{definizione}[Privacy vs. Sicurezza (Security)]
+\textbf{Privacy} e \textbf{sicurezza informatica} sono concetti distinti ma interconnessi:
+
+\begin{itemize}
+  \item \textbf{Privacy}: il diritto di un individuo di \textbf{controllare le proprie informazioni personali} -- chi può accedervi, come vengono usate, e quando vengono condivise. È un \emph{diritto} (o interesse legittimo) dell'individuo.
+  \item \textbf{Sicurezza (Security)}: insieme di \textbf{meccanismi tecnici e organizzativi} per proteggere dati e sistemi da accessi non autorizzati, modifiche o distruzione. Si articola nella \textbf{triade CIA}:
+  \begin{enumerate}
+    \item \textbf{Confidentiality} (Riservatezza): solo le entità autorizzate accedono ai dati.
+    \item \textbf{Integrity} (Integrità): i dati non vengono alterati in modo non autorizzato.
+    \item \textbf{Availability} (Disponibilità): i dati sono accessibili quando necessario dagli utenti autorizzati.
+  \end{enumerate}
+\end{itemize}
+\end{definizione}
+
+\begin{nota}[Relazione tra Privacy e Sicurezza]
+La sicurezza è una condizione \textbf{necessaria ma non sufficiente} per la privacy:
+\begin{itemize}
+  \item \textbf{Sicurezza senza privacy}: un'azienda può proteggere tecnicamente i dati degli utenti (buona sicurezza) ma venderli a terzi o usarli per finalità non dichiarate (violazione della privacy). $\Rightarrow$ la sicurezza non implica la privacy.
+  \item \textbf{Privacy senza sicurezza}: se un sistema non è sicuro, qualunque garanzia di privacy è illusoria -- chi vuole può accedere ai dati senza autorizzazione. $\Rightarrow$ non si può avere privacy reale senza sicurezza.
+\end{itemize}
+\textbf{Sintesi}: la privacy riguarda il \emph{diritto} al controllo delle informazioni (scopo, uso, destinatari); la sicurezza fornisce i \emph{meccanismi} per proteggere fisicamente quei dati. Entrambe sono necessarie: la sicurezza tutela i dati dai \emph{malintenzionati esterni}, la privacy tutela l'individuo anche dai \emph{soggetti autorizzati} che potrebbero abusarne.
+\end{nota}
+
+\begin{esempio}[Privacy vs. Sicurezza -- casi pratici]
+\begin{itemize}
+  \item \textbf{NSA/PRISM}: sistema di sorveglianza con alta sicurezza informatica, ma che viola la privacy dei cittadini accedendo legalmente (o illegalmente) ai loro dati.
+  \item \textbf{Cambridge Analytica}: i dati erano tecnicamente ``sicuri'' sui server di Facebook, ma sono stati condivisi senza adeguato consenso -- violazione di privacy, non di sicurezza.
+  \item \textbf{Data Breach}: violazione sia della sicurezza (accesso non autorizzato) che della privacy (esposizione dei dati personali).
+\end{itemize}
+\end{esempio}
+
+\subsection{Tipi di Privacy}
+\begin{itemize}
+  \item \textbf{Political privacy}: protezione delle opinioni e attivit\`{a} politiche.
+  \item \textbf{Consumer privacy}: tutela dei dati dei consumatori da uso commerciale.
+  \item \textbf{Medical privacy}: riservatezza dei dati sanitari.
+  \item \textbf{Private property}: protezione dei beni personali.
+  \item \textbf{Information/Data privacy}: gestione e tutela delle informazioni personali digitali.
+\end{itemize}
+
+\begin{definizione}[Data Privacy]
+Il problema della data privacy emerge quando dei dati unicamente associabili a un individuo sono collezionati e salvati. Le fonti pi\`{u} comuni includono: record sanitari, investigazioni criminali, transazioni finanziarie, tratti biologici/genetici, residenza/posizione geografica, geolocalizzazione, utilizzo del web e cookies.
+
+La sfida della data privacy \`{e} trovare modi per condividere dati proteggendo le informazioni che permettono di identificare una determinata persona.
+\end{definizione}
+
+\subsection{Privacy negli Stati Uniti}
+
+Negli USA \textbf{non esiste una legge unificata} sulla data privacy. Le eccezioni settoriali includono:
+\begin{itemize}
+  \item \textbf{HIPAA} (Health Insurance Portability and Accountability Act): dati sanitari.
+  \item \textbf{COPPA} (Children's Online Privacy Protection Act): dati di minori sotto i 13 anni online.
+  \item \textbf{FCRA} (Fair Credit Reporting Act): richieste di prestito e credito.
+  \item \textbf{ECPA} (Electronic Communications Privacy Act, 1986): sicurezza informatica delle comunicazioni elettroniche.
+  \item \textbf{Video Privacy Protection Act} (1988): protezione dei dati di noleggio video.
+  \item \textbf{PATRIOT Act} (2001, post 9/11): consente sorveglianza governativa estesa.
+\end{itemize}
+
+Un'azienda che raccoglie dati (anche senza permesso esplicito) ha il diritto di usarli. Gli istituti finanziari possono ottenere informazioni sulla condizione finanziaria di una persona chiedendo report a terze parti.
+
+\subsection{Privacy nell'Unione Europea}
+
+L'UE protegge \textbf{pesantemente} la data privacy. Il fondamento giuridico \`{e}:
+\begin{itemize}
+  \item \textbf{ECHR Art.8} (European Convention on Human Rights): prevede il diritto al rispetto della vita privata, familiare, del domicilio e della corrispondenza.
+  La Corte Europea dei Diritti dell'Uomo ha dato a quest'articolo un'interpretazione molto ampia, includendo:
+  \begin{itemize}
+    \item Raccolta di informazioni per il \textbf{censimento ufficiale}.
+    \item Registrazione di \textbf{impronte digitali e fotografie} in un registro di polizia.
+    \item Raccolta di \textbf{dati medici} o dettagli sulle spese personali.
+    \item Implementazione di un \textbf{sistema di identificazione personale}.
+  \end{itemize}
+\end{itemize}
+
+Ci sono state \textbf{due ere} della privacy europea:
+\begin{enumerate}
+  \item \textbf{1995--2018}: Data Protection Directive (DPD) 95/46/EC.
+  \item \textbf{2018--presente}: General Data Protection Regulation (GDPR) (EU) 2016/679.
+\end{enumerate}
+
+\subsubsection{Data Protection Directive 95/46/EC}
+
+La DPD fu adottata nel 1995 dal parlamento europeo come tentativo di armonizzare la protezione dei dati nell'UE; doveva essere recepita dai singoli stati con leggi nazionali entro il 1998.
+
+\textbf{8 princìpi di base del DPD}:
+\begin{enumerate}
+  \item I dati personali devono essere processati a norma di legge e in maniera corretta.
+  \item I dati personali devono essere processati solo per scopi limitati.
+  \item I dati personali devono essere processati in modo adeguato, rilevante e non eccessivo.
+  \item I dati personali devono essere processati accuratamente.
+  \item I dati personali devono essere trattenuti solo per il tempo strettamente necessario.
+  \item I dati personali devono essere processati in accordo con i diritti del soggetto interessato.
+  \item I dati personali devono essere processati in modo sicuro.
+  \item I dati personali devono essere trasferiti solo a nazioni con una protezione adeguata.
+\end{enumerate}
+
+\begin{definizione}[Dati Personali -- DPD]
+``Any information relating to an identified or identifiable natural person (data subject); an identifiable person is one who can be identified, directly or indirectly, in particular by reference to an identification number or to one or more factors specific to his physical, physiological, mental, economic, cultural or social identity.''
+\end{definizione}
+
+\begin{definizione}[Trattamento dei Dati -- DPD]
+``Any operation or set of operations which is performed upon personal data, whether or not by automatic means, such as collection, recording, organization, storage, adaptation or alteration, retrieval, consultation, use, disclosure by transmission, dissemination or otherwise making available, alignment or combination, blocking, erasure or destruction.''
+
+\emph{Piccole modifiche nel GDPR: aggiunge \textbf{structuring} (strutturazione) e \textbf{restriction} (limitazione).}
+\end{definizione}
+
+\begin{definizione}[Controller e Processor -- DPD/GDPR]
+\begin{itemize}
+  \item \textbf{Controller} (\emph{Titolare del trattamento}): la persona fisica o giuridica, l'autorit\`{a} pubblica, il servizio o qualsiasi altro organismo che, da solo o insieme ad altri, \textbf{determina le finalit\`{a} e i mezzi del trattamento} dei dati personali. La responsabilit\`{a} della compliance ricade sul controller.
+  \item \textbf{Processor} (\emph{Responsabile del trattamento}): la persona fisica o giuridica, l'autorit\`{a} pubblica, il servizio o qualsiasi altro organismo che tratta dati personali \textbf{per conto del controller}.
+\end{itemize}
+Nessuna modifica significativa nel GDPR.
+\end{definizione}
+
+\textbf{Tre princìpi fondamentali della DPD}:
+
+\paragraph{1. Trasparenza}
+I dati possono essere processati solo se almeno una delle seguenti condizioni \`{e} vera:
+\begin{itemize}
+  \item Il soggetto ha dato il proprio \textbf{consenso}.
+  \item Il trattamento \`{e} necessario per l'\textbf{esecuzione di un contratto}.
+  \item Il trattamento \`{e} necessario per \textbf{assolvere un obbligo legale}.
+  \item Il trattamento \`{e} necessario per \textbf{proteggere gli interessi vitali} del soggetto.
+  \item Il trattamento \`{e} necessario per un'\textbf{operazione di interesse pubblico}.
+  \item Il trattamento \`{e} necessario per \textbf{scopi di interesse legittimato dal controllore}, eccetto quando tali interessi sono sovrascritti da quelli del soggetto.
+\end{itemize}
+Diritti del soggetto: \textbf{accesso} a tutti i dati; \textbf{rettifica, cancellazione o blocco} dei dati incompleti, inaccurati o non conformi.
+
+\paragraph{2. Scopo Legittimo}
+I dati personali possono essere processati solo per \emph{scopi legittimi e specificati} e non possono essere processati ulteriormente in modo incompatibile con tali scopi.
+
+\paragraph{3. Proporzionalit\`{a}}
+\begin{itemize}
+  \item I dati devono essere accurati e, quando necessario, aggiornati.
+  \item I dati non devono essere mantenuti in una forma che permette l'identificazione del soggetto per pi\`{u} tempo del necessario.
+  \item Salvaguardie per dati conservati per fini storici, statistici o scientifici.
+  \item Restrizioni aggiuntive per \textbf{dati sensibili}: credenze religiose, opinioni politiche, salute, orientamento sessuale, razza, appartenenza a organizzazioni.
+  \item Il soggetto pu\`{o} sempre opporsi al processamento per fini di \textbf{direct marketing}.
+  \item Nessuna decisione che produce effetti legali o significativi pu\`{o} essere basata \textbf{esclusivamente} su un trattamento automatizzato.
+  \item Diritto di \textbf{ricorso} per decisioni automatizzate.
+\end{itemize}
+
+\paragraph{Autorit\`{a} di Controllo (DPD)}
+Ogni stato membro deve istituire un'\textbf{autorit\`{a} di supervisione} che:
+\begin{itemize}
+  \item Monitora la protezione dei dati nel proprio stato.
+  \item D\`{a} avvisi al governo riguardo alle misure amministrative e ai regolamenti.
+  \item Avvia procedure legali quando il regolamento viene violato.
+\end{itemize}
+Il controllore deve notificare all'autorit\`{a} di supervisione: nome e indirizzo, scopi del trattamento, categorie di dati soggetti, destinatari, trasferimenti a paesi terzi, misure di sicurezza. Tali informazioni sono tenute in un \textbf{registro pubblico}.
+
+\subsubsection{Privacy in Italia}
+
+La DPD 95/46/EC \`{e} stata implementata in Italia con il Decreto Legislativo n. 196/2003 (\emph{Codice in materia di protezione dei dati personali}). L'autorit\`{a} italiana \`{e} il \textbf{Garante per la protezione dei dati personali}, competente in materia di:
+video sorveglianza, dati biometrici, dati sanitari, notifiche di data breach, informazioni bancarie, e-health records, profili online, processamenti da parte di system administrators, marketing e profiling, pagamenti mobili, cookies.
+
+\subsubsection{General Data Protection Regulation (GDPR)}
+
+\begin{definizione}[GDPR]
+Il GDPR (Regolamento (EU) 2016/679) \`{e} un \textbf{regolamento} (non una direttiva) adottato il 27 aprile 2016, applicabile dal \textbf{25 maggio 2018} dopo un periodo transitorio di due anni. A differenza di una direttiva, non richiede l'adozione di leggi nazionali di recepimento. L'obiettivo \`{e} rafforzare e unificare la protezione dei dati per tutti gli individui nell'UE, e semplificare il quadro normativo per le imprese internazionali.
+\end{definizione}
+
+\begin{definizione}[7 Princìpi GDPR -- Art. 5]
+Il GDPR stabilisce all'Art. 5 i seguenti princìpi per il trattamento dei dati personali:
+\begin{enumerate}
+  \item \textbf{Liceità, correttezza e trasparenza} (\emph{Lawfulness, fairness and transparency}): il trattamento deve avere una base giuridica (consenso, contratto, obbligo legale, interesse vitale, interesse pubblico, o interesse legittimo del titolare) e deve essere trasparente verso l'interessato.
+  \item \textbf{Limitazione della finalità} (\emph{Purpose limitation}): i dati devono essere raccolti per finalità specifiche, esplicite e legittime e non possono essere trattati in modo incompatibile con quelle finalità.
+  \item \textbf{Minimizzazione dei dati} (\emph{Data minimisation}): i dati devono essere adeguati, pertinenti e \textbf{limitati a quanto necessario} rispetto alle finalità.
+  \item \textbf{Esattezza} (\emph{Accuracy}): i dati devono essere esatti e, se necessario, aggiornati; i dati inesatti devono essere cancellati o rettificati senza indugio.
+  \item \textbf{Limitazione della conservazione} (\emph{Storage limitation}): i dati devono essere conservati in una forma che consenta l'identificazione degli interessati per un periodo non superiore a quello necessario.
+  \item \textbf{Integrità e riservatezza} (\emph{Integrity and confidentiality}): i dati devono essere trattati con misure di sicurezza adeguate a proteggere da trattamenti non autorizzati, perdita, distruzione o danni accidentali.
+  \item \textbf{Responsabilità del titolare} (\emph{Accountability}): il titolare del trattamento è \textbf{responsabile} del rispetto di tutti i principi ed è in grado di \textbf{dimostrarlo}.
+\end{enumerate}
+\end{definizione}
+
+\begin{nota}[GDPR vs DPD -- Principali Novità]
+Il GDPR introduce modifiche significative rispetto alla DPD 95/46/EC:
+\begin{itemize}
+  \item \textbf{Ambito geografico ampliato}: si applica a qualsiasi organizzazione che tratta dati di residenti UE, anche se non ha sede in Europa (portata extraterritoriale).
+  \item \textbf{Accountability}: il titolare deve dimostrare attivamente la conformità (non basta essere conformi, bisogna dimostrarlo).
+  \item \textbf{Consenso più rigoroso}: deve essere libero, specifico, informato e inequivocabile; il silenzio o le caselle pre-spuntate non costituiscono consenso.
+  \item \textbf{Nuovi diritti}: portabilità dei dati, diritto all'oblio rafforzato, diritto di opposizione al profiling.
+  \item \textbf{Notifica data breach}: obbligatoria entro 72 ore (nella DPD non era previsto un termine esplicito).
+  \item \textbf{Privacy by Design e by Default}: ora esplicito obbligo normativo.
+  \item \textbf{DPO}: figura obbligatoria per PA e grandi trattatori.
+  \item \textbf{DPIA}: obbligatoria per trattamenti ad alto rischio.
+  \item \textbf{Sanzioni molto più pesanti}: fino al 4\% del fatturato mondiale (DPD: sanzioni nazionali molto più basse).
+  \item \textbf{Definizione di dati personali aggiornata}: include location data, online identifier, dati genetici.
+\end{itemize}
+\end{nota}
+
+\textbf{Definizioni aggiornate nel GDPR} rispetto alla Direttiva:
+
+\begin{definizione}[Dati Personali -- GDPR]
+``Any information relating to an identified or identifiable natural person (data subject); an identifiable natural person is one who can be identified, directly or indirectly, in particular by reference to an identifier such as a name, an identification number, \textbf{location data}, an \textbf{online identifier} or to one or more factors specific to the physical, physiological, \textbf{genetic}, mental, economic, cultural or social identity of that natural person.''
+
+Novit\`{a} rispetto al DPD: aggiunti \textbf{location data}, \textbf{online identifier} e fattori \textbf{genetici}.
+\end{definizione}
+
+\begin{definizione}[Trattamento dei Dati -- GDPR]
+Uguale al DPD, ma include anche \textbf{structuring} (strutturazione) e \textbf{restriction} (limitazione).
+\end{definizione}
+
+\begin{definizione}[Pseudonimizzazione -- GDPR]
+``The processing of personal data in such a manner that the personal data can no longer be attributed to a specific data subject without the use of additional information; such additional information is kept separately and is subject to technical and organisational measures to ensure that the personal data are not attributed to an identified or identifiable natural person.''
+
+Esempio: cifrare i dati localmente e mantenere le chiavi di decifratura separatamente dai dati cifrati.
+
+Se i dati personali sono pseudonimizzati con politiche e misure adeguate, sono considerati \textbf{effettivamente anonimi e non soggetti ai controlli e alle sanzioni del GDPR}. Il GDPR non si applica ai dati anonimi, inclusi quelli per scopi statistici o di ricerca.
+\end{definizione}
+
+\begin{definizione}[Personal Data Breach -- GDPR]
+``A breach of security leading to the accidental or unlawful destruction, loss, alteration, unauthorised disclosure of, or access to, personal data transmitted, stored or otherwise processed.''
+
+Il controllore ha l'obbligo di notificare l'autorit\`{a} di supervisione \textbf{senza ingiustificato ritardo} (entro \textbf{72 ore}) dalla scoperta del breach, a meno che sia improbabile che causi rischi ai diritti e alle libert\`{a} degli individui. \textbf{Gli interessati devono essere notificati} se viene determinato un impatto avverso. Il \textbf{processor deve notificare il controller} senza ingiustificato ritardo quando viene a conoscenza di un breach. La notifica agli interessati \textbf{non \`{e} richiesta} se il controller ha implementato misure tecniche e organizzative appropriate che rendano i dati personali \textbf{intellegibili solo agli autorizzati} (ad esempio, la \textbf{cifratura}).
+\end{definizione}
+
+\textbf{Diritti degli interessati nel GDPR}:
+\begin{itemize}
+  \item Consenso \textbf{chiaro ed esplicito} al trattamento.
+  \item Accesso \textbf{pi\`{u} facile} ai propri dati.
+  \item Diritto alla \textbf{rettifica}, alla \textbf{cancellazione} e al \textbf{diritto all'oblio} (diritto di essere dimenticati).
+  \item \textbf{Diritto di opposizione}, incluso all'uso per ``profiling''.
+  \item Diritto alla \textbf{portabilit\`{a} dei dati} da un fornitore di servizi a un altro.
+\end{itemize}
+
+\textbf{Privacy by Design e by Default (GDPR)}:
+\begin{itemize}
+  \item La protezione dei dati deve essere \textbf{integrata nei processi di business} fin dall'inizio.
+  \item Le impostazioni della privacy devono essere al \textbf{livello pi\`{u} alto per default}.
+  \item Misure tecniche e procedurali devono garantire compliance \textbf{lungo tutto il ciclo di vita} del trattamento.
+  \item I dati personali vanno trattati \textbf{solo quando strettamente necessario} per ogni scopo specifico.
+\end{itemize}
+
+\begin{definizione}[Privacy by Design -- Ann Cavoukian, 2012]
+Un approccio all'ingegneria dei sistemi che tiene in considerazione la privacy durante tutto il ciclo di vita. Si basa su \textbf{7 princìpi fondamentali}:
+\begin{enumerate}
+  \item \textbf{Proattivit\`{a}, non reattivit\`{a}; prevenzione, non rimedio} -- anticipare e prevenire i rischi per la privacy.
+  \item \textbf{Privacy come impostazione di Default} -- il massimo livello di privacy senza che l'utente faccia nulla.
+  \item \textbf{Privacy integrata nel Design} -- incorporata nell'architettura del sistema, non aggiunta a posteriori.
+  \item \textbf{Completamente funzionale -- positive-sum, non zero-sum} -- privacy e funzionalit\`{a} non si escludono; entrambe possono coesistere.
+  \item \textbf{End-to-end security -- protezione dell'intero ciclo di vita} -- sicurezza per tutta la durata del trattamento.
+  \item \textbf{Visibilit\`{a} e trasparenza -- keep it open} -- tutte le attivit\`{a} sono visibili e verificabili.
+  \item \textbf{Rispetto per la privacy degli utenti -- keep it user-centric} -- l'utente al centro; la sua privacy \`{e} prioritaria.
+\end{enumerate}
+\end{definizione}
+
+\textbf{Responsabilit\`{a} e Accountability (GDPR)}:
+\begin{itemize}
+  \item Il \textbf{titolare del trattamento} (data controller) deve dimostrare compliance con il GDPR implementando misure di Privacy by Design e by Default.
+  \item Gli utenti devono essere chiaramente informati: estensione della raccolta dati, base giuridica del trattamento, durata della conservazione, trasferimenti a terzi o fuori dall'UE, uso di decision-making automatizzato.
+  \item Devono essere forniti i contatti del \textbf{Data Protection Officer} (DPO), figura prevista dal GDPR con competenze esperte in data protection law e pratiche. Il DPO assiste il controller/processor nel monitorare la compliance interna; deve essere competente anche nella gestione dei processi IT, nella \textbf{data security} (inclusi attacchi informatici) e nelle questioni di \textbf{business continuity} relative alla detenzione e al trattamento di dati personali e sensibili. La nomina del DPO \`{e} \textbf{obbligatoria} per autorit\`{a} pubbliche e imprese la cui attivit\`{a} principale consiste nel trattamento regolare o sistematico di dati personali su larga scala.
+  \item Il \textbf{Data Protection Impact Assessment} (DPIA) deve essere condotto quando il trattamento presenta \textbf{rischi specifici} per i diritti e le libert\`{a} degli interessati. Richiede valutazione e mitigazione del rischio; per rischi \textbf{elevati} \`{e} necessaria la \textbf{previa approvazione} dell'autorit\`{a} nazionale di protezione dei dati (DPA).
+  \item Il titolare deve mantenere \textbf{registri delle attivit\`{a} di trattamento} che includano le finalit\`{a}, le categorie di dati coinvolte e i \textbf{termini di conservazione} previsti. Tali registri devono essere messi a disposizione dell'autorit\`{a} di supervisione su richiesta.
+\end{itemize}
+
+\textbf{Sanzioni GDPR}:
+\begin{itemize}
+  \item Prima violazione non intenzionale: \textbf{avviso scritto}.
+  \item \textbf{Audit periodici} di protezione dei dati come misura correttiva.
+  \item Violazione di obblighi: multa fino a \textbf{10 milioni di euro} o \textbf{2\% del fatturato mondiale} annuo dell'esercizio precedente (la cifra maggiore).
+  \item Violazione grave dei princìpi: multa fino a \textbf{20 milioni di euro} o \textbf{4\% del fatturato mondiale} annuo dell'esercizio precedente (la cifra maggiore).
+\end{itemize}
+
+\subsection{Accordi Transnazionali EU--USA}
+
+\begin{enumerate}
+  \item \textbf{Safe Harbor} (sviluppato 1998--2000, in vigore fino al 2015): sviluppato per impedire la divulgazione accidentale o la perdita di informazioni personali di cittadini UE verso organizzazioni negli USA. Le aziende USA potevano auto-certificarsi aderendo a \textbf{7 princìpi}:
+  \begin{enumerate}
+    \item \textbf{Notice}: gli individui devono essere informati che i loro dati vengono raccolti e di come verranno usati.
+    \item \textbf{Choice}: gli individui devono poter \textbf{opt-out} dalla raccolta e dal trasferimento dei dati a terze parti.
+    \item \textbf{Onward Transfer}: i trasferimenti a terze parti possono avvenire solo verso organizzazioni che seguono princìpi adeguati di protezione dei dati.
+    \item \textbf{Security}: devono essere fatti sforzi ragionevoli per prevenire la perdita di dati raccolti.
+    \item \textbf{Data Integrity}: i dati devono essere \textbf{rilevanti e affidabili} per lo scopo per cui sono stati raccolti.
+    \item \textbf{Access}: gli individui devono poter \textbf{accedere, correggere e cancellare} le informazioni detenute su di loro.
+    \item \textbf{Enforcement}: devono esistere \textbf{meccanismi efficaci} per far rispettare queste regole.
+  \end{enumerate}
+  La Commissione Europea ha riconosciuto nel 2000 che i princìpi USA erano conformi alla Direttiva UE (\emph{Safe Harbour Decision}). Nel 2015, a seguito di un reclamo di un cliente il cui dato Facebook era insufficientemente protetto, la CJEU ha dichiarato invalida la Safe Harbour Decision (\textbf{caso Schrems vs. Facebook}), aprendo trattative per un nuovo accordo.
+
+  \item \textbf{EU-US Privacy Shield} (adottato 12 luglio 2016, in vigore fino al luglio 2020): sostitu\`{i} Safe Harbor; framework per gli scambi transatlantici di dati personali per scopi commerciali. Consentiva alle aziende USA di ricevere dati da entit\`{a} UE in conformit\`{a} alle leggi europee. Il Presidente USA Donald Trump firm\`{o} un Executive Order (``Enhancing Public Safety'') che stabiliva che le protezioni sulla privacy USA \textbf{non si estendevano ai non-cittadini o residenti USA}. Nel \textbf{luglio 2020}, la CJEU ha dichiarato invalido il Privacy Shield perch\'{e} non garantiva adeguata protezione ai cittadini UE contro lo \textbf{spionaggio governativo USA}; i trasferimenti effettuati su questa base sono stati dichiarati \textbf{illegali}.
+  \item \textbf{EU-US Data Privacy Framework} (2023--presente): il quadro attualmente in vigore.
+\end{enumerate}
+
+\subsection{AI Act (Agosto 2024)}
+
+\begin{definizione}[AI Act]
+La legge sull'IA (in vigore dal 1$^{\circ}$ agosto 2024 nell'UE) mira a garantire che i sistemi di IA siano sicuri, trasparenti e rispettosi dei diritti fondamentali. Classifica i sistemi di IA in 4 livelli di rischio:
+\begin{enumerate}
+  \item \textbf{Rischio inaccettabile -- Vietati} (Art. 5): sistemi che rappresentano una chiara minaccia alla sicurezza o ai diritti fondamentali: manipolazione subliminale del comportamento, sfruttamento di vulnerabilit\`{a} di gruppi specifici, social scoring governativo, riconoscimento facciale di massa, AI con dark-pattern.
+  \item \textbf{Alto rischio -- Conformity Assessment} (Art. 6 e ss.): sistemi in aree critiche (sanit\`{a}, istruzione, occupazione, giustizia, immigrazione, forze dell'ordine, infrastrutture essenziali). Soggetti a: valutazione rigorosa dei rischi, governance dei dati, supervisione umana, monitoraggio continuo.
+  \item \textbf{Rischio limitato -- Trasparenza} (Art. 52): sistemi come chatbot, deepfake, sistemi di riconoscimento delle emozioni. Obblighi di trasparenza: i provider e deployer devono informare gli utenti che stanno interagendo con un sistema IA.
+  \item \textbf{Rischio minimo -- Codice di condotta} (Art. 69): la maggior parte dei sistemi IA (videogiochi, filtri antispam). Essenzialmente non regolamentati, per favorire l'innovazione.
+\end{enumerate}
+\end{definizione}
+
+\textbf{AI Act -- General Purpose AI (GPAI)}: tutti i provider di modelli GPAI devono: fornire documentazione tecnica e istruzioni d'uso; rispettare la Direttiva Copyright UE; pubblicare un sommario dei dati di training; condurre valutazioni e test avversariali per modelli con rischi sistemici; garantire robuste protezioni di cybersecurity.
+
+\textbf{Obblighi per Provider e Deployer di AI ad alto rischio}:
+\begin{itemize}
+  \item \textbf{Provider (sviluppatori)}: devono implementare un sistema di gestione del rischio, garantire dataset di alta qualit\`{a}, mantenere documentazione tecnica dettagliata, progettare sistemi con adeguati livelli di accuratezza, robustezza e cybersecurity.
+  \item \textbf{Deployer (utenti)}: devono usare i sistemi come previsto, monitorarne le prestazioni e garantire la \textbf{supervisione umana} per prevenire e mitigare i rischi.
+\end{itemize}
+
+\textbf{AI Act -- Governance e Enforcement}: l'AI Act istituisce il \textbf{European Artificial Intelligence Board}, che supervisiona l'implementazione e garantisce un'applicazione coerente negli Stati Membri. Le autorit\`{a} nazionali competenti supervisionano e fanno rispettare la compliance nelle rispettive giurisdizioni.
+
+\subsection{Digital Services Act (DSA, 2022)}
+
+Il DSA \`{e} un regolamento UE volto a creare uno \textbf{spazio digitale pi\`{u} sicuro}, dove i diritti fondamentali degli utenti siano protetti e venga stabilito un livello equo per le imprese. Il principio chiave \`{e}: \emph{``ci\`{o} che \`{e} illegale offline deve essere illegale anche online.''}
+
+Il codice contiene \textbf{44 impegni e 128 misure} che coprono quattro aree principali:
+\begin{itemize}
+  \item \textbf{Demonetizzazione}: riduzione degli incentivi finanziari per chi diffonde disinformazione.
+  \item \textbf{Trasparenza della pubblicit\`{a} politica}: etichettatura pi\`{u} efficiente per permettere agli utenti di riconoscere la pubblicit\`{a} politica.
+  \item \textbf{Integrit\`{a} dei servizi}: riduzione di account fake, amplificazione tramite bot, deepfake malevoli e altri comportamenti manipolatori per diffondere disinformazione.
+  \item \textbf{Fact-checking}: strumenti per aiutare gli utenti a identificare la disinformazione; accesso pi\`{u} ampio ai dati; copertura fact-checking in tutta l'UE.
+\end{itemize}
+
+Il DSA \textbf{non richiede} la rimozione di contenuti legali ma dannosi (come la disinformazione in senso lato), ma si concentra sui contenuti \textbf{illegali} (incitamento all'odio, merci contraffatte, pornografia infantile). I meccanismi di segnalazione (``\textbf{Notice and Action}'') impongono alle piattaforme di fornire strumenti facili per segnalare contenuti illegali.
+
+\textbf{Trasparenza}: le piattaforme devono spiegare agli utenti perch\'{e} un contenuto \`{e} stato rimosso o limitato e offrire la possibilit\`{a} di appello. Include: trasparenza sugli \textbf{algoritmi di raccomandazione}, \textbf{trasparenza pubblicitaria} e \textbf{divieto di profilazione}: la pubblicit\`{a} mirata basata su dati sensibili (orientamento sessuale, religione, etnia) o rivolta a minori \`{e} \textbf{vietata}.
+
+\textbf{Protezione dei minori}: il DSA impone misure rafforzate per proteggere i minori online, garantendo alti livelli di privacy, sicurezza e riduzione dell'esposizione a contenuti inappropriati.
+
+\textbf{Sanzioni}: ogni Stato Membro nomina un \textbf{Coordinatore Nazionale} per supervisionare la compliance. In caso di inadempienza, la Commissione Europea pu\`{o} imporre sanzioni fino al \textbf{6\% del fatturato globale annuo} delle piattaforme. Il DSA, insieme al \textbf{Digital Markets Act (DMA)}, costituisce la pietra angolare della strategia europea per un mercato digitale unico pi\`{u} sicuro e giusto.
+
+\subsection{Data Act (settembre 2025)}
+
+Il \textbf{EU Data Act}, in vigore da settembre 2025, garantisce a utenti (individui e imprese) un \textbf{maggiore controllo sui dati generati da dispositivi connessi (IoT)} e servizi. I produttori sono obbligati a rendere questi dati accessibili agli utenti, abilitando \textbf{portabilit\`{a} dei dati}, cambio di cloud provider e protezione da termini contrattuali iniqui.
+
+Aspetti chiave:
+\begin{itemize}
+  \item \textbf{User Data Access \& Control}: gli utenti possono accedere e condividere con terze parti i dati generati da prodotti (smart home, auto, macchinari industriali).
+  \item \textbf{Fairness in Data Sharing}: restringe i produttori dall'imporre termini contrattuali iniqui che blocchino gli utenti in servizi proprietari.
+  \item \textbf{Cloud Switching}: facilita lo spostamento di dati e applicazioni tra diversi cloud provider senza costi aggiuntivi.
+  \item \textbf{Public Sector Access}: gli enti pubblici possono richiedere dati da aziende private in situazioni eccezionali (emergenze pubbliche, compiti specifici).
+  \item \textbf{International Transfers}: introduce regole per prevenire l'accesso illecito di governi di paesi terzi ai dati non personali.
+\end{itemize}
+
+\subsection{Digital Omnibus (proposta novembre 2025)}
+
+Il \textbf{Digital Omnibus} \`{e} un pacchetto di proposte presentato dalla Commissione Europea il 19 novembre 2025, volto a \textbf{semplificare il quadro normativo digitale} dell'UE (GDPR, AI Act, NIS2 -- sicurezza delle reti in 18 settori critici: energia, trasporti, sanit\`{a}, finanza, acqua, infrastrutture digitali, servizi postali, pubblica amministrazione, aerospazio). Obiettivo primario: \textbf{ridurre la burocrazia} per le imprese, specialmente le PMI, mantenendo le protezioni dei cittadini.
+
+Le proposte includono:
+\begin{itemize}
+  \item Chiarimento dell'applicazione del GDPR riguardo a \textbf{dati personali e interesse legittimo}.
+  \item Semplificazione delle \textbf{normative sui cookie}.
+  \item Rendere le regole sull'IA pi\`{u} favorevoli all'innovazione con meccanismi come il \textbf{stop-the-clock}.
+  \item Introduzione di un \textbf{Single-Entry Point} per la segnalazione di incidenti di cybersecurity.
+  \item Estensione del periodo di notifica di data breach a \textbf{90 ore}.
+\end{itemize}
+
+\begin{nota}[Omnibus -- Rilassamento della definizione di dato personale]
+Una proposta chiave riguarda la ridefinizione di ``dato personale'': per determinare se una persona fisica \`{e} identificabile, \`{e} appropriato considerare \textbf{tutti i mezzi che ragionevolmente potrebbero essere usati} per identificarla. L'esistenza di informazioni aggiuntive che abilitano l'identificazione \textbf{non implica che i dati pseudonimizzati siano dati personali per tutti e in ogni caso}. In particolare, le informazioni \textbf{non devono essere considerate dati personali per un'entit\`{a} se quell'entit\`{a} non dispone dei mezzi per identificare la persona fisica}. Questo rappresenta una \emph{rilassazione} rispetto alla posizione GDPR corrente, potenzialmente favorendo la ricerca e riducendo i costi di compliance.
+
+Esempio collegato: il trattamento di dati personali necessario a \textbf{identificare e eliminare distorsioni nei dataset} e proteggere i soggetti dalla discriminazione persegue un \textbf{interesse legittimo} ai sensi dell'Art. 6(1)(f) del GDPR, senza necessit\`{a} di consenso esplicito, purch\'{e} gli interessi fondamentali dell'interessato non prevalgano.
+
+Esempio AI/ML (pag. 12 Omnibus): lo sviluppo di certi sistemi IA pu\`{o} richiedere la raccolta di grandi quantit\`{a} di dati, incluse \textbf{categorie speciali} (dati sensibili). Per non ostacolare lo sviluppo dell'IA, l'Omnibus propone di consentire un'\textbf{eccezione al divieto di trattamento} di dati sensibili, a condizione che il controller abbia adottato misure tecniche e organizzative adeguate per \textbf{prevenire il trattamento}, abbia adottato misure per l'intero ciclo di vita e \textbf{rimuova effettivamente} tali dati una volta identificati. Se la rimozione richiedesse uno sforzo sproporzionato (ad esempio, richiederebbe la re-ingegnerizzazione del sistema), il controller deve \textbf{proteggere efficacemente} tali dati in modo che non vengano usati per generare output, divulgati o resi disponibili a terzi.
+\end{nota}
+
+%=============================================================================
+\section{Big Data e Minacce alla Privacy}
+%=============================================================================
+
+\subsection{Il Problema dei Big Data}
+
+\begin{definizione}[Big Data]
+Il termine Big Data si riferisce all'acquisizione e all'analisi di enormi collezioni di informazioni, talmente grandi che fino a poco tempo fa la tecnologia per analizzarle non esisteva.
+\end{definizione}
+
+Il fenomeno della \textbf{datafication}: tutto viene convertito in dati (carte di credito, registri di chiamate, dati sanitari, email, social, DNA, etc.). Questo crea un trade-off: pi\`{u} privacy $\Leftrightarrow$ meno comodit\`{a}.
+
+\begin{definizione}[Big Data -- caratteristiche chiave]
+I Big Data sono caratterizzati da:
+\begin{itemize}
+  \item Grandi quantit\`{a} di dati \emph{non strutturati} e ``disordinati'' (messy data).
+  \item Evidenziano pattern altrimenti non rilevabili.
+  \item Raccolta indiscriminata: i dati vengono collezionati senza un obiettivo preciso.
+  \item Conservazione indefinita per utilizzi futuri imprevedibili.
+\end{itemize}
+\end{definizione}
+
+\textbf{Legge delle Conseguenze Inattese}: tecnologie create per uno scopo vengono poi usate per scopi completamente diversi, con implicazioni per la privacy impreviste al momento della creazione.
+\begin{itemize}
+  \item Il \textbf{Social Security Number} (SSN) fu creato per la previdenza sociale, ma ora \`{e} usato come identificatore universale (studente, banca, medico, etc.).
+  \item I \textbf{telefoni cellulari} furono pensati per le comunicazioni vocali, ora sono usati per pagamenti, tracciamento GPS, autenticazione.
+  \item I \textbf{laser} furono inventati per la fisica, ora leggono DVD e codici a barre.
+  \item Il \textbf{DNA}: ``Per cosa verr\`{a} usato il DNA?'' -- oggi \`{e} usato per prova forense, diagnosi genetica, genealogia, ma anche per discriminazione assicurativa.
+\end{itemize}
+
+\subsection{Deanonimizzazione}
+
+La principale minaccia dei Big Data \`{e} la possibilit\`{a} di \textbf{deanonimizzare} dati apparentemente anonimi combinandoli con altri dataset pubblicamente disponibili.
+
+\begin{esempio}[Netflix Prize (2006)]
+Netflix pubblica un dataset anonimizzato con 100 milioni di valutazioni di film (da circa 500.000 utenti) per una data challenge. Narayanan e Shmatikov mostrano che incrociando il dataset con IMDb (ratings pubblici), conoscendo solo 6-8 valutazioni di film con date approssimate, \`{e} possibile re-identificare gli utenti con probabilit\`{a} del 90\%. Netflix cancel\`{o} la seconda fase della sfida a causa di questo rischio. \textbf{Lezione}: non \`{e} sempre possibile anonimizzare i dati semplicemente rimuovendo gli identificatori; gli esseri umani sono prevedibili e i pattern comportamentali permettono la re-identificazione.
+\end{esempio}
+
+\begin{esempio}[AOL Search Release (2006)]
+AOL pubblica 650.000 query di ricerca di circa 650.000 utenti su un periodo di 3 mesi (agosto 2006), ``anonimizzate'' sostituendo i nomi con ID numerici. Il dataset viene rimosso dopo soli 3 giorni ma era gi\`{a} stato scaricato. Il New York Times riesce a identificare individui specifici: ad esempio, l'utente \textbf{\#4417749} viene identificato come \textbf{Thelma Arnold}, una vedova 62enne di Lilburn, Georgia, con 3 cani -- le sue query contenevano ``landscapers in Lilburn, Ga'', ``homes sold in shadow lake subdivision gwinnett county georgia'', etc.
+\end{esempio}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Dataset} & \textbf{Dettagli} & \textbf{Risultato} \\
+\midrule
+AOL queries & 650K utenti, 3 mesi & Re-ID da NY Times \\
+Chicago homicide DB & database criminali & re-identificati \\
+Netflix Prize & 500K utenti, 100M valutazioni & Re-ID con IMDb \\
+MA medical records & Sweeney vs. Gov. Weld & ZIP+sesso+DoB \\
+Southern Illinoisan & vs. Dept. of Public Health & re-ID pazienti \\
+Canadian Adverse Events & database medici & re-ID pazienti \\
+\bottomrule
+\end{tabular}
+\caption{Esempi di tentativi di re-identificazione su dataset ``anonimi''}
+\end{table}
+
+\textbf{Cause principali dei data breach} (IBM/Ponemon 2019):
+\begin{itemize}
+  \item Credenziali compromesse: 19\%
+  \item Cloud configurato in modo errato: 19\%
+  \item Vulnerabilit\`{a} software: 16\%
+\end{itemize}
+\textbf{Costo medio in Italia} (IBM/Ponemon 2019): 3,1 milioni di euro per violazione. \textbf{Costo per i cittadini}: tra 1.000 e 3.000 USD/anno in danni da furto di identit\`{a} e uso improprio dei dati personali.
+
+\textbf{Caso INPS (marzo--aprile 2020)}: durante la pandemia, il portale INPS per richiedere il bonus di 600 euro rese visibili i dati di altri utenti a causa di un data breach; il sito fu temporaneamente chiuso.
+
+\begin{esempio}[Cambridge Analytica / Facebook (2018)]
+Cambridge Analytica raccoglie dati di circa 87 milioni di utenti Facebook attraverso un'app-quiz (thisisyourdigitallife) che, con il consenso di circa 270.000 utenti, accedeva anche ai dati degli amici. Questi dati vengono usati per costruire profili psicologici e mirare messaggi politici personalizzati, con l'obiettivo di influenzare le elezioni presidenziali USA del 2016 e il referendum Brexit. Dimostrazione che i dati raccolti per una finalit\`{a} vengono usati per un'altra (violazione del principio di scopo legittimo).
+\end{esempio}
+
+\begin{esempio}[Studio PNAS 2013 -- Facebook Likes]
+Kosinski et al. mostrano che analizzando i ``Like'' su Facebook con SVD (Singular Value Decomposition) + regressione logistica, si pu\`{o} predire con alta accuratezza: orientamento sessuale, etnia, opinioni politiche, religione, stato relazionale, uso di droghe, e persino la personalit\`{a} secondo il modello Big Five. I Like apparentemente innocui (musica, film) possono rivelare informazioni altamente sensibili (\textbf{proxy attributes}).
+
+Valori AUC (Area Under the Curve) ottenuti:
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Attributo predetto} & \textbf{AUC} \\
+\midrule
+Genere & 0.93 \\
+Omosessualit\`{a} maschile & 0.88 \\
+Caucasico vs Afroamericano & 0.95 \\
+Democratico vs Repubblicano & 0.85 \\
+Cristiano vs Musulmano & 0.82 \\
+Omosessualit\`{a} femminile & 0.75 \\
+Single vs In relazione & 0.67 \\
+Genitori insieme a 21 anni & 0.60 \\
+Fumatore & 0.73 \\
+Consumo di alcol & 0.70 \\
+Uso di droghe & 0.65 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{esempio}
+
+\begin{esempio}[Sweeney -- 87\% della Popolazione USA]
+Latanya Sweeney (2001) dimostra che l'\textbf{87\% della popolazione USA} \`{e} unicamente identificabile dalla combinazione di soli tre attributi: \{ZIP code, sesso, data di nascita completa\}. Questi attributi sembrano innocui individualmente ma combinati formano un quasi-identificatore univoco.
+\end{esempio}
+
+%=============================================================================
+\section{Sistemi Informativi e Privacy}
+%=============================================================================
+
+\begin{definizione}[Sistema Informativo]
+Un \textbf{sistema informativo} \`{e} un sistema formale, sociotecnico e organizzativo progettato per \textbf{raccogliere}, \textbf{elaborare}, \textbf{memorizzare} e \textbf{distribuire} informazioni usate da un'organizzazione.
+
+Un \textbf{computer information system} \`{e} un insieme di componenti software e hardware che lavorano insieme per: raccogliere/acquisire, memorizzare, elaborare e distribuire \textbf{informazioni} con l'obiettivo di supportare le \textbf{attivit\`{a}} (automazione) e le \textbf{decisioni} (analisi, controllo, coordinamento, reporting) dell'organizzazione.
+\end{definizione}
+
+I sistemi informativi gestiscono dati di diversi tipi: dati di identificazione personale, contenuti generati dagli utenti, email, dati transazionali, log di processo, dati applicativi, ecc. Questi dati appartengono a dipendenti, clienti/utenti, fornitori, ecc.
+
+Per proteggere la privacy nei sistemi informativi si agisce a diversi livelli: formazione di dipendenti e manager, rafforzamento della cybersecurity, protezione delle infrastrutture di rete e server, restrizione dell'accesso fisico alle aree sensibili, utilizzo di VPN per il lavoro remoto, aggiornamento del software.
+
+\begin{definizione}[IS e GDPR -- Requisiti]
+Un sistema informativo conforme al GDPR deve garantire:
+\begin{itemize}
+  \item \textbf{Autorizzazione basata su attributi}: meccanismo di autorizzazione dichiarativo e completamente tracciabile per l'accesso a tutti i dati, in circostanze predefinite.
+  \item \textbf{Anonimizzazione/Pseudonimizzazione}: meccanismi sicuri per la pseudonimizzazione o anonimizzazione delle informazioni.
+  \item \textbf{Tracciabilit\`{a}}: registro di chi ha creato, modificato o cancellato informazioni, quando e per quale scopo.
+  \item \textbf{Cancellazione dei dati}: meccanismi sicuri per garantire il ``diritto all'oblio'' senza compromettere l'affidabilit\`{a} del sistema.
+\end{itemize}
+\end{definizione}
+
+\begin{esempio}[IS e GDPR -- Alice chiede un mutuo]
+Alice richiede un mutuo e si rivolge a un consulente indipendente. Il consulente raccoglie informazioni personali di Alice, richiede preventivi a banche. Domande rilevanti: quali parti hanno memorizzato dati personali di Alice? Come pu\`{o} Alice sapere dove e da chi sono conservati? Tutte le parti rispettano il GDPR? Come pu\`{o} Alice far cancellare i suoi dati?
+\end{esempio}
+
+\subsection{Controllo degli Accessi}
+
+\begin{definizione}[Access Control]
+L'\textbf{access control} consiste nel limitare l'accesso alle risorse informatiche, specialmente in ambienti multi-utente con condivisione di dati. Esempio: un paziente pu\`{o} richiedere che le sue cartelle cliniche elettroniche siano accessibili solo a un medico registrato in una specifica unit\`{a} di uno specifico ospedale; ma in emergenza, qualsiasi medico deve poter accedere. Essere ``un medico'' non \`{e} sufficiente per garantire l'accesso in condizioni normali.
+\end{definizione}
+
+\subsubsection{RBAC -- Role Based Access Control}
+
+\begin{definizione}[RBAC]
+Formalizzato da NIST nel 1992. Adatto per aziende con oltre 500 dipendenti. Gestisce l'accesso in base al \emph{ruolo} invece che all'identit\`{a} individuale. Il ruolo fornisce un livello extra di astrazione (collezione di permessi/diritti). Ogni ruolo pu\`{o} essere assegnato a uno o centinaia di utenti, semplificando la gestione.
+
+Funzionamento: gli amministratori assegnano permessi a ogni ruolo; i ruoli vengono assegnati agli utenti; gli utenti possono avere pi\`{u} ruoli (ognuno con diversi diritti di accesso); gli amministratori aggiornano l'accesso semplicemente assegnando/rimuovendo utenti dai ruoli appropriati.
+
+\textbf{Limiti di RBAC}: fornisce configurazioni di accesso grossolane (\emph{coarse-grained}), predefinite e statiche; non fornisce un meccanismo flessibile per esprimere i requisiti di clienti/utenti e istituzioni; non cattura lo \emph{scopo} per cui i dati vengono rilasciati. Oggi, definire le policy di autorizzazione basandosi solo sul ruolo non \`{e} sufficiente: serve anche il \emph{contesto} (utente giusto, al momento giusto, nel luogo giusto, nel rispetto della compliance).
+\end{definizione}
+
+\subsubsection{ABAC -- Attribute Based Access Control}
+
+\begin{definizione}[ABAC]
+Evoluzione di RBAC. Le decisioni autorizzative possono basarsi su: ruolo, persone/oggetti collegati all'utente, necessit\`{a} dell'accesso, luogo, tempo, modalit\`{a} di accesso.
+
+Caratteristiche: approccio \emph{policy driven}; usa attributi di \textbf{soggetto} (subject), \textbf{oggetto} (resource) e \textbf{ambiente} (environment) invece dei soli ruoli; rimuove la necessit\`{a} di registrazione esplicita nel sistema. Le policy espresse con attributi permettono autorizzazioni più ricche e contestuali.
+
+\textbf{Struttura di una policy ABAC}: ogni policy si legge come una frase con 4 componenti grammaticali:
+\begin{itemize}
+  \item un \textbf{soggetto} (chi richiede l'accesso; attributi: ruoli, gruppi, dipartimento, livello manageriale, etc.)
+  \item un'\textbf{azione} (cosa vuole fare: ``read'', ``write''; in online banking: tipo=deposito, importo=1000)
+  \item una \textbf{risorsa} (a cosa accede; attributi: classificazione, proprietario, etc.)
+  \item l'\textbf{ambiente} (contesto: ora, luogo, dispositivo, etc.)
+\end{itemize}
+
+\begin{esempio}[Policy ABAC in linguaggio naturale]
+``\emph{I medici possono \underline{visualizzare} le cartelle cliniche di \textbf{qualsiasi paziente} nel \textbf{loro reparto} e \underline{aggiornare} \textbf{qualsiasi cartella} che sia \textbf{loro direttamente assegnata}, durante l'\textbf{orario di lavoro} e da un \textbf{dispositivo approvato}.}''
+
+Aggiungendo contesto, l'ABAC pu\`{o} anche esprimere vincoli come: un utente pu\`{o} creare ordini di acquisto e approvarli, ma non pu\`{o} approvare i propri ordini (separazione dei compiti).
+\end{esempio}
+
+\textbf{Authorization Engine} (componenti):
+\begin{itemize}
+  \item \textbf{PEP} (Policy Enforcement Point): applica le decisioni di accesso.
+  \item \textbf{PDP} (Policy Decision Point): valuta le policy e decide se permettere o negare.
+  \item \textbf{PAP} (Policy Administration Point): gestisce le policy.
+  \item \textbf{PIP} (Policy Information Point): recupera attributi aggiuntivi.
+\end{itemize}
+
+Le policy sono espresse in \textbf{XACML} (eXtensible Access Control Markup Language): standard XML per ABAC. Algoritmi di combinazione: \emph{permit-overrides} (un Permit \`{e} sufficiente) e \emph{deny-overrides} (un Deny prevale).
+\end{definizione}
+
+\begin{esempio}[XACML -- Healthcare Data Store]
+Un data store riceve dati clinici da vari fornitori sanitari. I dati devono essere processati secondo le istruzioni del paziente e le regole legali prima di essere distribuiti a ricercatori autorizzati. Le policy coinvolgono quattro soggetti: \emph{Institute 1}, \emph{Institute 2}, \emph{Patient 1} e \emph{Patient 2}.
+
+\textbf{Policy di Institute 1}: consente il rilascio di dati a livello di paziente a \textbf{ricercatori} come dataset limitati, purch\'{e} i richiedenti possano attestare la \textbf{conformit\`{a} GDPR}.
+
+\noindent\textbf{Frammento XACML (Institute 1)}:
+\begin{verbatim}
+<PolicySet policy-combining-algorithm="permit-overrides">
+  <Policy rule-combining-algorithm="deny-overrides">
+    <Rule RuleId="I1R1" Effect="Permit">
+      <Condition>
+        <!-- Researcher con GDPR-compliance -->
+        :access-subject :Role :Researcher
+        :access-subject :GDPRComp :Yes
+      </Condition>
+    </Rule>
+  </Policy>
+</PolicySet>
+\end{verbatim}
+
+\textbf{Policy di Institute 2}: consente solo il rilascio di \textbf{statistiche aggregate} (media, conteggio); \textbf{nessun dato individuale}. Non \`{e} richiesta la GDPR compliance ai riceventi, ma le statistiche basate su meno di 10 pazienti non sono ammesse:
+\begin{verbatim}
+<Rule RuleId="I2R1" Effect="Permit">
+  <Condition>
+    <!-- AggregateHealthData e PatientCount > 10 -->
+    :resource :Type :AggregateHealthData
+    :resource :PatientCount > 10
+  </Condition>
+</Rule>
+\end{verbatim}
+
+\textbf{Policy di Patient 1}: ex-tossicodipendente, non vuole condividere informazioni sul suo passato di uso di droghe.
+\begin{verbatim}
+<Rule RuleId="P1R1" Effect="Permit">
+  <Condition>
+    <!-- Nega contenuto Drug-usage per Patient1 -->
+    :resource :Resource-owner :Patient1
+    string-not-equal(:resource :Content :Drug-usage)
+  </Condition>
+</Rule>
+\end{verbatim}
+
+\textbf{Policy di Patient 2}: politico molto noto che approva solo il rilascio di dati di trattamento/visita con granularit\`{a} a livello annuale. La regola P2R2 introduce un'\textbf{obligation} di riscrivere la data (\texttt{rewriteDate}).
+
+\textbf{Richiesta di accesso di esempio (XACML Request REQ1)}: la ricercatrice Carol (\texttt{:Role :Researcher}, \texttt{:GDPRComp :Yes}) richiede il rilascio di dati sanitari (HealthData) relativi a Drug-usage, Symptoms, Disease, Duration e Date; filtro: Disease=HepC, Duration=Monthly, nell'arco del primo anno (\texttt{resource.Date+365 > CurrentDate}). Scopo: \texttt{:Purpose-id :DrugEffect}.
+
+\textbf{Elaborazione della richiesta (Policy Evaluation)}:
+\begin{itemize}
+  \item \textbf{PolicySetInstitute1}: il Target corrisponde (Researcher, HealthData, Release). La Policy1 si applica; la regola I1R1 verifica \texttt{GDPRComp=Yes} $\to$ soddisfatta $\to$ \textbf{Permit}. Il ricercatore ottiene accesso ai dati di Institute 1.
+  \item \textbf{PolicySetInstitute2}: il Target corrisponde, si applica Policy2. Il Target di Policy2 richiede \texttt{AggregateHealthData}, ma la richiesta \`{e} per \texttt{HealthData} individuale $\to$ Target non soddisfatto $\to$ \textbf{inapplicabile}. Nessuna policy di Institute 2 si applica.
+  \item \textbf{PolicySetPatient1}: il Target corrisponde, si applica PP1. La regola P1R1 verifica che il contenuto richiesto non sia \texttt{Drug-usage} (\texttt{string-not-equal}), ma la richiesta include Drug-usage $\to$ condizione non soddisfatta $\to$ nessuna policy di Patient 1 soddisfa la richiesta. L'accesso ai dati di drug-usage \`{e} \textbf{negato}.
+  \item \textbf{PolicySetPatient2}: il Target corrisponde, si applica PP2. P2R1 e P2R2 verificano che \texttt{Resource-owner=Patient2} e \texttt{Duration=Yearly} $\to$ entrambe Permit. P2R3 \`{e} la regola di default $\to$ Deny. Conflitto P2R2/P2R3, ma l'algoritmo di PP2 \`{e} \textbf{permit-overrides} $\to$ \textbf{Permit}. \emph{Obligation}: riscrivere le date con granularit\`{a} annuale (\texttt{rewriteDate}).
+\end{itemize}
+
+\textbf{Risultato finale}: Carol ottiene accesso ai record di Patient 2 presenti in Institute 1, con le date riscritte a livello annuale. I dati di drug-usage non sono accessibili (bloccati dalla policy di Patient 1).
+\end{esempio}
+
+\subsection{Pseudoanonimizzazione con Crittografia}
+
+\begin{definizione}[Pseudoanonimizzazione]
+Una procedura di data management e de-identificazione per cui informazioni identificabili in un record sono rimpiazzate da uno o pi\`{u} identificatori artificiali (pseudonimi). Un singolo pseudonimo per ogni campo sostituito rende il record meno identificabile pur restando adatto ad analisi e processing.
+
+I dati pseudonimizzati \textbf{possono essere ripristinati} allo stato originale con l'aggiunta di informazioni aggiuntive (es. la tavola di corrispondenza pseudonimo$\leftrightarrow$identit\`{a} reale), permettendo la re-identificazione.
+
+I dati \textbf{anonimizzati} non possono \emph{mai} essere ripristinati al loro stato originale: l'anonimizzazione \`{e} irreversibile.
+\end{definizione}
+
+\begin{definizione}[Crittografia su Colonne]
+Tecnica per proteggere dati sensibili nei database senza rivelare la chiave all'engine del database. Separa chi possiede i dati da chi li gestisce.
+\begin{itemize}
+  \item \textbf{Column encryption keys}: per cifrare il dato.
+  \item \textbf{Column master keys}: per cifrare le column encryption keys (conservate in repository esterno).
+\end{itemize}
+Il DBMS conserva solo i valori cifrati delle column encryption keys e la posizione delle column master keys (mai in chiaro). La configurazione di cifratura per ogni colonna \`{e} nel database metadata.
+
+\textbf{Tipi di cifratura}:
+\begin{itemize}
+  \item \textbf{Deterministica}: genera sempre lo stesso valore cifrato per lo stesso testo in chiaro $\Rightarrow$ supporta point lookup, equality join, grouping, indexing. Svantaggio: un attaccante pu\`{o} inferire informazioni esaminando pattern (es. se i possibili valori sono pochi come True/False).
+  \item \textbf{Randomizzata}: cifra i dati in modo meno prevedibile $\Rightarrow$ pi\`{u} sicura, ma impedisce ricerche, grouping, indexing e join su colonne cifrate.
+\end{itemize}
+
+\textbf{RSA} (Rivest-Shamir-Adleman): uno dei pi\`{u} antichi sistemi crittografici a chiave pubblica. L'utente pubblica una chiave pubblica basata su due grandi numeri primi (tenuti segreti) e un valore ausiliario. Chiunque pu\`{o} cifrare con la chiave pubblica; solo il possessore della chiave privata pu\`{o} decifrare. \textbf{Padding}: aggiunta di dati all'inizio, alla fine o in mezzo al messaggio prima della cifratura, per oscurare pattern prevedibili (es. molti messaggi terminano nello stesso modo). \textbf{OAEP} (Optimal Asymmetric Encryption Padding) \`{e} uno schema di padding spesso usato con RSA.
+
+\textbf{TDE (Transparent Data Encryption -- Oracle)}: usa \textbf{una singola chiave di cifratura} per tutte le colonne cifrate. Le chiavi delle colonne sono cifrate con la \textbf{master key} del server e conservate in una tabella del dizionario del database. Nessuna chiave \`{e} conservata in chiaro. La master key \`{e} conservata in un \textbf{modulo di sicurezza esterno} (Oracle Wallet), accessibile solo all'amministratore della sicurezza; il Wallet genera anche le chiavi e gestisce cifratura/decifratura. Questo separa le responsabilit\`{a} tra amministratori del database e amministratori della sicurezza: \textbf{nessun singolo amministratore ha accesso completo a tutti i dati}.
+
+\textbf{Salt}: stringa casuale aggiunta ai dati \emph{prima} della cifratura, che fa apparire lo stesso testo in chiaro diverso una volta cifrato. Rimuove la possibilit\`{a} di attacchi per pattern-matching sul testo cifrato. \textbf{Attenzione}: se si indicizza una colonna cifrata, \emph{occorre disabilitare il Salt} (\texttt{ENCRYPT NO SALT}), perch\'{e} valori identici devono produrre lo stesso testo cifrato per consentire ricerche.
+\end{definizione}
+
+\begin{esempio}[Always Encrypted -- Microsoft SQL Server]
+\begin{verbatim}
+CREATE COLUMN MASTER KEY MyCMK
+WITH (KEY_STORE_PROVIDER_NAME = 'MSSQL_CERTIFICATE_STORE',
+      KEY_PATH = 'path');
+
+CREATE COLUMN ENCRYPTION KEY MyCEK
+WITH VALUES (COLUMN_MASTER_KEY = MyCMK,
+             ALGORITHM = 'RSA_OAEP',
+             ENCRYPTED_VALUE = encryptedkeyvalue);
+
+CREATE TABLE Customers (
+  CustName varchar(60)
+    ENCRYPTED WITH (COLUMN_ENCRYPTION_KEY = MyCEK,
+                    ENCRYPTION_TYPE = RANDOMIZED,
+                    ALGORITHM = 'AEAD_AES_256_CBC_HMAC_SHA_256'),
+  SSN varchar(11)
+    ENCRYPTED WITH (COLUMN_ENCRYPTION_KEY = MyCEK,
+                    ENCRYPTION_TYPE = DETERMINISTIC,
+                    ALGORITHM = 'AEAD_AES_256_CBC_HMAC_SHA_256'),
+  Age int NULL
+);
+\end{verbatim}
+\texttt{CustName} usa cifratura \textbf{randomizzata} (nessuna ricerca); \texttt{SSN} usa cifratura \textbf{deterministica} (permette ricerche per uguaglianza). La Column Master Key \`{e} protetta da RSA-OAEP e conservata in un key store esterno.
+\end{esempio}
+
+\subsection{Auditing}
+
+\begin{definizione}[Auditing]
+Processo di esaminazione e validazione di documenti, dati, processi, procedure e sistemi. Assicura che il sistema funzioni e sia conforme a policy, regolamenti e leggi. Viene eseguito dopo che il prodotto è stato messo in produzione.
+
+\textbf{Terminologia}:
+\begin{itemize}
+  \item \textbf{Audit log}: documento che contiene in ordine cronologico tutte le attività oggetto di audit.
+  \item \textbf{Auditor}: persona autorizzata a effettuare un audit.
+  \item \textbf{Audit procedure}: insieme di istruzioni per il processo di auditing.
+  \item \textbf{Audit report}: documento che contiene i risultati dell'audit.
+  \item \textbf{Audit trail}: registro cronologico di modifiche a documenti, dati, attività di sistema o eventi operativi.
+  \item \textbf{Data audit}: registro cronologico delle modifiche ai dati, conservato in log file o tabella di database.
+  \item \textbf{Database auditing}: registro cronologico delle attività sul database.
+\end{itemize}
+
+\textbf{Obiettivi dell'audit}: regole di business, controlli di sistema, regolamenti governativi, policy di sicurezza.
+
+\textbf{Obiettivi specifici del database auditing}: integrità dei dati, utenti e ruoli delle applicazioni, riservatezza dei dati, controllo degli accessi, modifiche ai dati, modifiche alla struttura dati, disponibilità del database o dell'applicazione, change control, report di auditing.
+
+\textbf{Tipi di audit}:
+\begin{itemize}
+  \item \textbf{Internal auditing}: esame condotto da membri dello staff dell'organizzazione soggetta ad audit.
+  \item \textbf{External auditing}: esame condotto da una terza parte indipendente.
+\end{itemize}
+
+\textbf{Attività di auditing}: identificare problemi di sicurezza; stabilire piani, policy e procedure; organizzare e condurre audit interni; verificare requisiti contrattuali; fare da tramite tra azienda e team di audit esterno; fornire consulenza al Dipartimento Legale.
+
+\textbf{Processo di auditing} (tre fasi): Understand objectives $\to$ Review, verify and validate $\to$ Report and document.
+
+\textbf{Auditing models} (informazioni registrate per ogni azione): stato dell'oggetto \emph{prima} dell'azione; descrizione dell'azione eseguita; nome dell'utente che ha eseguito l'azione.
+
+\textbf{Modello 1 -- Audit per entità e azione}: registra entit\`{a} auditate nel repository; traccia cronologicamente le attivit\`{a}.
+\begin{itemize}
+  \item Entit\`{a}: utente, tabella o colonna.
+  \item Attivit\`{a}: transazioni DML (update, insert, delete) o logon/logoff.
+  \item Stato dell'entit\`{a}: active, deleted, inactive.
+\end{itemize}
+
+\textbf{Modello 2 -- Audit per variazione di colonna}: registra solo le modifiche ai valori di colonna; prevede un meccanismo di purging e archiving (riduce lo spazio); non registra il tipo di azione eseguita; ideale per auditare una o due colonne di una tabella.
+
+\textbf{Modello 3 -- Historical auditing model}: usato quando \`{e} richiesto un registro dell'intera riga; tipicamente usato in applicazioni finanziarie. Si crea una tabella \texttt{APP\_DATA\_TABLE\_HISTORY} con la stessa struttura di \texttt{APP\_DATA\_TABLE}, dove ogni modifica genera una nuova riga storica.
+
+\begin{esempio}[Database Auditing -- SQL]
+\begin{verbatim}
+-- MS SQL Server
+CREATE SERVER AUDIT AuditDataAccess
+  TO FILE ( FILEPATH = 'C:\SQLAudit\' )
+  WHERE object_name = 'Employees';
+ALTER SERVER AUDIT AuditDataAccess WITH (STATE = ON);
+
+-- Oracle
+CREATE AUDIT POLICY AuditDataAccess ACTIONS
+  DELETE on Employees, INSERT on Employees,
+  UPDATE on Employees, SELECT on Employees
+  CONTAINER = CURRENT;
+AUDIT POLICY AuditDataAccess;
+\end{verbatim}
+\end{esempio}
+\end{definizione}
+
+\begin{nota}[IS e GDPR -- Conclusione]
+Per rendere i sistemi informativi conformi al GDPR, occorre combinare pi\`{u} misure di sicurezza:
+\begin{itemize}
+  \item Controllo degli accessi basato su attributi (\textbf{ABAC})
+  \item \textbf{Cifratura} (Always Encrypted / Transparent Data Encryption)
+  \item \textbf{(Dynamic) Data Masking}
+  \item \textbf{Auditing}
+\end{itemize}
+\textbf{Domanda aperta}: queste misure di sicurezza sono sufficienti a proteggere la privacy?
+\end{nota}
+
+%=============================================================================
+\section{Controllo del Rilascio di Informazioni Statistiche (SDC)}
+%=============================================================================
+
+Internet offre opportunit\`{a} senza precedenti per raccogliere e condividere informazioni sensibili (web usage data, social media, smartphones, wearables). Spesso dati statistici vengono rilasciati per scopi legittimi:
+\begin{itemize}
+  \item \textbf{Open data collegati}: per trasparenza pubblica.
+  \item \textbf{Dataset per la riproducibilit\`{a} scientifica}: per consentire la replica degli esperimenti.
+  \item \textbf{Data Challenge/Contest}: come il Netflix Prize.
+  \item \textbf{Policy/Regulation}: per scopi regolatori.
+\end{itemize}
+Tali dati rilasciati possono essere usati per inferire informazioni non destinate alla divulgazione, tramite linking attack, machine learning, data mining, inferenza statistica. Il \textbf{disclosure risk} dai dati rilasciati deve essere il pi\`{u} basso possibile.
+
+\subsection{Disclosure}
+
+\begin{definizione}[Disclosure]
+Un disclosure pu\`{o} occorrere:
+\begin{itemize}
+  \item basandosi solamente sui dati rilasciati;
+  \item risultando dalla combinazione dei dati rilasciati con informazioni pubblicamente disponibili;
+  \item tramite combinazione con fonti esterne dettagliate (social media: Twitter, Facebook, YouTube, Instagram).
+\end{itemize}
+Esistono tre tipi di disclosure:
+\begin{itemize}
+  \item \textbf{Identity disclosure}: una terza parte identifica direttamente il soggetto dai dati rilasciati. Per i \emph{macrodata}: rivelare l'identit\`{a} non \`{e} generalmente un problema, a meno che non conduca all'attribute disclosure. Per i \emph{microdata}: l'identificazione \`{e} generalmente un problema perch\'{e} i record sono dettagliati e l'identity disclosure implica quasi sempre l'attribute disclosure.
+  \item \textbf{Attribute disclosure}: informazioni confidenziali su un soggetto vengono rivelate e possono essergli attribuite. Avviene quando le informazioni vengono rivelate esattamente o quando possono essere stimate con precisione. Comprende sia l'identificazione del soggetto sia la divulgazione di informazioni confidenziali a lui pertinenti.
+  \item \textbf{Inferential disclosure} (o inferenziale): le informazioni possono essere inferite con alta confidenza tramite \emph{propriet\`{a} statistiche} dei dati rilasciati. Esempio: i dati mostrano un'alta correlazione tra reddito e prezzo di acquisto della casa; poich\'{e} il prezzo di acquisto \`{e} informazione pubblica, un terzo potrebbe inferire il reddito. \textbf{Difficolt\`{a}}: se l'inferential disclosure equivale all'inferenza statistica, nessun dato potrebbe essere rilasciato; inoltre le inferenze predicono comportamenti aggregati, non valori individuali, quindi sono spesso predittori scarsi dei dati individuali.
+\end{itemize}
+\end{definizione}
+
+I dati statistici si rilasciano come:
+\begin{itemize}
+  \item \textbf{Macrodata}: aggregati in forma tabellare.
+    \begin{itemize}
+      \item \textbf{Tabelle Count/Frequency}: ogni cella contiene il numero (o la percentuale) di rispondenti con la stessa combinazione di valori degli attributi.
+      \item \textbf{Tabelle Magnitude}: ogni cella contiene un valore aggregato (es. media) di una quantit\`{a} di interesse.
+    \end{itemize}
+    I \textbf{rispondenti} sono aziende, autorit\`{a}, persone fisiche, ecc., dai quali vengono raccolti i dati per produrre statistiche. Rivelare l'identit\`{a} in macrodata \`{e} generalmente tollerabile, a meno che non conduca a un attribute disclosure.
+  \item \textbf{Microdata}: grana fine, su singole persone/unit\`{a}. Soggetti a maggiore rischio di data breach; l'identificazione implica quasi sempre anche l'attribute disclosure. I microdata includono spesso \textbf{identificatori espliciti} (nome, telefono, email, SSN) che devono essere rimossi come primo passo.
+\end{itemize}
+
+La riservatezza pu\`{o} essere protetta in due modi:
+\begin{itemize}
+  \item \textbf{Restricted data}: limitare la quantit\`{a} di informazioni nelle tabelle e nei microdata rilasciati.
+  \item \textbf{Restricted access}: imporre condizioni sull'accesso ai prodotti dati.
+  \item Combinazione delle due strategie.
+\end{itemize}
+
+\begin{definizione}[Statistical Disclosure Control (SDC)]
+\`{E} una collezione di metodi usati come parte del processo di anonimizzazione per controllare/limitare il rischio di re-identificazione e attribute disclosure tramite manipolazioni dei dati.
+
+\textbf{Importante}: il disclosure control \emph{non \`{e} privacy}. Tutti i processi che tentano di affrontare i rischi di disclosure sono principalmente processi tecnici di confidenzialit\`{a} che si mappano \emph{solo indirettamente e imperfettamente} sulle protezioni della privacy.
+
+Il trade-off fondamentale: pi\`{u} alta \`{e} la disclosure risk, pi\`{u} alta \`{e} la data utility (e viceversa). \textbf{Il compromesso esiste sempre}. Il piano rischio/utilit\`{a} ha due zone: \textbf{FORBIDDEN} (alto rischio, non rilasciabile) e \textbf{CONCEDED} (rischio accettabile). L'obiettivo \`{e} minimizzare il rischio mantenendo la massima utilit\`{a} possibile, restando nella zona concessa.
+
+\textbf{Ciclo SDC ex-post} (4 passi): Data $\to$ Metodo SDC (+scelta parametri euristici) $\to$ Misura di Utility $\to$ Misura di Rischio $\to$ (iterazione).
+
+\textbf{Analisi del rischio ex-ante}: basata sul concetto di \textbf{privacy model}, ovvero una condizione (dipendente da un parametro) che garantisce un limite superiore al rischio di re-identificazione e attribute disclosure. I principali privacy model sono: $k$-anonymity, $l$-diversity, $t$-closeness, $\delta$-presence, differential privacy.
+\end{definizione}
+
+\textbf{Procedura SDC per microdata sicuri} (Eurostat):
+\begin{enumerate}
+  \item Definire i quasi-identificatori.
+  \item Decidere la soglia accettabile di combinazioni a bassa frequenza (es. al pi\`{u} 5\% con frequenza 1 o 2 unità).
+  \item Calcolare le frequenze per le combinazioni di quasi-identificatori.
+  \item Eseguire una \emph{global recode} sui quasi-identificatori (riduzione del numero di valori, es. per discretizzazione).
+  \item Applicare metodi SDC (es. micro-aggregazione) sulle variabili e record che richiedono protezione.
+  \item Eseguire \emph{local suppression} sulle variabili identificative residue.
+  \item Ripetere i passi 3--6 fino a ottenere un livello accettabile di rischio e utilit\`{a}.
+\end{enumerate}
+
+\subsection{Metodi SDC per Macrodata}
+
+\begin{itemize}
+  \item \textbf{Non-perturbativi}: non modificano i valori delle celle.
+    \begin{itemize}
+      \item \textbf{Cell Suppression (CS)}: soppressione delle celle a rischio (\emph{primaria}); soppressione di celle aggiuntive per proteggere quelle primarie (\emph{secondaria}).
+    \end{itemize}
+  \item \textbf{Perturbativi}: modificano i valori delle celle.
+    \begin{itemize}
+      \item \textbf{Random Rounding (RR)}: arrotondamento casuale per difetto o per eccesso.
+      \item \textbf{Controlled Rounding (CR)}: arrotondamento classico controllato.
+      \item \textbf{Controlled Tabular Adjustment (CTA)}: i valori delle celle sensibili sono rimpiazzati da valori simili; le altre celle sono modificate di conseguenza per correggere i totali.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Metodi SDC per Dati Interrogabili (Query)}
+
+Tre approcci principali per i \textbf{Statistical Databases (SDB)} (ACM Computing Surveys, 1989):
+\begin{enumerate}
+  \item \textbf{Query restriction}: l'SDB riceve query ristrette e risponde con valori esatti o nega la risposta. Richiede tracciamento delle query precedenti.
+  \item \textbf{Data perturbation}: si genera una versione perturbata SDB' dei dati originali SDB; le query vengono eseguite su SDB' e rispondono con valori perturbati.
+  \item \textbf{Output perturbation}: l'SDB riceve le query (ristrette) e risponde con valori perturbati.
+\end{enumerate}
+
+\begin{itemize}
+  \item \textbf{Perturbativi}: perturbazione dell'input della query (applicata ai record) o dell'output (applicata al risultato della query).
+  \item \textbf{Restrittivi}: rifiuto di rispondere a certe query (query restriction); richiede di tenere traccia delle query precedenti.
+\end{itemize}
+
+\subsection{Metodi SDC per Microdata}
+
+\paragraph{Data Masking Perturbativo}
+\begin{itemize}
+  \item \textbf{Aggiunta di rumore}: aggiungere a ogni record un rumore; media e correlazioni possono essere preservate.
+  \item \textbf{Microaggregazioni}: partizionare i records in gruppi (basati su similarit\`{a}); pubblicare solo la media per ogni gruppo.
+  \item \textbf{Data swapping}: ordinare i valori per ogni attributo in ordine crescente; scambiare casualmente i valori in un range ristretto.
+  \item \textbf{Post-randomizzazione}: cambia attributi categorici secondo determinate matrici di transizione.
+\end{itemize}
+
+\paragraph{Data Masking Non-Perturbativo}
+\begin{itemize}
+  \item \textbf{Sampling}: pubblicare un campione dei dati originali.
+  \item \textbf{Generalizzazione}: attributi categorici combinati in categorie meno specifiche; attributi numerici sostituiti da intervalli.
+  \item \textbf{Top/Bottom coding}: valori sopra/sotto un threshold sostituiti da un estremo.
+  \item \textbf{Soppressione locale}: alcuni attributi/celle vengono soppressi; aumenta la dimensione dei gruppi.
+\end{itemize}
+
+\paragraph{Sintesi dei Dati (Synthetic Data)}
+\begin{itemize}
+  \item \textbf{Fully Synthetic Data}: sintetizzare tutto il dataset.
+  \item \textbf{Partially Synthetic Data}: sintetizzare solo le variabili sensibili.
+  \item Problemi: i dati sintetizzati devono mantenere validit\`{a} statistica; overfitting $\Rightarrow$ rischio di re-identificazione.
+\end{itemize}
+
+\subsection{Misura della Perdita di Informazioni: KL e JS}
+
+\textbf{Misura della utilit\`{a}}: la misura dell'utilit\`{a} \`{e} difficile perch\'{e} spesso non \`{e} chiaro a priori cosa gli utenti vogliano fare con i dati. Si usa la nozione di \textbf{information loss}: tenta di catturare in termini information-theoretic la variazione di informazione causata dal disclosure control.
+
+\textbf{Information loss per macrodata}:
+\begin{itemize}
+  \item \textbf{Cell suppression}: numero o magnitudine aggregata delle soppressioni secondarie.
+  \item \textbf{Rounding e tabular adjustment}: somma delle distanze tra celle vere e celle perturbate (eventualmente pesata per l'importanza delle celle).
+\end{itemize}
+
+\textbf{Information loss per query}:
+\begin{itemize}
+  \item \textbf{Query perturbation}: differenza tra risposta vera e risposta perturbata (media dovrebbe essere zero, varianza piccola).
+  \item \textbf{Query restriction}: numero di query rifiutate.
+\end{itemize}
+
+\textbf{Information loss per microdata}:
+\begin{itemize}
+  \item \textbf{Data use-specific}: valuta quanto il SDC impatta l'output di analisi specifiche.
+  \item \textbf{General information loss}: statistiche di base (medie, covarianze, correlazioni); propensity scores (PSM -- metodo quasi-sperimentale); distanza tra dati originali e disclosure-controlled con KL o JS.
+\end{itemize}
+
+\begin{definizione}[Divergenza Kullback-Leibler (KL)]
+Misura quanto una distribuzione di probabilit\`{a} perturbata $P(x)$ sia diversa dalla distribuzione originaria $Q(x)$ (entropia relativa di P rispetto a Q):
+\[
+KL(P \| Q) = \sum_{x \in X} P(x) \log\!\left(\frac{P(x)}{Q(x)}\right)
+\]
+\textbf{Nota}: KL non \`{e} simmetrica ($KL(P\|Q) \neq KL(Q\|P)$ in generale).
+\end{definizione}
+
+\begin{definizione}[Divergenza Jensen-Shannon (JS)]
+Versione simmetrizzata e smoothed di KL:
+\[
+JS(P \| Q) = \frac{1}{2}KL(P \| M) + \frac{1}{2}KL(Q \| M), \quad M = \frac{1}{2}(P + Q)
+\]
+JS \`{e} sempre definita, simmetrica e $0 \leq JS \leq 1$.
+\end{definizione}
+
+%=============================================================================
+\section{Framework di Anonimizzazione}
+%=============================================================================
+
+\subsection{Il Problema dell'Anonimit\`{a} e il Linking Attack}
+
+\begin{definizione}[Quasi-Identificatori -- Tore Dalenius, 1986]
+I quasi-identificatori sono attributi che non sono univoci di per s\'{e}, ma che \textbf{combinati con altri quasi-identificatori} possono creare un identificatore univoco.
+
+I ruoli degli attributi nei microdata:
+\begin{itemize}
+  \item \textbf{Identificatori espliciti}: nome, SSN, etc. -- vengono rimossi (\emph{sanitizzazione}).
+  \item \textbf{Quasi-identificatori}: attributi che possono essere usati per re-identificare individui.
+  \item \textbf{Attributi sensibili}: portano informazioni sensibili (diagnosi, stipendio, etc.).
+\end{itemize}
+\end{definizione}
+
+\begin{esempio}[Linking Attack di Sweeney (2001)]
+Il Massachusetts pubblica dati medici sanitizzati (rimossi nome e SSN) degli impiegati statali. La lista elettorale del Massachusetts (publicamente disponibile) contiene: nome, indirizzo, data di nascita, partito, etc. Sweeney incrocia i due dataset usando \{ZIP, sesso, data di nascita\} come chiave di join e re-identifica il record medico del governatore William Weld. I dettagli: 6 persone avevano la sua data di nascita, 3 erano uomini, 1 solo era nel suo CAP. \textbf{L'87\% della popolazione USA} (1990 census) \`{e} unicamente identificabile da \{ZIP, sesso, data di nascita completa\}.
+\end{esempio}
+
+\begin{esempio}[Statistiche Re-identificazione -- US Census 2000]
+Nel censimento USA del 2000, la percentuale di popolazione unicamente identificabile in base a diverse combinazioni di attributi risulta:
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+\textbf{Attributi usati} & \textbf{Popolazione identificabile} \\
+\midrule
+Anno di nascita + ZIP a 5 cifre & 0,2\% \\
+Anno di nascita + nazione & 0,0\% \\
+Anno e mese di nascita + ZIP a 5 cifre & 4,2\% \\
+Anno e mese di nascita + nazione & 0,2\% \\
+Anno, mese e giorno di nascita + ZIP a 5 cifre & 63,3\% \\
+Anno, mese e giorno di nascita + nazione & 14,8\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+Questi dati mostrano come la data di nascita completa combinata con il codice postale sia sufficiente a identificare quasi i 2/3 della popolazione.
+\end{esempio}
+
+\begin{nota}[Obiettivo della Privacy nei Microdata]
+Il \textbf{goal della privacy preservation} (definizione operativa) \`{e} \textbf{de-associare} gli individui dalle loro informazioni sensibili. Nei microdata, i tre ruoli degli attributi sono:
+\begin{itemize}
+  \item \textbf{Identificatori espliciti} (es. Nome, SSN): vengono \emph{rimossi} tramite sanitizzazione.
+  \item \textbf{Quasi-identificatori} (es. Data di nascita, Sesso, ZIP): possono essere usati per re-identificare un individuo combinandoli con dati pubblici.
+  \item \textbf{Attributi sensibili} (es. Diagnosi, Malattia): possono non esistere; portano informazioni che si vuole proteggere.
+\end{itemize}
+Non \`{e} facile elencare tutti i quasi-identificatori e i dati sensibili: esistono \textbf{attributi proxy}, apparentemente innocui, che correlano con dati sensibili (es. ZIP code correla con la razza; livello di istruzione correla con il genere).
+\end{nota}
+
+\subsection{K-Anonymity}
+
+\begin{definizione}[K-Anonymity -- Samarati \& Sweeney, 1998]
+Sia $T$ un dataset su un insieme $A = a_1, \ldots, a_n$ di attributi e $QI_T$ l'insieme dei quasi-identificatori di $T$. $T$ soddisfa la $k$-anonymity se e solo se per ogni quasi-identificatore $QI \in QI_T$, ogni sequenza esistente di valori attribuita a $QI$ compare almeno con $k$ occorrenze in $T$.
+
+Propriet\`{a}: ogni individuo si nasconde in $k-1$ altri individui; i linking attack non possono essere effettuati con confidenza superiore a $\frac{1}{k}$.
+\end{definizione}
+
+Tecniche per ottenere la k-anonymity:
+\begin{itemize}
+  \item \textbf{Generalizzazione}: il valore di un dato attributo \`{e} rimpiazzato da uno pi\`{u} generale (es. ZIP $10149 \to 101**$; data di nascita $27/09/1964 \to 1964$).
+  \item \textbf{Soppressione}: proteggere informazioni sensibili rimuovendole (rimozione di tuple outlier).
+\end{itemize}
+
+La k-anonymity richiede che ogni release dei dati sia tale che ogni combinazione di valori dei quasi-identificatori possa essere associata in modo indistinto ad almeno $k$ rispondenti. La \textbf{condizione sufficiente} per garantire questo \`{e} che ogni insieme di valori dei quasi-identificatori nella tabella rilasciata appaia almeno $k$ volte (\emph{gli attributi sensibili non sono considerati}).
+
+\begin{nota}[Proxy Attributes -- difficolt\`{a} nell'elencare i QI]
+Non \`{e} facile identificare tutti i quasi-identificatori e i dati sensibili, perch\'{e} esistono attributi \emph{proxy} che sono correlati ai dati sensibili pur sembrando innocui. Esempi (da Caton \& Haas, Fairness in Machine Learning, arXiv 2020):
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Variabile Sensibile} & \textbf{Proxy Attributes} \\
+\midrule
+Genere & Livello di istruzione, Reddito, Occupazione, Dati penali, \\
+       & Parole chiave in UGC (CV, Social Media), Ore lavorative \\
+Stato civile & Livello di istruzione, Reddito \\
+Razza & Dati penali, Parole chiave in UGC, ZIP code \\
+Disabilit\`{a} & Dati Personality Test \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{nota}
+
+\begin{nota}[Privacy vs. Utilit\`{a} nella K-Anonymity]
+I dati anonimizzati vengono rilasciati per scopi di analisi statistica. Se i dati sono ``troppo anonimi'' diventano inutili. Il principio fondamentale \`{e}: \textbf{non anonimizzare pi\`{u} del necessario!}
+
+Questo rispecchia il trade-off generale SDC: zona VIETATA (disclosure risk troppo alto) vs. zona CONCESSA (dati troppo degradati per essere utili).
+\end{nota}
+
+Il problema di trovare la tabella con la \textbf{minima generalizzazione} che soddisfi la k-anonymity \`{e} \textbf{NP-hard}. La maggior parte degli algoritmi ha complessit\`{a} esponenziale nel numero di valori degli attributi.
+
+\begin{definizione}[Domain Generalization Hierarchy (DGH)]
+Una gerarchia di generalizzazione su un dominio ($DGH_D$) di un attributo $A$ \`{e} un ordine parziale su un insieme di domini $Dom_A = \{D_0, \ldots, D_n\}$ tale che:
+\begin{itemize}
+  \item Ogni dominio $D_i$ ha al pi\`{u} una generalizzazione diretta.
+  \item Tutti gli elementi massimi di $Dom$ sono singletons (per far s\`{i} che ogni valore possa essere generalizzato in un singolo valore).
+\end{itemize}
+Il prodotto cartesiano delle DGH di tutti gli attributi forma un \textbf{reticolo di generalizzazione} $DGH_{DT}$.
+\end{definizione}
+
+\begin{definizione}[Value Generalization Hierarchy (VGH)]
+Per ogni dominio $D$, la \textbf{gerarchia di generalizzazione dei valori} $VGH_D$ \`{e} un \textbf{albero} dove:
+\begin{itemize}
+  \item Le \textbf{foglie} sono i valori nel dominio $D$ (i valori pi\`{u} specifici).
+  \item La \textbf{radice} \`{e} il valore nell'elemento massimo di $DGH_D$ (il valore pi\`{u} generale).
+\end{itemize}
+$VGH_D$ \`{e} determinato dalla relazione di generalizzazione dei valori, che associa a ogni valore $v_i \in D_i$ un unico valore $v_j \in D_j$ (con $D_j$ generalizzazione diretta di $D_i$). Esempio ZIP: $53715, 53710 \to 5371^*$; $53706, 53703 \to 5370^*$; $5371^*, 5370^* \to 537^{**}$.
+\end{definizione}
+
+\begin{definizione}[Vettore Distanza (Distance Vector)]
+Siano $T_i$ e $T_j$ due tabelle definite sugli stessi attributi $A = \{A_1, \ldots, A_n\}$ tali che $T_i \leq T_j$. Il \textbf{vettore distanza} di $T_j$ da $T_i$ \`{e} $DV_{ij} = [d_1, \ldots, d_n]$, dove ogni $d_x$ \`{e} la lunghezza del cammino unico tra $dom(A_x, T_i)$ e $dom(A_x, T_j)$ nella $DGH_{Dx}$.
+
+Esempio: se Ethnicity ha $DGH$ con 2 livelli ($E_0 \to E_1$) e ZIP ha $DGH$ con 3 livelli ($Z_0 \to Z_1 \to Z_2$), allora la tabella con Ethnicity in $E_1$ e ZIP in $Z_1$ ha $DV = [1, 1]$ rispetto alla tabella originale.
+\end{definizione}
+
+\begin{nota}[Classificazione delle Tecniche di K-Anonymity]
+La generalizzazione e la soppressione possono essere applicate a diversi livelli di granularit\`{a}:
+\begin{itemize}
+  \item \textbf{Generalizzazione}: a livello di \emph{colonna} (un passo generalizza tutti i valori della colonna) oppure a livello di \emph{singola cella} (una colonna pu\`{o} contenere valori a livelli di generalizzazione diversi).
+  \item \textbf{Soppressione}: a livello di \emph{riga} (rimuove una tupla intera), a livello di \emph{colonna} (oscura tutti i valori di una colonna) oppure a livello di \emph{singola cella} (oscura solo certe celle di una tupla/attributo).
+\end{itemize}
+\end{nota}
+
+\begin{definizione}[K-Minimal Generalization with Suppression]
+Date due tabelle $T_i \leq T_j$ (con $T_j$ generalizzazione di $T_i$) e MaxSup il threshold di soppressione accettabile, $T_j$ \`{e} una generalizzazione k-minima di $T_i$ se e solo se: $T_j$ soddisfa la k-anonymity; la soppressione \`{e} minimale; $|T_j| - |T_i| \leq MaxSup$; non esiste $T_x$ con $T_i \leq T_x \leq T_j$ che soddisfi gli stessi criteri con vettore distanza minore.
+\end{definizione}
+
+\subsubsection{Algoritmo di Samarati}
+
+\begin{definizione}[Samarati's Algorithm]
+Ogni percorso in $DGH_{DT}$ rappresenta una strategia di generalizzazione. L'algoritmo si basa su una generalizzazione minima locale (il nodo minore di ogni percorso che soddisfi la k-anonymity). Effettua una \textbf{ricerca binaria} sul reticolo dei vettori distanza:
+\begin{enumerate}
+  \item Valuta tutte le soluzioni ad altezza $h/2$.
+  \item Se esiste almeno una soluzione: valuta a $h/4$; altrimenti a $3h/4$.
+  \item Ripeti fino a raggiungere l'altezza minore per cui esiste un vettore distanza che soddisfa la k-anonymity.
+\end{enumerate}
+\textbf{Propriet\`{a}}: salendo nella gerarchia il numero di tuple da rimuovere per la k-anonymity decresce. Se non esiste soluzione all'altezza $h$ con $\leq MaxSup$ soppressioni, non ne esiste una ad altezza minore (approccio branch and bound).
+\end{definizione}
+
+\subsubsection{Algoritmo Incognito}
+
+\begin{definizione}[Incognito Algorithm]
+Adotta un approccio \textbf{bottom-up} per la visita delle $DGH$. La propriet\`{a} di k-anonymity rispetto a un sottoinsieme $QI$ \`{e} una condizione \emph{necessaria} per la k-anonymity rispetto a $QI$ completo (\textbf{monotonicita nel reticolo}).
+\begin{enumerate}
+  \item \textbf{Iterazione 1}: controlla la k-anonymity per ogni singolo attributo in $QI$, scartando le generalizzazioni che non la soddisfano.
+  \item \textbf{Iterazione 2}: combina le rimanenti generalizzazioni in coppie e controlla.
+  \item \textbf{Iterazione i}: combina tutte le $i$-uple e controlla.
+  \item \textbf{Iterazione $|QI|$}: risultato.
+\end{enumerate}
+
+Incognito sfrutta due propriet\`{a} di monotonicità nel reticolo (analoghe ad Apriori nel frequent itemset mining):
+\begin{itemize}
+  \item \textbf{Propriet\`{a} di Generalizzazione} (\emph{rollup}): se la k-anonymity vale in un nodo del reticolo, vale anche per qualsiasi nodo antenato (generalizzazione di pi\`{u} attributi). Equivalentemente: la k-anonymity rispetto a un QI implica k-anonymity rispetto a qualsiasi sottoinsieme di QI.
+  \item \textbf{Propriet\`{a} di Sottoinsieme} (\emph{apriori}): se la k-anonymity \emph{non} vale per un insieme di attributi QI, non pu\`{o} valere per nessuno dei suoi superset (pi\`{u} attributi $\Rightarrow$ gruppi pi\`{u} piccoli $\Rightarrow$ pi\`{u} difficile soddisfare k-anonymity).
+\end{itemize}
+Incognito considera insiemi di attributi QI di cardinalit\`{a} crescente e pota i nodi del reticolo usando queste due propriet\`{a}.
+\end{definizione}
+
+\subsection{Oltre la K-Anonymity}
+
+\subsubsection{Attacchi alla K-Anonymity}
+
+\begin{itemize}
+  \item \textbf{Homogeneity attack}: pu\`{o} accadere quando tutte le tuple con i quasi-identificatori in una tabella k-anonimizzata hanno gli stessi valori di attributi sensibili.
+  \item \textbf{Background knowledge attack}: si basa su conoscenza pregressa con informazioni esterne per eliminare valori sensibili possibili.
+\end{itemize}
+
+\begin{esempio}[Homogeneity Attack -- Carol]
+Si consideri una tabella 4-anonima. Un attaccante sa che Carol \`{e} una donna americana di 31 anni che vive nel ZIP 13053. Cerca il suo gruppo nella tabella anonimizzata e trova 4 record con ZIP 130**, et\`{a} 3*, nazionalit\`{a} *. Tutti e 4 i record del blocco hanno Disease = Cancer. Nonostante la 4-anonymity, l'attaccante pu\`{o} concludere con certezza che \textbf{Carol ha il cancro}.
+\end{esempio}
+
+\begin{esempio}[Background Knowledge Attack -- Hellen]
+Un attaccante sa che Hellen \`{e} una donna americana di 29 anni che vive nel ZIP 13068, e sa anche che \`{e} una sportiva. Nella tabella 4-anonima, il blocco con ZIP 130**, et\`{a} $<$30 contiene Heart Disease e Viral Infection. Poich\'{e} le sportive raramente contraggono infezioni virali, l'attaccante pu\`{o} inferire che \textbf{Hellen soffre di Heart Disease}. Questo \`{e} un caso di negative disclosure: l'attaccante \emph{elimina} valori sensibili possibili tramite conoscenza di background.
+
+Nota: anche \emph{senza} conoscenza di background, l'attaccante pu\`{o} dedurre che Hellen \textbf{non ha il cancro}, poich\'{e} nel suo blocco non appare Cancer (negative disclosure pura).
+\end{esempio}
+
+Una tabella pu\`{o} rilasciare informazioni in due modi:
+\begin{itemize}
+  \item \textbf{Positive disclosure}: pubblicando i valori della tabella si pu\`{o} identificare con alta probabilit\`{a} una persona.
+  \item \textbf{Negative disclosure}: pubblicando i valori della tabella si possono eliminare correttamente alcuni dei possibili valori (se iterata pu\`{o} portare a positive disclosure).
+\end{itemize}
+
+\subsubsection{L-Diversity}
+
+\begin{definizione}[L-Diversity -- Machanavajjhala et al., 2006]
+Un $q^*$-block (classe di equivalenza) \`{e} $l$-diverso se ha almeno $l \geq 2$ diversi valori sensibili ben rappresentati (il valore $l$ pi\`{u} frequente ha all'incirca la stessa frequenza degli altri).
+
+Formalmente: mancanza di diversit\`{a} si ha quando $\forall s' \neq s, n(q^*, s') \ll n(q^*, s)$.
+
+La $l$-diversity assicura la diversit\`{a} richiedendo che ogni blocco abbia almeno $l$ valori sensibili ben rappresentati.
+\end{definizione}
+
+\begin{definizione}[Entropy L-Diversity]
+Una tabella GT $l$-diversa \`{e} basata sull'entropia se per ogni $q^*$-block:
+\[
+-\sum_{s \in S} p(q^*, s) \log(p(q^*, s)) \geq \log(l)
+\]
+dove $p(q^*, s) = \frac{n(q^*, s)}{\sum_{s' \in S} n(q^*, s')}$ \`{e} la frazione di tuple nel $q^*$-block con attributo sensibile uguale a $s$.
+
+\textbf{Propriet\`{a}}: la entropy $l$-diversity soddisfa la \emph{monotonicità} $\Rightarrow$ qualsiasi algoritmo per la k-anonymity pu\`{o} essere esteso per assicurare $l$-diversity.
+\end{definizione}
+
+\textbf{L-Diversity e Background Knowledge}: se ci sono $l$ valori sensibili ben rappresentati in un $q^*$-block, l'attaccante ha bisogno di $l-1$ \emph{pezzi di conoscenza di background} per eliminare $l-1$ valori sensibili possibili e inferire una positive disclosure. Impostando il parametro $l$, il data publisher determina quanta protezione si vuole offrire contro la conoscenza di background (anche se questa \`{e} sconosciuta al publisher).
+
+\textbf{Attacchi alla L-Diversity}:
+\begin{itemize}
+  \item \textbf{Skewness attack}: quando la distribuzione del $q$-block \`{e} diversa dalla distribuzione nella popolazione originale (un valore sensibile potrebbe essere molto pi\`{u} comune nella popolazione ma ugualmente rappresentato nel blocco).
+  \item \textbf{Similarity attack}: quando un $q$-block ha valori diversi ma semanticamente simili per i valori sensibili (es. tutti i tipi di cancro).
+\end{itemize}
+
+\subsubsection{$\delta$-Presence}
+
+\textbf{Il problema della Membership Disclosure}: la k-anonymity protegge dall'identificazione dell'individuo nel dataset, ma \textbf{potrebbe non nascondere} se un dato individuo \`{e} presente nel dataset. Con alta probabilit\`{a}, il quasi-identificatore di un individuo \`{e} unico nella popolazione; generalizzare/sopprimere i QI nel dataset \emph{non} cambia la loro distribuzione nella popolazione. Se il dataset anonimizzato contiene 10 record con un certo QI \emph{e} ci sono 10 persone nella popolazione che corrispondono a quel QI, sapere che l'individuo \`{e} nel dataset rivela informazioni (es. ha quella malattia).
+
+Problemi pratici dove la \emph{membership disclosure} \`{e} critica:
+\begin{itemize}
+  \item \textbf{Counter-terrorism}: DB di gruppi terroristici sospetti per ricerca -- rivelare che una persona \`{e} nel DB \`{e} dannoso.
+  \item \textbf{Ricerca medica}: DB di pazienti con un tipo particolare di cancro -- rivelare che una persona \`{e} nel DB ne svela la diagnosi.
+\end{itemize}
+
+\begin{definizione}[$\delta$-Presence -- Nergiz, Atzori, Clifton, SIGMOD 2007]
+Siano T una tabella pubblica esterna, PT la tabella privata (sottoinsieme di T), e GT la generalizzazione di PT rilasciata pubblicamente. La $\delta$-presence vale per GT rispetto a PT, con $\delta = (\delta_{min}, \delta_{max})$, se:
+\[
+\delta_{min} \leq P(t \in PT \mid GT) \leq \delta_{max} \quad \forall t \in T
+\]
+dove $\delta = (\delta_{min}, \delta_{max})$ \`{e} un range di probabilit\`{a} accettabili per $P(t \in PT \mid GT)$. In tale dataset si dice che ogni tupla $t \in T$ \`{e} $\delta$-presente in PT.
+
+\textbf{Intuizione}: la probabilit\`{a} che un individuo sia nella tabella privata deve rimanere entro un range controllato -- non troppo alta (rischio di sapere che \`{e} presente) n\'{e} troppo bassa (rischio di sapere che \`{e} assente). Esempio tipico: $\delta = [1/3, 2/3]$.
+\end{definizione}
+
+\begin{esempio}[$\delta$-Presence -- Tabella GT e sottoinsieme PT]
+Tabella pubblica T con 9 individui (a--i); tabella privata PT (sottoinsieme di T) con 5 individui (b, c, f, h, i). La generalizzazione GT rilasciata sopprime Age e generalizza ZIP:
+\begin{center}
+\begin{tabular}{lllll}
+\toprule
+ID & ZIP & Age & Nationality & Sens. \\
+\midrule
+a & 47* & * & America & 0 \\
+b & 47* & * & America & 1 \\
+c & 47* & * & America & 1 \\
+d & 47* & * & America & 0 \\
+e & 47* & * & America & 0 \\
+f & 47* & * & America & 1 \\
+g & 48* & * & Europe & 0 \\
+h & 48* & * & Europe & 1 \\
+i & 48* & * & Europe & 1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+GT \`{e} una $\left(\frac{1}{2},\frac{2}{3}\right)$-generalizzazione di PT: tra i 6 individui America di T, 3 sono in PT $\Rightarrow P = \frac{1}{2}$; tra i 3 individui Europe, 2 sono in PT $\Rightarrow P = \frac{2}{3}$.
+\end{esempio}
+
+\begin{teorema}[Monotonicità della $\delta$-Presence]
+Siano T una tabella pubblica, PT la tabella privata, $GT^1$ una generalizzazione di PT e $GT^2$ una generalizzazione di $GT^1$. Se $GT^1$ \`{e} $(\delta_{min}, \delta_{max})$-present rispetto a T e PT, allora lo \`{e} anche $GT^2$.
+
+Equivalentemente: \textbf{se $GT^2$ non \`{e} $\delta$-present rispetto a T e PT, allora non lo \`{e} nemmeno $GT^1$}.
+
+Questa propriet\`{a} (analoga alla monotonicità della k-anonymity) permette di sfruttare la maggior parte degli algoritmi per la k-anonymity anche per il calcolo della $\delta$-presence.
+\end{teorema}
+
+\begin{nota}[Limiti degli approcci k-anonymity]
+\begin{itemize}
+  \item \textbf{Misure di utilit\`{a}}: \`{e} necessario sviluppare misure per consentire agli utenti di valutare, oltre alla protezione offerta, l'\emph{utilit\`{a}} dei dati rilasciati.
+  \item \textbf{Algoritmi efficienti}: calcolare una tabella che soddisfi la k-anonymity garantendo la minimalit\`{a} \`{e} un problema NP-hard; la maggior parte degli algoritmi ha complessit\`{a} esponenziale.
+  \item \textbf{Fusione di tabelle e viste}: la k-anonymity assume l'esistenza di un'unica tabella da rilasciare con al pi\`{u} una tupla per rispondente. Nella realt\`{a} pi\`{u} tabelle o viste possono essere combinate dall'avversario.
+  \item \textbf{Conoscenza esterna}: la k-anonymity non modella la conoscenza esterna che pu\`{o} essere usata per inferenza, esponendo i dati a identity o attribute disclosure.
+\end{itemize}
+\end{nota}
+
+\textbf{Curse of Dimensionality} (Aggarwal, VLDB 2005): quando il numero di quasi-identificatori cresce, la k-anonymity diventa inutile perch\'{e} richiede una generalizzazione eccessiva.
+
+%=============================================================================
+\section{Privacy Differenziale}
+%=============================================================================
+
+\subsection{Definizione Formale}
+
+Introdotta da \textbf{Cynthia Dwork} nel 2006 (``Calibrating Noise to Sensitivity in Private Data Analysis''). La DP \`{e} un framework matematico per rilasciare informazioni statistiche proteggendo contemporaneamente il dataset. Il modello \`{e} totalmente astratto rispetto alle caratteristiche implementative.
+
+\begin{definizione}[Meccanismo Randomizzato]
+Un meccanismo randomizzato \`{e} una funzione $\mathcal{M}: \Omega \times Q \to \mathcal{R}$ che mappa un database $D$ e una query $q$ a una risposta randomizzata $\tilde{q}(D)$.
+\end{definizione}
+
+Due dataset $D$ e $D'$ si dicono \textbf{adiacenti} ($D \sim D'$) se differiscono per esattamente un record.
+
+\begin{definizione}[$\varepsilon$-Differential Privacy]
+Un meccanismo $\mathcal{M}: \Omega \times Q \to \mathcal{R}$ preserva la $\varepsilon$-differential privacy, con $\varepsilon > 0$, se per qualsiasi query $q$, per ogni coppia di dataset adiacenti $D, D' \in \Omega$ e per ogni possibile risposta $r \in \mathcal{R}$:
+\[
+e^{-\varepsilon} \leq \frac{\mathbb{P}(\mathcal{M}(q, D) = r)}{\mathbb{P}(\mathcal{M}(q, D') = r)} \leq e^{\varepsilon}
+\]
+Il parametro $\varepsilon$ \`{e} il \textbf{privacy budget}: pi\`{u} piccolo \`{e}, maggiore \`{e} la garanzia di privacy. Per $\varepsilon \to 0$ le probabilit\`{a} sono quasi uguali (massima privacy, minima utility).
+\end{definizione}
+
+\begin{nota}[Privacy vs. Accuracy]
+Un meccanismo che restituisce sempre la stessa costante (es. $\mathcal{M}: D \mapsto 100$) soddisfa la DP con $\varepsilon = 0$, poich\'{e} $P(\mathcal{M}(D) = 100) = 1 = P(\mathcal{M}(D') = 100) \cdot e^0$ per ogni coppia di dataset adiacenti. Tuttavia \`{e} \textbf{completamente inutile}: non fornisce alcuna informazione sul dataset reale. Questo evidenzia il fondamentale \textbf{trade-off privacy--utilit\`{a}}: minimizzare $\varepsilon$ aumenta la privacy ma riduce la qualit\`{a} delle risposte, e viceversa.
+\end{nota}
+
+\begin{definizione}[Global Sensitivity L1]
+$GS_1(q) = \max_{D \sim D'} \|q(D) - q(D')\|_1$
+
+Per una singola query numerica: $GS_1(q) = \max_{D \sim D'} |q(D) - q(D')|$.
+\end{definizione}
+
+\subsection{Meccanismo di Laplace}
+
+\begin{teorema}[Meccanismo di Laplace]
+Il meccanismo di Laplace aggiunge rumore estratto da una distribuzione di Laplace calibrata alla sensibilit\`{a}:
+\[
+\mathcal{M}_{Lap}(D, q) \mapsto q(D) + Lap\!\left(0, \frac{GS_1(q)}{\varepsilon}\right)
+\]
+La PDF di $Lap(\mu, b)$ \`{e}: $f(x) = \frac{1}{2b} e^{-|x-\mu|/b}$.
+
+Il meccanismo di Laplace preserva la $\varepsilon$-differential privacy.
+\end{teorema}
+
+\begin{esempio}[Conteggio Query]
+Sia $q(D) = n$ il numero totale di studenti.
+\begin{itemize}
+  \item $GS_1(q) = 1$ (aggiungere/rimuovere un record cambia il conteggio di 1).
+  \item $\tilde{n} = n + Lap(0, 1/\varepsilon)$.
+\end{itemize}
+Per rispondere a due query correlate $q_1(D) = n_c$ (studenti del corso) e $q_2(D) = n - n_c$ (non nel corso): per composizione $\tilde{n}_c = n_c + Lap(0, 1/\varepsilon)$ e $\tilde{n} - \tilde{n}_c$ \`{e} equivalente all'approccio diretto. Con composizione parallela su $n_o$ (online) e $n_c$ (fisici, insiemi disgiunti): $\tilde{n}_o = n_o + Lap(0, 1/\varepsilon)$ e $\tilde{n}_c = n_c + Lap(0, 1/\varepsilon)$; il totale $\tilde{n} = \tilde{n}_o + \tilde{n}_c$ per post-processing.
+\end{esempio}
+
+\subsection{Meccanismo Esponenziale}
+
+Il meccanismo di Laplace non pu\`{o} essere usato in due casi:
+\begin{itemize}
+  \item \textbf{Query non numeriche}: il meccanismo di Laplace aggiunge rumore numerico a $q(D)$, ma questo non ha senso quando $q(D)$ non \`{e} un numero (es. una stringa, una categoria).
+  \item \textbf{Selezione DP}: quando $q$ restituisce il valore $r \in R$ che massimizza una funzione di utilit\`{a} $U$, un meccanismo additivo (come Laplace) pu\`{o} distruggere il risultato. Esempio: prezzo ottimo 3.01 con utilit\`{a} 3.0; aggiungere 0.01 di rumore porta al prezzo 3.02 con utilit\`{a} 0 (nessun cliente compra).
+\end{itemize}
+
+\begin{definizione}[Meccanismo Esponenziale]
+Per query con output categorici (non numerici). Sia $R$ l'insieme dei possibili output, $U: \Omega \times R \to \mathbb{R}$ una funzione di utilit\`{a} e $GS(U) = \max_{r \in R, D \sim D'} |U(D,r) - U(D',r)|$.
+
+Il meccanismo restituisce $r \in R$ con probabilit\`{a}:
+\[
+\mathbb{P}(\mathcal{M}(D, q) = r) \propto \exp\!\left(\frac{\varepsilon \cdot U(D, r)}{2 \cdot GS(U)}\right)
+\]
+Preserva $\varepsilon/2$-DP (o $\varepsilon$-DP a seconda della formulazione).
+\end{definizione}
+
+\subsection{Teoremi Fondamentali}
+
+\begin{teorema}[Post-Processing]
+Sia $\mathcal{M}: \Omega \to \mathcal{R}$ un meccanismo $\varepsilon$-DP e $f$ una funzione con dominio $\mathcal{R}$. Allora $f \circ \mathcal{M}$ preserva la $\varepsilon$-differential privacy.
+
+Implicazione: qualunque elaborazione dei risultati di un meccanismo DP non riduce la privacy (e non la aumenta). Non serve accedere ai dati originali.
+\end{teorema}
+
+\begin{teorema}[Composizione]
+Siano $\mathcal{M}_1$ e $\mathcal{M}_2$ due meccanismi che preservano rispettivamente $\varepsilon_1$-DP e $\varepsilon_2$-DP. Il meccanismo $\mathcal{N}(D) = (\mathcal{M}_1(D), \mathcal{M}_2(D))$ preserva $(\varepsilon_1 + \varepsilon_2)$-DP.
+
+Implicazione: pi\`{u} query consecutive consumano il privacy budget in modo additivo.
+\end{teorema}
+
+\begin{teorema}[Composizione Parallela]
+Sia $\mathcal{M}: \Omega \to \mathcal{R}$ un meccanismo $\varepsilon$-DP, e siano $D_1, D_2$ sottoinsiemi disgiunti di $D$ (con $D_1 \cup D_2 = D$). Il meccanismo $\mathcal{N}(D) = (\mathcal{M}(D_1), \mathcal{M}(D_2))$ preserva $\varepsilon$-DP (non $2\varepsilon$-DP).
+
+Implicazione: applicare lo stesso meccanismo $\varepsilon$-DP su partizioni disgiunte del dataset non aumenta il budget consumato.
+\end{teorema}
+
+\subsection{$(\varepsilon, \delta)$-Differential Privacy}
+
+\begin{definizione}[$(\varepsilon, \delta)$-DP]
+Versione rilassata della $\varepsilon$-DP. Un meccanismo $\mathcal{M}$ preserva $(\varepsilon, \delta)$-DP se per ogni $D \sim D'$ e ogni $r \in \mathcal{R}$:
+\[
+\mathbb{P}(\mathcal{M}(q, D) = r) \leq e^{\varepsilon} \cdot \mathbb{P}(\mathcal{M}(q, D') = r) + \delta
+\]
+$\delta$ rappresenta la \emph{probabilit\`{a} di fallimento} del meccanismo. Quando $\delta = 0$ coincide con la $\varepsilon$-DP. La $(\varepsilon, \delta)$-DP con $\delta > 0$ \`{e} \textbf{pi\`{u} debole} della $\varepsilon$-DP; $\delta$ deve essere il pi\`{u} piccolo possibile.
+
+\textbf{Teorema}: $\mathcal{M}$ preserva $(\varepsilon, \delta)$-DP se e solo se esiste un evento $E$ con $\mathbb{P}(E) > 1 - \delta$ tale che $\mathcal{M}$ preserva $\varepsilon$-DP quando $E$ si verifica.
+\end{definizione}
+
+\begin{esempio}[Perch\'{e} $\delta$ deve essere piccolo -- Due Meccanismi a Confronto]
+Sia $q(D)$ il numero di record di $D$. Si estrae casualmente $x \in (0,1)$:
+\begin{itemize}
+  \item \textbf{Meccanismo 1}: $\mathcal{M}(D) = q(D) + Lap(GS/\varepsilon)$ se $x \geq \delta$; altrimenti $\mathcal{M}(D) = D$ (rilascia l'intero dataset!).
+  \item \textbf{Meccanismo 2}: $\mathcal{M}(D) = q(D) + Lap(GS/\varepsilon)$ se $x \geq \delta$; altrimenti $\mathcal{M}(D) = q(D)$ (rilascia il valore esatto).
+\end{itemize}
+Entrambi i meccanismi preservano $(\varepsilon, \delta)$-DP, ma il Meccanismo 1 \`{e} \textbf{molto pi\`{u} pericoloso}: in caso di fallimento rilascia l'intero dataset privato. Questo dimostra che $\delta$ deve essere il pi\`{u} piccolo possibile e che \textbf{il modo in cui un meccanismo fallisce conta quanto la sua garanzia nominale}. La composizione di pi\`{u} meccanismi $(\varepsilon, \delta)$-DP richiede di sommare anche i parametri $\delta$ (come si fa per $\varepsilon$).
+\end{esempio}
+
+\begin{teorema}[Meccanismo Gaussiano]
+Per query vettoriali, usa il rumore Gaussiano:
+\[
+\mathcal{M}_{Gauss}(q, D) \mapsto q(D) + \mathcal{N}(0, \sigma^2)
+\]
+con $\sigma^2 = \frac{2 \cdot GS_2(q)^2 \cdot \ln(1.25/\delta)}{\varepsilon^2}$.
+
+Preserva $(\varepsilon, \delta)$-DP per $\varepsilon, \delta \in (0, 1)$.
+
+$GS_2(q) = \max_{D \sim D'} \|q(D) - q(D')\|_2$ (sensibilit\`{a} L2).
+\end{teorema}
+
+\textbf{Confronto Laplace vs. Gaussiano}:
+\begin{itemize}
+  \item \textbf{Laplace} $\to$ $\varepsilon$-DP, sensibilit\`{a} L1, qualsiasi $\varepsilon > 0$, meno rumore con stessa $GS$.
+  \item \textbf{Gaussiano} $\to$ $(\varepsilon, \delta)$-DP, sensibilit\`{a} L2, richiede $\varepsilon < 1$, migliore quando $GS_2 \ll GS_1$.
+\end{itemize}
+
+\textbf{Confronto Entropia}: il Gaussiano ha entropia $\frac{1}{2}\log(2\pi e\sigma^2)$; il Laplace ha entropia $\ln(\sqrt{2}e\sigma)$. Il Gaussiano ha entropia minore (meno rumore) a parit\`{a} di $\sigma$.
+
+\subsection{Scenario Interattivo vs. Non-Interattivo}
+
+\begin{itemize}
+  \item \textbf{Interattivo}: il dataset rimane segreto; ogni analisi consuma una parte del budget $\varepsilon$. Il curatore \`{e} \emph{fidato}.
+  \item \textbf{Non-Interattivo}: si rilascia un dataset sintetico privato; ulteriori analisi sono libere (post-processing). Il dataset rilasciato deve gi\`{a} soddisfare la DP.
+\end{itemize}
+
+\subsection{Local Differential Privacy (LDP)}
+
+\begin{definizione}[$(\varepsilon, \delta)$-Local DP]
+Un meccanismo $\mathcal{M}$ preserva $(\varepsilon, \delta)$-LDP se per ogni query $q$, per ogni coppia di record $x, x' \in U$ (non solo dataset adiacenti) e per ogni $r \in \mathcal{R}$:
+\[
+\mathbb{P}(\mathcal{M}(q, x) = r) \leq e^{\varepsilon} \cdot \mathbb{P}(\mathcal{M}(q, x') = r) + \delta
+\]
+\end{definizione}
+
+\textbf{DP vs. LDP}:
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+ & \textbf{DP} & \textbf{LDP} \\
+\midrule
+Indistinguibilit\`{a} & Dataset adiacenti & Qualsiasi coppia di record \\
+Curatore & Fidato & Non fidato \\
+Rumore & Meno & Di pi\`{u} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{definizione}[Randomized Response]
+Tecnica classica di sondaggi che preserva la LDP. Protocollo (rispondente a una domanda S\`{i}/No):
+\begin{enumerate}
+  \item Lanciare una moneta.
+  \item Se \textbf{Croce}: rispondere \emph{verit\`{a}}.
+  \item Se \textbf{Testa}: lanciare di nuovo e rispondere S\`{i} (Testa) o No (Croce).
+\end{enumerate}
+Probabilit\`{a}: $P(\text{Sì}|\text{vero=Sì}) = 3/4$; $P(\text{No}|\text{vero=Sì}) = 1/4$.
+
+Il Randomized Response preserva $\log(3)$-DP (LDP).
+
+\textbf{Prova}: Il rapporto massimo \`{e} $\frac{3/4}{1/4} = 3 = e^{\log 3}$.
+\end{definizione}
+
+\begin{definizione}[Randomized Response Generalizzato]
+Per $k$ valori categorici possibili, con $v \in \{v_1, \ldots, v_k\}$:
+\[
+P(\mathcal{M}(q, x) = v) = \begin{cases} \frac{e^\varepsilon}{e^\varepsilon + k - 1} & \text{se } q(x) = v \\ \frac{1}{e^\varepsilon + k - 1} & \text{altrimenti} \end{cases}
+\]
+Preserva $\varepsilon$-LDP. Per dati numerici: usare Laplace/Gaussiano con $GS_1(q) = \max_{x, x' \in U} \|q(x) - q(x')\|_1$.
+\end{definizione}
+
+\subsection{Machine Learning e Differential Privacy}
+
+Negli ultimi anni sono stati sviluppati numerosi algoritmi di Machine Learning \textbf{differenzialmente privati}. L'idea di base del \textbf{DP Machine Learning} \`{e} iniettare rumore nella \emph{fase di training} del modello ML, al fine di nascondere la presenza di un particolare record nel training set.
+
+\begin{nota}[Obiettivo Comune di ML e DP]
+\`{E} importante che un modello di Machine Learning non dipenda eccessivamente dai dati di training (per evitare l'overfitting). In questo senso, ML e DP condividono un obiettivo comune: restituire risultati accurati che \textbf{non dipendano dalla presenza di un individuo specifico nei dati}. La DP formalizza questa garanzia in modo rigoroso, mentre il ML la persegue per motivi di generalizzazione.
+\end{nota}
+
+%=============================================================================
+\section{Privacy in Sistemi Distribuiti}
+%=============================================================================
+
+\subsection{Il Problema}
+
+L'approccio tradizionale di raccogliere tutti i dati in un data warehouse centrale non funziona in un contesto distribuito per motivi di privacy. Creare un algoritmo di data mining/ML che estrae dati direttamente dalle sorgenti locali non risolve il problema: tutti gli ostacoli che impedivano la creazione del data warehouse rimangono, semplicemente incorporati nello strumento di mining.
+
+\textbf{Chi ha bisogno di analisi distribuite private?}
+\begin{itemize}
+  \item \textbf{Enti governativi e pubblici}: i Centers for Disease Control vogliono identificare focolai di malattia; le compagnie assicurative hanno dati su incidenti, gravità e background dei pazienti, ma non possono/devono rilasciarli liberamente.
+  \item \textbf{Collaborazioni industriali}: un consorzio di settore vuole identificare le best practice tra i membri, ma alcune pratiche sono segreti commerciali. Come fornire risultati ``comuni'' mantenendo i segreti?
+  \item \textbf{Multinazionali}: un'azienda vuole estrarre modelli globalmente validi dai propri dati, ma le leggi nazionali impediscono il trasferimento transfrontaliero.
+  \item \textbf{Uso pubblico di dati privati}: le big data analytics permettono studi su popolazioni ampie, ma le popolazioni sono riluttanti a rilasciare informazioni personali.
+\end{itemize}
+
+\textbf{Classi di soluzione}:
+\begin{itemize}
+  \item \textbf{Data Obfuscation}: nessuno vede i dati reali.
+  \item \textbf{Sommarizzazione}: solo i fatti necessari sono esposti.
+  \item \textbf{Data Separation}: solo parti fidate vedono i dati. Approcci: i dati rimangono presso il proprietario/creatore; rilascio limitato a terze parti fidate; operazioni/analisi eseguite dalla parte fidata. Problemi: la parte fidata sarà disposta a fare l'analisi? I risultati dell'analisi divulgano informazioni private?
+\end{itemize}
+
+\subsection{Secure Multiparty Computation (SMC)}
+
+\begin{definizione}[SMC]
+L'obiettivo \`{e} calcolare una funzione quando ogni parte ha qualche input, senza che nessuna parte impari pi\`{u} del necessario.
+
+\textbf{Problema dei Milionari (Yao)}: Alice e Bob vogliono sapere chi \`{e} pi\`{u} ricco senza rivelare il proprio patrimonio.
+\end{definizione}
+
+\begin{definizione}[Oblivious Transfer (OT) 1-of-2]
+\`{E} il blocco crittografico fondamentale che permette di risolvere il Problema dei Milionari senza una terza parte fidata. Prende in considerazione due parti:
+\begin{itemize}
+  \item \textbf{Alice (Sender)}: ha una coppia di input privati $(m_0, m_1)$ (correlati alle chiavi di cifratura).
+  \item \textbf{Bob (Receiver)}: ha un bit privato $b \in \{0,1\}$ (selection bit) che specifica quale dei due messaggi vuole leggere.
+\end{itemize}
+Il protocollo consente a Bob di ottenere $m_b$ tramite la formula:
+\[
+m_b = (1 \oplus b)\,m_0 \oplus b\,m_1
+\]
+(se $b=0$: $m_b = m_0$; se $b=1$: $m_b = m_1$).
+
+\textbf{Proprietà di sicurezza}:
+\begin{itemize}
+  \item \textbf{Sicurezza del Sender}: un receiver corrotto non deve apprendere alcuna informazione aggiuntiva oltre al messaggio che vuole ricevere; se legge $m_0$, non deve poter leggere $m_1$ (sarà illeggibile con la chiave ricevuta).
+  \item \textbf{Sicurezza del Receiver}: un sender corrotto non deve apprendere nulla sul valore di $b$. Questo è il motivo per cui il protocollo è detto \emph{oblivious} (ignaro): il messaggio corretto viene inviato, ma non direttamente, e il sender non sa quale dei due messaggi è stato letto.
+\end{itemize}
+\end{definizione}
+
+\begin{esempio}[OT 1-of-2 per computare l'AND sicuro di due bit]
+Alice vuole calcolare $x_1 \cdot x_2$ (AND) con Bob senza rivelare i propri input. Alice (sender) pone $m_0 = 0$ e $m_1 = x_1$; Bob (receiver) usa $b = x_2$. Allora:
+\[
+m_b = (1 \oplus x_2) \cdot 0 \oplus x_2 \cdot x_1 = x_2 \cdot x_1
+\]
+Bob ottiene $x_1 \cdot x_2$ senza che Alice sappia $x_2$, e senza che Bob sappia $x_1$. Questo è il meccanismo alla base della valutazione sicura dei gate AND nei garbled circuit di Yao.
+\end{esempio}
+
+\textbf{OT 1-of-N} da OT 1-of-2 (per N=$2^k$ messaggi): Alice sceglie $k$ coppie di chiavi casuali (una per ogni bit dell'indice del messaggio desiderato) e cifra ogni messaggio $m_{ij}$ con la coppia corrispondente: $c_{ij} = F_{k'_i}(ij) \oplus F_{k_j}(ij) \oplus m_{ij}$. Bob usa $k$ OT 1-of-2 per ottenere le chiavi giuste e decifra solo il messaggio selezionato.
+
+\textbf{Oblivious Polynomial Evaluation}: il sender ha un polinomio $Q$ di grado $k$; il receiver ha un valore $z$; il receiver ottiene $Q(z)$ senza che il sender sappia $z$ e senza che il receiver impari i coefficienti di $Q$. Overhead: $O(k)$ esponenziali.
+
+\subsubsection{Protocollo di Yao per Due Parti}
+
+\begin{teorema}[Protocollo di Yao (Garbled Circuit)]
+Protocollo a \textbf{round costante} (2 round) per il calcolo sicuro di funzioni arbitrarie.
+\begin{enumerate}
+  \item Alice crea un \textbf{garbled circuit} (circuito oblivioso): per ogni gate del circuito, le tavole di verit\`{a} sono cifrate.
+  \item Alice manda il garbled circuit a Bob insieme ai garbled values per i propri input.
+  \item Bob usa OT per ottenere i garbled values per i propri input $y$ senza che Alice sappia $y$.
+  \item Bob valuta il circuito e ottiene l'output.
+\end{enumerate}
+Overhead: $O(\text{circuito}) + O(|y|)$ OT. Modello di sicurezza: semi-honest.
+\end{teorema}
+
+\begin{esempio}[Soluzione del Problema dei Milionari tramite Secret Sharing]
+Per risolvere il Problema dei Milionari, i valori patrimoniali sono convertiti in stringhe binarie. Le parti valutano un circuito di confronto (``greater-than'') gate per gate: $(A \oplus B) \cdot A$.
+
+\textbf{Secret Sharing}: ogni bit viene suddiviso in due \emph{share} casuali:
+$A = a_1 \oplus a_2$ e $B = b_1 \oplus b_2$, dove Alice aggiunge un bit casuale $c_1$.
+I valori segreti binari vengono suddivisi in pezzi casuali ($a_i$, $b_i$) che possono essere combinati tramite $\oplus$ (addizione modulo 2).
+
+\textbf{Come funziona}:
+\begin{itemize}
+  \item Ogni parte aggiunge un valore casuale al proprio input e lo passa all'altra: entrambe hanno una \emph{share} di tutti gli input.
+  \item Ogni parte calcola la propria share dell'output; le share vengono combinate alla fine.
+  \item \textbf{Gate XOR}: calcolato localmente (addizione modulo 2).
+  \item \textbf{Gate AND}: si invia la propria share codificata nella OT-table; l'OT permette all'altra parte di ottenere solo il valore corretto.
+\end{itemize}
+
+\textbf{OT-table per il gate AND} (valori di output $c_2$ per Bob, dato input $(a_2, b_2)$):
+\begin{center}
+\begin{tabular}{ccc}
+\toprule
+Valore di Bob $(a_2, b_2)$ & OT-input (Alice) & Valore di $c_2$ \\
+\midrule
+$(0,0)$ & 1 & $c_1 \oplus a_1 b_1$ \\
+$(0,1)$ & 2 & $c_1 \oplus a_1(b_1 \oplus 1)$ \\
+$(1,0)$ & 3 & $c_1 \oplus (a_1 \oplus 1)b_1$ \\
+$(1,1)$ & 4 & $c_1 \oplus (a_1 \oplus 1)(b_1 \oplus 1)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Perch\'{e} funziona}: l'obiettivo \`{e} che $c_1 \oplus c_2 = (a_1 \oplus a_2) \cdot (b_1 \oplus b_2)$. Scegliendo il corretto OT-input, la maschera $c_1$ si cancella, lasciando share valide del risultato dell'AND. Esempio: se $(a_2,b_2)=(1,1)$, Bob seleziona il 4\textordmasculine{} valore: $c_2 = c_1 \oplus (a_1 \oplus 1)(b_1 \oplus 1)$; combinando: $c_1 \oplus c_2 = (a_1 \oplus 1)(b_1 \oplus 1) = (a_1 \oplus a_2)(b_1 \oplus b_2)$.
+\end{esempio}
+
+\subsubsection{Privacy Preserving ID3}
+
+\textbf{ID3 Algorithm} (Quinlan): costruisce un decision tree usando information gain.
+\begin{enumerate}
+  \item Calcola il guadagno di informazione per ogni feature.
+  \item Splita il dataset sulla feature con minima entropia (massimo IG).
+  \item Crea un nodo decisionale. Ripeti ricorsivamente per i sottoalberi.
+  \item Se tutte le righe hanno la stessa classe, crea una foglia.
+\end{enumerate}
+
+\begin{definizione}[ID3$_\delta$ -- Lindell \& Pinkas, J. Cryptology 2002]
+Protocollo per ID3 su dati distribuiti orizzontalmente tra due parti (stessa schema, attributi pubblici, entit\`{a} individuali private). Computa un'approssimazione di ID3 chiamata ID3$_\delta$.
+
+\textbf{Assunzioni e limitazioni}:
+\begin{itemize}
+  \item Modello \emph{semi-honest} (honest-but-curious): ogni parte segue correttamente il protocollo ma conserva un registro di tutti i calcoli intermedi.
+  \item Solo il caso a \textbf{due parti}; l'estensione a pi\`{u} parti non \`{e} banale.
+  \item Calcola ID3$_\delta$: qualsiasi implementazione di ID3 che calcola la funzione logaritmo a una precisione predefinita ha un errore $\delta$. ID3$_\delta$ usa un'approssimazione dell'Information Gain che non richiede il calcolo del logaritmo e migliora l'efficienza; computa l'insieme degli alberi con attributi ai nodi che differiscono per IG $< \delta$.
+  \item Gestisce solo \textbf{attributi categorici}.
+\end{itemize}
+
+\textbf{Tre passi principali}:
+\begin{enumerate}
+  \item \textbf{Classe pi\`{u} frequente}: se l'insieme attributi $A$ \`{e} vuoto, restituisce nodo foglia con la classe assegnata alla maggioranza delle transazioni in $D$. L'insieme degli attributi \`{e} pubblico (entrambe sanno se $A$ \`{e} vuoto). Si esegue il protocollo di Yao con input $(|D_1(c_1)|, \ldots, |D_1(c_L)|)$ e $(|D_2(c_1)|, \ldots, |D_2(c_L)|)$; output: $i$ tale che $|D_1(c_i)| + |D_2(c_i)|$ sia massimo. Complessit\`{a} proporzionale al numero di classi e al logaritmo del numero di esempi.
+  \item \textbf{Verifica foglia}: se $D$ ha tutti esempi con la stessa classe $c$, restituisce foglia con valore $c$. Per computare privatamente: si usa un simbolo fisso diverso dai $c_i$ per nodi non puri; le parti inseriscono tale simbolo o $c_i$; si verifica l'uguaglianza (tramite Yao o OT).
+  \item \textbf{Attributo migliore}:
+    \begin{itemize}
+      \item[(a)] Determina l'attributo $A_i$ che meglio classifica $D$: calcolato calcolando in modo sicuro $x \cdot (\ln x)$. Il protocollo di Yao restituisce share casuali di $n$ e $\varepsilon$ tali che $x = 2^n(1+\varepsilon)$ con $-\frac{1}{2} < \varepsilon < \frac{1}{2}$; allora $n\ln 2$ \`{e} la stima grezza di $\ln x$ e $\ln(1+\varepsilon)$ il ``remainder'' approssimato tramite serie di Taylor (valutazione di un polinomio intero con circuiti semplici).
+      \item[(b,c)] Chiama ricorsivamente ID3$_\delta$ sugli insiemi $D(a_1), \ldots, D(a_m)$ dove $a_1, \ldots, a_m$ sono i valori di $A_i$. Poich\'{e} i risultati di (a) e i valori degli attributi sono pubblici, entrambe le parti partizionano il database autonomamente.
+    \end{itemize}
+\end{enumerate}
+\end{definizione}
+
+\subsection{Altri Approcci}
+
+\begin{itemize}
+  \item \textbf{Functional encryption}: generalizzazione della crittografia a chiave pubblica; decriptare rivela solo una funzione del plaintext.
+  \item \textbf{Homomorphic encryption}: crittografia che permette di effettuare calcoli su dati cifrati senza decriptarli; i risultati sono in forma cifrata. Computazionalmente costosa.
+  \item \textbf{Federated learning}: consente di allenare un algoritmo su molti dispositivi decentralizzati senza effettuare scambi di dati grezzi; solo i gradienti (o parametri) del modello vengono condivisi.
+\end{itemize}
+
+%=============================================================================
+\section{Fairness e Discriminazione}
+%=============================================================================
+
+\subsection{Introduzione alla Fairness}
+
+\begin{definizione}[Metodo Clinico vs. Attuariale]
+\begin{itemize}
+  \item \textbf{Metodo Clinico}: il decisore combina o elabora le informazioni nella sua mente. Un metodo IA clinico si basa su una serie di regole prestabilite fornite da un esperto del settore (sistemi esperti). Usato prevalentemente dal 1956 al 1990.
+  \item \textbf{Metodo Attuariale/Statistico}: le conclusioni si basano esclusivamente su relazioni empiricamente stabilite tra i dati e la condizione o l'evento di interesse. Un metodo IA attuariale esamina i dati passati per prevedere i risultati futuri (machine learning, deep learning). Dal 1980 ad oggi.
+\end{itemize}
+\end{definizione}
+
+\begin{definizione}[Bias -- Concetto Generale]
+Il termine \textbf{bias} (pregiudizio/distorsione) indica una tendenza sistematica che porta a risultati distorti o ingiusti. Nel contesto dell'IA e del machine learning si distinguono due accezioni:
+\begin{itemize}
+  \item \textbf{Bias statistico/di apprendimento}: errore sistematico nella stima di una quantità. Un modello che fa assunzioni troppo semplici rispetto alla realtà ha alto bias (underfitting). Formula: $\text{Errore} = \text{Bias}^2 + \text{Varianza} + \text{Rumore irreducibile}$.
+  \item \textbf{Bias di discriminazione}: tendenza sistematica di un algoritmo a produrre decisioni sfavorevoli per determinati gruppi (razza, genere, religione, ecc.) anche in assenza di intenzione esplicita.
+\end{itemize}
+
+\textbf{Fonti di bias nei sistemi ML}:
+\begin{enumerate}
+  \item \textbf{Bias nei dati storici}: i dati di training riflettono discriminazioni passate (es. dati di assunzione da aziende che storicamente escludevano donne).
+  \item \textbf{Bias di misurazione}: le variabili nel dataset non catturano accuratamente il fenomeno reale per tutti i gruppi.
+  \item \textbf{Bias di campionamento}: il training set non è rappresentativo di tutti i gruppi su cui il modello opererà.
+  \item \textbf{Bias di aggregazione}: il modello ignora differenze importanti tra sottogruppi.
+  \item \textbf{Proxy attributes}: attributi apparentemente neutri (codice postale, nome) correlati ad attributi sensibili.
+\end{enumerate}
+
+\textbf{Rischi etici}: un sistema ML con bias di discriminazione può perpetuare e amplificare le disuguaglianze esistenti -- il \emph{feedback loop}: dati distorti $\to$ modello distorto $\to$ decisioni distorte $\to$ nuovi dati ancora più distorti.
+\end{definizione}
+
+\textbf{Esempi di bias nel ML}:
+\begin{itemize}
+  \item Google Photos classifica afroamericani come gorilla.
+  \item Algoritmo IA per concorsi di bellezza: preferisce persone di pelle chiara.
+  \item Modelli di predizione dei crimini (COMPAS): assegna punteggi di rischio pi\`{u} alti ad afroamericani.
+  \item Modelli di scraping AI mostrano discriminazione nei confronti delle donne.
+  \item Amazon abandona un modello di selezione del personale che discriminava le donne.
+  \item Negli USA persone con nomi ``tipicamente bianchi'' ricevono pi\`{u} colloqui di lavoro.
+\end{itemize}
+
+\textbf{Problema fondamentale}: L'IA attuariale \`{e} spesso \emph{opaca}: \`{e} difficile capire perch\'{e} un sistema ha preso una particolare decisione. Sebbene sia possibile ispezionare i parametri di un modello, collegare questi parametri alle ragioni effettive delle decisioni \`{e} difficile.
+
+\subsection{Machine Learning e Fairness}
+
+\begin{definizione}[Classificazione]
+La classificazione \`{e} il processo di determinare un valore plausibile per $Y$ dato $X$, dove $X$ sono i dati/covariati e $Y$ sono i valori target. Si apprende $f_\theta: X \to \hat{Y}$.
+
+Accuratezza: $P(Y = \hat{Y})$.
+
+\textbf{Classificatore ottimale}: minimizza $\mathbb{E}[l(Y, \hat{Y})]$ (valore atteso del costo). Equivalentemente: $\hat{Y} = f(X)$ dove $f(X) = 1$ se $\mathbb{P}(Y=1|X=x) > 1/2$, altrimenti $0$.
+\end{definizione}
+
+\begin{definizione}[Ciclo ML]
+Stato del Mondo $\xrightarrow{\text{Measurement}}$ Data $\xrightarrow{\text{Learning}}$ Model $\xrightarrow{\text{Action}}$ Individuals $\xrightarrow{\text{Feedback}}$ Stato del Mondo.
+
+\begin{itemize}
+  \item \textbf{Misurazione}: il processo in cui lo stato del mondo viene ridotto a tabelle di dati. Alcune caratteristiche possono essere non osservabili (necessit\`{a} di un modello di misurazione).
+  \item \textbf{Apprendimento}: ricerca di buoni parametri $\theta$ per $f$.
+  \item \textbf{Azioni}: come vengono impiegate le decisioni su input nuovi.
+  \item \textbf{Feedback}: registrazione delle reazioni degli utenti.
+\end{itemize}
+
+Problemi di bias nel ciclo: dati sufficienti per tutti i gruppi? Le misurazioni non sono di parte? L'assunzione di indipendenza degli errori \`{e} probabilmente falsa tra gruppi.
+\end{definizione}
+
+\subsection{Discriminazione e Misure di Discriminazione}
+
+\begin{definizione}[Discriminazione Diretta]
+La pratica di trattare in modo diverso le persone in base alla loro appartenenza a un gruppo sociale rilevante. Nell'UE \`{e} disciplinata dall'Art.21 della Carta dei Diritti Fondamentali.
+\end{definizione}
+
+\begin{definizione}[Discriminazione Indiretta]
+La pratica di offrire lo stesso trattamento a persone appartenenti a gruppi sociali distinti se ci\`{o} comporta che un gruppo di persone sia posto in una situazione di particolare svantaggio.
+
+\textbf{Esempio}: pensioni calcolate in modo uguale per part-time e full-time; poich\'{e} l'88\% dei part-time erano donne, l'effetto era sproporzionatamente negativo per le donne (caso Hilde Sch\"{o}nheit vs. Frankfurt).
+\end{definizione}
+
+\textbf{Cosa rende sbagliata la discriminazione?}
+\begin{itemize}
+  \item \emph{Animosit\`{a} sistematica}: intenzione ostile verso determinati gruppi -- ma gli algoritmi non hanno intenzioni.
+  \item \emph{Fare inferenze sugli individui basate sui gruppi di cui fanno parte}: trattare le persone come categorie, non come individui.
+\end{itemize}
+
+\subsubsection{Egalitarismo}
+
+\begin{definizione}[Egalitarismo]
+L'idea che le persone debbano essere trattate in modo uguale e che alcune cose di valore debbano essere distribuite equamente.
+\begin{itemize}
+  \item Cohen: piacere o soddisfazione delle preferenze.
+  \item Rawls \& Dworkin: reddito e beni.
+  \item Sen: capacit\`{a} e risorse necessarie per fare determinate cose.
+\end{itemize}
+\end{definizione}
+
+\textbf{Tipi di danni algoritmici}:
+\begin{itemize}
+  \item \textbf{Allocativi}: a determinati gruppi vengono negate risorse in modo disparato (COMPAS, sistema di assunzione di Amazon).
+  \item \textbf{Rappresentativi}: viene rafforzata la subordinazione di alcuni gruppi (beauty.ai, traduzione automatica).
+\end{itemize}
+
+\begin{definizione}[Inconsapevolezza -- Fairness through Unawareness]
+L'inconsapevolezza di solito non esiste nei dati del mondo reale ed \`{e} difficile da sostenere: correlazioni tra attributi innocui e attributi sensibili permettono ai modelli di ``recuperare'' informazioni sensibili anche senza usarle esplicitamente.
+\end{definizione}
+
+\subsubsection{Criteri di Fairness (Metriche)}
+
+Siano $X$ covariate, $Y$ variabile target, $\hat{Y}$ la stima del classificatore $f_\theta$, $R$ il punteggio di rischio, $A$ l'attributo sensibile (es. razza, genere).
+
+\begin{definizione}[Indipendenza (Demographic Parity)]
+Le variabili casuali $(\hat{Y}, A)$ soddisfano l'indipendenza se $\hat{Y} \perp A$, ovvero:
+\[
+\mathbb{P}(\hat{Y} = 1 \mid A = a) = \mathbb{P}(\hat{Y} = 1 \mid A = b)
+\]
+Versione rilassata (con $\varepsilon \geq 0$):
+\[
+\frac{\mathbb{P}(\hat{Y} = 1 \mid A = a)}{\mathbb{P}(\hat{Y} = 1 \mid A = b)} \geq 1 - \varepsilon
+\]
+
+\textbf{Problema}: l'indipendenza pu\`{o} essere soddisfatta con decisioni malintenzionate (assumere dal gruppo $b$ casualmente con probabilit\`{a} $p$ mentre dal gruppo $a$ con merito $p$ $\Rightarrow$ gruppo $b$ ha risultati peggiori).
+\end{definizione}
+
+\begin{definizione}[Separazione (Equal Error Rates)]
+Le variabili casuali $(\hat{Y}, A, Y)$ soddisfano la separazione se $\hat{Y} \perp A \mid Y$.
+
+La separazione pu\`{o} essere intesa come \textbf{parit\`{a} del tasso di errore tra i gruppi}: il classificatore commette errori con la stessa frequenza nei vari gruppi.
+\end{definizione}
+
+\begin{definizione}[Sufficienza (Calibration)]
+Le variabili casuali $(\hat{Y}, A, Y)$ soddisfano la sufficienza se $Y \perp A \mid \hat{Y}$.
+
+La sufficienza riflette la \textbf{calibrazione}: la previsione del modello \`{e} ugualmente affidabile per tutti i gruppi.
+\end{definizione}
+
+\begin{teorema}[Teoremi di Incompatibilit\`{a}]
+Se $A$ e $Y$ \textbf{non sono indipendenti} (il che \`{e} quasi sempre vero in contesti reali), allora:
+\begin{itemize}
+  \item \textbf{Separazione e Indipendenza non possono essere entrambe vere simultaneamente} (a meno di casi degeneri).
+  \item \textbf{Sufficienza e Indipendenza non possono essere entrambe vere simultaneamente} (a meno di casi degeneri).
+\end{itemize}
+Questi risultati mostrano che non \`{e} possibile soddisfare contemporaneamente tutti i criteri di fairness desiderabili.
+\end{teorema}
+
+\subsubsection{Interventi di Fairness}
+
+\begin{itemize}
+  \item \textbf{Pre-processing}: cambiare i dati di input ($X$) o i target ($Y$) o entrambi prima del training.
+  \item \textbf{In-processing}: cambiare il processo di learning $f_\theta$ (aggiungere vincoli o penalizzazioni al training).
+  \item \textbf{Post-processing}: cambiare $\hat{Y}$ dopo che il modello \`{e} stato addestrato.
+\end{itemize}
+
+\begin{definizione}[Soppressione per Fairness]
+Trovare le caratteristiche in $X$ che sono correlate con le informazioni sensibili $A$ e rimuoverle. Una nozione pi\`{u} generale \`{e} la \textbf{mutua informazione di Shannon}.
+\end{definizione}
+
+\end{document}

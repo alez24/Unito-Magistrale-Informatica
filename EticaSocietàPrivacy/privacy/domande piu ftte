@@ -1,0 +1,22 @@
+1) Differential privacy.
+2) Local e Global Differential privacy.
+3) Privacy e Security.
+4) Privacy: perché è importante?
+5) GDPR: princìpi e sanzioni.
+6) Discriminazione (parte su fairness).
+7) Teoremi di incompatibilità: separazione e sufficienza.
+8) Algoritmi per la k-anonimity: Samarati e Incognito.
+9) Differential privacy, con global e local (again).
+10) Laplace e Gauss (per numerici), Esponenziale (per categorici).
+11) Concetto di bias per discriminazione e apprendimento (parte su fairness).
+12) Trade off Privacy-Utilità. KL e JS.
+13) Uso di XML per RBAC e ABAC.
+14) GDPR: novità rispetto a precedente direttiva, differenze con paesi esterni a UE (USA), etc.
+15) Privacy by Design e by Default.
+16) Cambridge analitica (esempio in cui i dati sono usati per un'altra finalità: manipolare elezioni).
+17) Princìpi crittografici durante il corso (encryption su colonna, ultime slides).
+18) l-diversity e Differential privacy.
+19) Multiparty Secure Computation: ultime slides, approccio "standard", privacy distribuited mining, milionari e Oblivious Transfert, ID3.
+20) k-anonimity.
+21) Algoritmo di Multiparty Secure Computation: ID3.
+22) Bias: rischi etici. Misurazione (fairness).

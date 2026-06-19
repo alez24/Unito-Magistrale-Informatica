@@ -1,0 +1,840 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{microtype}
+
+\geometry{margin=2.5cm}
+
+\tcbuselibrary{theorems, skins, breakable}
+
+\newtcolorbox{domanda}[1][]{colback=blue!5!white, colframe=blue!60!black,
+  fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{risposta}[1][]{colback=white, colframe=gray!60!black,
+  fonttitle=\bfseries, title={Risposta}, breakable}
+\newtcolorbox{definizione}[1][]{colback=red!5!white, colframe=red!60!black,
+  fonttitle=\bfseries, title={Definizione: #1}, breakable}
+
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+\title{\textbf{Etica, Societ\`{a} e Privacy}\\[0.5em]
+\large Risposte alle Domande d'Esame Pi\`{u} Frequenti\\[0.3em]
+\normalsize Universit\`{a} di Torino -- Magistrale Informatica -- A.A. 2024/2025}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================================================
+\section*{Introduzione}
+%=============================================================================
+Questo documento risponde alle 22 domande d'esame pi\`{u} frequentemente poste nel corso di Etica, Societ\`{a} e Privacy (modulo Privacy) presso l'Universit\`{a} di Torino.
+
+\newpage
+
+%=============================================================================
+\section{Differential Privacy}
+%=============================================================================
+
+\begin{domanda}[Domanda 1: Differential Privacy]
+Cos'\`{e} la Differential Privacy? Spiegare la definizione formale, la motivazione e come funziona.
+\end{domanda}
+
+La \textbf{Differential Privacy (DP)}, introdotta da Cynthia Dwork nel 2006 (``Calibrating Noise to Sensitivity in Private Data Analysis''), \`{e} un framework matematico rigoroso per rilasciare informazioni statistiche proteggendo contemporaneamente la privacy degli individui nel dataset.
+
+\textbf{Motivazione}: vogliamo poter rispondere a query su un dataset senza rivelare informazioni sugli individui specifici. La DP garantisce che la presenza o l'assenza di un singolo individuo nel dataset abbia un impatto trascurabile sull'output della query.
+
+\textbf{Definizione formale}: Due dataset $D$ e $D'$ si dicono \emph{adiacenti} ($D \sim D'$) se differiscono per esattamente un record. Un meccanismo randomizzato $\mathcal{M}: \Omega \times Q \to \mathcal{R}$ preserva la $\varepsilon$-differential privacy se per qualsiasi query $q$, per ogni coppia di dataset adiacenti $D, D'$ e per ogni possibile risposta $r \in \mathcal{R}$:
+\[
+e^{-\varepsilon} \leq \frac{\mathbb{P}(\mathcal{M}(q, D) = r)}{\mathbb{P}(\mathcal{M}(q, D') = r)} \leq e^{\varepsilon}
+\]
+
+\textbf{Privacy budget $\varepsilon$}: pi\`{u} piccolo \`{e} $\varepsilon$, maggiore \`{e} la garanzia di privacy; per $\varepsilon \to 0$ le due distribuzioni sono indistinguibili (massima privacy, minima utilit\`{a}). Valori tipici: $\varepsilon \in [0.1, 5]$.
+
+\textbf{Meccanismo di Laplace}: il principale meccanismo per query numeriche. Aggiunge rumore Laplaciano calibrato alla sensibilit\`{a} della query:
+\[
+\mathcal{M}_{Lap}(D, q) = q(D) + Lap\!\left(0, \frac{GS_1(q)}{\varepsilon}\right)
+\]
+dove $GS_1(q) = \max_{D \sim D'} |q(D) - q(D')|$ \`{e} la \emph{sensibilit\`{a} globale} (il massimo cambiamento possibile dell'output togliendo/aggiungendo un record).
+
+\textbf{Teoremi fondamentali}:
+\begin{itemize}
+  \item \textbf{Post-processing}: qualunque elaborazione dell'output di un meccanismo DP non riduce la privacy.
+  \item \textbf{Composizione}: due meccanismi $\varepsilon_1$-DP e $\varepsilon_2$-DP composti danno $(\varepsilon_1 + \varepsilon_2)$-DP.
+  \item \textbf{Composizione parallela}: applicare lo stesso meccanismo $\varepsilon$-DP su partizioni disgiunte del dataset mantiene $\varepsilon$-DP.
+\end{itemize}
+
+La DP offre una \textbf{garanzia matematicamente dimostrabile} contro qualsiasi forma di disclosure, indipendentemente dalla conoscenza pregressa dell'avversario.
+
+%=============================================================================
+\section{Local e Global Differential Privacy}
+%=============================================================================
+
+\begin{domanda}[Domanda 2 \& 9: Local e Global Differential Privacy]
+Qual \`{e} la differenza tra Local e Global Differential Privacy?
+\end{domanda}
+
+\textbf{Global Differential Privacy (GDP) / Standard DP}:
+\begin{itemize}
+  \item Esiste un \textbf{curatore fidato} (trusted curator) che raccoglie i dati grezzi di tutti gli individui.
+  \item La randomizzazione avviene \emph{sul database aggregato} prima di rispondere alle query.
+  \item L'indistinguibilit\`{a} riguarda \textbf{dataset adiacenti} (differiscono per un solo record).
+  \item Richiede meno rumore $\Rightarrow$ maggiore utilit\`{a}.
+  \item Esempio: il curatore raccoglie tutti i dati medici e risponde alle query aggiungendo rumore.
+\end{itemize}
+
+\textbf{Local Differential Privacy (LDP)}:
+\begin{itemize}
+  \item \textbf{Non c'\`{e} un curatore fidato}. Ogni individuo randomizza i propri dati \emph{prima} di inviarli al raccoglitore.
+  \item L'indistinguibilit\`{a} riguarda \textbf{qualsiasi coppia di record} $x, x' \in U$ (non solo dataset adiacenti):
+  \[
+  \mathbb{P}(\mathcal{M}(q, x) = r) \leq e^{\varepsilon} \cdot \mathbb{P}(\mathcal{M}(q, x') = r) + \delta
+  \]
+  \item Richiede \textbf{molto pi\`{u} rumore} $\Rightarrow$ minore utilit\`{a}.
+  \item Esempio: Randomized Response, Apple (iOS), Google (Chrome Rappor).
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Aspetto} & \textbf{GDP} & \textbf{LDP} \\
+\midrule
+Fiducia nel curatore & S\`{i} & No \\
+Dove si randomizza & Sul database & Sui singoli record \\
+Indistinguibilit\`{a} & Dataset adiacenti & Qualsiasi coppia di record \\
+Quantit\`{a} di rumore & Minore & Maggiore \\
+Utilit\`{a} & Maggiore & Minore \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Randomized Response} (LDP, Warner 1965): tecnica classica per sondaggi sensibili.
+\begin{enumerate}
+  \item Lancia una moneta.
+  \item Testa: rispondi veridicamente.
+  \item Croce: lancia di nuovo e rispondi S\`{i}/No in modo casuale.
+\end{enumerate}
+$P(\text{S\`{i}}|\text{vero=S\`{i}}) = 3/4$, $P(\text{S\`{i}}|\text{vero=No}) = 1/4$. Rapporto massimo: $\frac{3/4}{1/4} = 3 = e^{\log 3}$ $\Rightarrow$ preserva $\log(3)$-LDP.
+
+\textbf{Randomized Response Generalizzato} per $k$ categorie: $P(\mathcal{M}(x) = v) = \frac{e^\varepsilon}{e^\varepsilon + k - 1}$ se $v = q(x)$, altrimenti $\frac{1}{e^\varepsilon + k - 1}$.
+
+%=============================================================================
+\section{Privacy e Security}
+%=============================================================================
+
+\begin{domanda}[Domanda 3: Privacy e Security]
+Qual \`{e} la relazione tra Privacy e Security?
+\end{domanda}
+
+\textbf{Privacy} e \textbf{Security} sono concetti correlati ma distinti:
+
+\textbf{Security (Sicurezza)}:
+\begin{itemize}
+  \item Riguarda la \textbf{protezione dei dati da accessi non autorizzati}.
+  \item Si occupa di garantire: \emph{confidenzialit\`{a}} (solo chi \`{e} autorizzato accede), \emph{integrit\`{a}} (i dati non vengono alterati), \emph{disponibilit\`{a}} (i dati sono accessibili quando necessario).
+  \item Strumenti: crittografia, firewall, autenticazione, controllo degli accessi (RBAC, ABAC).
+  \item Focus: \textbf{proteggere il sistema} dagli attaccanti.
+\end{itemize}
+
+\textbf{Privacy}:
+\begin{itemize}
+  \item Riguarda il \textbf{controllo sull'uso delle informazioni personali}, anche da parte di chi ha accesso autorizzato.
+  \item Si occupa di: uso appropriato dei dati, consenso, minimizzazione, anonimizzazione.
+  \item Strumenti: k-anonymity, differential privacy, pseudonimizzazione, SDC.
+  \item Focus: \textbf{proteggere gli individui} da un uso improprio dei loro dati.
+\end{itemize}
+
+\textbf{Relazione}: la security \`{e} \emph{necessaria ma non sufficiente} per la privacy.
+\begin{itemize}
+  \item Un sistema pu\`{o} essere sicuro ma violare la privacy (es. un ospedale che ha la sicurezza delle reti ma vende i dati dei pazienti).
+  \item La privacy richiede la security come fondamento, ma va oltre.
+\end{itemize}
+
+Nel contesto del GDPR, entrambe sono richieste: il controllore deve implementare misure di sicurezza adeguate (Art. 32) e rispettare i princìpi di Privacy by Design e by Default (Art. 25).
+
+La crittografia su colonne, il Randomized Response e i sistemi di controllo degli accessi (ABAC/RBAC) sono strumenti che servono sia la security che la privacy.
+
+%=============================================================================
+\section{Privacy: Perch\'{e} \`{e} Importante?}
+%=============================================================================
+
+\begin{domanda}[Domanda 4: Privacy: perch\'{e} \`{e} importante?]
+Spiegare perch\'{e} la privacy \`{e} importante, con riferimento a fonti teoriche e casi concreti.
+\end{domanda}
+
+La privacy \`{e} importante per molteplici ragioni:
+
+\textbf{1. Sentimenti individuali e dignit\`{a}}: La perdita della privacy crea un senso di disagio (``non confortabile''). I dati possono essere usati in modo improprio (furto d'identit\`{a}). Stefano Rodat\`{a} lega la privacy alla \textbf{dignit\`{a} umana}: la perdita dei dati personali ha un costo immenso ($1.000$--$3.000\$$ per cittadino).
+
+\textbf{2. Esigenze aziendali}: Le aziende devono proteggere la reputazione, far sentire i clienti al sicuro, evitare dispute legali e rispettare le leggi.
+
+\textbf{3. Libert\`{a} civile e democrazia}: Come dice Edward Snowden: \emph{``Argumentare che non ci importa della privacy perch\'{e} non abbiamo nulla da nascondere \`{e} come dire che non ci importa della libert\`{a} di espressione perch\'{e} non abbiamo nulla da dire.''}
+
+\textbf{4. Evidenza empirica -- casi concreti}:
+\begin{itemize}
+  \item \textbf{Netflix Prize (2006)}: dati di rating ``anonimizzati'' re-identificati con probabilit\`{a} 90\%.
+  \item \textbf{AOL (2006)}: query di ricerca ``anonimizzate'' permettono di identificare gli utenti.
+  \item \textbf{Cambridge Analytica (2018)}: dati di 87 milioni di utenti Facebook usati per manipolare elezioni politiche.
+  \item \textbf{Studio PNAS 2013}: i ``Like'' di Facebook rivelano orientamento sessuale, opinioni politiche, salute.
+  \item \textbf{Sweeney (2001)}: l'87\% degli americani \`{e} unicamente identificabile da \{ZIP, sesso, data di nascita\}.
+  \item \textbf{INPS data breach (2020)}: hackers italiani accedono ai dati dell'INPS durante la pandemia.
+\end{itemize}
+
+\textbf{5. Trade-off privacy-comodit\`{a}}: Pi\`{u} comodit\`{a} spesso significa meno privacy (GPS, cookies, social network). Ma questo trade-off \`{e} in parte frutto di \textbf{ignoranza e conformismo}: con le tecniche giuste (DP, k-anonymity) \`{e} possibile ottenere sia utilit\`{a} dei dati che protezione della privacy.
+
+%=============================================================================
+\section{GDPR: Princìpi e Sanzioni}
+%=============================================================================
+
+\begin{domanda}[Domanda 5 \& 14: GDPR -- Princìpi, Sanzioni e Novit\`{a} rispetto alla Direttiva]
+Descrivere il GDPR: princìpi fondamentali, sanzioni, novit\`{a} rispetto alla Direttiva 95/46/EC, differenze con paesi extra-UE (USA).
+\end{domanda}
+
+\textbf{Il GDPR} (Regolamento EU 2016/679) \`{e} un \textbf{regolamento} (non direttiva) adottato il 27 aprile 2016, applicabile dal 25 maggio 2018. Non richiede leggi nazionali di recepimento.
+
+\textbf{Princìpi fondamentali (ereditati e rafforzati dalla Direttiva)}:
+\begin{enumerate}
+  \item \textbf{Trasparenza}: il soggetto deve dare \emph{consenso chiaro ed esplicito}; ha diritto di accedere facilmente ai propri dati.
+  \item \textbf{Scopo Legittimo}: i dati possono essere trattati solo per scopi specificati e non ulteriormente elaborati in modo incompatibile.
+  \item \textbf{Proporzionalit\`{a}}: i dati devono essere accurati, aggiornati, e non mantenuti pi\`{u} del necessario.
+\end{enumerate}
+
+\textbf{Novit\`{a} del GDPR rispetto alla Direttiva 95/46/EC}:
+\begin{itemize}
+  \item \textbf{Nuovi diritti}: diritto all'oblio (right to be forgotten), portabilit\`{a} dei dati, diritto di opporsi al profiling.
+  \item \textbf{Definizioni ampliate}: ``dati personali'' ora include location data, online identifier, dati genetici.
+  \item ``Trattamento'' ora include structuring (strutturazione) e restriction (limitazione).
+  \item \textbf{Pseudonimizzazione}: definita esplicitamente; se adeguata $\Rightarrow$ dati non soggetti a GDPR.
+  \item \textbf{Privacy by Design e by Default}: obbligo formale (Art. 25).
+  \item \textbf{Data Protection Officer} (DPO): figura obbligatoria per certi tipi di organizzazioni.
+  \item \textbf{Data Protection Impact Assessment} (DPIA): obbligatorio per trattamenti ad alto rischio.
+  \item \textbf{Data breach notification}: entro 72 ore all'autorit\`{a} di supervisione.
+  \item \textbf{Sanzioni molto pi\`{u} severe}: fino al 4\% del fatturato mondiale.
+  \item \textbf{Regolamento direttamente applicabile}: nessuna legge di recepimento nazionale necessaria.
+\end{itemize}
+
+\textbf{Sanzioni GDPR}:
+\begin{itemize}
+  \item Prima violazione non intenzionale: \textbf{avviso}.
+  \item Violazione di obblighi minori: fino a \textbf{10 milioni di euro} o \textbf{2\% del fatturato mondiale}.
+  \item Violazione grave dei princìpi: fino a \textbf{20 milioni di euro} o \textbf{4\% del fatturato mondiale}.
+\end{itemize}
+
+\textbf{Differenze EU vs. USA}:
+\begin{itemize}
+  \item Negli USA \textbf{non esiste una legge unificata} sulla data privacy: HIPAA (sanit\`{a}), COPPA (minori), FCRA (credito), ECPA (comunicazioni), PATRIOT Act (sorveglianza). Le aziende che raccolgono dati (anche senza consenso) hanno il diritto di usarli.
+  \item In UE la privacy \`{e} un \textbf{diritto fondamentale} (ECHR Art.8); il GDPR si applica a tutte le organizzazioni che trattano dati di cittadini UE, ovunque nel mondo.
+  \item Accordi transatlantici per trasferimento dati: Safe Harbor (1998--2015) $\to$ EU-US Privacy Shield (2016--2020) $\to$ EU-US Data Privacy Framework (2023).
+\end{itemize}
+
+\textbf{L'AI Act (2024)}: complementare al GDPR, classifica i sistemi di IA in 4 livelli di rischio (inaccettabile, alto, limitato, minimo).
+
+%=============================================================================
+\section{Discriminazione (Fairness)}
+%=============================================================================
+
+\begin{domanda}[Domanda 6: Discriminazione (parte su Fairness)]
+Cos'\`{e} la discriminazione? Che tipi esistono? Come si relaziona con i sistemi algoritmici?
+\end{domanda}
+
+\begin{definizione}[Discriminazione Diretta]
+La pratica di trattare in modo \textbf{diverso} le persone in base alla loro appartenenza a un gruppo sociale rilevante (razza, genere, religione, orientamento sessuale, et\`{a}, etc.). Nell'UE \`{e} disciplinata dall'Art. 21 della Carta dei Diritti Fondamentali.
+\end{definizione}
+
+\begin{definizione}[Discriminazione Indiretta]
+La pratica di offrire lo \textbf{stesso trattamento} a persone appartenenti a gruppi distinti, quando questo comporta che un gruppo sia posto in una situazione di particolare svantaggio.
+\end{definizione}
+
+\textbf{Esempi}:
+\begin{itemize}
+  \item \textit{Discriminazione indiretta}: le pensioni calcolate ugualmente per part-time e full-time penalizzano le donne (88\% dei part-time) $\Rightarrow$ effetto sproporzionatamente negativo (caso Hilde Sch\"{o}nheit vs. Stadt Frankfurt am Main).
+  \item \textit{Discriminazione indiretta sistemica}: test di intelligenza standardizzati per studenti Rom in Repubblica Ceca, concepiti per la popolazione generale ceca $\Rightarrow$ 50-90\% dei bambini Rom fuori dal sistema scolastico tradizionale (caso D.H. vs. Repubblica Ceca).
+\end{itemize}
+
+\textbf{Cosa rende sbagliata la discriminazione?}
+\begin{enumerate}
+  \item \emph{Animosit\`{a} sistematica (intento ostile)}: tradizionalmente la base per definire la discriminazione. Ma: gli algoritmi non hanno intenzioni; gli scienziati possono affermare di non aver avuto intenzioni discriminatorie.
+  \item \emph{Fare inferenze sugli individui basate sui gruppi}: trattare le persone come rappresentanti di categorie invece che come individui.
+\end{enumerate}
+
+\textbf{Discriminazione algoritmica}: i sistemi ML ereditano (e amplificano) i bias presenti nei dati di training.
+\begin{itemize}
+  \item Google Photos classifica afroamericani come gorilla.
+  \item COMPAS: sistema di predizione della recidiva criminale assegna punteggi di rischio pi\`{u} alti ad afroamericani.
+  \item Amazon recruitment model: discrimina le donne (le candidature con curricula femminili ricevono punteggi minori).
+  \item Negli USA, candidati con nomi ``bianchi'' ricevono il 50\% in pi\`{u} di colloqui di lavoro.
+\end{itemize}
+
+\textbf{Tipi di danni algoritmici}:
+\begin{itemize}
+  \item \textbf{Allocativi}: risorse negate disparatamente (prestiti, assunzioni, libert\`{a} provvisoria).
+  \item \textbf{Rappresentativi}: subordinazione rafforzata (ricerca di immagini, traduzione automatica).
+\end{itemize}
+
+%=============================================================================
+\section{Teoremi di Incompatibilit\`{a}: Separazione e Sufficienza}
+%=============================================================================
+
+\begin{domanda}[Domanda 7: Teoremi di Incompatibilit\`{a}: Separazione e Sufficienza]
+Enunciare e spiegare i teoremi di incompatibilit\`{a} tra i criteri di fairness.
+\end{domanda}
+
+Siano $X$ covariate, $Y$ variabile target (ground truth), $\hat{Y}$ predizione del classificatore, $A$ attributo sensibile (es. razza, genere).
+
+\textbf{Tre criteri principali di fairness}:
+
+\textbf{1. Indipendenza (Demographic Parity)}: $\hat{Y} \perp A$
+\[
+\mathbb{P}(\hat{Y} = 1 \mid A = a) = \mathbb{P}(\hat{Y} = 1 \mid A = b)
+\]
+Ogni gruppo riceve la stessa percentuale di esiti positivi.
+
+\textbf{2. Separazione (Equal Error Rates)}: $\hat{Y} \perp A \mid Y$
+
+Il classificatore commette errori con la stessa frequenza nei vari gruppi. Pu\`{o} essere intesa come parit\`{a} dei tassi di errore tra i gruppi.
+
+\textbf{3. Sufficienza (Calibration)}: $Y \perp A \mid \hat{Y}$
+
+La previsione del modello \`{e} ugualmente affidabile (calibrata) per tutti i gruppi.
+
+\textbf{Teoremi di Incompatibilit\`{a}}:
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!70!black, title=\textbf{Teorema di Impossibilit\`{a} (Chouldechova, 2017; Kleinberg et al., 2016)}]
+Se $A$ e $Y$ \textbf{non sono indipendenti} (cio\`{e} il tasso base ($P(Y=1)$) differisce tra i gruppi), allora:
+\begin{enumerate}
+  \item \textbf{Separazione e Indipendenza non possono essere entrambe soddisfatte} simultaneamente (eccetto in casi degeneri).
+  \item \textbf{Sufficienza e Indipendenza non possono essere entrambe soddisfatte} simultaneamente (eccetto in casi degeneri).
+\end{enumerate}
+\end{tcolorbox}
+
+\textbf{Interpretazione intuitiva}: Se il tasso base \`{e} diverso tra i gruppi (es. il gruppo $A$ ha storicamente pi\`{u} recidiva del gruppo $B$), allora un classificatore calibrato avr\`{a} necessariamente tassi di errore diversi tra i gruppi (viola separazione), e viceversa.
+
+\textbf{Implicazione pratica}: Non esiste un classificatore ``perfetto'' in termini di fairness quando i gruppi hanno tassi base diversi. Bisogna scegliere quale criterio privilegiare in base al contesto etico e legale.
+
+\textbf{Esempio COMPAS}: un sistema calibrato (sufficienza: la previsione ha lo stesso significato per bianchi e neri) avr\`{a} necessariamente tassi di falsi positivi diversi tra i gruppi se i tassi di recidiva base sono diversi (viola separazione). Non \`{e} possibile avere entrambi.
+
+\textbf{Interventi di fairness}:
+\begin{itemize}
+  \item \textbf{Pre-processing}: modificare i dati di input $X$ o i target $Y$.
+  \item \textbf{In-processing}: vincoli o penalizzazioni durante il training.
+  \item \textbf{Post-processing}: modificare $\hat{Y}$ dopo il training.
+\end{itemize}
+
+%=============================================================================
+\section{Algoritmi per la K-Anonymity: Samarati e Incognito}
+%=============================================================================
+
+\begin{domanda}[Domanda 8 \& 20: K-Anonymity e Algoritmi]
+Definire la k-anonymity e descrivere gli algoritmi di Samarati e Incognito.
+\end{domanda}
+
+\textbf{Il problema}: Latanya Sweeney (2001) re-identifica record medici del governatore del Massachusetts incrociando dati medici anonimizzati con la lista elettorale usando \{ZIP code, sesso, data di nascita\} come quasi-identificatori. L'87\% degli americani \`{e} unicamente identificabile da questi tre attributi.
+
+\begin{definizione}[K-Anonymity -- Samarati \& Sweeney, 1998]
+Un dataset $T$ su attributi $A = a_1, \ldots, a_n$ soddisfa la $k$-anonymity se e solo se per ogni combinazione di valori di quasi-identificatori in $T$, tale combinazione appare almeno $k$ volte. Ogni individuo si nasconde in $k-1$ altri individui; la confidenza di un linking attack \`{e} $\leq 1/k$.
+\end{definizione}
+
+\textbf{Tecniche}:
+\begin{itemize}
+  \item \textbf{Generalizzazione}: valori sostituiti con valori pi\`{u} generali (ZIP $10149 \to 101**$).
+  \item \textbf{Soppressione}: rimozione di tuple outlier che non possono essere generalizzate.
+\end{itemize}
+
+\textbf{Domain Generalization Hierarchy (DGH)}: ordine parziale sui domini di un attributo. Il prodotto cartesiano di tutte le DGH forma un \textbf{reticolo di generalizzazione}.
+
+Il problema di trovare la generalizzazione minimale \`{e} \textbf{NP-hard}.
+
+\textbf{Algoritmo di Samarati}:
+Effettua una \textbf{ricerca binaria} sull'altezza del reticolo:
+\begin{enumerate}
+  \item Valuta tutte le soluzioni ad altezza $h/2$.
+  \item Se esiste almeno una soluzione $k$-anonima: scendi a $h/4$; altrimenti sali a $3h/4$.
+  \item Ripeti fino a trovare l'altezza minima con una soluzione k-anonioma con $\leq MaxSup$ soppressioni.
+\end{enumerate}
+\textbf{Propriet\`{a}}: salendo nella gerarchia il numero di soppressioni necessarie diminuisce. Approccio branch-and-bound.
+
+\textbf{Algoritmo Incognito}:
+Sfrutta la \textbf{monotonicità} della k-anonymity: se $QI' \subseteq QI$, la k-anonymity su $QI'$ \`{e} condizione necessaria per la k-anonymity su $QI$.
+
+Approccio \textbf{bottom-up} nel reticolo:
+\begin{enumerate}
+  \item Iterazione 1: controlla la k-anonymity per ogni singolo attributo in $QI$; scarta le generalizzazioni che non la soddisfano.
+  \item Iterazione 2: combina i rimanenti in coppie e controlla.
+  \item Iterazione $i$: combina tutte le $i$-uple.
+  \item Iterazione $|QI|$: risultato finale.
+\end{enumerate}
+
+\textbf{Limitazioni della k-anonymity}:
+\begin{itemize}
+  \item \textbf{Homogeneity attack}: se tutte le tuple in un blocco hanno lo stesso valore sensibile, la k-anonymity non protegge.
+  \item \textbf{Background knowledge attack}: la conoscenza pregressa permette di inferire informazioni.
+  \item \textbf{Curse of Dimensionality} (Aggarwal, VLDB 2005): con molti quasi-identificatori la k-anonymity richiede una generalizzazione eccessiva.
+\end{itemize}
+
+%=============================================================================
+\section{Laplace e Gauss (per Numerici), Esponenziale (per Categorici)}
+%=============================================================================
+
+\begin{domanda}[Domanda 10: Meccanismi Laplace, Gauss, Esponenziale]
+Descrivere i meccanismi di Laplace, Gaussiano ed Esponenziale per la Differential Privacy.
+\end{domanda}
+
+\textbf{Meccanismo di Laplace} (per query numeriche, $\varepsilon$-DP):
+\[
+\mathcal{M}_{Lap}(D, q) = q(D) + Lap\!\left(0, \frac{GS_1(q)}{\varepsilon}\right)
+\]
+$GS_1(q) = \max_{D \sim D'} \|q(D) - q(D')\|_1$ (sensibilit\`{a} L1). PDF: $f(x) = \frac{\varepsilon}{2 GS_1} e^{-\varepsilon|x-q(D)|/GS_1}$.
+
+\textbf{Propriet\`{a}}: Preserva $\varepsilon$-DP per qualsiasi $\varepsilon > 0$. Meno rumore (migliore utilit\`{a}) quando la sensibilit\`{a} L1 \`{e} piccola. Ideale per query scalari e vettoriali con $GS_2 \approx GS_1$.
+
+\textbf{Meccanismo Gaussiano} (per query vettoriali, $(\varepsilon, \delta)$-DP):
+\[
+\mathcal{M}_{Gauss}(D, q) = q(D) + \mathcal{N}(0, \sigma^2), \quad \sigma^2 = \frac{2 \cdot GS_2(q)^2 \cdot \ln(1.25/\delta)}{\varepsilon^2}
+\]
+$GS_2(q) = \max_{D \sim D'} \|q(D) - q(D')\|_2$ (sensibilit\`{a} L2). Preserva $(\varepsilon, \delta)$-DP per $\varepsilon, \delta \in (0, 1)$.
+
+\textbf{Confronto Laplace vs. Gaussiano}:
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Aspetto} & \textbf{Laplace} & \textbf{Gaussiano} \\
+\midrule
+Tipo di DP & $\varepsilon$-DP & $(\varepsilon, \delta)$-DP \\
+Sensibilit\`{a} & L1 ($GS_1$) & L2 ($GS_2$) \\
+Vincolo su $\varepsilon$ & Qualsiasi $\varepsilon > 0$ & Richiede $\varepsilon < 1$ \\
+Quando preferire & Sempre disponibile & $GS_2 \ll GS_1$ (query ad alta dimensione) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Entropia: Gaussiano ha $H = \frac{1}{2}\log(2\pi e \sigma^2)$; Laplace ha $H = \ln(\sqrt{2}e\sigma)$. Il Gaussiano ha entropia minore (meno rumore) a parit\`{a} di $\sigma$.
+
+\textbf{Meccanismo Esponenziale} (per query categoriche):
+
+Per query il cui output \`{e} un elemento $r$ da un insieme categorico $R$ (es. selezionare il candidato migliore), dove non ha senso aggiungere rumore numerico.
+
+Sia $U: \Omega \times R \to \mathbb{R}$ una funzione di utilit\`{a} e $GS(U) = \max_{r, D \sim D'} |U(D,r) - U(D',r)|$.
+\[
+P(\mathcal{M}(D,q) = r) \propto \exp\!\left(\frac{\varepsilon \cdot U(D, r)}{2 \cdot GS(U)}\right)
+\]
+L'output pi\`{u} utile viene selezionato con probabilit\`{a} proporzionalmente pi\`{u} alta; preserva la DP con parametro $\varepsilon/2$ (o $\varepsilon$ a seconda della formulazione).
+
+%=============================================================================
+\section{Bias per Discriminazione e Apprendimento (Fairness)}
+%=============================================================================
+
+\begin{domanda}[Domanda 11: Concetto di Bias per Discriminazione e Apprendimento]
+Cos'\`{e} il bias in ML? Come si manifesta e perch\'{e} porta alla discriminazione?
+\end{domanda}
+
+\textbf{Bias nel Machine Learning}: tendenza sistematica del modello a produrre errori sistematici in favore o contro certi gruppi.
+
+\textbf{Fonti di bias nel ciclo ML}:
+\begin{enumerate}
+  \item \textbf{Bias nei dati di training (data bias)}:
+  \begin{itemize}
+    \item \emph{Historical bias}: i dati riflettono pregiudizi storici (es. le donne erano sottorappresentate nei curricula di ingegneria).
+    \item \emph{Representation bias}: alcuni gruppi sono sottorappresentati nel dataset (insufficienti dati per certe etnie).
+    \item \emph{Measurement bias}: le misurazioni stesse sono parziali (es. lo stesso reato \`{e} registrato diversamente per diverse etnie).
+  \end{itemize}
+  \item \textbf{Bias nell'apprendimento}:
+  \begin{itemize}
+    \item \emph{Inductive bias}: le assunzioni dell'algoritmo di learning (es. linearit\`{a}) possono non adattarsi ugualmente bene a tutti i gruppi.
+    \item Il modello pu\`{o} imparare correlazioni spurie tra attributi innocui e attributi sensibili (\emph{proxy attributes}).
+  \end{itemize}
+  \item \textbf{Bias nel deployment}:
+  \begin{itemize}
+    \item Le azioni del modello cambiano il mondo (feedback loop): un modello che discrimina pu\`{o} creare dati futuri che confermano la discriminazione (self-fulfilling prophecy).
+  \end{itemize}
+\end{enumerate}
+
+\textbf{Problema dell'opacit\`{a}}: L'IA attuariale (ML) \`{e} spesso opaca -- \`{e} difficile capire perch\'{e} un sistema ha preso una particolare decisione. Anche ispezionando i parametri, \`{e} difficile collegare questi alle ragioni effettive delle decisioni.
+
+\textbf{Il paradosso dell'inconsapevolezza}: Non usare esplicitamente l'attributo sensibile $A$ (etnia, genere) non garantisce fairness, perch\'{e} altri attributi possono essere fortemente correlati con $A$ e il modello li user\`{a} implicitamente come proxy.
+
+\textbf{Esempi di bias algoritmico}:
+\begin{itemize}
+  \item COMPAS: bias razziale nei punteggi di rischio di recidiva.
+  \item Amazon recruitment: downgrade dei curricula con parole associate alle donne.
+  \item Riconoscimento facciale: errori pi\`{u} frequenti per donne e persone di colore.
+  \item Traduzione automatica (Google Translate): introduce stereotipi di genere.
+\end{itemize}
+
+%=============================================================================
+\section{Trade-off Privacy-Utilit\`{a}. KL e JS}
+%=============================================================================
+
+\begin{domanda}[Domanda 12: Trade-off Privacy-Utilit\`{a}. KL e JS]
+Discutere il trade-off tra privacy e utilit\`{a} dei dati, con riferimento alle divergenze KL e JS.
+\end{domanda}
+
+\textbf{Il trade-off fondamentale}: pi\`{u} si protegge la privacy di un dataset, meno informazioni utili rimangono. Non \`{e} possibile avere allo stesso tempo massima privacy e massima utilit\`{a}.
+
+\textbf{Nel ciclo SDC}: Data $\to$ Metodo SDC $\to$ Misura di Utilit\`{a} + Misura di Rischio $\to$ iterazione. Si cerca un punto di compromesso: i dati rilasciati hanno rischio di disclosure accettabile con massima utilit\`{a} residua.
+
+\textbf{Misure di utilit\`{a} per macrodata}: numero di soppressioni, somma delle distanze tra valori veri e perturbati.
+
+\textbf{Misure di utilit\`{a} per microdata}: quanto l'SDC ha cambiato l'output delle analisi; statistiche di base (medie, varianze, covarianze); \textbf{divergenze KL e JS}.
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!60!black, title=\textbf{Kullback-Leibler (KL) Divergence}]
+Misura quanto la distribuzione perturbata $P(x)$ \`{e} diversa da quella originale $Q(x)$:
+\[
+KL(P \| Q) = \sum_{x \in X} P(x) \log\!\left(\frac{P(x)}{Q(x)}\right)
+\]
+\textbf{Propriet\`{a}}: $KL(P\|Q) \geq 0$; $KL(P\|Q) = 0$ iff $P = Q$; \textbf{non \`{e} simmetrica}.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!60!black, title=\textbf{Jensen-Shannon (JS) Divergence}]
+Versione simmetrica e smoothed di KL:
+\[
+JS(P \| Q) = \frac{1}{2}KL(P \| M) + \frac{1}{2}KL(Q \| M), \quad M = \frac{P + Q}{2}
+\]
+\textbf{Propriet\`{a}}: simmetrica ($JS(P\|Q) = JS(Q\|P)$); $0 \leq JS \leq 1$; sempre definita (nessun problema con probabilit\`{a} zero).
+\end{tcolorbox}
+
+\textbf{Utilizzo nel trade-off}: KL/JS misurano quanto la distribuzione dei dati protetti si discosta da quella originale. Un $JS \approx 0$ indica alta utilit\`{a} (le distribuzioni sono simili); un $JS \approx 1$ indica bassa utilit\`{a}.
+
+\textbf{Nella Differential Privacy}: il Meccanismo di Laplace aggiunge rumore calibrato a $GS/\varepsilon$. Maggiore \`{e} il rumore (piccolo $\varepsilon$), maggiore la privacy ma minore l'utilit\`{a}.
+
+%=============================================================================
+\section{Uso di XML per RBAC e ABAC}
+%=============================================================================
+
+\begin{domanda}[Domanda 13: Uso di XML per RBAC e ABAC]
+Come si usano XML e XACML per implementare il controllo degli accessi RBAC e ABAC?
+\end{domanda}
+
+\textbf{RBAC} (Role Based Access Control, NIST 1992): gestione dell'accesso tramite ruoli. Gli amministratori assegnano permessi ai ruoli; i ruoli vengono assegnati agli utenti. \textbf{Limite}: non cattura il contesto (scope, finalit\`{a}, ambiente).
+
+\textbf{ABAC} (Attribute Based Access Control): evoluzione di RBAC. Le decisioni si basano su attributi di soggetto (chi \`{e}), oggetto (a cosa accede), e ambiente (quando, dove, come). Approccio policy-driven.
+
+\textbf{XACML} (eXtensible Access Control Markup Language): standard XML per esprimere policy di accesso in ABAC.
+
+\textbf{Architettura ABAC con XACML}:
+\begin{itemize}
+  \item \textbf{PEP} (Policy Enforcement Point): riceve la richiesta di accesso e la invia al PDP.
+  \item \textbf{PDP} (Policy Decision Point): valuta le policy XACML e decide (Permit/Deny).
+  \item \textbf{PAP} (Policy Administration Point): amministra e archivia le policy.
+  \item \textbf{PIP} (Policy Information Point): recupera attributi aggiuntivi necessari per la valutazione.
+\end{itemize}
+
+\textbf{Algoritmi di combinazione in XACML}:
+\begin{itemize}
+  \item \textbf{Permit-overrides}: se almeno una policy dice Permit $\Rightarrow$ risultato = Permit.
+  \item \textbf{Deny-overrides}: se almeno una policy dice Deny $\Rightarrow$ risultato = Deny (pi\`{u} restrittivo).
+\end{itemize}
+
+\textbf{Crittografia su Colonne} (complemento al controllo degli accessi): cifra i dati a livello di colonna nel database.
+\begin{itemize}
+  \item \emph{Column encryption keys}: cifrare il dato.
+  \item \emph{Column master keys}: cifrare le encryption keys (in repository esterno).
+  \item \emph{Deterministica}: stessa chiave $\to$ stesso ciphertext (permette ricerche, meno sicura).
+  \item \emph{Randomizzata}: valori casuali (pi\`{u} sicura, impedisce ricerche dirette).
+\end{itemize}
+
+%=============================================================================
+\section{Privacy by Design e by Default}
+%=============================================================================
+
+\begin{domanda}[Domanda 15: Privacy by Design e by Default]
+Descrivere la Privacy by Design e by Default: concetto, origini, princìpi fondamentali.
+\end{domanda}
+
+\textbf{Privacy by Design} \`{e} un approccio proposto da \textbf{Ann Cavoukian} (2012), Commissaria per l'Informazione e la Privacy dell'Ontario, Canada. L'idea di base: la privacy non deve essere aggiunta a posteriori ai sistemi, ma deve essere \textbf{progettata e incorporata fin dall'inizio}.
+
+Il GDPR (Art. 25) rende la Privacy by Design e by Default un \textbf{obbligo legale}.
+
+\textbf{7 Princìpi Fondamentali}:
+\begin{enumerate}
+  \item \textbf{Proattivit\`{a}, non reattivit\`{a} -- Prevenzione, non rimedio}: anticipare e prevenire i problemi prima che si verifichino. Non aspettare le violazioni.
+  \item \textbf{Privacy come impostazione di Default}: senza azioni da parte dell'utente, le impostazioni pi\`{u} privacy-preserving devono essere quelle default. ``Opt-out'', non ``opt-in''.
+  \item \textbf{Privacy integrata nel Design}: la privacy fa parte integrante dell'architettura del sistema e dei processi di business, non \`{e} un'aggiunta.
+  \item \textbf{Full Functionality -- positive-sum, non zero-sum}: privacy e funzionalit\`{a} non si escludono mutualmente. Entrambe possono essere ottenute allo stesso tempo.
+  \item \textbf{End-to-end Security -- protezione dell'intero ciclo di vita}: la sicurezza dei dati deve essere garantita dall'acquisizione alla cancellazione.
+  \item \textbf{Visibilit\`{a} e Trasparenza -- Keep it Open}: tutte le attivit\`{a} di trattamento devono essere visibili e verificabili da utenti e regolatori.
+  \item \textbf{Rispetto per la Privacy degli Utenti -- Keep it User-Centric}: l'utente al centro. Le decisioni devono tenere conto delle sue preferenze e aspettative.
+\end{enumerate}
+
+\textbf{Privacy by Default nel GDPR}:
+\begin{itemize}
+  \item Raccogliere solo i dati strettamente necessari per ogni scopo specifico.
+  \item Conservare i dati solo per il tempo necessario.
+  \item Rendere i dati accessibili solo alle persone necessarie.
+\end{itemize}
+
+\textbf{Responsibility e Accountability}: il titolare del trattamento deve non solo rispettare la privacy, ma anche essere in grado di \textbf{dimostrare} la compliance. Questo include: mantenere registri delle attivit\`{a} di trattamento, condurre DPIA per trattamenti ad alto rischio, nominare un DPO quando necessario.
+
+%=============================================================================
+\section{Cambridge Analytica}
+%=============================================================================
+
+\begin{domanda}[Domanda 16: Cambridge Analytica]
+Descrivere il caso Cambridge Analytica come esempio di uso dei dati per finalit\`{a} diverse da quelle originarie.
+\end{domanda}
+
+\textbf{Il caso Cambridge Analytica (2016--2018)} \`{e} l'esempio paradigmatico di violazione del principio di \emph{scopo legittimo}: dati raccolti per una finalit\`{a} (divertimento, ricerca accademica) usati per un'altra (manipolazione politica).
+
+\textbf{Cronologia}:
+\begin{enumerate}
+  \item \textbf{2014}: Aleksandr Kogan, ricercatore dell'Universit\`{a} di Cambridge, crea un'app-quiz (``thisisyourdigitallife''). Circa 270.000 utenti la installano dando consenso a raccogliere i propri dati Facebook.
+  \item \textbf{API di Facebook (pre-2015)}: permetteva agli sviluppatori di accedere non solo ai dati degli utenti dell'app, ma anche a quelli dei loro \textbf{amici} senza consenso esplicito.
+  \item Risultato: Kogan raccoglie dati di circa \textbf{87 milioni di utenti} Facebook.
+  \item Kogan vende i dati a Cambridge Analytica (violando i termini di servizio di Facebook).
+  \item Cambridge Analytica usa i dati per costruire \textbf{profili psicologici} (basati sul modello OCEAN/Big Five) e mirare messaggi politici personalizzati.
+  \item I profili vengono usati nelle campagne di Donald Trump (2016) e nel referendum Brexit (2016).
+\end{enumerate}
+
+\textbf{Perch\'{e} \`{e} possibile?} -- Studio PNAS 2013 (Kosinski et al.): analizzando i ``Like'' su Facebook con SVD + regressione logistica si pu\`{o} predire: orientamento sessuale (88\% accuratezza), etnia (95\%), opinioni politiche (85\%), religione (82\%), stato relazionale, uso di droghe. I ``proxy attributes'' (like a band, film) rivelano informazioni altamente sensibili.
+
+\textbf{Violazioni principali}:
+\begin{itemize}
+  \item \textbf{Scopo legittimo}: i dati raccolti per la ricerca usati per finalit\`{a} politiche/commerciali.
+  \item \textbf{Trasparenza e consenso}: nessun consenso degli 87 milioni; violazione dei ToS di Facebook.
+  \item \textbf{Proporzionalit\`{a}}: raccolta eccessiva di dati (dati degli amici senza consenso).
+\end{itemize}
+
+\textbf{Conseguenze}: sanzione di \$5 miliardi a Facebook dalla FTC; rafforzamento del GDPR; chiusura di Cambridge Analytica nel 2018.
+
+\textbf{Lezione}: il principio del ``nulla da nascondere'' \`{e} ingenuo; dati apparentemente innocui (like musicali) possono essere usati per manipolazione su larga scala.
+
+%=============================================================================
+\section{Princìpi Crittografici nel Corso}
+%=============================================================================
+
+\begin{domanda}[Domanda 17: Princìpi Crittografici durante il Corso]
+Descrivere i princìpi crittografici trattati nel corso.
+\end{domanda}
+
+\textbf{1. Crittografia a Chiave Pubblica (RSA)}:
+\begin{itemize}
+  \item Ogni utente ha una coppia di chiavi: \textbf{pubblica} (per cifrare) e \textbf{privata} (per decifrare).
+  \item Basata sulla difficolt\`{a} di fattorizzare il prodotto di due numeri primi grandi.
+  \item Chiunque pu\`{o} cifrare con la chiave pubblica; solo il possessore della privata pu\`{o} decifrare.
+  \item Usa anche un sistema di padding per sicurezza.
+\end{itemize}
+
+\textbf{2. Crittografia su Colonne (Column-Level Encryption)}:
+\begin{itemize}
+  \item Column encryption keys (per i dati) + Column master keys (per le encryption keys, conservate esternamente).
+  \item Deterministica vs. randomizzata.
+  \item TDE (Oracle): Transparent Data Encryption con Oracle Wallet come repository esterno.
+\end{itemize}
+
+\textbf{3. Oblivious Transfer (OT) -- Princìpio Crittografico per SMC}:
+\begin{itemize}
+  \item OT 1-of-2: il receiver ottiene esattamente uno dei due messaggi del sender; il sender non sa quale.
+  \item OT 1-of-N: estensione usando funzioni pseudo-randomiche.
+  \item Oblivious Polynomial Evaluation: il receiver ottiene $Q(z)$ senza che il sender sappia $z$.
+\end{itemize}
+
+\textbf{4. Garbled Circuit (Yao)}:
+\begin{itemize}
+  \item Tecnica per eseguire funzioni arbitrarie in modo sicuro tra due parti.
+  \item Le tavole di verit\`{a} dei gate del circuito sono cifrate (``garbled'').
+  \item Il receiver valuta il circuito senza vedere i valori intermedi.
+\end{itemize}
+
+\textbf{5. Crittografia Funzionale}:
+\begin{itemize}
+  \item Generalizzazione della crittografia a chiave pubblica.
+  \item Decifrare rivela solo una funzione del plaintext (es. ``\`{e} maggiore di 30?'').
+\end{itemize}
+
+\textbf{6. Crittografia Omomorfica}:
+\begin{itemize}
+  \item Permette di effettuare calcoli sui dati cifrati senza decifrarli.
+  \item I risultati sono in forma cifrata e decifrando si ottiene il risultato delle operazioni.
+  \item Computazionalmente molto costosa.
+\end{itemize}
+
+\textbf{7. Pseudoanonimizzazione}:
+\begin{itemize}
+  \item Sostituzione di informazioni identificabili con pseudonimi.
+  \item Reversibile (con la chiave/tabella di mapping).
+  \item Diversa dall'anonimizzazione totale.
+\end{itemize}
+
+%=============================================================================
+\section{L-Diversity e Differential Privacy}
+%=============================================================================
+
+\begin{domanda}[Domanda 18: L-Diversity e Differential Privacy]
+Confrontare la l-diversity con la differential privacy come protezioni contro gli attacchi alla k-anonymity.
+\end{domanda}
+
+\textbf{Contesto}: la k-anonymity non protegge contro homogeneity attack e background knowledge attack.
+
+\textbf{L-Diversity} (Machanavajjhala et al., 2006): richiede che ogni $q^*$-block (classe di equivalenza) contenga almeno $l \geq 2$ valori sensibili \emph{ben rappresentati}.
+
+Formulazione tramite entropia:
+\[
+-\sum_{s \in S} p(q^*, s) \log(p(q^*, s)) \geq \log(l)
+\]
+\textbf{Vantaggi}: semplice da capire; soddisfa propriet\`{a} di monotonicità (compatibile con gli algoritmi per la k-anonymity).
+
+\textbf{Limiti della l-diversity}:
+\begin{itemize}
+  \item \textbf{Skewness attack}: se un valore sensibile \`{e} molto pi\`{u} comune nella popolazione, la sua presenza in un blocco l-diverso non protegge.
+  \item \textbf{Similarity attack}: valori semanticamente simili (diversi tipi di cancro) non proteggono anche se formalmente diversi.
+  \item Non modella esplicitamente la conoscenza dell'avversario.
+\end{itemize}
+
+\textbf{Differential Privacy} (Dwork, 2006): approccio fondamentalmente diverso.
+
+\textbf{Confronto}:
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Aspetto} & \textbf{L-Diversity} & \textbf{Differential Privacy} \\
+\midrule
+Tipo & Non-perturbativa o perturbativa & Perturbativa (rumore) \\
+Garanzia & Per-block & Su tutto il dataset \\
+Modello avversario & Implicito & Esplicito (qualsiasi KB) \\
+Misurabilit\`{a} & Parametro $l$ & Parametro $\varepsilon$ \\
+Trade-off & Generalizzazione & Rumore \\
+Robustezza & Limitata & Massima (teorema) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+La DP offre garanzie molto pi\`{u} forti: indipendente dalla conoscenza pregressa dell'avversario; modello matematicamente rigoroso; garantisce che la risposta alla query non riveli pi\`{u} di quanto l'avversario gi\`{a} sapesse.
+
+\textbf{Oggi}: la DP ha sostanzialmente rimpiazzato la l-diversity e la k-anonymity per la protezione di dati statistici. La k-anonymity rimane rilevante per la pubblicazione di microdata (non query).
+
+%=============================================================================
+\section{Multiparty Secure Computation: Milionari, OT, ID3}
+%=============================================================================
+
+\begin{domanda}[Domanda 19 \& 21: Multiparty Secure Computation: Milionari, Oblivious Transfer, ID3]
+Descrivere i protocolli di Secure Multiparty Computation trattati nel corso.
+\end{domanda}
+
+\textbf{Problema}: si vuole effettuare un'analisi congiunta su dati distribuiti tra parti che non si fidano l'una dell'altra.
+
+\textbf{SMC (Secure Multiparty Computation)}: calcolare una funzione quando ogni parte ha qualche input, senza che nessuna parte impari pi\`{u} di quanto l'output permette di inferire.
+
+\subsubsection*{Il Problema dei Milionari (Yao)}
+
+Alice e Bob vogliono sapere chi \`{e} pi\`{u} ricco senza rivelare il proprio patrimonio.
+
+\textbf{Soluzione con Garbled Circuit}:
+\begin{enumerate}
+  \item Alice (garbler) crea un garbled circuit per la funzione di confronto $A > B$.
+  \item Alice invia il garbled circuit a Bob insieme ai garbled values corrispondenti al suo input $A$.
+  \item Bob usa \textbf{Oblivious Transfer} per ottenere i garbled values del suo input $B$ senza che Alice sappia $B$.
+  \item Bob valuta il garbled circuit: solo l'output finale \`{e} rivelato.
+\end{enumerate}
+
+La funzione di confronto binario si implementa con il circuito: $(A \oplus B) \cdot A$. XOR gate: calcolato localmente (gratuito). AND gate: tramite OT table.
+
+\textbf{Overhead}: $O(\text{dimensione del circuito}) + O(|y|)$ OT. Solo 2 round di comunicazione.
+
+\subsubsection*{Oblivious Transfer (OT)}
+
+\textbf{OT 1-of-2}: sender ha $(x_0, x_1)$; receiver ha $\sigma \in \{0,1\}$. Propriet\`{a}: receiver impara $x_\sigma$ e niente altro; sender non impara $\sigma$.
+
+\textbf{OT 1-of-N}: estensione tramite funzioni pseudo-randomiche: $c_{ij} = F_{k'_i}(ij) \oplus F_{k_j}(ij) \oplus m_{ij}$.
+
+\textbf{Oblivious Polynomial Evaluation}: sender ha polinomio $Q$ di grado $k$; receiver ha $z$; receiver ottiene $Q(z)$. Il sender non sa $z$; il receiver non sa i coefficienti. Overhead: $O(k)$ esponenziali.
+
+\subsubsection*{Privacy Preserving ID3 (Lindell \& Pinkas, 2002)}
+
+\textbf{ID3 Algorithm}: costruisce un decision tree tramite information gain. Iterativamente seleziona l'attributo con massimo guadagno di informazione.
+
+\textbf{ID3$_\delta$}: protocollo per ID3 su dati orizzontalmente distribuiti tra due parti (semi-honest model).
+
+Tre passi principali per costruire il decision tree:
+\begin{enumerate}
+  \item \textbf{Classe pi\`{u} frequente}: calcolata con il protocollo di Yao (circuito per trovare il massimo); necessario per decidere se creare una foglia.
+  \item \textbf{Verifica foglia (leaf check)}: tramite protocollo di uguaglianza (ogni parte conta i propri record per ciascuna classe; si verifica se tutte le tuple appartengono alla stessa classe).
+  \item \textbf{Selezione del miglior attributo}: calcola $x \ln x$ per ogni valore dell'attributo usando una serie di Taylor: $\ln(1+\varepsilon) \approx \varepsilon - \varepsilon^2/2 + \varepsilon^3/3 - \ldots$; permette di calcolare l'entropia e il guadagno di informazione in modo privato.
+\end{enumerate}
+
+\textbf{Sicurezza del protocollo OT}:
+\begin{itemize}
+  \item Per il sender: un receiver corrotto non impara informazioni addizionali diverse dal messaggio che ha dichiarato di voler leggere.
+  \item Per il receiver: un sender corrotto non impara nulla sul receiver.
+\end{itemize}
+
+\textbf{Altri approcci per dati distribuiti}:
+\begin{itemize}
+  \item \textbf{Functional Encryption}: decifrare rivela solo $f(\text{plaintext})$.
+  \item \textbf{Homomorphic Encryption}: calcoli su dati cifrati.
+  \item \textbf{Federated Learning}: allenamento distribuito; solo i gradienti/parametri vengono condivisi, non i dati grezzi.
+\end{itemize}
+
+%=============================================================================
+\section{Bias: Rischi Etici e Misurazione (Fairness)}
+%=============================================================================
+
+\begin{domanda}[Domanda 22: Bias -- Rischi Etici e Misurazione (Fairness)]
+Descrivere i rischi etici del bias algoritmico e i metodi per misurare la fairness.
+\end{domanda}
+
+\textbf{Rischi Etici del Bias}:
+
+\textbf{1. Danni Allocativi}: risorse o opportunit\`{a} vengono negate in modo disparato.
+\begin{itemize}
+  \item \textbf{COMPAS}: punteggi di rischio di recidiva pi\`{u} alti per afroamericani $\Rightarrow$ detenzione preventiva ingiustificata.
+  \item \textbf{Amazon}: modello di selezione del personale che discrimina le donne.
+  \item \textbf{Credito}: algoritmi che negano prestiti a minoranze etniche.
+  \item \textbf{Sanit\`{a}}: algoritmi che allocano meno risorse sanitarie a certi gruppi.
+\end{itemize}
+
+\textbf{2. Danni Rappresentativi}: subordinazione e stereotipi rafforzati.
+\begin{itemize}
+  \item \textbf{Ricerca di immagini}: ricerche come ``professore'' mostrano principalmente uomini bianchi.
+  \item \textbf{Traduzione automatica}: introduzione di stereotipi di genere.
+  \item \textbf{Riconoscimento facciale}: errori pi\`{u} frequenti per donne e persone di colore.
+\end{itemize}
+
+\textbf{3. Erosione della fiducia}: se i sistemi automatici sono percepiti come ingiusti, si riduce la fiducia nelle istituzioni che li usano.
+
+\textbf{4. Effetti di feedback}: un sistema discriminatorio crea dati futuri che confermano la discriminazione (bias self-reinforcing).
+
+\textbf{5. Mancanza di trasparenza}: i sistemi ML complessi (deep learning) sono difficili da interpretare; \`{e} difficile identificare e correggere il bias.
+
+\textbf{Misure di Fairness}:
+
+Siano $A$ = attributo sensibile, $Y$ = valore reale (ground truth), $\hat{Y}$ = previsione del classificatore.
+
+\textbf{Indipendenza (Demographic Parity)}: $\hat{Y} \perp A$
+\[
+P(\hat{Y}=1|A=a) = P(\hat{Y}=1|A=b)
+\]
+Ogni gruppo riceve la stessa percentuale di esiti positivi. \textbf{Limite}: pu\`{o} essere soddisfatta con meccanismi ingiusti.
+
+\textbf{Separazione (Equal Error Rates)}: $\hat{Y} \perp A \mid Y$
+
+Parit\`{a} del tasso di errore: il classificatore commette errori ugualmente frequenti in tutti i gruppi. Equivalente a:
+\begin{itemize}
+  \item Equal True Positive Rate (TPR).
+  \item Equal False Positive Rate (FPR).
+\end{itemize}
+
+\textbf{Sufficienza (Calibration)}: $Y \perp A \mid \hat{Y}$
+
+La previsione del modello ha lo stesso significato predittivo per tutti i gruppi.
+
+\textbf{Teoremi di Incompatibilit\`{a}}: se $A$ e $Y$ non sono indipendenti, \textbf{separazione e indipendenza} non possono essere entrambe soddisfatte; n\'{e} \textbf{sufficienza e indipendenza}. La scelta del criterio di fairness dipende dal contesto etico.
+
+\textbf{Interventi di Fairness}:
+\begin{itemize}
+  \item \textbf{Pre-processing}: rimozione o de-biasing dei dati (soppressione di attributi proxy, re-weighting).
+  \item \textbf{In-processing}: aggiungere vincoli di fairness durante il training (penalizzazioni nella funzione di loss).
+  \item \textbf{Post-processing}: modificare le predizioni $\hat{Y}$ per soddisfare vincoli di fairness.
+\end{itemize}
+
+\textbf{Ruolo dell'egalitarismo}: da una prospettiva etica, le ineguaglianze dovute alla \emph{fortuna} (nascere in un certo gruppo) dovrebbero essere corrette; quelle dovute al \emph{merito} possono essere accettate. Ma distinguere fortuna da merito \`{e} difficile, e l'inconsapevolezza pura nei modelli ML \`{e} praticamente impossibile da garantire.
+
+\end{document}
