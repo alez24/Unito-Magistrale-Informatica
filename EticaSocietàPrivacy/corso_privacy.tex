@@ -1159,8 +1159,17 @@ Una tabella pu\`{o} rilasciare informazioni in due modi:
 
 \subsubsection{L-Diversity}
 
+\textbf{Notazione formale}: Siano PT la tabella privata e GT la tabella generalizzata rilasciata.
+\begin{itemize}
+  \item $q$: valore di un attributo non sensibile $Q$ in PT.
+  \item $q^*$: valore generalizzato di $q$ in GT.
+  \item $s$: possibile valore dell'attributo sensibile $S$.
+  \item $n(q^*, s)$: numero di tuple $t^* \in GT$ tali che $t^*[Q]=q^*$ e $t^*[S]=s$.
+  \item \textbf{$q^*$-block} (classe di equivalenza): l'insieme delle tuple in GT i cui valori non sensibili di $Q$ si generalizzano a $q^*$.
+\end{itemize}
+
 \begin{definizione}[L-Diversity -- Machanavajjhala et al., 2006]
-Un $q^*$-block (classe di equivalenza) \`{e} $l$-diverso se ha almeno $l \geq 2$ diversi valori sensibili ben rappresentati (il valore $l$ pi\`{u} frequente ha all'incirca la stessa frequenza degli altri).
+Un $q^*$-block (classe di equivalenza) \`{e} $l$-diverso se ha almeno $l \geq 2$ diversi valori sensibili ben rappresentati (il valore $l$ pi\`{u} frequente ha all'incirca la stessa frequenza degli altri). Una tabella \`{e} $l$-diversa se ogni $q^*$-block \`{e} $l$-diverso.
 
 Formalmente: mancanza di diversit\`{a} si ha quando $\forall s' \neq s, n(q^*, s') \ll n(q^*, s)$.
 
@@ -1235,6 +1244,33 @@ Equivalentemente: \textbf{se $GT^2$ non \`{e} $\delta$-present rispetto a T e PT
 Questa propriet\`{a} (analoga alla monotonicità della k-anonymity) permette di sfruttare la maggior parte degli algoritmi per la k-anonymity anche per il calcolo della $\delta$-presence.
 \end{teorema}
 
+\begin{esempio}[Selezione di un buon $\delta$ -- Caso Diabete]
+Sia rilasciato un dataset PT di pazienti diabetici, sottoinsieme di una tabella pubblica T. Sia $I_p$ l'evento ``la persona $p$ ha il diabete''. Poich\'{e} il tasso di diabete nella popolazione USA \`{e} pubblico, un avversario ha una \emph{prior belief} $b_r = P(I_p) = 0.07$.
+
+Dopo aver visto la generalizzazione GT, l'avversario aggiorna la sua credenza a \emph{posterior belief} $b_0 = P(I_p \mid GT)$:
+\[
+b_0 = P(I_p \mid p \in PT) \cdot P(p \in PT \mid GT) + P(I_p \mid p \notin PT) \cdot P(p \notin PT \mid GT)
+\]
+Poich\'{e} PT contiene solo malati, $P(I_p \mid p \in PT) = 1$; per chi non \`{e} in PT la probabilit\`{a} che sia diabetico \`{e} $b_r \cdot \frac{|T| - |PT|}{|T| - |PT|} = b_r$. Sostituendo (eq.~1):
+\[
+b_0 = \delta \cdot \frac{|T|(1 - b_r)}{|T| - |PT|} + \frac{b_r \cdot |T| - |PT|}{|T| - |PT|}
+\]
+dove $\delta = P(p \in PT \mid GT)$.
+
+\textbf{Stima di $\delta_{max}$}: il costo di un uso improprio \`{e} $d = \$10{,}000$/anno per paziente. Si vuole che il costo atteso aggiuntivo rispetto alla prior sia $< c = \$100$:
+\[
+b_0 \cdot d - b_r \cdot d < c \quad \Rightarrow \quad b_0 - b_r < \frac{c}{d} = \frac{1}{100} \quad \Rightarrow \quad b_0 < \frac{1}{100} + b_r
+\]
+Con $|PT| \approx 0.04|T|$ e $b_r = 0.07$, sostituendo nella eq.~1 si ottiene $\delta_{max} = P(p \in PT \mid GT) \approx 0.05$.
+
+\textbf{Stima di $\delta_{min}$}: la posterior non deve essere arbitrariamente bassa (altrimenti un avversario ``cherry-pick'' persone note per non essere nel DB). Si impone $b_0 \geq b_r$:
+\[
+b_0 = b_r = 0.07 = \delta \cdot 0.97 + 0.03 \quad \Rightarrow \quad \delta = \frac{0.07 - 0.03}{0.97} = 0.04 = \delta_{min}
+\]
+
+Quindi: $\forall p : P(p \in PT \mid GT) \in [0.04, 0.05]$, cio\`{e} $\delta = (0.04, 0.05)$.
+\end{esempio}
+
 \begin{nota}[Limiti degli approcci k-anonymity]
 \begin{itemize}
   \item \textbf{Misure di utilit\`{a}}: \`{e} necessario sviluppare misure per consentire agli utenti di valutare, oltre alla protezione offerta, l'\emph{utilit\`{a}} dei dati rilasciati.
@@ -1244,7 +1280,15 @@ Questa propriet\`{a} (analoga alla monotonicità della k-anonymity) permette di 
 \end{itemize}
 \end{nota}
 
-\textbf{Curse of Dimensionality} (Aggarwal, VLDB 2005): quando il numero di quasi-identificatori cresce, la k-anonymity diventa inutile perch\'{e} richiede una generalizzazione eccessiva.
+\begin{nota}[Curse of Dimensionality -- Aggarwal, VLDB 2005]
+La generalizzazione si basa fondamentalmente sulla \textbf{localit\`{a} spaziale}: ogni record deve avere $k$ vicini ``abbastanza simili''. Nei dataset reali con molti attributi questo diventa impossibile:
+\begin{itemize}
+  \item I dataset reali sono molto \textbf{sparsi}: Netflix Prize dataset ha 17.000 dimensioni, i record di clienti Amazon hanno milioni di dimensioni.
+  \item Il ``vicino pi\`{u} prossimo'' \`{e} molto lontano in alta dimensione.
+  \item La proiezione a bassa dimensione perde tutta l'informazione.
+\end{itemize}
+Conseguenza: i dataset k-anonimizzati in alta dimensione sono \textbf{praticamente inutili} perch\'{e} la generalizzazione richiesta \`{e} eccessiva.
+\end{nota}
 
 %=============================================================================
 \section{Privacy Differenziale}
@@ -1253,6 +1297,12 @@ Questa propriet\`{a} (analoga alla monotonicità della k-anonymity) permette di 
 \subsection{Definizione Formale}
 
 Introdotta da \textbf{Cynthia Dwork} nel 2006 (``Calibrating Noise to Sensitivity in Private Data Analysis''). La DP \`{e} un framework matematico per rilasciare informazioni statistiche proteggendo contemporaneamente il dataset. Il modello \`{e} totalmente astratto rispetto alle caratteristiche implementative.
+
+\begin{nota}[Definizione informale -- Cynthia Dwork]
+\emph{``Differential Privacy describes a promise, made by a data holder, or curator, to a data subject (owner), and the promise is like this: You will not be affected adversely or otherwise, by allowing your data to be used in any study or analysis, no matter what other studies, datasets or information sources are available.''}
+\end{nota}
+
+\textbf{Idea fondamentale}: pubblicare il risultato esatto di una query $q: \Omega \to \mathcal{R}$ pu\`{o} rivelare troppe informazioni sul dataset segreto $D$. L'idea chiave della DP \`{e} iniettare una qualche forma di casualit\`{a} nel calcolo di $q(D)$, ottenendo un risultato distorto $\tilde{q}(D)$. In questo modo \`{e} impossibile determinare con certezza se il dataset segreto era $D$ o un qualunque altro dataset simile $D'$. Per fare ci\`{o} si utilizza un \textbf{meccanismo randomizzato} $\mathcal{M}: \Omega \times Q \to \mathcal{R}$, $(D, q) \mapsto \tilde{q}(D)$ -- una funzione stocastica che pu\`{o} restituire qualsiasi valore del codominio $\mathcal{R}$ con la propria probabilit\`{a}.
 
 \begin{definizione}[Meccanismo Randomizzato]
 Un meccanismo randomizzato \`{e} una funzione $\mathcal{M}: \Omega \times Q \to \mathcal{R}$ che mappa un database $D$ e una query $q$ a una risposta randomizzata $\tilde{q}(D)$.
@@ -1288,6 +1338,20 @@ Il meccanismo di Laplace aggiunge rumore estratto da una distribuzione di Laplac
 La PDF di $Lap(\mu, b)$ \`{e}: $f(x) = \frac{1}{2b} e^{-|x-\mu|/b}$.
 
 Il meccanismo di Laplace preserva la $\varepsilon$-differential privacy.
+
+\textbf{Dimostrazione}: Siano $D, D' \in \Omega$ due dataset adiacenti e $q(\cdot)$ una query $q: \Omega \to \mathcal{R}$. Siano $p_D$ e $p_{D'}$ le PDF di $\mathcal{M}_{Lap}(q, D)$ e $\mathcal{M}_{Lap}(q, D')$ rispettivamente. Per un risultato arbitrario $r \in \mathbb{R}$:
+\[
+\frac{p_D(r)}{p_{D'}(r)} = \frac{e^{-\frac{\varepsilon|q(D)-r|}{GS_1(q)}}}{e^{-\frac{\varepsilon|q(D')-r|}{GS_1(q)}}} = e^{\frac{\varepsilon(|q(D')-r|-|q(D)-r|)}{GS_1(q)}}
+\]
+Per la disuguaglianza triangolare: $|q(D')-r| - |q(D)-r| \leq |q(D') - q(D)| = \|q(D')-q(D)\|_1$. Poich\'{e} $GS_1(q) = \max_{D \sim D'}\|q(D)-q(D')\|_1$ e $D, D'$ sono adiacenti, si ha $\|q(D')-q(D)\|_1 \leq GS_1(q)$, quindi:
+\[
+\frac{p_D(r)}{p_{D'}(r)} \leq e^{\frac{\varepsilon \cdot GS_1(q)}{GS_1(q)}} = e^{\varepsilon} \qquad \square
+\]
+
+\textbf{Estensione al caso vettoriale}: Il meccanismo di Laplace si estende a query che restituiscono un vettore numerico $q: \Omega \to \mathbb{R}^n$. Si aggiunge rumore Laplace indipendente a ciascuna componente:
+\[
+\mathcal{M}_{Lap}(q, D) = q(D) + (X_1, \ldots, X_n), \quad X_i \sim Lap\!\left(0, \frac{GS_1(q)}{\varepsilon}\right) \text{ i.i.d.}
+\]
 \end{teorema}
 
 \begin{esempio}[Conteggio Query]
@@ -1384,6 +1448,16 @@ $GS_2(q) = \max_{D \sim D'} \|q(D) - q(D')\|_2$ (sensibilit\`{a} L2).
   \item \textbf{Interattivo}: il dataset rimane segreto; ogni analisi consuma una parte del budget $\varepsilon$. Il curatore \`{e} \emph{fidato}.
   \item \textbf{Non-Interattivo}: si rilascia un dataset sintetico privato; ulteriori analisi sono libere (post-processing). Il dataset rilasciato deve gi\`{a} soddisfare la DP.
 \end{itemize}
+
+\subsection{Curatore Non Fidato e Local Differential Privacy}
+
+\begin{nota}[Curatore non fidato]
+Tutti i meccanismi visti finora assumono che il \textbf{curatore sia fidato}: i dati grezzi vengono conferiti al curatore che aggiunge il rumore e rilascia il risultato. Ma cosa succede se il curatore non \`{e} fidato e gli utenti non vogliono che conosca i loro dati?
+
+\textbf{Soluzione}: ogni utente inietta rumore \emph{sui propri dati} e rivela solo la versione rumorosa al curatore. Il curatore riceve solo dati gi\`{a} privatizzati e non pu\`{o} risalire ai valori originali.
+
+Questo \`{e} il modello della \textbf{Local Differential Privacy (LDP)}, usabile anche in scenari decentralizzati.
+\end{nota}
 
 \subsection{Local Differential Privacy (LDP)}
 
