@@ -1149,7 +1149,7 @@ Incognito considera insiemi di attributi QI di cardinalit\`{a} crescente e pota 
 \end{definizione}
 
 \begin{nota}[In parole semplici: Algoritmo Incognito]
-L'intuizione è: prima di verificare la k-anonymity su tutti gli attributi insieme (operazione costosa), verifica ogni singolo attributo da solo. Se già un solo attributo preso individualmente viola la k-anonymity, allora qualunque combinazione che lo includa la violerà sicuramente -- aggiungere attributi crea gruppi ancora più piccoli. Questo taglia enormemente lo spazio di ricerca, esattamente come l'algoritmo Apriori nel frequent itemset mining: se un insieme piccolo è problematico, tutti i suoi soprainsieme lo saranno.
+L'intuizione è: prima di verificare la k-anonymity su tutti gli attributi insieme (operazione costosa), verifica ogni singolo attributo da solo. Se già un solo attributo preso individualmente viola la k-anonymity, allora qualunque combinazione che lo includa la violerà sicuramente -- aggiungere attributi crea gruppi ancora più piccoli. Questo taglia enormemente lo spazio di ricerca, esattamente come l'algoritmo Apriori nel frequent itemset mining: se un insieme piccolo è problematico, tutti i suoi superset lo saranno.
 \end{nota}
 
 \subsection{Oltre la K-Anonymity}
@@ -1365,12 +1365,7 @@ Per una singola query numerica: $GS_1(q) = \max_{D \sim D'} |q(D) - q(D')|$.
 \end{definizione}
 
 \begin{nota}[In parole semplici: Global Sensitivity]
-La sensibilità globale risponde alla domanda: ``Di quanto può cambiare al massimo la risposta alla mia query se aggiungo o rimuovo un singolo record?'' Due esempi chiari:
-\begin{itemize}
-  \item Query \textbf{COUNT} (``quanti record ci sono?''): aggiungere o rimuovere un record cambia il risultato esattamente di 1 $\Rightarrow GS_1 = 1$.
-  \item Query \textbf{SUM} (``qual è la somma degli stipendi?''): aggiungere un record con stipendio $s$ cambia la somma di $s$; nel caso peggiore $s$ è il valore massimo del dominio $\Rightarrow GS_1 = \max(\text{stipendio})$.
-\end{itemize}
-Il meccanismo di Laplace aggiunge rumore proporzionale a $GS_1/\varepsilon$: più la query è sensibile (grande $GS_1$) o più privacy vuoi (piccolo $\varepsilon$), più grande sarà il rumore aggiunto.
+La sensibilità globale risponde a una domanda molto concreta: di quanto può cambiare al massimo la risposta alla mia query se aggiungo o rimuovo un singolo record dal dataset? Prendiamo la query più semplice possibile, un conteggio (``quanti record ci sono?''): qui aggiungere o togliere una persona cambia il risultato esattamente di 1, quindi la sensibilità è 1. Se invece la query è una somma, ad esempio la somma degli stipendi di tutti, aggiungere una persona cambia la somma esattamente del suo stipendio; nel caso peggiore questa persona ha lo stipendio più alto possibile nel dominio, quindi la sensibilità coincide con quel valore massimo. Il punto è che la sensibilità misura il ``peso'' che un singolo individuo può avere sul risultato, e il meccanismo di Laplace usa proprio questo valore per calibrare il rumore: più la query è sensibile, o più privacy vogliamo garantire (cioè più piccolo è $\varepsilon$), più grande dovrà essere il rumore aggiunto per nascondere il contributo di quella singola persona.
 \end{nota}
 
 \subsection{Meccanismo di Laplace}
@@ -1455,12 +1450,7 @@ Implicazione: applicare lo stesso meccanismo $\varepsilon$-DP su partizioni disg
 \end{teorema}
 
 \begin{nota}[In parole semplici: Composizione e Budget]
-I tre teoremi di composizione si leggono così nella pratica:
-\begin{itemize}
-  \item \textbf{Post-processing}: puoi elaborare liberamente l'output privato (calcolare medie, fare grafici, ecc.) senza perdere ulteriore privacy -- perché non tocchi più i dati originali.
-  \item \textbf{Composizione sequenziale}: se fai due query, ognuna con il suo budget $\varepsilon$, il budget totale consumato è $\varepsilon_1 + \varepsilon_2$. È come un conto corrente: ogni query preleva una quota.
-  \item \textbf{Composizione parallela}: se invece le due query riguardano partizioni disgiunte del dataset (es. uomini e donne separatamente), il budget consumato è solo $\max(\varepsilon_1, \varepsilon_2)$ -- non si sommano, perché ogni individuo appare in una sola partizione.
-\end{itemize}
+Questi tre teoremi raccontano cosa succede quando si combinano più analisi sullo stesso dataset privato. Il post-processing dice che, una volta ottenuto l'output rumoroso, possiamo elaborarlo come vogliamo -- calcolare medie, fare grafici, qualsiasi trasformazione -- senza perdere ulteriore privacy, semplicemente perché non stiamo più toccando i dati originali. La composizione sequenziale invece riguarda il caso in cui facciamo più query diverse sullo stesso dataset: qui il budget si comporta come un conto corrente da cui ogni query preleva la sua quota, quindi il budget totale consumato è la somma $\varepsilon_1 + \varepsilon_2$ dei budget delle singole query. La composizione parallela è il caso più favorevole: se le query riguardano partizioni disgiunte del dataset, per esempio una sugli uomini e una sulle donne, allora il budget non si somma ma resta il massimo tra i due, perché ogni singolo individuo compare in una sola delle due partizioni e quindi ``paga'' solo una volta.
 \end{nota}
 
 \subsection{$(\varepsilon, \delta)$-Differential Privacy}
@@ -1696,6 +1686,10 @@ $(1,1)$ & 4 & $c_1 \oplus (a_1 \oplus 1)(b_1 \oplus 1)$ \\
 \textbf{Perch\'{e} funziona}: l'obiettivo \`{e} che $c_1 \oplus c_2 = (a_1 \oplus a_2) \cdot (b_1 \oplus b_2)$. Scegliendo il corretto OT-input, la maschera $c_1$ si cancella, lasciando share valide del risultato dell'AND. Esempio: se $(a_2,b_2)=(1,1)$, Bob seleziona il 4\textordmasculine{} valore: $c_2 = c_1 \oplus (a_1 \oplus 1)(b_1 \oplus 1)$; combinando: $c_1 \oplus c_2 = (a_1 \oplus 1)(b_1 \oplus 1) = (a_1 \oplus a_2)(b_1 \oplus b_2)$.
 \end{esempio}
 
+\begin{nota}[In parole semplici: Secret Sharing e la tabella OT per l'AND]
+L'idea di fondo è che nessuna delle due parti deve mai vedere il valore vero di $A$ o $B$, ma solo un pezzo casuale (la propria \emph{share}) che, preso isolatamente, sembra un bit a caso e non rivela nulla. Alice possiede $a_1$ e $b_1$, Bob possiede $a_2$ e $b_2$, e il valore vero si ricostruisce solo combinando le due share con lo XOR ($A = a_1 \oplus a_2$). Per i gate XOR il calcolo è semplice: bastano operazioni locali, perché lo XOR si comporta bene rispetto a questa suddivisione (ogni parte fa lo XOR delle proprie share e il risultato si combina alla fine senza bisogno di comunicare). Il gate AND invece non si può calcolare localmente, perché moltiplicare due valori spezzati in pezzi casuali non dà semplicemente il prodotto dei pezzi: serve un meccanismo che permetta di calcolare il prodotto senza che le parti si scambino i valori in chiaro, e qui entra in gioco l'OT. La tabella OT elenca, per ciascuna delle quattro combinazioni possibili dei bit di Bob, quale messaggio Alice deve preparare in modo che Bob, recuperando tramite OT solo il messaggio corrispondente al suo input reale, ottenga esattamente la share di output che gli serve. La maschera $c_1$ scelta da Alice è progettata apposta per cancellarsi quando le due share di output vengono combinate con lo XOR, lasciando come risultato finale esattamente l'AND corretto -- il tutto senza che Bob scopra $a_1$ o $b_1$, e senza che Alice sappia quale dei quattro messaggi Bob ha effettivamente selezionato.
+\end{nota}
+
 \subsubsection{Privacy Preserving ID3}
 
 \textbf{ID3 Algorithm} (Quinlan): costruisce un decision tree usando information gain.
@@ -1729,6 +1723,10 @@ Protocollo per ID3 su dati distribuiti orizzontalmente tra due parti (stessa sch
 \end{enumerate}
 \end{definizione}
 
+\begin{nota}[In parole semplici: perché ID3$_\delta$ deve approssimare il logaritmo]
+Per scegliere il miglior attributo su cui dividere l'albero, ID3 ha bisogno di calcolare l'information gain, e questo calcolo richiede il logaritmo. Il problema è che calcolare un logaritmo esatto dentro un circuito crittografico condiviso da due parti (come quelli del protocollo di Yao) è complicatissimo e costosissimo, perché il logaritmo non si scompone in semplici somme e moltiplicazioni. ID3$_\delta$ risolve il problema con un trucco tipico del calcolo numerico: scrive il numero $x$ come $2^n$ moltiplicato per un fattore $(1+\varepsilon)$ vicino a 1. La parte $n \ln 2$ è facile da ottenere (basta contare quante volte si può dividere $x$ per 2), mentre il pezzetto rimanente $\ln(1+\varepsilon)$, essendo $\varepsilon$ piccolo, si approssima bene con i primi termini della serie di Taylor -- che non sono altro che un polinomio, cioè solo somme e moltiplicazioni, operazioni che un circuito sicuro sa gestire facilmente. L'errore che si introduce con questa approssimazione è esattamente il $\delta$ che dà il nome all'algoritmo: più lo si vuole piccolo, più preciso (ma anche più costoso) sarà il calcolo.
+\end{nota}
+
 \subsection{Altri Approcci}
 
 \begin{itemize}
@@ -1738,11 +1736,7 @@ Protocollo per ID3 su dati distribuiti orizzontalmente tra due parti (stessa sch
 \end{itemize}
 
 \begin{nota}[In parole semplici: Altri Approcci alla Privacy Distribuita]
-\begin{itemize}
-  \item \textbf{Crittografia funzionale}: invece di dover decriptare l'intero messaggio, una chiave speciale permette di calcolare solo una funzione specifica del testo in chiaro (es. la media degli stipendi di tutti, senza vedere i singoli valori). Generalizza la crittografia tradizionale a chiave pubblica.
-  \item \textbf{Crittografia omomorfica}: puoi eseguire calcoli direttamente sui dati \emph{cifrati} -- il risultato decifrato coincide con quello che avresti ottenuto operando sui dati in chiaro. Concettualmente potente, ma attualmente è molto lenta (ordini di grandezza rispetto al calcolo normale); usata in scenari dove la privacy è prioritaria rispetto alle prestazioni.
-  \item \textbf{Federated learning}: ogni dispositivo (es. il tuo smartphone) allena il modello ML localmente sui propri dati e manda solo il \emph{gradiente} (ovvero ``in che direzione modificare i parametri del modello'') al server centrale. Il server aggrega i gradienti di tutti gli utenti e aggiorna il modello globale. I dati grezzi non lasciano mai il dispositivo locale -- è la tecnica usata ad esempio da Google per migliorare la tastiera Gboard senza accedere ai tuoi messaggi.
-\end{itemize}
+Questi tre approcci affrontano lo stesso problema -- calcolare qualcosa su dati altrui senza vederli -- da angolazioni diverse. La crittografia funzionale generalizza l'idea della crittografia a chiave pubblica: invece di dover decriptare l'intero messaggio per usarlo, una chiave speciale permette di calcolare direttamente solo una funzione specifica del testo in chiaro, ad esempio la media degli stipendi di un gruppo di persone, senza che chi fa il calcolo veda mai i singoli valori. La crittografia omomorfica va oltre: permette di eseguire calcoli direttamente sui dati cifrati, in modo che il risultato, una volta decifrato, coincida esattamente con quello che si sarebbe ottenuto operando sui dati in chiaro. È concettualmente molto potente, ma ha un costo: è ancora oggi estremamente lenta, ordini di grandezza più lenta di un calcolo normale, quindi si usa solo dove la privacy è davvero prioritaria rispetto alle prestazioni. Il federated learning, infine, è l'approccio più usato in pratica: ogni dispositivo, ad esempio il nostro smartphone, allena il modello di machine learning localmente sui propri dati e manda al server centrale solo il gradiente, cioè l'indicazione di come modificare i parametri del modello, mai i dati grezzi. Il server si limita ad aggregare i gradienti di tutti gli utenti per aggiornare il modello globale -- è la stessa tecnica con cui Google migliora la tastiera Gboard senza mai leggere i messaggi che scriviamo.
 \end{nota}
 
 %=============================================================================
@@ -1764,6 +1758,10 @@ Il termine \textbf{bias} (pregiudizio/distorsione) indica una tendenza sistemati
   \item \textbf{Bias statistico/di apprendimento}: errore sistematico nella stima di una quantità. Un modello che fa assunzioni troppo semplici rispetto alla realtà ha alto bias (underfitting). Formula: $\text{Errore} = \text{Bias}^2 + \text{Varianza} + \text{Rumore irreducibile}$.
   \item \textbf{Bias di discriminazione}: tendenza sistematica di un algoritmo a produrre decisioni sfavorevoli per determinati gruppi (razza, genere, religione, ecc.) anche in assenza di intenzione esplicita.
 \end{itemize}
+
+\begin{nota}[In parole semplici: Decomposizione Bias-Varianza]
+Questa formula spiega da dove arriva l'errore complessivo di un modello, scomponendolo in tre pezzi indipendenti. Il bias misura quanto il modello sbaglia sistematicamente perché ha fatto assunzioni troppo semplici per il fenomeno reale -- ad esempio usare una retta per descrivere una relazione che in realtà è curva: è il classico errore di sotto-adattamento (underfitting), e non si risolve aggiungendo più dati, perché il modello è strutturalmente troppo rigido. La varianza misura invece quanto cambiano le previsioni del modello se lo si allena su un campione diverso di dati estratto dalla stessa popolazione: un modello con varianza alta si è troppo legato ai dettagli specifici del training set, ed è il classico overfitting. Il rumore irriducibile, infine, è l'errore che nessun modello potrà mai eliminare, perché è intrinseco al fenomeno stesso (ad esempio misurazioni imprecise o eventi davvero casuali). La cosa importante da ricordare è che bias e varianza tendono a comportarsi in modo opposto: un modello molto semplice ha bias alto ma varianza bassa, un modello molto complesso ha bias basso ma varianza alta, e il compito di chi allena un modello è trovare il punto di equilibrio tra i due.
+\end{nota}
 
 \textbf{Fonti di bias nei sistemi ML}:
 \begin{enumerate}
@@ -1798,6 +1796,10 @@ Accuratezza: $P(Y = \hat{Y})$.
 
 \textbf{Classificatore ottimale}: minimizza $\mathbb{E}[l(Y, \hat{Y})]$ (valore atteso del costo). Equivalentemente: $\hat{Y} = f(X)$ dove $f(X) = 1$ se $\mathbb{P}(Y=1|X=x) > 1/2$, altrimenti $0$.
 \end{definizione}
+
+\begin{nota}[In parole semplici: Classificatore Ottimale]
+Dietro questa formula c'è un'idea piuttosto intuitiva: se conoscessimo esattamente la probabilità reale che una persona con un certo profilo $X$ appartenga alla classe 1 (ad esempio ``è a rischio di insolvenza''), la scelta più sensata sarebbe semplicemente scommettere sulla classe più probabile -- se quella probabilità supera il 50\%, prevediamo 1, altrimenti prevediamo 0. Questa regola, detta classificatore bayesiano ottimale, è quella che minimizza in media il numero di errori, proprio perché in ogni singolo caso scommette sull'esito più verosimile. Naturalmente nella pratica non conosciamo mai $\mathbb{P}(Y=1|X=x)$ con esattezza: è proprio quello che un modello di machine learning cerca di stimare a partire dai dati di training. Questa formula serve quindi soprattutto come punto di riferimento teorico, il limite ideale con cui confrontare quanto un classificatore reale si avvicina alla decisione perfetta.
+\end{nota}
 
 \begin{definizione}[Ciclo ML]
 Stato del Mondo $\xrightarrow{\text{Measurement}}$ Data $\xrightarrow{\text{Learning}}$ Model $\xrightarrow{\text{Action}}$ Individuals $\xrightarrow{\text{Feedback}}$ Stato del Mondo.
@@ -1855,6 +1857,10 @@ L'inconsapevolezza di solito non esiste nei dati del mondo reale ed \`{e} diffic
 
 Siano $X$ covariate, $Y$ variabile target, $\hat{Y}$ la stima del classificatore $f_\theta$, $R$ il punteggio di rischio, $A$ l'attributo sensibile (es. razza, genere).
 
+\begin{nota}[In parole semplici: cosa significa il simbolo $\perp$]
+Nelle tre definizioni che seguono compare spesso il simbolo $\perp$, che si legge ``è indipendente da''. Scrivere $\hat{Y} \perp A$ significa che conoscere il valore dell'attributo sensibile $A$ di una persona non cambia in alcun modo le probabilità della previsione $\hat{Y}$: le due variabili non sono correlate. Scrivere invece $\hat{Y} \perp A \mid Y$ (con la barra verticale) significa un'indipendenza \emph{condizionata}: se fissiamo il vero esito $Y$ (ad esempio limitandoci solo alle persone che davvero hanno commesso un crimine, oppure solo a quelle che davvero non lo hanno commesso), allora $\hat{Y}$ non deve più dipendere da $A$. In altre parole, ``a parità di verità'', il modello deve trattare i gruppi nello stesso modo. È la stessa nozione di indipendenza condizionata usata in probabilità e nelle reti bayesiane: la barra verticale si legge sempre ``dato che già sappiamo''.
+\end{nota}
+
 \begin{definizione}[Indipendenza (Demographic Parity)]
 Le variabili casuali $(\hat{Y}, A)$ soddisfano l'indipendenza se $\hat{Y} \perp A$, ovvero:
 \[
@@ -1881,12 +1887,7 @@ La sufficienza riflette la \textbf{calibrazione}: la previsione del modello \`{e
 \end{definizione}
 
 \begin{nota}[In parole semplici: Criteri di Fairness]
-\begin{itemize}
-  \item \textbf{Indipendenza (Demographic Parity)}: il modello deve approvare la stessa percentuale di richieste in ogni gruppo -- es. stessa percentuale di prestiti concessi a uomini e donne, indipendentemente dal merito individuale. Problema: può portare a assumere ``a caso'' dal gruppo svantaggiato.
-  \item \textbf{Separazione (Equal Error Rates)}: il modello può sbagliare, ma deve sbagliare con la \emph{stessa frequenza} per tutti i gruppi. Esempio: il sistema COMPAS deve avere lo stesso tasso di falsi positivi (etichettare come ``ad alto rischio'' chi non lo è) per bianchi e afroamericani.
-  \item \textbf{Sufficienza (Calibration)}: se il modello predice ``70\% di rischio di recidiva'', quel 70\% deve essere ugualmente valido per bianchi e afroamericani -- il punteggio deve essere ugualmente affidabile per tutti i gruppi, indipendentemente dall'attributo sensibile.
-\end{itemize}
-Il \textbf{teorema di incompatibilità} dice che, in quasi tutti i contesti reali (dove $A$ e $Y$ sono correlati), non si possono soddisfare contemporaneamente tutti e tre i criteri: bisogna scegliere quale garanzia è più importante e accettare di violare le altre. Non esiste una definizione universale di ``fairness''.
+I tre criteri rispondono tutti alla domanda ``il modello è equo?'', ma lo fanno guardando ad aspetti diversi. L'indipendenza, o demographic parity, chiede semplicemente che il modello approvi la stessa percentuale di richieste in ogni gruppo: se concede prestiti, deve concederne la stessa percentuale a uomini e donne, indipendentemente dal merito individuale di ciascuno. Il problema di questo criterio è che può essere soddisfatto anche con decisioni di fatto ingiuste, ad esempio approvando il gruppo svantaggiato in modo del tutto casuale invece che in base al merito, pur di pareggiare le percentuali. La separazione, o equal error rates, sposta l'attenzione dagli esiti agli errori: il modello può sbagliare, ma deve sbagliare con la stessa frequenza in tutti i gruppi. Pensiamo al sistema COMPAS, che assegna punteggi di rischio criminale: la separazione richiede che il tasso di falsi positivi, cioè la percentuale di persone etichettate erroneamente come ad alto rischio, sia lo stesso per bianchi e afroamericani. La sufficienza, o calibrazione, riguarda invece l'affidabilità del punteggio stesso: se il modello dice che una persona ha il 70\% di rischio di recidiva, quel 70\% deve essere ugualmente accurato indipendentemente dal gruppo di appartenenza della persona. Il problema è che, quando l'attributo sensibile e la variabile target sono correlati tra loro -- il che succede quasi sempre nella realtà -- il teorema di incompatibilità dimostra che non si possono soddisfare tutti e tre questi criteri contemporaneamente. Bisogna quindi scegliere quale garanzia privilegiare nel contesto specifico, accettando di violare le altre: non esiste una definizione universale di equità.
 \end{nota}
 
 \begin{teorema}[Teoremi di Incompatibilit\`{a}]
