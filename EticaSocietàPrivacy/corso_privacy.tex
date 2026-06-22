@@ -11,7 +11,7 @@
 \usepackage{booktabs}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
-\usepackage{microtype}
+\usepackage[protrusion=true,expansion=false]{microtype}
 
 \geometry{margin=2.5cm}
 
@@ -1074,6 +1074,10 @@ Una gerarchia di generalizzazione su un dominio ($DGH_D$) di un attributo $A$ \`
 Il prodotto cartesiano delle DGH di tutti gli attributi forma un \textbf{reticolo di generalizzazione} $DGH_{DT}$.
 \end{definizione}
 
+\begin{nota}[In parole semplici: DGH e Reticolo di Generalizzazione]
+La DGH definisce i \textbf{livelli di astrazione} disponibili per ogni attributo -- non i singoli valori, ma i \emph{domini} in cui questi valori vivono. Per lo ZIP, ad esempio: $D_0$ = dominio di tutti i codici a 5 cifre esatte (\texttt{53715}, \texttt{53710}, \ldots); $D_1$ = dominio dei codici a 4 cifre + \texttt{*} (\texttt{5371*}, \texttt{5370*}, \ldots); $D_2$ = dominio dei codici a 3 cifre + \texttt{**}; e così via fino a $D_n$ = \{\texttt{*****}\}. La DGH dice semplicemente come questi livelli si ordinano: $D_0 \to D_1 \to \cdots \to D_n$ (ogni livello è meno specifico del precedente). Il \textbf{reticolo} è il prodotto cartesiano di tutte le DGH degli attributi: ogni nodo del reticolo rappresenta una \emph{combinazione di livelli} (es. ZIP al livello $D_1$, età al livello $D_0$ originale, sesso al livello $D_1$). Muoversi verso l'alto nel reticolo significa generalizzare di più e perdere informazione; restare in basso significa conservare il dettaglio ma rischiare di violare la k-anonymity.
+\end{nota}
+
 \begin{definizione}[Value Generalization Hierarchy (VGH)]
 Per ogni dominio $D$, la \textbf{gerarchia di generalizzazione dei valori} $VGH_D$ \`{e} un \textbf{albero} dove:
 \begin{itemize}
@@ -1083,11 +1087,19 @@ Per ogni dominio $D$, la \textbf{gerarchia di generalizzazione dei valori} $VGH_
 $VGH_D$ \`{e} determinato dalla relazione di generalizzazione dei valori, che associa a ogni valore $v_i \in D_i$ un unico valore $v_j \in D_j$ (con $D_j$ generalizzazione diretta di $D_i$). Esempio ZIP: $53715, 53710 \to 5371^*$; $53706, 53703 \to 5370^*$; $5371^*, 5370^* \to 537^{**}$.
 \end{definizione}
 
+\begin{nota}[In parole semplici: VGH]
+La VGH è concretamente l'albero in cui le foglie sono i valori più specifici (es. \texttt{53715}, \texttt{53710}) e salendo i valori si fondono in categorie sempre più generali (es. \texttt{5371*}, \texttt{537**}, \texttt{*****}). È come fare zoom-out su una mappa: più sali, meno dettagli vedi. Ogni attributo del dataset ha il suo albero VGH; la DGH cataloga quali livelli (domini) esistono, e la VGH dice esattamente come ogni valore si generalizza.
+\end{nota}
+
 \begin{definizione}[Vettore Distanza (Distance Vector)]
 Siano $T_i$ e $T_j$ due tabelle definite sugli stessi attributi $A = \{A_1, \ldots, A_n\}$ tali che $T_i \leq T_j$. Il \textbf{vettore distanza} di $T_j$ da $T_i$ \`{e} $DV_{ij} = [d_1, \ldots, d_n]$, dove ogni $d_x$ \`{e} la lunghezza del cammino unico tra $dom(A_x, T_i)$ e $dom(A_x, T_j)$ nella $DGH_{Dx}$.
 
 Esempio: se Ethnicity ha $DGH$ con 2 livelli ($E_0 \to E_1$) e ZIP ha $DGH$ con 3 livelli ($Z_0 \to Z_1 \to Z_2$), allora la tabella con Ethnicity in $E_1$ e ZIP in $Z_1$ ha $DV = [1, 1]$ rispetto alla tabella originale.
 \end{definizione}
+
+\begin{nota}[In parole semplici: Vettore Distanza]
+Il vettore distanza misura semplicemente quanti ``passi verso l'alto'' nell'albero di generalizzazione sono stati fatti per ciascun attributo. $DV = [1, 2]$ significa: etnia generalizzata di 1 livello, ZIP generalizzato di 2 livelli. Serve per confrontare diverse soluzioni di anonimizzazione e scegliere quella che generalizza il \emph{meno} possibile mantenendo però la k-anonymity -- ovvero quella che perde meno informazione.
+\end{nota}
 
 \begin{nota}[Classificazione delle Tecniche di K-Anonymity]
 La generalizzazione e la soppressione possono essere applicate a diversi livelli di granularit\`{a}:
@@ -1113,6 +1125,10 @@ Ogni percorso in $DGH_{DT}$ rappresenta una strategia di generalizzazione. L'alg
 \textbf{Propriet\`{a}}: salendo nella gerarchia il numero di tuple da rimuovere per la k-anonymity decresce. Se non esiste soluzione all'altezza $h$ con $\leq MaxSup$ soppressioni, non ne esiste una ad altezza minore (approccio branch and bound).
 \end{definizione}
 
+\begin{nota}[In parole semplici: Algoritmo di Samarati]
+Invece di provare tutti i livelli di generalizzazione uno per uno (dal meno al più generico), l'algoritmo fa una ricerca binaria: parte dal livello medio $h/2$ del reticolo. Se lì si soddisfa la k-anonymity con un numero accettabile di soppressioni, allora prova a scendere (meno generalizzazione = più dettaglio); altrimenti sale (più generalizzazione). In questo modo trova il livello minimo necessario in $\log_2(h)$ iterazioni invece di $h$ -- molto più efficiente.
+\end{nota}
+
 \subsubsection{Algoritmo Incognito}
 
 \begin{definizione}[Incognito Algorithm]
@@ -1131,6 +1147,10 @@ Incognito sfrutta due propriet\`{a} di monotonicità nel reticolo (analoghe ad A
 \end{itemize}
 Incognito considera insiemi di attributi QI di cardinalit\`{a} crescente e pota i nodi del reticolo usando queste due propriet\`{a}.
 \end{definizione}
+
+\begin{nota}[In parole semplici: Algoritmo Incognito]
+L'intuizione è: prima di verificare la k-anonymity su tutti gli attributi insieme (operazione costosa), verifica ogni singolo attributo da solo. Se già un solo attributo preso individualmente viola la k-anonymity, allora qualunque combinazione che lo includa la violerà sicuramente -- aggiungere attributi crea gruppi ancora più piccoli. Questo taglia enormemente lo spazio di ricerca, esattamente come l'algoritmo Apriori nel frequent itemset mining: se un insieme piccolo è problematico, tutti i suoi soprainsieme lo saranno.
+\end{nota}
 
 \subsection{Oltre la K-Anonymity}
 
@@ -1159,6 +1179,10 @@ Una tabella pu\`{o} rilasciare informazioni in due modi:
 
 \subsubsection{L-Diversity}
 
+\begin{nota}[In parole semplici: Notazione L-Diversity]
+Prima di entrare nella notazione formale, l'idea è semplice: un \textbf{$q^*$-block} è il gruppo di persone che, dopo la generalizzazione, hanno gli stessi valori per i quasi-identificatori (es. tutti quelli con ZIP \texttt{130**} e età \texttt{3*}). La k-anonymity garantisce che ogni gruppo abbia almeno $k$ persone. L'$l$-diversity aggiunge che dentro ciascun gruppo i valori sensibili (es. malattie) devono essere almeno $l$ valori diversi e distribuiti abbastanza uniformemente -- così, anche se sai che qualcuno appartiene a quel gruppo, non puoi dedurne la malattia con certezza.
+\end{nota}
+
 \textbf{Notazione formale}: Siano PT la tabella privata e GT la tabella generalizzata rilasciata.
 \begin{itemize}
   \item $q$: valore di un attributo non sensibile $Q$ in PT.
@@ -1185,6 +1209,10 @@ dove $p(q^*, s) = \frac{n(q^*, s)}{\sum_{s' \in S} n(q^*, s')}$ \`{e} la frazion
 
 \textbf{Propriet\`{a}}: la entropy $l$-diversity soddisfa la \emph{monotonicità} $\Rightarrow$ qualsiasi algoritmo per la k-anonymity pu\`{o} essere esteso per assicurare $l$-diversity.
 \end{definizione}
+
+\begin{nota}[In parole semplici: Entropy L-Diversity]
+L'entropia è una misura di ``disordine'' o ``varietà'': è alta quando i valori sensibili sono distribuiti in modo uniforme nel blocco, e bassa quando uno solo domina (es. se nel blocco 9 persone su 10 hanno Cancer e 1 sola ha Flu, c'è poca diversità). Richiedere che l'entropia sia $\geq \log(l)$ è più forte della semplice presenza di $l$ valori diversi: impone che la distribuzione sia \emph{almeno tanto varia} quanto se fossero $l$ valori equiprobabili. Questo previene situazioni in cui ci sono formalmente $l$ malattie diverse, ma una schiacciante maggioranza e quindi è facile indovinarla.
+\end{nota}
 
 \textbf{L-Diversity e Background Knowledge}: se ci sono $l$ valori sensibili ben rappresentati in un $q^*$-block, l'attaccante ha bisogno di $l-1$ \emph{pezzi di conoscenza di background} per eliminare $l-1$ valori sensibili possibili e inferire una positive disclosure. Impostando il parametro $l$, il data publisher determina quanta protezione si vuole offrire contro la conoscenza di background (anche se questa \`{e} sconosciuta al publisher).
 
@@ -1213,6 +1241,10 @@ dove $\delta = (\delta_{min}, \delta_{max})$ \`{e} un range di probabilit\`{a} a
 
 \textbf{Intuizione}: la probabilit\`{a} che un individuo sia nella tabella privata deve rimanere entro un range controllato -- non troppo alta (rischio di sapere che \`{e} presente) n\'{e} troppo bassa (rischio di sapere che \`{e} assente). Esempio tipico: $\delta = [1/3, 2/3]$.
 \end{definizione}
+
+\begin{nota}[In parole semplici: $\delta$-Presence]
+Il problema che risolve la $\delta$-presence è: ``Posso capire dal dataset pubblicato se una certa persona \emph{è} nel database privato?'' (anche senza sapere quale malattia ha -- sapere che sei in un DB di pazienti oncologici già rivela molto). La $\delta$-presence richiede che la probabilità di essere incluso nel DB privato resti sempre entro un intervallo $[\delta_{min}, \delta_{max}]$: non troppo alta (altrimenti l'avversario deduce che sei sicuramente nel DB) e non troppo bassa (altrimenti deduce che di sicuro non ci sei). Esempio: se tutti gli ``americani'' nel dataset generalizzato hanno probabilità 1/2 di essere nel DB privato, l'avversario sa solo che c'è una chance su due -- non impara niente di più rispetto a prima.
+\end{nota}
 
 \begin{esempio}[$\delta$-Presence -- Tabella GT e sottoinsieme PT]
 Tabella pubblica T con 9 individui (a--i); tabella privata PT (sottoinsieme di T) con 5 individui (b, c, f, h, i). La generalizzazione GT rilasciata sopprime Age e generalizza ZIP:
@@ -1318,6 +1350,10 @@ e^{-\varepsilon} \leq \frac{\mathbb{P}(\mathcal{M}(q, D) = r)}{\mathbb{P}(\mathc
 Il parametro $\varepsilon$ \`{e} il \textbf{privacy budget}: pi\`{u} piccolo \`{e}, maggiore \`{e} la garanzia di privacy. Per $\varepsilon \to 0$ le probabilit\`{a} sono quasi uguali (massima privacy, minima utility).
 \end{definizione}
 
+\begin{nota}[In parole semplici: $\varepsilon$-Differential Privacy]
+La definizione formale dice: aggiungere o togliere un solo record dal dataset non deve cambiare la probabilità di qualsiasi output di più di un fattore $e^\varepsilon \approx 1 + \varepsilon$ (per $\varepsilon$ piccolo). In pratica: un avversario che osserva il risultato della query non riesce a capire con certezza se il tuo record era nel dataset oppure no. Più $\varepsilon$ è piccolo, più il meccanismo deve aggiungere rumore per oscurare la tua presenza -- ma meno precisa sarà la risposta. Con $\varepsilon$ grande il rumore è minimo ma la privacy è debole. Il \textbf{privacy budget} è proprio questo: ogni query ``spende'' un po' di $\varepsilon$, e una volta esaurito non si può più interrogare il dataset in modo privato.
+\end{nota}
+
 \begin{nota}[Privacy vs. Accuracy]
 Un meccanismo che restituisce sempre la stessa costante (es. $\mathcal{M}: D \mapsto 100$) soddisfa la DP con $\varepsilon = 0$, poich\'{e} $P(\mathcal{M}(D) = 100) = 1 = P(\mathcal{M}(D') = 100) \cdot e^0$ per ogni coppia di dataset adiacenti. Tuttavia \`{e} \textbf{completamente inutile}: non fornisce alcuna informazione sul dataset reale. Questo evidenzia il fondamentale \textbf{trade-off privacy--utilit\`{a}}: minimizzare $\varepsilon$ aumenta la privacy ma riduce la qualit\`{a} delle risposte, e viceversa.
 \end{nota}
@@ -1327,6 +1363,15 @@ $GS_1(q) = \max_{D \sim D'} \|q(D) - q(D')\|_1$
 
 Per una singola query numerica: $GS_1(q) = \max_{D \sim D'} |q(D) - q(D')|$.
 \end{definizione}
+
+\begin{nota}[In parole semplici: Global Sensitivity]
+La sensibilità globale risponde alla domanda: ``Di quanto può cambiare al massimo la risposta alla mia query se aggiungo o rimuovo un singolo record?'' Due esempi chiari:
+\begin{itemize}
+  \item Query \textbf{COUNT} (``quanti record ci sono?''): aggiungere o rimuovere un record cambia il risultato esattamente di 1 $\Rightarrow GS_1 = 1$.
+  \item Query \textbf{SUM} (``qual è la somma degli stipendi?''): aggiungere un record con stipendio $s$ cambia la somma di $s$; nel caso peggiore $s$ è il valore massimo del dominio $\Rightarrow GS_1 = \max(\text{stipendio})$.
+\end{itemize}
+Il meccanismo di Laplace aggiunge rumore proporzionale a $GS_1/\varepsilon$: più la query è sensibile (grande $GS_1$) o più privacy vuoi (piccolo $\varepsilon$), più grande sarà il rumore aggiunto.
+\end{nota}
 
 \subsection{Meccanismo di Laplace}
 
@@ -1353,6 +1398,10 @@ Per la disuguaglianza triangolare: $|q(D')-r| - |q(D)-r| \leq |q(D') - q(D)| = \
 \mathcal{M}_{Lap}(q, D) = q(D) + (X_1, \ldots, X_n), \quad X_i \sim Lap\!\left(0, \frac{GS_1(q)}{\varepsilon}\right) \text{ i.i.d.}
 \]
 \end{teorema}
+
+\begin{nota}[In parole semplici: Meccanismo di Laplace e sua dimostrazione]
+L'idea è semplice: invece di pubblicare il valore esatto $q(D)$, si pubblica $q(D) + \text{rumore}$, dove il rumore viene estratto da una distribuzione di Laplace centrata in 0. Più la query è ``sensibile'' (grande $GS_1$) e più privacy vuoi (piccolo $\varepsilon$), più grande è il rumore. La \textbf{dimostrazione} usa un trucco elegante: la distribuzione di Laplace ha la forma $e^{-|x-\mu|/b}$, quindi il rapporto delle probabilità per due dataset adiacenti $D$ e $D'$ diventa $e^{\varepsilon \cdot (|q(D')-r| - |q(D)-r|)/GS_1}$. La \textbf{disuguaglianza triangolare} garantisce che $|q(D')-r| - |q(D)-r| \leq |q(D')-q(D)| \leq GS_1$, quindi il rapporto non supera mai $e^\varepsilon$ -- esattamente la garanzia DP.
+\end{nota}
 
 \begin{esempio}[Conteggio Query]
 Sia $q(D) = n$ il numero totale di studenti.
@@ -1381,6 +1430,10 @@ Il meccanismo restituisce $r \in R$ con probabilit\`{a}:
 Preserva $\varepsilon/2$-DP (o $\varepsilon$-DP a seconda della formulazione).
 \end{definizione}
 
+\begin{nota}[In parole semplici: Meccanismo Esponenziale]
+Quando la risposta non è un numero ma una categoria (es. ``quale fascia di prezzo massimizza il profitto?'', ``quale parola suggerire?''), aggiungere rumore numerico non ha senso. Il meccanismo esponenziale risolve questo: invece di restituire sempre la risposta ottima, la \emph{campiona} in modo casuale con probabilità proporzionale all'utilità -- le risposte buone sono molto più probabili, quelle pessime quasi impossibili. Così non riveli il valore esatto del dataset, ma tendi comunque verso le risposte utili, preservando la DP.
+\end{nota}
+
 \subsection{Teoremi Fondamentali}
 
 \begin{teorema}[Post-Processing]
@@ -1400,6 +1453,15 @@ Sia $\mathcal{M}: \Omega \to \mathcal{R}$ un meccanismo $\varepsilon$-DP, e sian
 
 Implicazione: applicare lo stesso meccanismo $\varepsilon$-DP su partizioni disgiunte del dataset non aumenta il budget consumato.
 \end{teorema}
+
+\begin{nota}[In parole semplici: Composizione e Budget]
+I tre teoremi di composizione si leggono così nella pratica:
+\begin{itemize}
+  \item \textbf{Post-processing}: puoi elaborare liberamente l'output privato (calcolare medie, fare grafici, ecc.) senza perdere ulteriore privacy -- perché non tocchi più i dati originali.
+  \item \textbf{Composizione sequenziale}: se fai due query, ognuna con il suo budget $\varepsilon$, il budget totale consumato è $\varepsilon_1 + \varepsilon_2$. È come un conto corrente: ogni query preleva una quota.
+  \item \textbf{Composizione parallela}: se invece le due query riguardano partizioni disgiunte del dataset (es. uomini e donne separatamente), il budget consumato è solo $\max(\varepsilon_1, \varepsilon_2)$ -- non si sommano, perché ogni individuo appare in una sola partizione.
+\end{itemize}
+\end{nota}
 
 \subsection{$(\varepsilon, \delta)$-Differential Privacy}
 
@@ -1459,6 +1521,10 @@ Tutti i meccanismi visti finora assumono che il \textbf{curatore sia fidato}: i 
 Questo \`{e} il modello della \textbf{Local Differential Privacy (LDP)}, usabile anche in scenari decentralizzati.
 \end{nota}
 
+\begin{nota}[In parole semplici: DP Globale vs. Locale]
+Nel modello \textbf{globale} (DP standard) ti fidi del curatore: mandi i tuoi dati veri al server centrale, che aggiunge il rumore prima di pubblicare i risultati. Nel modello \textbf{locale} (LDP) non ti fidi di nessuno: aggiungi tu stesso il rumore ai tuoi dati \emph{prima} di inviarli -- il server riceve già solo dati rumorosi e non può mai risalire al tuo valore originale. Il prezzo da pagare è che serve molto più rumore (e quindi molti più partecipanti) per ottenere statistiche accurate, ma si guadagna perché non occorre fidarsi del server centrale. Google usa LDP nel browser Chrome per raccogliere statistiche sull'uso delle funzionalità senza conoscere i comportamenti individuali.
+\end{nota}
+
 \subsection{Local Differential Privacy (LDP)}
 
 \begin{definizione}[$(\varepsilon, \delta)$-Local DP]
@@ -1494,6 +1560,10 @@ Il Randomized Response preserva $\log(3)$-DP (LDP).
 
 \textbf{Prova}: Il rapporto massimo \`{e} $\frac{3/4}{1/4} = 3 = e^{\log 3}$.
 \end{definizione}
+
+\begin{nota}[In parole semplici: Randomized Response]
+È la tecnica classica usata nei sondaggi su domande imbarazzanti (es. ``Hai mai usato droghe?''). Prima di rispondere, lanci una moneta in segreto: se viene croce, rispondi la verità; se viene testa, lanci di nuovo e rispondi Sì o No a caso. Così il ricercatore non sa mai se la tua risposta è vera o casuale -- la tua privacy è protetta. Ma conoscendo la probabilità della moneta, il ricercatore può \emph{correggere statisticamente} le risposte e stimare la frequenza reale del comportamento nell'intera popolazione. La DP è garantita perché il rapporto tra la probabilità di dire Sì quando sei davvero Sì ($3/4$) e la probabilità di dirlo quando sei No ($1/4$) è $3 = e^{\log 3}$, quindi soddisfa $\log(3)$-LDP.
+\end{nota}
 
 \begin{definizione}[Randomized Response Generalizzato]
 Per $k$ valori categorici possibili, con $v \in \{v_1, \ldots, v_k\}$:
@@ -1561,6 +1631,10 @@ m_b = (1 \oplus b)\,m_0 \oplus b\,m_1
 \end{itemize}
 \end{definizione}
 
+\begin{nota}[In parole semplici: Oblivious Transfer]
+Pensa all'OT come a una cassetta della posta magica con due scomparti: Alice inserisce $m_0$ nel primo scomparto e $m_1$ nel secondo. Bob può aprire \emph{solo uno} dei due scomparti (quello corrispondente al suo bit $b$), ma Alice non sa quale ha aperto. È ``oblivious'' (cieco) perché il mittente è all'oscuro di quale messaggio è stato ricevuto, e il ricevente non riesce a leggere l'altro. Questo blocco crittografico è il fondamento del calcolo sicuro: usando OT si può valutare privatamente qualsiasi operazione logica (AND, XOR, NOT) e quindi qualsiasi funzione arbitraria, senza che nessuna delle due parti impari gli input dell'altra.
+\end{nota}
+
 \begin{esempio}[OT 1-of-2 per computare l'AND sicuro di due bit]
 Alice vuole calcolare $x_1 \cdot x_2$ (AND) con Bob senza rivelare i propri input. Alice (sender) pone $m_0 = 0$ e $m_1 = x_1$; Bob (receiver) usa $b = x_2$. Allora:
 \[
@@ -1585,6 +1659,10 @@ Protocollo a \textbf{round costante} (2 round) per il calcolo sicuro di funzioni
 \end{enumerate}
 Overhead: $O(\text{circuito}) + O(|y|)$ OT. Modello di sicurezza: semi-honest.
 \end{teorema}
+
+\begin{nota}[In parole semplici: Garbled Circuit di Yao]
+L'idea è di ``cifrare'' un circuito logico in modo che si possa valutare senza vedere gli input. Alice codifica ogni filo del circuito con una coppia di chiavi segrete (una per il valore 0, una per l'1) e cifra le tavole di verità di ogni gate con queste chiavi -- così il gate produce il risultato corretto solo se si hanno le chiavi giuste per quell'input, senza rivelare la tavola di verità in chiaro. Bob riceve il circuito ``oscurato'' e, tramite OT, ottiene le chiavi corrispondenti ai propri input senza che Alice sappia quali ha scelto. Bob valuta poi il circuito gate per gate: in ogni gate prova a decifrare le quattro entry finché una ha successo, ottenendo la chiave di output -- senza mai vedere la tavola di verità. Il modello \textbf{semi-honest} assume che entrambe seguano il protocollo correttamente ma possano osservare i messaggi intermedi.
+\end{nota}
 
 \begin{esempio}[Soluzione del Problema dei Milionari tramite Secret Sharing]
 Per risolvere il Problema dei Milionari, i valori patrimoniali sono convertiti in stringhe binarie. Le parti valutano un circuito di confronto (``greater-than'') gate per gate: $(A \oplus B) \cdot A$.
@@ -1658,6 +1736,14 @@ Protocollo per ID3 su dati distribuiti orizzontalmente tra due parti (stessa sch
   \item \textbf{Homomorphic encryption}: crittografia che permette di effettuare calcoli su dati cifrati senza decriptarli; i risultati sono in forma cifrata. Computazionalmente costosa.
   \item \textbf{Federated learning}: consente di allenare un algoritmo su molti dispositivi decentralizzati senza effettuare scambi di dati grezzi; solo i gradienti (o parametri) del modello vengono condivisi.
 \end{itemize}
+
+\begin{nota}[In parole semplici: Altri Approcci alla Privacy Distribuita]
+\begin{itemize}
+  \item \textbf{Crittografia funzionale}: invece di dover decriptare l'intero messaggio, una chiave speciale permette di calcolare solo una funzione specifica del testo in chiaro (es. la media degli stipendi di tutti, senza vedere i singoli valori). Generalizza la crittografia tradizionale a chiave pubblica.
+  \item \textbf{Crittografia omomorfica}: puoi eseguire calcoli direttamente sui dati \emph{cifrati} -- il risultato decifrato coincide con quello che avresti ottenuto operando sui dati in chiaro. Concettualmente potente, ma attualmente è molto lenta (ordini di grandezza rispetto al calcolo normale); usata in scenari dove la privacy è prioritaria rispetto alle prestazioni.
+  \item \textbf{Federated learning}: ogni dispositivo (es. il tuo smartphone) allena il modello ML localmente sui propri dati e manda solo il \emph{gradiente} (ovvero ``in che direzione modificare i parametri del modello'') al server centrale. Il server aggrega i gradienti di tutti gli utenti e aggiorna il modello globale. I dati grezzi non lasciano mai il dispositivo locale -- è la tecnica usata ad esempio da Google per migliorare la tastiera Gboard senza accedere ai tuoi messaggi.
+\end{itemize}
+\end{nota}
 
 %=============================================================================
 \section{Fairness e Discriminazione}
@@ -1793,6 +1879,15 @@ Le variabili casuali $(\hat{Y}, A, Y)$ soddisfano la sufficienza se $Y \perp A \
 
 La sufficienza riflette la \textbf{calibrazione}: la previsione del modello \`{e} ugualmente affidabile per tutti i gruppi.
 \end{definizione}
+
+\begin{nota}[In parole semplici: Criteri di Fairness]
+\begin{itemize}
+  \item \textbf{Indipendenza (Demographic Parity)}: il modello deve approvare la stessa percentuale di richieste in ogni gruppo -- es. stessa percentuale di prestiti concessi a uomini e donne, indipendentemente dal merito individuale. Problema: può portare a assumere ``a caso'' dal gruppo svantaggiato.
+  \item \textbf{Separazione (Equal Error Rates)}: il modello può sbagliare, ma deve sbagliare con la \emph{stessa frequenza} per tutti i gruppi. Esempio: il sistema COMPAS deve avere lo stesso tasso di falsi positivi (etichettare come ``ad alto rischio'' chi non lo è) per bianchi e afroamericani.
+  \item \textbf{Sufficienza (Calibration)}: se il modello predice ``70\% di rischio di recidiva'', quel 70\% deve essere ugualmente valido per bianchi e afroamericani -- il punteggio deve essere ugualmente affidabile per tutti i gruppi, indipendentemente dall'attributo sensibile.
+\end{itemize}
+Il \textbf{teorema di incompatibilità} dice che, in quasi tutti i contesti reali (dove $A$ e $Y$ sono correlati), non si possono soddisfare contemporaneamente tutti e tre i criteri: bisogna scegliere quale garanzia è più importante e accettare di violare le altre. Non esiste una definizione universale di ``fairness''.
+\end{nota}
 
 \begin{teorema}[Teoremi di Incompatibilit\`{a}]
 Se $A$ e $Y$ \textbf{non sono indipendenti} (il che \`{e} quasi sempre vero in contesti reali), allora:
