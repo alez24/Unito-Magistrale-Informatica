@@ -9,18 +9,20 @@
 \usepackage{tcolorbox}
 \usepackage{enumitem}
 \usepackage{booktabs}
-\usepackage{microtype}
+\usepackage[protrusion=true,expansion=false]{microtype}
 
 \geometry{margin=2.5cm}
 
 \tcbuselibrary{theorems, skins, breakable}
 
 \newtcolorbox{domanda}[1][]{colback=blue!5!white, colframe=blue!60!black,
-  fonttitle=\bfseries, title={#1}, breakable}
+  fonttitle=\bfseries, title={#1}}
 \newtcolorbox{risposta}[1][]{colback=white, colframe=gray!60!black,
-  fonttitle=\bfseries, title={Risposta}, breakable}
+  fonttitle=\bfseries, title={Risposta}}
 \newtcolorbox{definizione}[1][]{colback=red!5!white, colframe=red!60!black,
-  fonttitle=\bfseries, title={Definizione: #1}, breakable}
+  fonttitle=\bfseries, title={Definizione: #1}}
+\newtcolorbox{nota}[1][]{colback=green!5!white, colframe=green!50!black,
+  fonttitle=\bfseries, title={Come lo spiegherei a voce}}
 
 \hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
 
@@ -38,7 +40,7 @@
 %=============================================================================
 \section*{Introduzione}
 %=============================================================================
-Questo documento risponde alle 22 domande d'esame pi\`{u} frequentemente poste nel corso di Etica, Societ\`{a} e Privacy (modulo Privacy) presso l'Universit\`{a} di Torino.
+Questo documento risponde alle 22 domande d'esame pi\`{u} frequentemente poste nel corso di Etica, Societ\`{a} e Privacy (modulo Privacy) presso l'Universit\`{a} di Torino, integrate con 11 domande aggiuntive: 8 su argomenti trattati nel corso ma non coperti dalle prime 22 (AI Act, DSA, Data Act/Digital Omnibus, $\delta$-presence, auditing, tipi di privacy e Big Data, classificazione/ciclo ML, interventi di fairness) e 3 emerse da un transcript di domande d'esame orale realmente poste (algoritmi SDC per macrodata/microdata, perch\'{e} il nome ``differential'' privacy, domande di ragionamento aperto).
 
 \newpage
 
@@ -75,6 +77,10 @@ dove $GS_1(q) = \max_{D \sim D'} |q(D) - q(D')|$ \`{e} la \emph{sensibilit\`{a} 
 \end{itemize}
 
 La DP offre una \textbf{garanzia matematicamente dimostrabile} contro qualsiasi forma di disclosure, indipendentemente dalla conoscenza pregressa dell'avversario.
+
+\begin{nota}
+Il punto centrale da portare a voce \`{e} che la DP non protegge un dataset specifico, ma definisce una propriet\`{a} del \emph{meccanismo} che lo elabora: se aggiungo o toglio una persona dal dataset, l'output che il meccanismo restituisce deve cambiare pochissimo (al massimo di un fattore $e^\varepsilon$). Questo significa che un osservatore che guarda solo la risposta non riesce a dire con certezza se quella persona era nel dataset o no. Il bello \`{e} che questa garanzia non dipende da cosa l'attaccante sa gi\`{a}, n\'{e} dalla query specifica: vale sempre, per definizione, qualunque sia la query e qualunque sia il dataset.
+\end{nota}
 
 %=============================================================================
 \section{Local e Global Differential Privacy}
@@ -128,6 +134,10 @@ $P(\text{S\`{i}}|\text{vero=S\`{i}}) = 3/4$, $P(\text{S\`{i}}|\text{vero=No}) = 
 
 \textbf{Randomized Response Generalizzato} per $k$ categorie: $P(\mathcal{M}(x) = v) = \frac{e^\varepsilon}{e^\varepsilon + k - 1}$ se $v = q(x)$, altrimenti $\frac{1}{e^\varepsilon + k - 1}$.
 
+\begin{nota}
+La differenza si riduce a una domanda: di chi mi fido? Nel modello globale mi fido di chi raccoglie i dati (il curatore), quindi gli mando i miei dati veri e lui aggiunge il rumore prima di rispondere alle query -- questo richiede poco rumore perch\'{e} la randomizzazione si applica una sola volta, sull'intero database aggregato. Nel modello locale non mi fido di nessuno, quindi sono io stesso ad aggiungere rumore ai miei dati prima di spedirli, e qui il rumore deve essere molto pi\`{u} alto perch\'{e} ogni singolo record, preso isolatamente, deve gi\`{a} essere indistinguibile da un altro -- non c'\`{e} un aggregatore fidato che fa la randomizzazione ``in un colpo solo''. Il Randomized Response \`{e} l'esempio pi\`{u} semplice di LDP: rispondo il vero con una certa probabilit\`{a} e a caso con l'altra, e chi raccoglie i dati pu\`{o} ancora stimare le statistiche aggregate correggendo matematicamente per questo rumore, ma non pu\`{o} mai sapere con certezza la mia risposta vera.
+\end{nota}
+
 %=============================================================================
 \section{Privacy e Security}
 %=============================================================================
@@ -164,6 +174,10 @@ Nel contesto del GDPR, entrambe sono richieste: il controllore deve implementare
 
 La crittografia su colonne, il Randomized Response e i sistemi di controllo degli accessi (ABAC/RBAC) sono strumenti che servono sia la security che la privacy.
 
+\begin{nota}
+Il modo pi\`{u} semplice per ricordare la differenza \`{e} pensare a \emph{chi} vogliono proteggere. La security protegge il sistema dagli attaccanti esterni: vuole impedire che chi non \`{e} autorizzato entri. La privacy protegge invece l'individuo anche da chi \`{e} autorizzato: un dipendente di un ospedale pu\`{o} avere accesso legittimo ai dati medici (quindi nessuna violazione di security), ma se li usa o li vende per uno scopo diverso da quello per cui erano stati raccolti, viola comunque la privacy del paziente. Per questo si dice che la security \`{e} necessaria ma non sufficiente: un sistema pu\`{o} essere tecnicamente sicurissimo e comunque violare sistematicamente la privacy delle persone che lo usano.
+\end{nota}
+
 %=============================================================================
 \section{Privacy: Perch\'{e} \`{e} Importante?}
 %=============================================================================
@@ -191,6 +205,10 @@ La privacy \`{e} importante per molteplici ragioni:
 \end{itemize}
 
 \textbf{5. Trade-off privacy-comodit\`{a}}: Pi\`{u} comodit\`{a} spesso significa meno privacy (GPS, cookies, social network). Ma questo trade-off \`{e} in parte frutto di \textbf{ignoranza e conformismo}: con le tecniche giuste (DP, k-anonymity) \`{e} possibile ottenere sia utilit\`{a} dei dati che protezione della privacy.
+
+\begin{nota}
+Se devo argomentare a voce perch\'{e} la privacy conta, il punto di partenza pi\`{u} efficace \`{e} smontare l'obiezione pi\`{u} comune: ``non ho nulla da nascondere''. Snowden risponde che \`{e} come dire ``non mi importa della libert\`{a} di parola perch\'{e} non ho niente da dire'' -- confonde l'assenza di qualcosa da nascondere con l'assenza del diritto al controllo sulle proprie informazioni. Poi si pu\`{o} rincarare con i casi concreti: Netflix e AOL mostrano che anche dati ``anonimizzati'' permettono di risalire alle persone con tecniche relativamente semplici; Cambridge Analytica mostra che dati raccolti per un gioco innocuo possono finire per manipolare un'elezione. Il filo comune di tutti questi casi \`{e} che la perdita di controllo sui propri dati ha conseguenze concrete e spesso irreversibili, non solo un disagio astratto.
+\end{nota}
 
 %=============================================================================
 \section{GDPR: Princìpi e Sanzioni}
@@ -239,6 +257,10 @@ Descrivere il GDPR: princìpi fondamentali, sanzioni, novit\`{a} rispetto alla D
 
 \textbf{L'AI Act (2024)}: complementare al GDPR, classifica i sistemi di IA in 4 livelli di rischio (inaccettabile, alto, limitato, minimo).
 
+\begin{nota}
+Per raccontare il GDPR senza limitarsi a elencare gli articoli, conviene partire dall'idea di fondo: prima della Direttiva del '95 ogni paese europeo aveva le sue regole, e con il GDPR si \`{e} passati a un regolamento unico, direttamente applicabile in tutta l'UE senza bisogno di leggi nazionali -- questa \`{e} gi\`{a} di per s\'{e} la novit\`{a} pi\`{u} importante. Le altre novit\`{a} si spiegano bene come ``risposte a problemi emersi nella pratica'': i nuovi diritti (oblio, portabilit\`{a}) nascono perch\'{e} gli utenti si sono accorti di non avere controllo sui propri dati una volta condivisi; l'obbligo di accountability nasce perch\'{e} prima bastava essere conformi, ora bisogna anche poterlo \emph{dimostrare} con la documentazione; le sanzioni salite fino al 4\% del fatturato mondiale servono a rendere la compliance economicamente pi\`{u} conveniente della violazione, soprattutto per le grandi aziende per cui multe piccole sarebbero solo un costo di esercizio. Il confronto con gli USA \`{e} utile per far capire che l'approccio europeo (un diritto fondamentale, applicato a chiunque tratti dati di cittadini UE ovunque nel mondo) \`{e} l'eccezione, non la norma: gli USA hanno leggi settoriali (sanit\`{a}, minori, credito) ma nessuna legge generale.
+\end{nota}
+
 %=============================================================================
 \section{Discriminazione (Fairness)}
 %=============================================================================
@@ -280,6 +302,10 @@ La pratica di offrire lo \textbf{stesso trattamento} a persone appartenenti a gr
   \item \textbf{Allocativi}: risorse negate disparatamente (prestiti, assunzioni, libert\`{a} provvisoria).
   \item \textbf{Rappresentativi}: subordinazione rafforzata (ricerca di immagini, traduzione automatica).
 \end{itemize}
+
+\begin{nota}
+L'idea chiave da comunicare \`{e} che la discriminazione \textbf{indiretta} \`{e} pi\`{u} insidiosa di quella diretta, perch\'{e} non richiede nessuna intenzione cattiva: basta trattare tutti allo stesso modo quando le condizioni di partenza sono gi\`{a} diverse. L'esempio delle pensioni part-time/full-time \`{e} perfetto per questo: la regola \`{e} formalmente identica per tutti, ma siccome la maggioranza dei part-time erano donne, l'effetto pratico \`{e} discriminatorio anche senza che nessuno l'abbia voluto. Questo \`{e} importante per la fairness algoritmica perch\'{e} un algoritmo non ha intenzioni -- quindi se ci basiamo solo sul criterio dell'intento ostile, nessun algoritmo potrebbe mai essere giudicato discriminatorio, il che \`{e} chiaramente sbagliato visti i casi reali (COMPAS, Amazon). Bisogna quindi giudicare gli \emph{effetti}, non le intenzioni.
+\end{nota}
 
 %=============================================================================
 \section{Teoremi di Incompatibilit\`{a}: Separazione e Sufficienza}
@@ -329,6 +355,10 @@ Se $A$ e $Y$ \textbf{non sono indipendenti} (cio\`{e} il tasso base ($P(Y=1)$) d
   \item \textbf{In-processing}: vincoli o penalizzazioni durante il training.
   \item \textbf{Post-processing}: modificare $\hat{Y}$ dopo il training.
 \end{itemize}
+
+\begin{nota}
+Il punto pi\`{u} difficile da far capire a voce \`{e} perch\'{e} questi tre criteri siano davvero incompatibili tra loro, e non solo ``difficili da ottenere insieme''. Il ragionamento intuitivo \`{e} questo: se due gruppi hanno tassi di base diversi (per esempio il gruppo $A$ ha storicamente pi\`{u} recidiva del gruppo $B$, magari per ragioni socioeconomiche), allora un modello calibrato correttamente per entrambi i gruppi (sufficienza) finir\`{a} inevitabilmente per commettere errori con frequenza diversa nei due gruppi (violando la separazione) -- perch\'{e} la calibrazione si basa proprio sulle proporzioni reali, che sono diverse. Non \`{e} un limite tecnico degli algoritmi attuali: \`{e} una conseguenza matematica che vale per qualunque classificatore, anche quello perfetto. Per questo non si parla di ``trovare l'algoritmo giusto'' ma di scegliere consapevolmente quale criterio di equit\`{a} privilegiare nel contesto specifico.
+\end{nota}
 
 %=============================================================================
 \section{Algoritmi per la K-Anonymity: Samarati e Incognito}
@@ -381,6 +411,10 @@ Approccio \textbf{bottom-up} nel reticolo:
   \item \textbf{Curse of Dimensionality} (Aggarwal, VLDB 2005): con molti quasi-identificatori la k-anonymity richiede una generalizzazione eccessiva.
 \end{itemize}
 
+\begin{nota}
+Il caso Sweeney \`{e} il modo pi\`{u} efficace per spiegare perch\'{e} serve la k-anonymity: tre dati che sembrano innocui (CAP, sesso, data di nascita) bastano da soli a identificare quasi chiunque, perch\'{e} combinati diventano quasi unici. La k-anonymity risponde imponendo che ogni combinazione di questi quasi-identificatori compaia almeno $k$ volte nel dataset rilasciato -- cos\`{i} un attaccante pu\`{o} al massimo restringere il campo a $k$ persone, non identificarne una sola. Gli algoritmi di Samarati e Incognito risolvono lo stesso problema (trovare la generalizzazione minima che basta a raggiungere la k-anonymity) con due strategie opposte: Samarati fa una specie di ricerca binaria sui livelli di generalizzazione, sfruttando il fatto che se un livello basta, bastano anche tutti i livelli pi\`{u} generalizzati di quello (quindi non serve controllarli uno per uno); Incognito invece parte dal basso, controllando prima un attributo alla volta e scartando subito le combinazioni che falliscono gi\`{a} da sole, perch\'{e} se un sottoinsieme di attributi fallisce, qualsiasi sovrainsieme fallir\`{a} a sua volta -- \`{e} la stessa logica dell'algoritmo Apriori nel data mining.
+\end{nota}
+
 %=============================================================================
 \section{Laplace e Gauss (per Numerici), Esponenziale (per Categorici)}
 %=============================================================================
@@ -429,6 +463,10 @@ P(\mathcal{M}(D,q) = r) \propto \exp\!\left(\frac{\varepsilon \cdot U(D, r)}{2 \
 \]
 L'output pi\`{u} utile viene selezionato con probabilit\`{a} proporzionalmente pi\`{u} alta; preserva la DP con parametro $\varepsilon/2$ (o $\varepsilon$ a seconda della formulazione).
 
+\begin{nota}
+Il filo conduttore tra questi tre meccanismi \`{e} che ognuno risponde a un limite del precedente. Laplace \`{e} il meccanismo di base per query numeriche: aggiunge rumore calibrato sulla sensibilit\`{a} della query, e funziona benissimo finch\'{e} la sensibilit\`{a} \`{e} semplice da misurare con la distanza L1. Quando invece le query restituiscono vettori (pi\`{u} numeri insieme) e la sensibilit\`{a} euclidea (L2) \`{e} molto pi\`{u} piccola di quella L1, conviene passare al Gaussiano, che per\`{o} paga il prezzo di una garanzia leggermente pi\`{u} debole, l'$(\varepsilon,\delta)$-DP invece della $\varepsilon$-DP pura -- in pratica si accetta una probabilit\`{a} piccola $\delta$ di ``fallimento'' della garanzia, in cambio di meno rumore. L'Esponenziale infine serve per un caso completamente diverso: quando la risposta non \`{e} un numero ma una scelta tra alternative (es. quale candidato assumere), dove aggiungere rumore numerico non avrebbe senso -- qui si campiona casualmente tra le alternative, ma pesando le probabilit\`{a} in modo che le scelte migliori siano molto pi\`{u} probabili di quelle pessime.
+\end{nota}
+
 %=============================================================================
 \section{Bias per Discriminazione e Apprendimento (Fairness)}
 %=============================================================================
@@ -470,6 +508,10 @@ Cos'\`{e} il bias in ML? Come si manifesta e perch\'{e} porta alla discriminazio
   \item Traduzione automatica (Google Translate): introduce stereotipi di genere.
 \end{itemize}
 
+\begin{nota}
+Il modo pi\`{u} utile di organizzare questa risposta a voce \`{e} seguire il ciclo di vita del modello: il bias pu\`{o} entrare nei \textbf{dati} (prima ancora di iniziare il training, perch\'{e} i dati storici riflettono gi\`{a} discriminazioni passate, o perch\'{e} alcuni gruppi sono sottorappresentati), nell'\textbf{apprendimento} (l'algoritmo fa assunzioni che funzionano meglio per alcuni gruppi che per altri, o impara a usare attributi proxy anche senza che gli sia stato detto esplicitamente quale sia l'attributo sensibile), e nel \textbf{deployment} (le decisioni del modello cambiano il mondo reale, e i nuovi dati che si generano confermano e rafforzano il bias di partenza -- un ciclo che si autoalimenta). Il punto dell'inconsapevolezza \`{e} cruciale: molti pensano che basti ``non guardare'' la razza o il genere per essere equi, ma se il codice postale o il nome sono gi\`{a} fortemente correlati con quegli attributi, il modello li user\`{a} comunque come proxy, anche senza che nessuno glielo abbia detto esplicitamente.
+\end{nota}
+
 %=============================================================================
 \section{Trade-off Privacy-Utilit\`{a}. KL e JS}
 %=============================================================================
@@ -505,6 +547,10 @@ JS(P \| Q) = \frac{1}{2}KL(P \| M) + \frac{1}{2}KL(Q \| M), \quad M = \frac{P + 
 \textbf{Utilizzo nel trade-off}: KL/JS misurano quanto la distribuzione dei dati protetti si discosta da quella originale. Un $JS \approx 0$ indica alta utilit\`{a} (le distribuzioni sono simili); un $JS \approx 1$ indica bassa utilit\`{a}.
 
 \textbf{Nella Differential Privacy}: il Meccanismo di Laplace aggiunge rumore calibrato a $GS/\varepsilon$. Maggiore \`{e} il rumore (piccolo $\varepsilon$), maggiore la privacy ma minore l'utilit\`{a}.
+
+\begin{nota}
+Il concetto da portare a voce \`{e} che privacy e utilit\`{a} sono in tensione strutturale, non per un limite tecnico che si potr\`{a} superare in futuro: pi\`{u} nascondo informazione su un individuo, meno informazione utile resta nei dati aggregati, \`{e} una conseguenza quasi logica. KL e JS sono semplicemente due modi per misurare quanto questa distanza tra ``i dati veri'' e ``i dati protetti'' sia grande: se la divergenza \`{e} quasi zero, vuol dire che ho protetto la privacy senza sacrificare molta utilit\`{a}; se \`{e} vicina al massimo, vuol dire che ho distrutto l'informazione. La differenza pratica tra le due: KL non \`{e} simmetrica (la distanza da $P$ a $Q$ non \`{e} la stessa che da $Q$ a $P$) e pu\`{o} esplodere a infinito se una distribuzione ha probabilit\`{a} zero dove l'altra non l'ha; JS risolve entrambi i problemi mediando le due distribuzioni, quindi \`{e} pi\`{u} comoda da usare come metrica pratica.
+\end{nota}
 
 %=============================================================================
 \section{Uso di XML per RBAC e ABAC}
@@ -542,6 +588,10 @@ Come si usano XML e XACML per implementare il controllo degli accessi RBAC e ABA
   \item \emph{Randomizzata}: valori casuali (pi\`{u} sicura, impedisce ricerche dirette).
 \end{itemize}
 
+\begin{nota}
+La cosa da far emergere parlando \`{e} il limite di RBAC che porta naturalmente ad ABAC: RBAC dice solo ``che ruolo hai'', ma non ``in che contesto stai chiedendo l'accesso''. Un medico ha il ruolo di medico sempre, ma magari dovrebbe poter leggere la cartella clinica solo durante l'orario di lavoro, dal suo reparto, da un dispositivo aziendale -- questo \`{e} esattamente ci\`{o} che ABAC aggiunge, valutando attributi del soggetto, della risorsa e dell'ambiente insieme, non solo il ruolo. XACML \`{e} semplicemente il linguaggio standard per scrivere queste regole in un formato che un motore software pu\`{o} valutare automaticamente; l'architettura PEP/PDP/PAP/PIP separa chi fa la richiesta (PEP), chi decide (PDP), chi scrive le regole (PAP) e chi fornisce informazioni aggiuntive necessarie alla decisione (PIP) -- un po' come separare in un tribunale chi presenta il caso, chi giudica, chi scrive le leggi e chi fornisce le prove.
+\end{nota}
+
 %=============================================================================
 \section{Privacy by Design e by Default}
 %=============================================================================
@@ -573,6 +623,10 @@ Il GDPR (Art. 25) rende la Privacy by Design e by Default un \textbf{obbligo leg
 \end{itemize}
 
 \textbf{Responsibility e Accountability}: il titolare del trattamento deve non solo rispettare la privacy, ma anche essere in grado di \textbf{dimostrare} la compliance. Questo include: mantenere registri delle attivit\`{a} di trattamento, condurre DPIA per trattamenti ad alto rischio, nominare un DPO quando necessario.
+
+\begin{nota}
+Il punto centrale \`{e} che la Privacy by Design ribalta l'approccio tradizionale: di solito si costruisce prima un sistema e poi, se serve, si aggiunge la privacy come una toppa successiva; Cavoukian propone invece di pensare alla privacy fin dal primo schizzo dell'architettura, esattamente come si fa con la sicurezza. I 7 principi si possono raccontare come un percorso logico: si parte dall'essere proattivi invece che reattivi (prevenire, non rimediare), si passa per il fatto che la configurazione pi\`{u} protettiva deve essere quella di default (l'utente non deve fare nulla per essere protetto), e si arriva all'idea, forse la pi\`{u} importante da sottolineare, che privacy e funzionalit\`{a} non sono in conflitto necessario (positive-sum, non zero-sum) -- \`{e} un mito da sfatare che proteggere la privacy significhi sempre sacrificare l'utilit\`{a} del sistema.
+\end{nota}
 
 %=============================================================================
 \section{Cambridge Analytica}
@@ -606,6 +660,10 @@ Descrivere il caso Cambridge Analytica come esempio di uso dei dati per finalit\
 \textbf{Conseguenze}: sanzione di \$5 miliardi a Facebook dalla FTC; rafforzamento del GDPR; chiusura di Cambridge Analytica nel 2018.
 
 \textbf{Lezione}: il principio del ``nulla da nascondere'' \`{e} ingenuo; dati apparentemente innocui (like musicali) possono essere usati per manipolazione su larga scala.
+
+\begin{nota}
+Il filo narrativo pi\`{u} chiaro per raccontare questo caso \`{e} seguire la catena di scopi: i dati nascono per un quiz divertente, con il consenso degli utenti solo per quello scopo; ma una falla nell'API di Facebook permette di raccogliere anche i dati degli amici di chi aveva installato l'app, moltiplicando il numero di persone coinvolte da 270mila a 87 milioni senza che la stragrande maggioranza avesse mai dato un consenso; quei dati vengono poi rivenduti e usati per uno scopo completamente diverso, costruire profili psicologici per indirizzare propaganda politica personalizzata. \`{E} un caso da manuale di violazione del principio di scopo legittimo -- il dato non era ``al sicuro'' tecnicamente (era su server protetti), ma \`{e} stato usato per qualcosa che nessuno aveva autorizzato. Lo studio di Kosinski sui Like di Facebook spiega perch\'{e} questo era possibile: anche dati apparentemente innocui come i ``mi piace'' a una pagina musicale permettono di predire con alta accuratezza tratti molto sensibili come l'orientamento sessuale o le opinioni politiche, perch\'{e} funzionano come proxy attributes.
+\end{nota}
 
 %=============================================================================
 \section{Princìpi Crittografici nel Corso}
@@ -664,6 +722,10 @@ Descrivere i princìpi crittografici trattati nel corso.
   \item Diversa dall'anonimizzazione totale.
 \end{itemize}
 
+\begin{nota}
+Per non recitare semplicemente una lista di sette tecniche, conviene raggrupparle per il problema che risolvono. RSA e la crittografia su colonne risolvono il problema classico: proteggere un dato cifrandolo, dove solo chi ha la chiave giusta pu\`{o} leggerlo. Oblivious Transfer e Garbled Circuit risolvono un problema diverso e pi\`{u} sottile: permettere a due parti di calcolare insieme qualcosa (es. chi \`{e} pi\`{u} ricco) senza che nessuna delle due riveli il proprio dato all'altra -- qui non si tratta di nascondere un dato a terzi, ma di nasconderlo persino al proprio interlocutore di calcolo. Crittografia funzionale e omomorfica vanno oltre: permettono di calcolare su dati cifrati senza mai decifrarli, la prima rivelando solo il risultato di una funzione specifica, la seconda permettendo calcoli arbitrari (al prezzo di essere lentissima). La pseudoanonimizzazione infine \`{e} concettualmente diversa dalle altre: non \`{e} un meccanismo di calcolo sicuro, ma un modo di gestire i dati in modo che siano reversibili solo con una chiave/tabella separata.
+\end{nota}
+
 %=============================================================================
 \section{L-Diversity e Differential Privacy}
 %=============================================================================
@@ -710,6 +772,10 @@ Robustezza & Limitata & Massima (teorema) \\
 La DP offre garanzie molto pi\`{u} forti: indipendente dalla conoscenza pregressa dell'avversario; modello matematicamente rigoroso; garantisce che la risposta alla query non riveli pi\`{u} di quanto l'avversario gi\`{a} sapesse.
 
 \textbf{Oggi}: la DP ha sostanzialmente rimpiazzato la l-diversity e la k-anonymity per la protezione di dati statistici. La k-anonymity rimane rilevante per la pubblicazione di microdata (non query).
+
+\begin{nota}
+Il modo pi\`{u} chiaro di spiegare perch\'{e} si \`{e} passati dalla l-diversity alla differential privacy \`{e} mostrare cosa la prima non riesce a fare: la l-diversity protegge ogni singolo blocco di dati assicurando che ci siano almeno $l$ valori sensibili diversi, ma non dice nulla su cosa un attaccante con conoscenza esterna (background knowledge) possa dedurre comunque -- per esempio se in un blocco ci sono solo malattie diverse ma quasi tutte rare tranne in un certo gruppo, l'attaccante pu\`{o} ancora indovinare con alta probabilit\`{a}. La DP cambia completamente strategia: invece di proteggere blocchi di dati, mette un vincolo matematico sul meccanismo che genera le risposte, garantendo che valga sempre, indipendentemente da cosa l'attaccante sappia gi\`{a}. Questa \`{e} la ragione per cui oggi la DP ha sostanzialmente sostituito la l-diversity per il rilascio di statistiche tramite query -- la k-anonymity e le sue varianti restano comunque utili quando bisogna pubblicare un intero microdata set (non rispondere a query), perch\'{e} l\`{i} la nozione di ``dataset adiacente'' della DP non si applica altrettanto naturalmente.
+\end{nota}
 
 %=============================================================================
 \section{Multiparty Secure Computation: Milionari, OT, ID3}
@@ -772,6 +838,10 @@ Tre passi principali per costruire il decision tree:
   \item \textbf{Homomorphic Encryption}: calcoli su dati cifrati.
   \item \textbf{Federated Learning}: allenamento distribuito; solo i gradienti/parametri vengono condivisi, non i dati grezzi.
 \end{itemize}
+
+\begin{nota}
+Tutti questi protocolli risolvono la stessa domanda di fondo posta dal Problema dei Milionari: come calcolare insieme qualcosa senza che nessuno dei due riveli all'altro il proprio dato di partenza? La soluzione passa per il Garbled Circuit: si trasforma il problema in un circuito logico (XOR, AND), si cifra ogni gate del circuito in modo che produca il risultato corretto solo se si possiedono le chiavi giuste, e l'Oblivious Transfer \`{e} il meccanismo che permette a Bob di ottenere esattamente le chiavi che gli servono per il proprio input, senza che Alice scopra quale valore Bob abbia in realt\`{a}. ID3 privato applica esattamente questa stessa logica a un problema pi\`{u} complesso, costruire un albero decisionale: il problema tecnico in pi\`{u} \`{e} che il calcolo dell'information gain richiede un logaritmo, difficile da calcolare dentro un circuito sicuro, quindi si approssima con una serie di Taylor (un polinomio, fatto solo di somme e moltiplicazioni, che un circuito sicuro gestisce facilmente).
+\end{nota}
 
 %=============================================================================
 \section{Bias: Rischi Etici e Misurazione (Fairness)}
@@ -836,5 +906,322 @@ La previsione del modello ha lo stesso significato predittivo per tutti i gruppi
 \end{itemize}
 
 \textbf{Ruolo dell'egalitarismo}: da una prospettiva etica, le ineguaglianze dovute alla \emph{fortuna} (nascere in un certo gruppo) dovrebbero essere corrette; quelle dovute al \emph{merito} possono essere accettate. Ma distinguere fortuna da merito \`{e} difficile, e l'inconsapevolezza pura nei modelli ML \`{e} praticamente impossibile da garantire.
+
+\begin{nota}
+Il modo migliore per organizzare questa risposta \`{e} distinguere chiaramente tra il danno immediato (\textbf{allocativo}: a chi viene negata una risorsa concreta, un prestito, un lavoro, la libert\`{a} provvisoria) e il danno pi\`{u} sottile ma altrettanto reale (\textbf{rappresentativo}: rafforzare stereotipi culturali, come quando una ricerca di immagini per ``professore'' mostra solo uomini bianchi). Il punto da sottolineare \`{e} l'effetto feedback loop: un sistema che discrimina non resta statico, perch\'{e} le sue stesse decisioni generano nuovi dati che sembrano confermare il pregiudizio di partenza (se nego pi\`{u} prestiti a un gruppo, quel gruppo avr\`{a} statisticamente meno storia creditizia positiva, il che ``giustificher\`{a}'' future decisioni negative) -- \`{e} un circolo vizioso che si autoalimenta nel tempo. Le tre metriche e la loro incompatibilit\`{a} sono le stesse della Domanda 7: qui il punto in pi\`{u} \`{e} collegarle a un giudizio etico, distinguendo le ineguaglianze dovute alla fortuna (es. nascere in un quartiere povero) da quelle dovute al merito -- una distinzione importante ma difficile da operazionalizzare in un algoritmo.
+\end{nota}
+
+%=============================================================================
+\section{Argomenti Aggiuntivi}
+%=============================================================================
+
+\begin{domanda}[Domanda 23: AI Act]
+Cos'\`{e} l'AI Act? Quali livelli di rischio definisce e quali obblighi impone a provider e deployer?
+\end{domanda}
+
+L'\textbf{AI Act} \`{e} il regolamento europeo sull'intelligenza artificiale, in vigore dal 1\textsuperscript{o} agosto 2024, che mira a garantire che i sistemi di IA siano sicuri, trasparenti e rispettosi dei diritti fondamentali.
+
+\textbf{Classificazione a 4 livelli di rischio}:
+\begin{enumerate}
+  \item \textbf{Rischio inaccettabile -- Vietati} (Art. 5): manipolazione subliminale del comportamento, sfruttamento di vulnerabilit\`{a} di gruppi specifici, social scoring governativo, riconoscimento facciale di massa, dark-pattern IA.
+  \item \textbf{Alto rischio -- Conformity Assessment} (Art. 6 e ss.): sistemi in sanit\`{a}, istruzione, occupazione, giustizia, immigrazione, forze dell'ordine, infrastrutture essenziali. Richiedono valutazione rigorosa dei rischi, governance dei dati, supervisione umana, monitoraggio continuo.
+  \item \textbf{Rischio limitato -- Trasparenza} (Art. 52): chatbot, deepfake, sistemi di riconoscimento delle emozioni. Obbligo di informare l'utente che sta interagendo con un sistema IA.
+  \item \textbf{Rischio minimo -- Codice di condotta} (Art. 69): la maggior parte dei sistemi IA (videogiochi, filtri antispam). Praticamente non regolamentati, per favorire l'innovazione.
+\end{enumerate}
+
+\textbf{Obblighi per i modelli General Purpose AI (GPAI)}: fornire documentazione tecnica e istruzioni d'uso, rispettare la Direttiva Copyright UE, pubblicare un sommario dei dati di training, condurre valutazioni e test avversariali per modelli con rischi sistemici, garantire protezioni di cybersecurity.
+
+\textbf{Obblighi specifici}:
+\begin{itemize}
+  \item \textbf{Provider (sviluppatori)}: implementare un sistema di gestione del rischio, garantire dataset di alta qualit\`{a}, mantenere documentazione tecnica dettagliata, progettare sistemi con adeguati livelli di accuratezza, robustezza e cybersecurity.
+  \item \textbf{Deployer (utenti)}: usare i sistemi come previsto, monitorarne le prestazioni, garantire la supervisione umana per prevenire e mitigare i rischi.
+\end{itemize}
+
+\textbf{Governance}: l'AI Act istituisce l'\textbf{European Artificial Intelligence Board}, che supervisiona l'implementazione e garantisce un'applicazione coerente negli Stati Membri; le autorit\`{a} nazionali competenti fanno rispettare la compliance nelle rispettive giurisdizioni.
+
+\textbf{Relazione con il GDPR}: l'AI Act \`{e} complementare al GDPR -- il GDPR regola il trattamento dei dati personali, l'AI Act regola il comportamento e i rischi dei sistemi di IA in quanto tali, indipendentemente dal fatto che trattino o no dati personali.
+
+\begin{nota}
+Il modo pi\`{u} semplice di spiegare l'AI Act a voce \`{e} dire che applica all'IA la stessa logica di gestione del rischio che gi\`{a} conosciamo da altri settori regolamentati (farmaci, aviazione): non si vieta tutto, si classifica in base al danno potenziale. I casi vietati sono quelli che toccano direttamente diritti fondamentali in modo manipolatorio (subliminale, social scoring); l'alto rischio riguarda settori dove un errore ha conseguenze serie sulla vita delle persone (sanit\`{a}, giustizia, lavoro) e richiede quindi controlli pesanti; il rischio limitato si accontenta della trasparenza (basta dire all'utente che sta parlando con un bot); il rischio minimo non viene quasi toccato, per non soffocare l'innovazione su cose come i videogiochi. \`{E} complementare al GDPR perch\'{e} il GDPR si occupa di \emph{cosa} si fa con i dati personali, mentre l'AI Act si occupa di \emph{come} si comporta il sistema di IA, anche quando non tratta dati personali in senso stretto.
+\end{nota}
+
+%=============================================================================
+\section{Digital Services Act (DSA)}
+%=============================================================================
+
+\begin{domanda}[Domanda 24: Digital Services Act (DSA)]
+Cos'\`{e} il Digital Services Act? Quali aree disciplina e come si differenzia dalla regolamentazione dei contenuti illegali?
+\end{domanda}
+
+Il \textbf{DSA} (2022) \`{e} un regolamento UE volto a creare uno spazio digitale pi\`{u} sicuro, dove i diritti fondamentali degli utenti siano protetti e venga stabilito un livello equo per le imprese. Principio chiave: \emph{``ci\`{o} che \`{e} illegale offline deve essere illegale anche online.''}
+
+\textbf{Quattro aree principali} (44 impegni, 128 misure):
+\begin{itemize}
+  \item \textbf{Demonetizzazione}: riduzione degli incentivi finanziari per chi diffonde disinformazione.
+  \item \textbf{Trasparenza della pubblicit\`{a} politica}: etichettatura per riconoscere la pubblicit\`{a} politica.
+  \item \textbf{Integrit\`{a} dei servizi}: riduzione di account fake, amplificazione tramite bot, deepfake malevoli e altri comportamenti manipolatori.
+  \item \textbf{Fact-checking}: strumenti per identificare la disinformazione, accesso pi\`{u} ampio ai dati, copertura in tutta l'UE.
+\end{itemize}
+
+\textbf{Distinzione fondamentale}: il DSA \textbf{non} richiede la rimozione di contenuti legali ma dannosi (la disinformazione in senso lato); si concentra sui contenuti \textbf{illegali} (incitamento all'odio, merci contraffatte, pornografia infantile). Il meccanismo di segnalazione (``Notice and Action'') impone alle piattaforme di fornire strumenti facili per segnalare contenuti illegali.
+
+\textbf{Obblighi di trasparenza}: le piattaforme devono spiegare agli utenti perch\'{e} un contenuto \`{e} stato rimosso o limitato, offrendo la possibilit\`{a} di appello. Includono trasparenza sugli \textbf{algoritmi di raccomandazione}, trasparenza pubblicitaria, e \textbf{divieto di profilazione} basata su dati sensibili (orientamento sessuale, religione, etnia) o rivolta a minori.
+
+\textbf{Protezione dei minori}: misure rafforzate per garantire alti livelli di privacy, sicurezza e riduzione dell'esposizione a contenuti inappropriati.
+
+\textbf{Sanzioni}: ogni Stato Membro nomina un Coordinatore Nazionale per supervisionare la compliance; la Commissione Europea pu\`{o} imporre sanzioni fino al \textbf{6\% del fatturato globale annuo}. Il DSA, insieme al Digital Markets Act (DMA), \`{e} la pietra angolare della strategia europea per un mercato digitale unico pi\`{u} sicuro.
+
+\begin{nota}
+La frase guida del DSA \`{e} perfetta da ripetere a voce: ``ci\`{o} che \`{e} illegale offline deve essere illegale online''. Il punto sottile da far notare \`{e} che il DSA non vuole diventare un ministero della verit\`{a} che decide cosa \`{e} vero o falso online: si occupa solo dei contenuti \emph{gi\`{a} illegali} (incitamento all'odio, pedopornografia, merci contraffatte), lasciando la disinformazione ``lecita ma dannosa'' a strumenti pi\`{u} soft come la trasparenza algoritmica e il fact-checking. Per questo le piattaforme non sono obbligate a rimuovere tutto ci\`{o} che \`{e} fastidioso, ma devono spiegare le loro decisioni di moderazione e dare un meccanismo di appello -- \`{e} un equilibrio tra proteggere la libert\`{a} di espressione e impedire abusi sistemici.
+\end{nota}
+
+%=============================================================================
+\section{Data Act e Digital Omnibus}
+%=============================================================================
+
+\begin{domanda}[Domanda 25: Data Act e Digital Omnibus]
+Cos'\`{e} il Data Act? Cosa propone il Digital Omnibus rispetto alla definizione di dato personale?
+\end{domanda}
+
+L'\textbf{EU Data Act} (in vigore da settembre 2025) garantisce a utenti (individui e imprese) un maggiore controllo sui dati generati da dispositivi connessi (IoT) e servizi. I produttori sono obbligati a rendere questi dati accessibili agli utenti.
+
+\textbf{Aspetti chiave}:
+\begin{itemize}
+  \item \textbf{User Data Access \& Control}: gli utenti possono accedere e condividere con terze parti i dati generati dai prodotti (smart home, auto, macchinari industriali).
+  \item \textbf{Fairness in Data Sharing}: restringe i produttori dall'imporre termini contrattuali iniqui che blocchino gli utenti in servizi proprietari.
+  \item \textbf{Cloud Switching}: facilita lo spostamento di dati e applicazioni tra cloud provider diversi senza costi aggiuntivi.
+  \item \textbf{Public Sector Access}: gli enti pubblici possono richiedere dati da aziende private in situazioni eccezionali (emergenze pubbliche).
+  \item \textbf{International Transfers}: regole per prevenire l'accesso illecito di governi di paesi terzi ai dati non personali.
+\end{itemize}
+
+Il \textbf{Digital Omnibus} (proposta del 19 novembre 2025) \`{e} un pacchetto di proposte della Commissione Europea per \textbf{semplificare il quadro normativo digitale} (GDPR, AI Act, NIS2), riducendo la burocrazia per le imprese (specialmente le PMI) mantenendo le protezioni dei cittadini.
+
+\textbf{Proposte principali}: chiarimento dell'applicazione del GDPR su dati personali e interesse legittimo; semplificazione delle normative sui cookie; meccanismi ``stop-the-clock'' per rendere le regole sull'IA pi\`{u} favorevoli all'innovazione; Single-Entry Point per la segnalazione di incidenti di cybersecurity; estensione del periodo di notifica di data breach da 72 a \textbf{90 ore}.
+
+\textbf{Il punto pi\`{u} controverso -- rilassamento della definizione di dato personale}: la proposta stabilisce che, per determinare se una persona \`{e} identificabile, vanno considerati \textbf{tutti i mezzi che ragionevolmente potrebbero essere usati} per identificarla, e che l'esistenza di informazioni aggiuntive che abilitano l'identificazione \textbf{non implica automaticamente} che i dati pseudonimizzati siano dati personali per chiunque li detenga. In particolare, un dato non va considerato personale per un'entit\`{a} se quell'entit\`{a} non dispone dei mezzi per identificare la persona fisica. Questo \`{e} motivato anche da esigenze di IA/ML: identificare ed eliminare bias nei dataset (un interesse legittimo ex Art. 6(1)(f) GDPR) richiede spesso dati sensibili, e l'Omnibus propone eccezioni al divieto di trattamento di categorie speciali, a condizione che il controller adotti misure tecniche per rimuovere tali dati una volta identificati o protegga efficacemente i dati se la rimozione \`{e} sproporzionata.
+
+\begin{nota}
+Il Data Act risolve un problema molto concreto: oggi compriamo dispositivi smart (auto, elettrodomestici) che generano enormi quantit\`{a} di dati su come li usiamo, ma quei dati restano quasi sempre solo al produttore, che li usa per i suoi scopi (anche commerciali) senza che l'utente possa portarseli via o condividerli con un servizio concorrente. Il Data Act d\`{a} all'utente il diritto di accedere a quei dati e di spostarli, un po' come la portabilit\`{a} numerica per i telefoni. Il Digital Omnibus invece va nella direzione opposta rispetto allo spirito originale del GDPR: punta a semplificare e ridurre la burocrazia, e il punto pi\`{u} delicato \`{e} la proposta di restringere la definizione di ``dato personale'' -- un dato pseudonimizzato non sarebbe pi\`{u} automaticamente considerato personale se chi lo detiene non ha concretamente i mezzi per re-identificare la persona, anche se in teoria qualcun altro potrebbe farlo. \`{E} una scelta di compromesso tra protezione rigorosa e fattibilit\`{a} pratica per le imprese, specialmente per la ricerca in IA.
+\end{nota}
+
+%=============================================================================
+\section{$\delta$-Presence e Membership Disclosure}
+%=============================================================================
+
+\begin{domanda}[Domanda 26: $\delta$-Presence e Membership Disclosure]
+Cos'\`{e} la membership disclosure? Come la $\delta$-presence la affronta, a differenza della k-anonymity?
+\end{domanda}
+
+\textbf{Il problema}: la k-anonymity protegge dall'identificazione di un individuo nel dataset rilasciato, ma \textbf{non nasconde necessariamente se un dato individuo sia presente} nel dataset stesso. Poich\'{e} generalizzare o sopprimere i quasi-identificatori non cambia la loro distribuzione nella popolazione generale, se un dataset anonimizzato contiene 10 record con un certo QI e ci sono esattamente 10 persone nella popolazione con quel QI, sapere che un individuo \`{e} nel dataset rivela gi\`{a} informazioni sensibili (es. che ha una certa malattia), anche senza identificarlo con precisione.
+
+\textbf{Contesti critici}: database di sospetti terroristi (rivelare la presenza \`{e} dannoso); database di pazienti con un tipo specifico di cancro (rivelare la presenza svela la diagnosi).
+
+\begin{definizione}[$\delta$-Presence -- Nergiz, Atzori, Clifton, SIGMOD 2007]
+Siano $T$ una tabella pubblica esterna, $PT$ la tabella privata (sottoinsieme di $T$), $GT$ la generalizzazione di $PT$ rilasciata pubblicamente. La $\delta$-presence vale con $\delta = (\delta_{min}, \delta_{max})$ se:
+\[
+\delta_{min} \leq P(t \in PT \mid GT) \leq \delta_{max} \quad \forall t \in T
+\]
+\end{definizione}
+
+\textbf{Intuizione}: la probabilit\`{a} che un individuo sia nella tabella privata deve restare in un range controllato -- non troppo alta (altrimenti si deduce con certezza che \`{e} presente) n\'{e} troppo bassa (altrimenti si deduce che \`{e} assente). Esempio tipico: $\delta = [1/3, 2/3]$.
+
+\textbf{Monotonicit\`{a}}: se $GT^1$ \`{e} $\delta$-present rispetto a $T$ e $PT$, e $GT^2$ \`{e} una generalizzazione ulteriore di $GT^1$, allora anche $GT^2$ \`{e} $\delta$-present. Questa propriet\`{a} (analoga a quella della k-anonymity) permette di riusare gli stessi algoritmi (es. Samarati, Incognito) anche per calcolare la $\delta$-presence.
+
+\textbf{Come si scelgono $\delta_{min}$ e $\delta_{max}$}: tipicamente bilanciando il costo di un uso improprio dei dati (es. \$10.000/anno per paziente nel caso del diabete) contro un costo atteso accettabile, partendo dalla \emph{prior belief} (probabilit\`{a} di base nella popolazione) e calcolando come questa si aggiorna in una \emph{posterior belief} dopo aver osservato $GT$.
+
+\begin{nota}
+Il modo pi\`{u} intuitivo di spiegare la $\delta$-presence \`{e} far notare cosa la k-anonymity \emph{non} copre: anche se nessuno pu\`{o} identificare con certezza chi sei tra $k$ persone, sapere che sei comunque in un certo database (es. di pazienti oncologici) pu\`{o} gi\`{a} essere un'informazione sensibile, anche senza sapere quale dei $k$ record sia il tuo. La $\delta$-presence mette un vincolo sulla \emph{probabilit\`{a} di appartenenza} al dataset privato, non sull'identificazione precisa: questa probabilit\`{a} deve restare in un intervallo controllato, perch\'{e} se fosse troppo alta saprei con certezza che sei dentro, e se fosse troppo bassa saprei con certezza che sei fuori -- in entrambi i casi avrei imparato qualcosa che non dovrei sapere. La cosa elegante \`{e} che, essendo una propriet\`{a} monotona come la k-anonymity, si possono riusare gli stessi algoritmi (Samarati, Incognito) gi\`{a} visti per calcolarla.
+\end{nota}
+
+%=============================================================================
+\section{Database Auditing}
+%=============================================================================
+
+\begin{domanda}[Domanda 27: Database Auditing]
+Cos'\`{e} l'auditing di un database? Quali modelli di auditing esistono?
+\end{domanda}
+
+L'\textbf{auditing} \`{e} il processo di esaminazione e validazione di documenti, dati, processi, procedure e sistemi, per assicurare che il sistema funzioni e sia conforme a policy, regolamenti e leggi. Viene eseguito \textbf{dopo} che il prodotto \`{e} stato messo in produzione.
+
+\textbf{Terminologia}: \emph{audit log} (documento cronologico delle attivit\`{a} auditate), \emph{auditor} (persona autorizzata a effettuare l'audit), \emph{audit trail} (registro cronologico di modifiche/eventi), \emph{data audit} (registro delle modifiche ai dati).
+
+\textbf{Tipi}: \emph{internal auditing} (condotto da membri dello staff dell'organizzazione) vs. \emph{external auditing} (condotto da una terza parte indipendente).
+
+\textbf{Processo di auditing (tre fasi)}: Understand objectives $\to$ Review, verify and validate $\to$ Report and document.
+
+\textbf{Tre modelli di database auditing}:
+\begin{enumerate}
+  \item \textbf{Audit per entit\`{a} e azione}: registra le entit\`{a} auditate (utente, tabella, colonna) e traccia cronologicamente le attivit\`{a} (transazioni DML, logon/logoff) e lo stato dell'entit\`{a} (active, deleted, inactive).
+  \item \textbf{Audit per variazione di colonna}: registra solo le modifiche ai valori di colonna, con meccanismo di purging/archiving per ridurre lo spazio; non registra il tipo di azione; ideale per auditare una o due colonne specifiche.
+  \item \textbf{Historical auditing model}: usato quando serve un registro dell'intera riga (tipico in applicazioni finanziarie); si crea una tabella di history con la stessa struttura della tabella originale, dove ogni modifica genera una nuova riga storica.
+\end{enumerate}
+
+\textbf{Relazione con GDPR e privacy}: l'auditing \`{e} uno dei pilastri per rendere un sistema informativo conforme al GDPR, insieme al controllo degli accessi basato su attributi (ABAC), alla cifratura e al data masking. Permette di dimostrare l'\emph{accountability} richiesta dal regolamento: sapere chi ha creato, modificato o cancellato informazioni, quando e per quale scopo.
+
+\begin{nota}
+L'auditing si pu\`{o} spiegare come la ``scatola nera'' di un database: non impedisce che qualcosa vada storto, ma garantisce che si possa sempre ricostruire cosa \`{e} successo, chi l'ha fatto e quando. La distinzione tra i tre modelli si capisce bene pensando a cosa interessa davvero tracciare: se mi interessa sapere chi ha fatto cosa e quando su qualsiasi tabella, uso il modello per entit\`{a} e azione; se mi interessa solo sapere come \`{e} cambiato il valore di una colonna specifica nel tempo (tipico per dati sensibili come lo stipendio), uso il modello per variazione di colonna, pi\`{u} leggero; se invece devo conservare ogni singola versione storica di una riga intera, come in un sistema bancario dove serve sapere esattamente come era un conto in ogni istante, uso il modello storico con una tabella parallela di history. L'auditing \`{e} importante per il GDPR perch\'{e} \`{e} uno dei modi concreti con cui un'azienda \emph{dimostra} l'accountability, non solo afferma di essere conforme.
+\end{nota}
+
+%=============================================================================
+\section{Tipi di Privacy e Caratteristiche dei Big Data}
+%=============================================================================
+
+\begin{domanda}[Domanda 28: Tipi di Privacy e Caratteristiche dei Big Data]
+Quali tipi di privacy si distinguono? Cosa caratterizza i Big Data e qual \`{e} la ``legge delle conseguenze inattese''?
+\end{domanda}
+
+\textbf{Tipi di privacy}: \emph{political privacy} (protezione di opinioni e attivit\`{a} politiche), \emph{consumer privacy} (tutela dei dati dei consumatori da uso commerciale), \emph{medical privacy} (riservatezza dei dati sanitari), \emph{private property} (protezione dei beni personali), \emph{information/data privacy} (gestione e tutela delle informazioni personali digitali).
+
+\begin{definizione}[Big Data]
+L'acquisizione e l'analisi di enormi collezioni di informazioni, talmente grandi che fino a poco tempo fa la tecnologia per analizzarle non esisteva.
+\end{definizione}
+
+\textbf{Datafication}: il fenomeno per cui tutto viene convertito in dati (carte di credito, registri di chiamate, dati sanitari, email, social, DNA). Crea un trade-off: pi\`{u} privacy $\Leftrightarrow$ meno comodit\`{a}.
+
+\textbf{Caratteristiche chiave dei Big Data}: grandi quantit\`{a} di dati non strutturati (``messy data''); evidenziano pattern altrimenti non rilevabili; raccolta indiscriminata (senza un obiettivo preciso); conservazione indefinita per utilizzi futuri imprevedibili.
+
+\begin{definizione}[Legge delle Conseguenze Inattese]
+Tecnologie create per uno scopo specifico vengono poi usate per scopi completamente diversi, con implicazioni per la privacy impreviste al momento della creazione.
+\end{definizione}
+
+\textbf{Esempi}: il \textbf{Social Security Number} (SSN), creato per la previdenza sociale, oggi \`{e} usato come identificatore universale; i \textbf{telefoni cellulari}, pensati per le comunicazioni vocali, sono oggi usati per pagamenti, GPS, autenticazione; i \textbf{laser}, inventati per la fisica, oggi leggono DVD e codici a barre; il \textbf{DNA}, raccolto per prova forense o diagnosi genetica, \`{e} oggi usato anche per genealogia e discriminazione assicurativa.
+
+\textbf{Perch\'{e} \`{e} rilevante per la privacy}: quando un dato viene raccolto, \`{e} quasi impossibile prevedere tutti gli usi futuri che ne verranno fatti -- questo \`{e} uno dei motivi per cui princìpi come la limitazione dello scopo (purpose limitation) e la minimizzazione dei dati nel GDPR sono importanti: riducono la superficie di rischio per usi non previsti al momento della raccolta.
+
+\begin{nota}
+La ``legge delle conseguenze inattese'' \`{e} probabilmente l'osservazione pi\`{u} semplice ed efficace da portare a voce su questo argomento: quasi ogni tecnologia, una volta creata per uno scopo specifico, finisce per essere usata per qualcosa di completamente diverso e spesso imprevisto. Il Social Security Number americano \`{e} l'esempio perfetto: nato per gestire la previdenza sociale, oggi \`{e} diventato un identificatore universale usato ovunque, dalle banche alle scuole, proprio perch\'{e} era comodo riusarlo -- ma questo riuso crea rischi di privacy che nessuno aveva previsto al momento della sua creazione. Questo \`{e} il motivo per cui princìpi come la limitazione dello scopo nel GDPR sono importanti: non possiamo prevedere tutti gli usi futuri di un dato, quindi la strategia pi\`{u} sicura \`{e} limitare fin dall'inizio per cosa quel dato pu\`{o} essere usato.
+\end{nota}
+
+%=============================================================================
+\section{Classificazione e Ciclo del Machine Learning}
+%=============================================================================
+
+\begin{domanda}[Domanda 29: Classificazione e Ciclo del Machine Learning]
+Cos'\`{e} un classificatore ottimale? Come si articola il ciclo del Machine Learning e dove si introduce il bias?
+\end{domanda}
+
+\begin{definizione}[Classificazione]
+Processo di determinare un valore plausibile per $Y$ (target) dato $X$ (covariate/dati). Si apprende una funzione $f_\theta: X \to \hat{Y}$. L'accuratezza \`{e} $P(Y = \hat{Y})$.
+\end{definizione}
+
+\textbf{Classificatore ottimale (Bayesiano)}: minimizza il valore atteso del costo $\mathbb{E}[l(Y, \hat{Y})]$. Equivalentemente: $\hat{Y} = f(X) = 1$ se $\mathbb{P}(Y=1|X=x) > 1/2$, altrimenti $0$. Se conoscessimo esattamente le probabilit\`{a} reali, la scelta che minimizza in media gli errori \`{e} scommettere sulla classe pi\`{u} probabile. In pratica i modelli ML stimano $\mathbb{P}(Y=1|X=x)$ dai dati, senza conoscerla esattamente: questa formula serve da limite teorico ideale con cui confrontare un classificatore reale.
+
+\begin{definizione}[Ciclo ML]
+Stato del Mondo $\xrightarrow{\text{Measurement}}$ Data $\xrightarrow{\text{Learning}}$ Model $\xrightarrow{\text{Action}}$ Individuals $\xrightarrow{\text{Feedback}}$ Stato del Mondo.
+\end{definizione}
+
+\textbf{Le quattro fasi}:
+\begin{itemize}
+  \item \textbf{Misurazione}: il processo in cui lo stato del mondo viene ridotto a tabelle di dati; alcune caratteristiche possono essere non osservabili.
+  \item \textbf{Apprendimento}: ricerca di buoni parametri $\theta$ per $f$.
+  \item \textbf{Azioni}: come le decisioni del modello vengono impiegate su input nuovi.
+  \item \textbf{Feedback}: registrazione delle reazioni/risultati, che tornano a influenzare lo stato del mondo.
+\end{itemize}
+
+\textbf{Dove si introduce il bias nel ciclo}: ci sono dati sufficienti per tutti i gruppi? Le misurazioni sono di parte (alcuni gruppi misurati meno accuratamente)? L'assunzione che gli errori siano indipendenti tra i gruppi \`{e} quasi sempre falsa nella realt\`{a}. Questo crea il \emph{feedback loop} discriminatorio: dati distorti $\to$ modello distorto $\to$ decisioni distorte $\to$ nuovi dati ancora pi\`{u} distorti, perpetuando o amplificando le disuguaglianze esistenti.
+
+\begin{nota}
+Il classificatore bayesiano ottimale si spiega bene con un esempio semplice: se sapessi con certezza che una persona con un certo profilo ha il 70\% di probabilit\`{a} di essere a rischio, la scelta pi\`{u} sensata in media \`{e} prevedere ``a rischio'' -- non perch\'{e} sia sempre vero, ma perch\'{e} su tante persone con quel profilo, scommettere sulla maggioranza minimizza il numero totale di errori. Il problema \`{e} che in pratica non conosciamo mai questa probabilit\`{a} esatta: un modello ML cerca di stimarla dai dati, e qui entra in gioco il ciclo ML, che \`{e} utile raccontare come una catena dove ogni anello pu\`{o} introdurre bias -- le misurazioni potrebbero non catturare bene la realt\`{a} per certi gruppi, l'apprendimento potrebbe funzionare meglio per i gruppi pi\`{u} rappresentati nei dati, e le azioni del modello finiscono per generare nuovi dati (feedback) che richiudono il cerchio, spesso rafforzando i bias di partenza invece di correggerli.
+\end{nota}
+
+%=============================================================================
+\section{Interventi di Fairness e Soppressione}
+%=============================================================================
+
+\begin{domanda}[Domanda 30: Interventi di Fairness e Soppressione]
+Quali tipi di interventi esistono per migliorare la fairness di un modello? Cos'\`{e} la soppressione e qual \`{e} il suo limite?
+\end{domanda}
+
+\textbf{Tre momenti di intervento nel ciclo ML}:
+\begin{itemize}
+  \item \textbf{Pre-processing}: cambiare i dati di input $X$ o i target $Y$ (o entrambi) \emph{prima} del training -- ad esempio rimuovendo attributi correlati a quelli sensibili, o ri-pesando il dataset.
+  \item \textbf{In-processing}: cambiare il processo di learning $f_\theta$ stesso, aggiungendo vincoli o penalizzazioni di fairness alla funzione di costo durante il training.
+  \item \textbf{Post-processing}: modificare le predizioni $\hat{Y}$ \emph{dopo} che il modello \`{e} gi\`{a} stato addestrato, per soddisfare un criterio di fairness desiderato.
+\end{itemize}
+
+\begin{definizione}[Soppressione per Fairness]
+Trovare le caratteristiche in $X$ che sono correlate con le informazioni sensibili $A$ e rimuoverle dal dataset prima del training. \`{E} un tipo di intervento di pre-processing.
+\end{definizione}
+
+\textbf{Limite principale}: la soppressione, da sola, raramente funziona, perch\'{e} esistono \textbf{proxy attributes} -- attributi apparentemente innocui (codice postale, nome, parole chiave usate) fortemente correlati con l'attributo sensibile. Rimuovere $A$ esplicitamente non impedisce al modello di ``recuperare'' implicitamente la stessa informazione tramite questi proxy. Questo \`{e} anche noto come il \textbf{paradosso dell'inconsapevolezza} (fairness through unawareness): l'inconsapevolezza pura \`{e} difficile da garantire nei dati del mondo reale.
+
+\textbf{Nozione pi\`{u} generale}: la \textbf{mutua informazione di Shannon} tra $X$ (o un suo sottoinsieme di feature) e $A$ misura quanta informazione su $A$ \`{e} recuperabile da $X$, anche indirettamente tramite correlazioni complesse e non lineari -- non solo tramite singoli attributi proxy identificabili a mano. Un approccio di soppressione pi\`{u} rigoroso cerca di minimizzare questa mutua informazione residua, non solo rimuovere gli attributi pi\`{u} ovviamente correlati.
+
+\begin{nota}
+Il modo pi\`{u} chiaro per ricordare i tre momenti di intervento \`{e} pensarli rispetto al training: prima (pre-processing, modifico i dati), durante (in-processing, modifico come il modello apprende aggiungendo vincoli alla funzione di costo), dopo (post-processing, modifico le decisioni finali del modello gi\`{a} addestrato). La soppressione \`{e} l'intervento di pre-processing pi\`{u} intuitivo -- togliere l'attributo sensibile -- ma \`{e} anche il pi\`{u} ingenuo, perch\'{e} quasi sempre esistono proxy attributes che permettono al modello di ``indovinare'' lo stesso l'informazione che ho cercato di nascondere (il classico esempio \`{e} il codice postale, spesso fortemente correlato con la composizione etnica di un'area). Per questo la nozione di mutua informazione di Shannon \`{e} pi\`{u} robusta della semplice rimozione manuale di attributi: misura quanta informazione sull'attributo sensibile resti recuperabile dai dati anche indirettamente, non solo tramite correlazioni ovvie.
+\end{nota}
+
+%=============================================================================
+\section{Algoritmi per Statistical Disclosure Control}
+%=============================================================================
+
+\begin{domanda}[Domanda 31: Algoritmi per Statistical Disclosure Control su Macrodata e Microdata]
+Quali algoritmi/metodi si usano per fare Statistical Disclosure Control? Distinguere non-perturbativi da perturbativi, per macrodata e microdata. Come si valutano?
+\end{domanda}
+
+\textbf{Distinzione di fondo}: i metodi \textbf{non-perturbativi} non modificano i valori originali (li sopprimono, li raggruppano o ne pubblicano solo un sottoinsieme); i metodi \textbf{perturbativi} modificano i valori introducendo rumore o sostituzioni controllate.
+
+\textbf{Metodi SDC per Macrodata} (tabelle aggregate):
+\begin{itemize}
+  \item \textbf{Non-perturbativi}: \textbf{Cell Suppression (CS)} -- soppressione delle celle a rischio (\emph{primaria}) e di celle aggiuntive per proteggere quelle primarie (\emph{secondaria}).
+  \item \textbf{Perturbativi}: \textbf{Random Rounding (RR)} (arrotondamento casuale per difetto/eccesso); \textbf{Controlled Rounding (CR)} (arrotondamento classico controllato); \textbf{Controlled Tabular Adjustment (CTA)} (i valori sensibili sono rimpiazzati da valori simili, le altre celle vengono corrette per mantenere i totali).
+\end{itemize}
+
+\textbf{Metodi SDC per Microdata} (record individuali):
+\begin{itemize}
+  \item \textbf{Perturbativi}: \textbf{aggiunta di rumore} (preserva media e correlazioni); \textbf{microaggregazione} (si partizionano i record in gruppi simili e si pubblica solo la media di gruppo); \textbf{data swapping} (si scambiano casualmente i valori di un attributo in un range ristretto); \textbf{post-randomizzazione} (cambia attributi categorici secondo matrici di transizione).
+  \item \textbf{Non-perturbativi}: \textbf{sampling} (si pubblica solo un campione); \textbf{generalizzazione} (valori numerici sostituiti da intervalli, categorie combinate in classi pi\`{u} ampie); \textbf{top/bottom coding} (valori sopra/sotto soglia sostituiti da un estremo); \textbf{soppressione locale} (alcune celle vengono oscurate, aumentando la dimensione dei gruppi).
+  \item Un approccio alternativo \`{e} il \textbf{rilascio di dati sintetici} (fully o partially synthetic), che pone il problema di mantenere validit\`{a} statistica evitando overfitting (che reintroduce rischio di re-identificazione).
+\end{itemize}
+
+\textbf{Metodi SDC per dati interrogabili (query su Statistical Database)}: \textbf{query restriction} (si rifiuta di rispondere a query rischiose, richiede di tracciare le query precedenti); \textbf{data perturbation} (si crea una versione perturbata del database su cui rispondere alle query); \textbf{output perturbation} (si perturba solo il risultato della query, non i dati sottostanti).
+
+\textbf{Come si valutano -- Information Loss}: poich\'{e} non \`{e} sempre chiaro a priori cosa l'utente finale voglia fare con i dati, l'utilit\`{a} residua si misura indirettamente tramite la perdita di informazione introdotta dal metodo SDC:
+\begin{itemize}
+  \item \textbf{Macrodata}: per la cell suppression, il numero (o la magnitudine) delle soppressioni secondarie; per rounding/CTA, la somma delle distanze tra celle vere e celle perturbate.
+  \item \textbf{Microdata}: confronto delle statistiche di base (medie, varianze, covarianze) prima e dopo l'SDC; oppure tramite \textbf{divergenze} come KL e JS, che misurano quanto la distribuzione perturbata si discosta da quella originale.
+\end{itemize}
+Il \textbf{ciclo SDC} \`{e} iterativo: Dati $\to$ Metodo SDC $\to$ Misura di Utilit\`{a} + Misura di Rischio $\to$ si ripete finch\'{e} non si trova un compromesso accettabile tra le due (zona ``concessa'' invece che ``proibita'' nel piano rischio/utilit\`{a}).
+
+\begin{nota}
+Il modo pi\`{u} facile per ricordare questa lista a voce, invece di elencare meccanicamente i nomi, \`{e} ragionare sulla differenza di fondo: nei metodi non-perturbativi io decido di ``nascondere'' qualcosa (sopprimo una cella, pubblico solo un campione, raggruppo in categorie pi\`{u} larghe), ma quello che resta visibile \`{e} comunque vero al 100\%. Nei metodi perturbativi invece tutto quello che pubblico \`{e} visibile, ma non \`{e} pi\`{u} esattamente vero -- ho aggiunto rumore, scambiato valori, o sostituito con una media di gruppo. La scelta tra le due famiglie \`{e} in fondo un'altra faccia del trade-off rischio/utilit\`{a}: nascondere preserva la veridicit\`{a} di ci\`{o} che resta ma riduce la quantit\`{a} di informazione disponibile; perturbare mantiene tutta l'informazione ma la rende meno precisa. L'Information Loss \`{e} semplicemente il modo di misurare quanto di questo compromesso abbiamo pagato, confrontando le statistiche prima e dopo l'intervento.
+\end{nota}
+
+%=============================================================================
+\section{Perché si chiama ``Differential'' Privacy?}
+%=============================================================================
+
+\begin{domanda}[Domanda 32: Perch\'{e} si chiama ``Differential'' Privacy?]
+Perch\'{e} la Differential Privacy si chiama cos\'{i}? Scrivere la definizione formale.
+\end{domanda}
+
+Il nome ``\textbf{differential}'' deriva dal fatto che la garanzia di privacy non riguarda il dataset nel suo complesso, ma la \textbf{differenza} di comportamento del meccanismo tra due dataset che variano per un solo record. In altre parole, la DP misura quanto l'output \emph{cambia} (differisce) quando un singolo individuo viene aggiunto o rimosso dal dataset -- se la differenza \`{e} trascurabile, la presenza di quell'individuo \`{e} effettivamente "nascosta" nel risultato.
+
+\textbf{Definizione formale}: due dataset $D, D'$ si dicono \emph{adiacenti} ($D \sim D'$) se differiscono per esattamente un record. Un meccanismo randomizzato $\mathcal{M}$ preserva la $\varepsilon$-differential privacy se per ogni query $q$, ogni coppia di dataset adiacenti $D, D'$ e ogni possibile risposta $r$:
+\[
+e^{-\varepsilon} \leq \frac{\mathbb{P}(\mathcal{M}(q, D) = r)}{\mathbb{P}(\mathcal{M}(q, D') = r)} \leq e^{\varepsilon}
+\]
+
+\textbf{Punto importante da sottolineare}: questa definizione \`{e} estremamente \textbf{generale} -- vale per \emph{qualsiasi} query $q$ e per \emph{qualsiasi} coppia di dataset adiacenti $D, D'$, non per un caso specifico. \`{E} questa universalit\`{a} (la garanzia regge indipendentemente da cosa stia chiedendo l'analista e da quale sia il dataset reale) che rende la DP una garanzia matematicamente dimostrabile e robusta contro qualsiasi conoscenza pregressa dell'avversario, a differenza di k-anonymity o l-diversity che proteggono solo da specifici tipi di attacco.
+
+\begin{nota}
+Se dovessi dirlo a voce in due frasi: il nome viene dal fatto che si guarda la ``differenza'' tra due mondi quasi identici (con o senza una persona), e si richiede che quella differenza nell'output sia impercettibile. Il dettaglio da non perdere \`{e} che questa propriet\`{a} deve valere per \emph{ogni} query possibile e \emph{ogni} dataset possibile -- non \`{e} una garanzia ``su misura'' per un caso specifico, \`{e} una propriet\`{a} universale del meccanismo, e questo \`{e} esattamente ci\`{o} che la rende cos\`{i} pi\`{u} forte di k-anonymity o l-diversity.
+\end{nota}
+
+%=============================================================================
+\section{Domande di Ragionamento Aperto}
+%=============================================================================
+
+\begin{domanda}[Domanda 33: Domande di Ragionamento Aperto]
+Alcune domande d'esame non hanno una risposta univoca dalle slide, ma richiedono di ragionare collegando concetti del corso. Le riporto con una possibile linea di ragionamento.
+\end{domanda}
+
+\textbf{``Se tu dovessi calcolare l'utilit\`{a}, come faresti?''} Una possibile risposta \`{e} trattare l'utilit\`{a} come una funzione della \textbf{quantit\`{a} di informazione} residua nei dati, misurabile in bit (collegandosi a entropia, KL/JS divergence, information loss). Questo inquadramento spiega naturalmente il trade-off privacy-utilit\`{a}: pi\`{u} rumore o generalizzazione si aggiunge, pi\`{u} bit di informazione si perdono, meno utili diventano i dati.
+
+\textbf{``L'Access Control (RBAC/ABAC) ha a che fare con l'utilit\`{a}?''} Sì, indirettamente: una policy di accesso pi\`{u} permissiva aumenta l'utilit\`{a} percepita dai destinatari autorizzati (pi\`{u} dati visibili a chi ne ha diritto) ma non riduce il rischio di disclosure per chi non \`{e} autorizzato -- il controllo degli accessi sposta il punto di compromesso rischio/utilit\`{a} a seconda di \emph{chi} sta guardando il dato, invece di applicare la stessa protezione a tutti indiscriminatamente (come fanno invece k-anonymity o DP).
+
+\textbf{``L'utilit\`{a} del dato dipende dal singolo individuo?''} Esempio discusso: un politico pu\`{o} voler rendere pubblico il proprio stato di salute (alta utilit\`{a} per lui nel comunicarlo), mentre un cittadino comune preferisce la massima riservatezza sullo stesso tipo di dato. Questo mostra che l'utilit\`{a} (e il livello di protezione desiderato) non \`{e} una proprietà solo del dato in s\'{e}, ma anche delle preferenze del soggetto a cui il dato si riferisce -- un'osservazione che motiva approcci come l'ABAC, dove le policy possono essere personalizzate per singolo soggetto/risorsa, a differenza di un approccio SDC uniforme su tutto il dataset.
+
+\textbf{``Perch\'{e} nel corso associamo l'etica alla privacy?''} Domanda aperta a cui si pu\`{o} rispondere richiamando i temi discussi nella prima parte del corso: la privacy non \`{e} solo un problema tecnico di protezione dei dati, ma tocca la \textbf{dignit\`{a} umana} (Rodot\`{a}), la \textbf{libert\`{a} civile} (Snowden, Greenwald -- la sorveglianza di massa altera il comportamento anche di chi ``non ha nulla da nascondere''), e le conseguenze sociali della discriminazione algoritmica (fairness). La componente tecnica (k-anonymity, DP, SMC) fornisce gli \textbf{strumenti}, ma le domande su quando e perch\'{e} usarli sono intrinsecamente etiche.
 
 \end{document}
