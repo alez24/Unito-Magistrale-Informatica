@@ -1,0 +1,220 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage[protrusion=true,expansion=false]{microtype}
+
+\geometry{margin=1.5cm}
+\setlength{\columnsep}{0.6cm}
+
+\tcbuselibrary{skins}
+
+\newtcolorbox{area}[1]{colback=blue!4!white, colframe=blue!55!black,
+  fonttitle=\bfseries, title={#1}, boxrule=0.6pt, left=4pt, right=4pt, top=2pt, bottom=2pt}
+\newcommand{\mnem}[1]{{\color{orange!70!black}\textbf{Mnemonica:} \textit{#1}}}
+
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+{\Large\textbf{Mappa di Ripasso -- Etica, Societ\`{a} e Privacy}}\\[2pt]
+{\small 16 aree, una mnemonica a testa -- copertura completa del corso in formato compatto.}
+\end{center}
+\vspace{4pt}
+
+\begin{multicols}{2}
+
+\begin{area}{1. Privacy: Leggi}
+GDPR: adottato 2016 $\to$ applicabile \textbf{2018}. Multe: \textbf{2\%/10M} (minore) o \textbf{4\%/20M} (grave) del fatturato. Breach: \textbf{72h} (Omnibus propone 90h).
+
+Privacy by Design (Cavoukian 2012), 7 principi: Proattivo $\to$ Default $\to$ nel Design $\to$ Positive-sum $\to$ End-to-end $\to$ Visibile $\to$ User-centric.
+
+AI Act 2024, 4 livelli: Inaccettabile (vietato) $>$ Alto (conformity) $>$ Limitato (trasparenza) $>$ Minimo (codice condotta).
+
+USA vs EU: USA = leggi settoriali (HIPAA, COPPA, FCRA); EU = diritto fondamentale, extraterritoriale.
+
+\mnem{``2018 il GDPR si applica, 72 ore come denunciare un furto.'' Per Privacy by Design: \emph{``Previeni Di Default nel Design, Più sicurezza End-to-end, Vedi tutto, pensa all'Utente''} (P-D-D-P-E-V-U).}
+\end{area}
+
+\begin{area}{2. Big Data: i 4 casi}
+\textbf{Netflix} 2006: 100M rating, 500K utenti, cross con IMDb $\to$ 90\% re-identificati.
+
+\textbf{AOL} 2006: 650K utenti, ``utente \#4417749'' $\to$ Thelma Arnold.
+
+\textbf{Cambridge Analytica} 2014--18: 270K install app $\to$ 87M dati (falla API amici) $\to$ Trump/Brexit.
+
+\textbf{Sweeney} 2001: governatore Weld re-identificato; \{ZIP, sesso, DOB\} $\to$ 87\% USA unici.
+
+\mnem{Scala crescente di persone coinvolte: \textbf{500K (Netflix) $<$ 650K (AOL) $<$ 87M (Cambridge) $<$ 87\% di tutti gli USA (Sweeney)}. L'ultimo caso non riguarda un dataset ma TUTTI.}
+\end{area}
+
+\begin{area}{3. Sistemi Informativi}
+RBAC (ruolo) $\to$ ABAC (soggetto+oggetto+ambiente) $\to$ XACML (linguaggio per scriverle).
+
+Architettura: \textbf{PEP} (chiede) $\to$ \textbf{PDP} (decide) $\to$ \textbf{PAP} (scrive regole) $\to$ \textbf{PIP} (fornisce attributi extra).
+
+Deny-overrides (un Deny vince, restrittivo) vs Permit-overrides (un Permit basta).
+
+3 modelli di Auditing: entit\`{a}+azione / variazione colonna / storico (riga intera).
+
+\mnem{PEP-PDP-PAP-PIP $\to$ \emph{``Per Prendere Decisioni Politiche Informate''} -- nell'ordine: chi chiede, chi giudica, chi fa le leggi, chi porta le prove (come in tribunale).}
+\end{area}
+
+\begin{area}{4. Statistical Disclosure Control}
+\textbf{Non-perturbativo} = nascondo (sopprimo/campiono) $\Rightarrow$ resta \textbf{VERO} ma incompleto.
+
+\textbf{Perturbativo} = sporco (rumore/swap/microaggr.) $\Rightarrow$ resta \textbf{TUTTO} ma \textbf{FALSO}.
+
+Macrodata: Cell Suppression (non-pert) / Rounding, CTA (pert).
+Microdata: sampling, generalizz., top-bottom coding, suppr. locale (non-pert) / rumore, microaggr., swapping, post-rand. (pert).
+
+KL: non simmetrica, pu\`{o} esplodere. JS: simmetrica, $0\le JS\le1$, sempre definita.
+
+\mnem{``Non-perturbativo NASCONDE (resta vero), Perturbativo PASTICCIA (resta tutto ma falso).'' JS = KL ``addomesticata'' (sempre stabile, mai infinita).}
+\end{area}
+
+\begin{area}{5. Anonimizzazione}
+K-anonymity (Samarati\&Sweeney 1998): ogni combinazione di QI $\ge k$ volte. Confidenza linking $\le 1/k$.
+
+\textbf{Samarati} = ricerca \textbf{binaria} sul reticolo (top-down a salti, $h/2,h/4,3h/4\dots$).
+\textbf{Incognito} = \textbf{bottom-up}, un attributo alla volta, poi coppie, poi triple (come Apriori).
+
+Attacchi k-anon: \textbf{Homogeneity} (stesso sensibile nel blocco) + \textbf{Background Knowledge}.
+
+L-diversity: $\ge l$ valori sensibili ben rappresentati. Attacchi: \textbf{Skewness} + \textbf{Similarity}.
+
+$\delta$-Presence: $P(\text{presenza})\in[\delta_{min},\delta_{max}]$ -- protegge l'\textbf{ESSERCI}, non l'identit\`{a}.
+
+\mnem{``\textbf{S}amarati = \textbf{S}ezioni a met\`{a}'' (ricerca binaria) vs ``\textbf{I}ncognito = \textbf{I}ncrementale'' (parte da 1 attributo e sale, come Apriori nel data mining).}
+\end{area}
+
+\begin{area}{6. Differential Privacy}
+\[
+e^{-\varepsilon} \le \frac{\mathbb{P}(\mathcal{M}(D)=r)}{\mathbb{P}(\mathcal{M}(D')=r)} \le e^{\varepsilon}, \quad D\sim D' \text{ (1 record di differenza)}
+\]
+\textbf{Laplace}: numerico, L1, $\varepsilon$-DP. \textbf{Gauss}: vettoriale, L2, $(\varepsilon,\delta)$-DP. \textbf{Esponenziale}: categorico, pesa per utilit\`{a}.
+
+Teoremi: Post-processing (non riduce privacy) / Composizione seq. ($\varepsilon_1+\varepsilon_2$) / Parallela (max, non somma).
+
+LDP: rumore PRIMA di inviare, niente curatore fidato. Randomized Response: $3/4$ vero $\to \log(3)$-LDP.
+
+\mnem{``Differential = guarda la \textbf{DIFFERENZA} tra due mondi quasi uguali.'' Per i 3 meccanismi: \textbf{L}aplace-numeri singoli, \textbf{G}auss-gruppi di numeri (vettori), \textbf{E}sponenziale-Elezione tra categorie.}
+\end{area}
+
+\begin{area}{7. Sistemi Distribuiti / SMC}
+Problema dei Milionari (Yao): chi \`{e} pi\`{u} ricco senza rivelare il patrimonio.
+
+\textbf{OT 1-of-2}: il receiver ottiene 1 messaggio, il sender non sa quale.
+
+\textbf{Garbled Circuit}: XOR gratis in locale, AND tramite OT-table (4 righe cifrate).
+
+\textbf{ID3$_\delta$}: il logaritmo \`{e} difficile da calcolare in modo sicuro $\to$ si approssima $x=2^n(1+\varepsilon)$ + serie di Taylor (solo somme/moltiplicazioni).
+
+\mnem{``OT = busta chiusa con 2 scelte, ne apri 1 sola, e il mittente non sa quale hai aperto.'' XOR \`{e} gratis perch\'{e} \`{e} lineare; AND no, per questo serve l'OT.}
+\end{area}
+
+\begin{area}{8. Fairness}
+3 criteri: \textbf{Indipendenza} ($\hat{Y}\perp A$, stessi risultati) / \textbf{Separazione} ($\hat{Y}\perp A\mid Y$, stessi errori) / \textbf{Sufficienza} ($Y\perp A\mid\hat{Y}$, stessa calibrazione).
+
+Teorema di incompatibilit\`{a}: se $A,Y$ \textbf{NON} indipendenti (quasi sempre) $\Rightarrow$ non puoi avere tutti e 3.
+
+Interventi: \textbf{Pre} (sui dati) / \textbf{In} (durante training) / \textbf{Post} (sull'output).
+
+Fonti di bias: storico, misurazione, campionamento, aggregazione, proxy attributes.
+
+\mnem{I-S-S $\to$ \emph{``Identici risultati, Stessi errori, Stesse stime''}. Per l'incompatibilit\`{a}: \emph{``non puoi avere la botte piena e la moglie ubriaca -- scegli UN criterio.''}}
+\end{area}
+
+\begin{area}{9. Definizioni Privacy \& Privacy vs Security}
+Warren\&Brandeis 1890: \emph{``the right to be alone''}. Rodot\`{a}: privacy legata alla \textbf{dignit\`{a} umana}. Snowden: ``nulla da nascondere'' \`{e} come dire ``non mi importa la libert\`{a} di parola perch\'{e} non ho niente da dire''.
+
+\textbf{Security} = CIA (Confidentiality, Integrity, Availability), protegge dagli \textbf{esterni}. \textbf{Privacy} = controllo anche su chi \`{e} \textbf{gi\`{a} autorizzato}. Security necessaria ma non sufficiente per la privacy.
+
+\mnem{``Security ferma gli intrusi (CIA); Privacy controlla anche gli amici'' (chi ha gi\`{a} accesso legittimo pu\`{o} comunque abusarne).}
+\end{area}
+
+\begin{area}{10. DSA, Data Act, Digital Omnibus}
+\textbf{DSA} 2022: ``illegale offline = illegale online''. Si occupa solo di contenuti \textbf{illegali} (non di disinformazione lecita). Notice and Action. Multe 6\% fatturato.
+
+\textbf{Data Act} sett. 2025: accesso ai dati IoT, cloud switching, no vendor lock-in.
+
+\textbf{Digital Omnibus} nov. 2025: semplifica GDPR/AI Act; rilassa la def. di dato personale (dipende dai \emph{mezzi che l'entit\`{a} ha} per identificare); breach $72\to90$h.
+
+\mnem{``DSA = l'odio \`{e} odio anche online. Data Act = i tuoi dati IoT sono tuoi. Omnibus = il dato \`{e} personale o no \textbf{a seconda di chi lo guarda}.''}
+\end{area}
+
+\begin{area}{11. Datafication \& Conseguenze Inattese}
+Legge delle conseguenze inattese: SSN (previdenza $\to$ ID universale), telefoni (voce $\to$ pagamenti/GPS), DNA (forense $\to$ genealogia/assicurazioni).
+
+Studio \textbf{Kosinski/PNAS 2013}: i Like di Facebook predicono orientamento sessuale (88\%), etnia (95\%), opinioni politiche (85\%) -- sono \textbf{proxy attributes}.
+
+\mnem{``Il SSN nasce per le pensioni e finisce ovunque: niente resta per lo scopo originale.'' Un Like su una band predice cose che non ha mai dichiarato di rivelare.}
+\end{area}
+
+\begin{area}{12. Crittografia}
+\textbf{RSA}: chiave pubblica cifra, privata decifra; sicurezza basata sulla fattorizzazione di numeri primi grandi.
+
+Colonne: \emph{Deterministica} (stesso testo $\to$ stesso cifrato, ricercabile, meno sicura) vs \emph{Randomizzata} (sicura, niente ricerche). \textbf{TDE} (Oracle): 1 master key in Wallet esterno. \textbf{Salt}: va disabilitato se serve indicizzare.
+
+\textbf{Pseudonimizzazione} = reversibile (tabella mapping); \textbf{Anonimizzazione} = irreversibile, sempre.
+
+\mnem{``Deterministica = stesso input stesso output (ricercabile); Randomizzata = stesso input output diversi (sicura). Pseudonimo: si torna indietro. Anonimo: mai più.''}
+\end{area}
+
+\begin{area}{13. Disclosure Types}
+\textbf{Identity disclosure}: capisco \emph{chi} \`{e}. \textbf{Attribute disclosure}: scopro il suo dato sensibile (anche senza identificarlo con precisione). \textbf{Inferential disclosure}: lo \emph{deduco} statisticamente (es. reddito dal prezzo della casa).
+
+\mnem{``Identity = chi sei, Attribute = cosa hai, Inferential = cosa indovino di te.''}
+\end{area}
+
+\begin{area}{14. DGH/VGH \& Curse of Dimensionality}
+\textbf{DGH}: livelli di astrazione/domini (ZIP 5 cifre $\to$ 4 cifre $\to$ 3 cifre). \textbf{VGH}: l'albero dei \emph{valori} specifici che si generalizzano (53715, 53710 $\to$ 5371*).
+
+\textbf{Curse of Dimensionality} (Aggarwal, VLDB 2005): troppi quasi-identificatori $\Rightarrow$ generalizzazione eccessiva $\Rightarrow$ dati inutili.
+
+\mnem{``DGH = i livelli (domini), VGH = l'albero dei valori veri. Troppe dimensioni e la k-anonymity diventa impraticabile.''}
+\end{area}
+
+\begin{area}{15. Altri Approcci alla Privacy Distribuita}
+\textbf{Functional encryption}: decifri solo una \emph{funzione} del dato (es. la media). \textbf{Homomorphic encryption}: calcoli sul cifrato senza mai decifrare, ma \textbf{lentissima}. \textbf{Federated Learning}: il modello viaggia, i dati restano sul dispositivo, si condivide solo il \emph{gradiente}.
+
+\mnem{``Funzionale = vedi solo il risultato di una funzione; Omomorfica = calcoli al buio (lenta); Federated = il telefono studia da solo e manda solo il riassunto.''}
+\end{area}
+
+\begin{area}{16. Discriminazione \& Classificatore Ottimale}
+\textbf{Diretta}: tratto diversamente per appartenenza a un gruppo. \textbf{Indiretta}: stesso trattamento ma effetto diverso (pensioni part-time, 88\% donne).
+
+\textbf{Egalitarismo}: ineguaglianze da \emph{fortuna} da correggere, da \emph{merito} accettabili. Danni: \textbf{Allocativi} (risorsa negata) vs \textbf{Rappresentativi} (stereotipo rafforzato).
+
+Classificatore ottimale: scommetti sulla classe pi\`{u} probabile, $\hat{Y}=1$ se $\mathbb{P}(Y{=}1|X{=}x)>1/2$.
+
+\mnem{``Diretta = TI tratto diverso; Indiretta = TUTTI uguali ma viene fuori che... Allocativo = ti nego qualcosa di CONCRETO; Rappresentativo = rafforzo uno STEREOTIPO.''}
+\end{area}
+
+\end{multicols}
+
+\vspace{2pt}
+\begin{tcolorbox}[colback=red!4!white, colframe=red!60!black, fonttitle=\bfseries, title={Numeri da non confondere}, boxrule=0.6pt]
+\small
+\textbf{GDPR}: 2016 adottato $\to$ 2018 applicabile $\cdot$ multe 2\%/10M -- 4\%/20M $\cdot$ breach 72h \quad
+\textbf{DSA}: multe 6\% fatturato \quad
+\textbf{AI Act}: 2024, 4 livelli \quad
+\textbf{Data Act}: settembre 2025 \quad
+\textbf{Digital Omnibus}: proposta novembre 2025, breach $\to$90h \quad
+\textbf{k-anonymity}: confidenza $\le 1/k$ \quad
+\textbf{Randomized Response}: $3/4$ vero, $1/4$ casuale $\to \log(3)$-LDP \quad
+\textbf{Sweeney}: 87\% USA identificabile da 3 attributi \quad
+\textbf{Netflix}: 90\% re-id con 6--8 rating noti \quad
+\textbf{Kosinski/PNAS}: orientamento sessuale 88\%, etnia 95\%, opinioni politiche 85\% \quad
+\textbf{Cambridge Analytica}: 270K install $\to$ 87M dati \quad
+\textbf{Curse of Dimensionality}: Aggarwal, VLDB 2005
+\end{tcolorbox}
+
+\end{document}
