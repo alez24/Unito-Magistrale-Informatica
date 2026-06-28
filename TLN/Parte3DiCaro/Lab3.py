@@ -254,7 +254,7 @@ def plot_boxplot(df: pd.DataFrame):
 
     plt.tight_layout()
     plt.savefig('boxplot_distribuzione.png', bbox_inches='tight')
-    plt.show()
+    plt.close(fig)
     print("Salvato: boxplot_distribuzione.png")
 
 
@@ -291,7 +291,7 @@ def plot_asimmetrie(pivot: pd.DataFrame):
 
     plt.tight_layout()
     plt.savefig('asimmetrie.png', bbox_inches='tight')
-    plt.show()
+    plt.close(fig)
     print("Salvato: asimmetrie.png")
 
 

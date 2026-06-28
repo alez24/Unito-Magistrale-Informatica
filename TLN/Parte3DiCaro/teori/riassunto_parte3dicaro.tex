@@ -16,6 +16,7 @@
 \usepackage{enumitem}
 \usepackage{tikz}
 \usetikzlibrary{positioning, arrows.meta}
+\usepackage{needspace}
 
 \geometry{top=2cm, bottom=2cm, left=2.5cm, right=2.5cm}
 
@@ -269,7 +270,7 @@ Gale et al. 1992; Sch\"utze 1992. Si fondono artificialmente due parole non corr
 
 \begin{resultbox}
 \begin{center}
-\small
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lcccc}
 \toprule
 \textbf{Risorsa} & \textbf{Potere espr.} & \textbf{Scalabilit\`a} & \textbf{Sorgente} & \textbf{Ambig./Sogg.} \\
@@ -282,7 +283,8 @@ Visual Attributes & Medio & Medio-alta & Immagini annotate & Medio-alta \\
 Word/sense embeddings & Molto alto & Molto alta & Testi larga scala & Alta \\
 Corpus manager & Variabile & Alta & Corpora reali & Media \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{center}
 \end{resultbox}
 
@@ -344,7 +346,7 @@ Altre dimensioni rilevanti per le risorse: \textbf{espressivit\`a} (quanto una r
 
 \begin{resultbox}
 \begin{center}
-\small
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lcccc}
 \toprule
 \textbf{Risorsa} & \textbf{Potere espr.} & \textbf{Scalabilit\`a} & \textbf{Sorgente} & \textbf{Ambig./Sogg.}\\
@@ -357,7 +359,8 @@ Visual Attributes & Medio & Medio-alta & Immagini annotate & Medio-alta \\
 Word/sense embeddings & Molto alto & Molto alta & Testi su larga scala & Alta \\
 Corpus manager & Variabile & Alta & Corpora reali & Media \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{center}
 \end{resultbox}
 
@@ -1293,6 +1296,7 @@ with open('risultati_similarita.csv', 'w') as f:
 \end{lstlisting}
 \end{codebox}
 
+\needspace{6\baselineskip}
 \subsection{Risultati Lab 1}
 
 \begin{resultbox}
@@ -1387,6 +1391,7 @@ def content_to_form(defn, glosse_dict):
 Corrisponde quasi letteralmente alla glossa \texttt{ethics.n.01}: \textit{"the philosophical study of moral values and rules"}
 \end{defbox}
 
+\needspace{8\baselineskip}
 \subsection{Risultati Lab 2}
 
 \begin{resultbox}
@@ -1493,6 +1498,7 @@ Differenza da TF-IDF classico: la frequenza viene calcolata \emph{all'interno de
 \subsection{Configurazioni Testate}
 
 \begin{center}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{llccc}
 \toprule
  & \textbf{Modello} & \textbf{UMAP} & \textbf{HDBSCAN} & \textbf{Effetto} \\
@@ -1501,13 +1507,16 @@ Config 1 (base)   & gte-small   & comp=5, neigh=15  & mcs=50  & Bilanciato \\
 Config 2 (fine)   & MiniLM-L6   & comp=10, neigh=10 & mcs=30  & Granulare \\
 Config 3 (coarse) & MiniLM-L6   & comp=5, neigh=30  & mcs=150 & Grossolano (fallimento) \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{center}
 
+\needspace{8\baselineskip}
 \subsection{Risultati Comparativi}
 
 \begin{resultbox}
 \begin{center}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lccc}
 \toprule
 \textbf{Metrica} & \textbf{Config 1} & \textbf{Config 2} & \textbf{Config 3} \\
@@ -1519,7 +1528,8 @@ Runtime               & $\sim$3h 47m & $\sim$17m 30s & $\sim$11m \\
 \midrule
 Topic 0 keywords & speech, asr, recognition & dialogue, response, conv. & dialogue, \textbf{the}, \textbf{to}, \textbf{and} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{center}
 \end{resultbox}
 
@@ -1792,6 +1802,7 @@ Overlap tra risultati per query originale e parafrasi. Alta robustezza = retriev
 
 Variare la dimensione del corpus: $N \in \{1.000, 5.000, 15.000, 25.000, 44.949\}$
 
+\needspace{10\baselineskip}
 \subsection{Tabella Risultati Completa}
 
 \begin{resultbox}
