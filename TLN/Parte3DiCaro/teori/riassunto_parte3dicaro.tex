@@ -1,0 +1,2023 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{mdframed}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta}
+
+\geometry{top=2cm, bottom=2cm, left=2.5cm, right=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    urlcolor=blue
+}
+
+% Box definizione (grigio)
+\newmdenv[
+    backgroundcolor=gray!10,
+    linecolor=blue!60!black,
+    linewidth=1.5pt,
+    roundcorner=5pt,
+    innertopmargin=6pt,
+    innerbottommargin=6pt
+]{defbox}
+
+% Box formula (teal)
+\newmdenv[
+    backgroundcolor=teal!5,
+    linecolor=teal!70!black,
+    linewidth=1.5pt,
+    roundcorner=5pt,
+    innertopmargin=6pt,
+    innerbottommargin=6pt
+]{formulabox}
+
+% Box codice (verde scuro)
+\newmdenv[
+    backgroundcolor=green!5,
+    linecolor=green!50!black,
+    linewidth=1pt,
+    roundcorner=3pt,
+    innertopmargin=4pt,
+    innerbottommargin=4pt
+]{codebox}
+
+% Box risultati (arancione)
+\newmdenv[
+    backgroundcolor=orange!8,
+    linecolor=orange!70!black,
+    linewidth=1.5pt,
+    roundcorner=5pt,
+    innertopmargin=6pt,
+    innerbottommargin=6pt
+]{resultbox}
+
+% Box esempio (azzurro/teal chiaro, per esempi dalle slide/dispense)
+\newmdenv[
+    backgroundcolor=cyan!4,
+    linecolor=cyan!60!black,
+    linewidth=1pt,
+    roundcorner=3pt,
+    innertopmargin=5pt,
+    innerbottommargin=5pt
+]{examplebox}
+
+% Box domanda (viola, domande tipiche di riflessione dalle dispense)
+\newmdenv[
+    backgroundcolor=violet!4,
+    linecolor=violet!60!black,
+    linewidth=1pt,
+    roundcorner=3pt,
+    innertopmargin=5pt,
+    innerbottommargin=5pt
+]{quizbox}
+
+% Stile listings Python
+\lstdefinestyle{python}{
+    language=Python,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue!80!black}\bfseries,
+    commentstyle=\color{green!50!black}\itshape,
+    stringstyle=\color{red!70!black},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    breaklines=true,
+    showstringspaces=false,
+    frame=none,
+    tabsize=4,
+    backgroundcolor=\color{gray!5}
+}
+
+\title{\textbf{TLN -- Parte 3: Di Caro}\\[0.3em]
+\large Teoria Completa (Dispense Ufficiali) + Laboratori\\[0.2em]
+\normalsize A.A. 2025/26 -- UniTO Magistrale Informatica}
+\author{Riassunto per lo studio -- fonte: dispense ufficiali del Prof. Di Caro}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+%% ============================================================
+\part{Teoria (dalle Dispense Ufficiali)}
+%% ============================================================
+
+%% ============================================================
+\section{Semantica Computazionale: Rappresentazione, Uso e Generazione del Significato}
+%% ============================================================
+
+\subsection{Le Tre Prospettive sul Significato}
+
+\begin{defbox}
+La semantica computazionale si pu\`o dividere in \textbf{tre prospettive complementari} (non alternative): ciascuna risponde a domande diverse sul significato.
+\end{defbox}
+
+\textbf{1. Semantica lessicale -- il significato come inventario.} Studia il significato delle parole come entit\`a discrete organizzate in una rete di relazioni semantiche (sinonimia, iponimia, meronimia, antonimia, polisemia). Esempio: \textit{cane} e \textit{gatto} sono iponimi di \textit{animale}; \textit{zampa} \`e meronimo di \textit{cane}; \textit{bank} \`e polisemico (banca/riva del fiume).
+
+Risorse tipiche: \textbf{WordNet} (Miller, 1995) organizza i concetti in \emph{synset} (insiemi di sinonimi) collegati da relazioni semantiche, oltre 117.000 synset per l'inglese; \textbf{BabelNet} (Navigli \& Ponzetto, 2012) estende WordNet integrando Wikipedia in oltre 500 lingue; \textbf{VerbNet} (Kipper et al., 2008) si concentra su semantica verbale e ruoli tematici.
+
+\begin{quizbox}
+\textbf{Problema della granularit\`a} (Kilgarriff, 1997): come decidere se due usi di una parola costituiscono due sensi diversi o due sfumature dello stesso senso? WordNet distingue 10 sensi per il verbo ``run'', ma la distinzione \`e arbitraria e dipende dalle scelte dei lessicografi.
+\end{quizbox}
+
+\textbf{2. Semantica formale -- il significato come verit\`a.} Definisce il significato delle espressioni linguistiche in termini di \emph{condizioni di verit\`a}, usando la logica matematica come metalinguaggio. Esempio: ``Tutti i gatti sono mammiferi'' diventa $\forall x(\text{Gatto}(x) \to \text{Mammifero}(x))$; ``Ogni studente ha letto almeno un libro'' diventa $\forall x(\text{Studente}(x) \to \exists y(\text{Libro}(y) \land \text{Letto}(x,y)))$.
+
+Approcci principali: \textbf{semantica model-theoretic} (Montague, 1970) -- le espressioni linguistiche sono funzioni da modelli a valori di verit\`a; \textbf{Discourse Representation Theory} (Kamp, 1981) -- gestisce anafora e quantificazione in contesto; \textbf{lambda calculus} (Church, 1940) -- formalismo per la semantica composizionale.
+
+\textbf{Limite fondamentale}: non sa rappresentare vaghezza, soggettivit\`a e concetti graduali (``Questo film \`e noioso'', ``Maria \`e piuttosto alta''), che richiedono estensioni come la fuzzy logic (Zadeh, 1965).
+
+\textbf{3. Semantica distribuzionale -- il significato come uso.} Rompe completamente con le prime due: non parte da definizioni o regole, ma dai dati osservabili dell'uso linguistico.
+
+\begin{defbox}
+\textbf{Ipotesi Distribuzionale.}
+Il significato di una parola \`e determinato dalla distribuzione dei suoi contesti d'uso in un corpus. Firth (1957): \emph{``You shall know a word by the company it keeps''}. Harris (1954): ``parole che occorrono in contesti simili tendono ad avere significati simili''.
+\end{defbox}
+
+Analizzando grandi corpora si costruiscono \emph{embeddings}: rappresentazioni vettoriali in cui la vicinanza tra vettori riflette similarit\`a semantica. \textbf{Word2Vec} (Mikolov et al., 2013, CBOW e Skip-gram) predice parole dai contesti o viceversa; \textbf{GloVe} (Pennington et al., 2014) fattorizza matrici di co-occorrenza globale; \textbf{BERT/ELMo} (Devlin et al., 2019) produce embeddings contestuali che cambiano in base al contesto (risolvendo il problema della polisemia).
+
+\begin{examplebox}
+Esempio algebrico famoso: $\vec{king} - \vec{man} + \vec{woman} \approx \vec{queen}$ -- le relazioni semantiche sono catturate geometricamente nello spazio vettoriale.
+\end{examplebox}
+
+\begin{formulabox}
+\textbf{Similarit\`a coseno} (misura standard di similarit\`a tra vettori):
+\[
+\text{sim}(\vec{a}, \vec{b}) = \frac{\vec{a}\cdot\vec{b}}{|\vec{a}|\cdot|\vec{b}|} = \cos(\theta)
+\]
+Valori vicini a 1 = alta similarit\`a; vicini a 0 = ortogonalit\`a (non correlazione); vicini a -1 = opposizione.
+\end{formulabox}
+
+\textbf{Problema dell'interpretabilit\`a}: il significato non \`e pi\`u esplicito ma distribuito in centinaia di dimensioni. Cosa significa la dimensione 247 in un embedding di 300 dimensioni? Non c'\`e risposta chiara; alcune dimensioni catturano feature semantiche (animato/inanimato), la maggior parte resta opaca.
+
+\begin{center}
+\begin{tikzpicture}[
+  node distance=1.1cm and 1.3cm,
+  every node/.style={align=center, font=\small},
+  box/.style={draw, rounded corners, fill=blue!5, minimum width=2.6cm, minimum height=0.7cm}
+]
+\node[box, fill=blue!15] (root) {Tipi di Semantica};
+\node[box, below left=1.3cm and 2.6cm of root] (lex) {Semantica\\lessicale};
+\node[box, below=1.3cm of root] (form) {Semantica\\formale};
+\node[box, below right=1.3cm and 2.6cm of root] (dist) {Semantica\\distribuzionale};
+\node[box, below=0.9cm of lex] (lex2) {significato\\delle parole};
+\node[box, below=0.9cm of form] (form2) {logica e\\linguaggio};
+\node[box, below=0.9cm of dist] (dist2) {ipotesi\\distribuzionale};
+\node[box, below=0.7cm of lex2] (lex3) {sinonimia\\e antonimia};
+\node[box, below=0.7cm of form2] (form3) {composizionalit\`a};
+\node[box, below=0.7cm of dist2] (dist3) {contesto\\linguistico};
+\node[box, below=0.7cm of lex3] (lex4) {WordNet,\\thesaurus};
+\node[box, below=0.7cm of form3] (form4) {rappresentazione\\formale};
+\node[box, below=0.7cm of dist3] (dist4) {word\\embeddings};
+\draw (root) -- (lex); \draw (root) -- (form); \draw (root) -- (dist);
+\draw (lex) -- (lex2); \draw (lex2) -- (lex3); \draw (lex3) -- (lex4);
+\draw (form) -- (form2); \draw (form2) -- (form3); \draw (form3) -- (form4);
+\draw (dist) -- (dist2); \draw (dist2) -- (dist3); \draw (dist3) -- (dist4);
+\end{tikzpicture}
+\end{center}
+
+\subsection{Dal Significato al Question Answering}
+
+Il \textbf{Question Answering (QA)} \`e uno dei problemi storici del NLP: leggere un testo e rispondere a domande su di esso. Sistemi storici: BASEBALL (Green et al., 1961), LUNAR (Woods, 1973).
+
+\begin{defbox}
+Non tutte le domande sono uguali. Esistono diverse categorie cognitive:
+\begin{itemize}
+  \item \textbf{Fattuale}: ``Quando \`e nata Marie Curie?'' $\to$ recupero di fatti (IR)
+  \item \textbf{Definitoria}: ``Cos'\`e un algoritmo?'' $\to$ semantica lessicale
+  \item \textbf{Causale}: ``Perch\'e il cielo \`e blu?'' $\to$ ragionamento inferenziale
+  \item \textbf{Ipotetica/controfattuale}: ``Cosa succederebbe se...?'' $\to$ simulazione mentale
+\end{itemize}
+\end{defbox}
+
+\textbf{Tassonomia di Li \& Roth (2002)} per la classificazione delle domande: ABBR (abbreviation, ``Cosa significa NASA?''), ENTY (entity, ``Cos'\`e un transistor?''), DESC (description, ``Come funziona un motore?''), HUM (human, ``Chi ha scritto 1984?''), LOC (location), NUM (numeric).
+
+\begin{examplebox}
+Analisi multi-livello di ``Chi ha dipinto la Gioconda?'': livello \textbf{lessicale} (``Gioconda'' = opera d'arte), livello \textbf{sintattico} (soggetto=X, predicato=dipingere, oggetto=Gioconda), livello \textbf{semantico} (relazione CREATOR-OF(X, Gioconda)), livello \textbf{pragmatico} (tipo di risposta attesa = HUMAN).
+\end{examplebox}
+
+\subsection{Dai Sistemi Modulari ai Modelli Generativi}
+
+Storicamente il QA era affrontato con \textbf{pipeline modulari}: (1) classificazione della domanda, (2) NER, (3) relation extraction, (4) WSD, (5) retrieval, (6) answer extraction/generation. Sistemi come \textbf{Watson} di IBM (Ferrucci et al., 2010, vincitore di Jeopardy! nel 2011) usavano oltre 100 componenti combinando approcci statistici, simbolici e knowledge-based.
+
+Con i \textbf{Large Language Model} (GPT-3/4, Claude, LLaMA) il paradigma \`e cambiato: i modelli non si limitano a recuperare informazioni, le \textbf{generano} -- sintetizzano da fonti diverse, spiegano in modo adattivo, riformulano per livelli di competenza diversi, ragionano (apparentemente) su catene di inferenze.
+
+\begin{quizbox}
+\textbf{Generazione vs. Retrieval}: alla domanda ``Spiega la relativit\`a a un bambino di 8 anni'', un sistema retrieval-based cercherebbe documenti con ``relativit\`a''+``spiegazione semplice'' e restituirebbe un passaggio estratto. Un LLM generativo produce una spiegazione \emph{originale}, adattata al livello richiesto, con analogie creative.
+\end{quizbox}
+
+\textbf{Nuove criticit\`a introdotte dai generativi}: \textbf{allucinazioni} (Maynez et al., 2020; Ji et al., 2023) -- generazione di fatti plausibili ma falsi; \textbf{difficolt\`a di controllo} -- non \`e chiaro su quali informazioni si basi la risposta; \textbf{assenza di grounding} -- nessuna garanzia di verit\`a o tracciabilit\`a delle fonti; \textbf{bias} -- amplificazione di pregiudizi nei dati di training (Bender et al., 2021). Il \textbf{RAG} (Lewis et al., 2020) tenta di combinare i due paradigmi: prima recuperare, poi generare basandosi sui documenti recuperati.
+
+\subsection{Ambiguit\`a: WSD e WSI}
+
+\begin{defbox}
+\textbf{Ambiguit\`a Lessicale.}
+Una parola \`e ambigua quando pu\`o riferirsi a concetti diversi in contesti diversi. \textbf{Polisemia}: sensi correlati (``libro'' = oggetto fisico vs. contenuto testuale). \textbf{Omonimia}: sensi non correlati (``banco'' = pesce vs. mobile).
+\end{defbox}
+
+\subsubsection{Word Sense Disambiguation (WSD)}
+
+\begin{formulabox}
+WSD assume un inventario predefinito di sensi $S=\{s_1,\dots,s_n\}$ (tipicamente da WordNet) per una parola $w$ in contesto $C$, e consiste nel trovare:
+\[
+s^* = \arg\max_{s \in S} P(s \mid w, C)
+\]
+\end{formulabox}
+
+\begin{examplebox}
+``The bank can guarantee deposits will eventually cover future tuition costs''. \textit{bank} ha 4 sensi in WordNet (istituto finanziario, riva di fiume, riserva, banca del sangue). Il contesto (``guarantee'', ``deposits'', ``costs'') indica il senso \#1 (istituto finanziario).
+\end{examplebox}
+
+Approcci: \textbf{knowledge-based} (Lesk, 1986 -- overlap tra contesto e definizioni); \textbf{supervised} (Zhong \& Ng, 2010 -- classificazione con feature contestuali); \textbf{neural} (Raganato et al., 2017 -- embeddings contestuali).
+
+\textbf{Limiti intrinseci}: eccessiva specificit\`a dei sensi (WordNet distingue sensi che gli umani non percepiscono come diversi); copertura incompleta (nuovi sensi emergono continuamente, es. ``viral'' nel senso di contenuto virale online); soggettivit\`a (accordo inter-annotatore spesso basso, 70-80\%); domain specificity (sensi specialistici mancanti).
+
+\subsubsection{Word Sense Induction (WSI)}
+
+\begin{defbox}
+WSI scopre automaticamente i sensi di una parola raggruppando i suoi contesti d'uso in cluster semanticamente coerenti, \textbf{senza} un inventario di sensi predefinito (a differenza di WSD).
+\end{defbox}
+
+\begin{examplebox}
+Per il verbo \textit{play}: Cluster 1 (musica): ``play guitar'', ``play piano''; Cluster 2 (sport): ``play football'', ``play tennis''; Cluster 3 (gaming): ``play videogames''; Cluster 4 (teatro): ``play a role'', ``play Hamlet''. Ogni gruppo \`e un senso indotto automaticamente.
+\end{examplebox}
+
+Algoritmi: \textbf{context clustering} (Sch\"utze, 1998 -- clustering di vettori contestuali); \textbf{graph-based} (Agirre et al., 2006 -- grafi di co-occorrenza e community detection); \textbf{topic modeling} (Brody \& Lapata, 2009 -- LDA per sensi come topic latenti); \textbf{neural clustering} (Amrami \& Goldberg, 2019).
+
+Vantaggi: adattabilit\`a a domini specifici, nessuna dipendenza da risorse esterne, scopre sensi emergenti. Svantaggi: numero di sensi non determinato a priori, valutazione difficile (non esiste gold standard), sensi spesso non interpretabili.
+
+\begin{defbox}
+\textbf{Valutazione: metodo Pseudo-word.}
+Gale et al. 1992; Sch\"utze 1992. Si fondono artificialmente due parole non correlate (es. \textit{apple} + \textit{keyboard} $\to$ \textit{apple-keyboard}), si sostituiscono tutte le occorrenze originali con la pseudo-word, e si verifica se il sistema riassegna correttamente ogni istanza al senso originale (clustering). Limiti: i sensi creati non riflettono ambiguit\`a reale; i sensi artificiali sono pi\`u distanti di quelli naturali; infla artificialmente le performance. Valutazioni pi\`u realistiche usano dataset annotati come i SemEval tasks (Agirre et al., 2007, 2010, 2013).
+\end{defbox}
+
+\subsection{Risorse Lessico-Semantiche: un Confronto}
+
+\begin{resultbox}
+\begin{center}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Risorsa} & \textbf{Potere espr.} & \textbf{Scalabilit\`a} & \textbf{Sorgente} & \textbf{Ambig./Sogg.} \\
+\midrule
+WordNet/BabelNet & Alto & Bassa & Manuale & Bassa \\
+Property norms & Alto & Bassa & Esperimenti/Crowd & Alta \\
+FrameNet & Alto & Media & Annotatori esperti & Media \\
+Common-sense (ConceptNet) & Molto alto & Alta & Crowd-sourcing/ML & Molto alta \\
+Visual Attributes & Medio & Medio-alta & Immagini annotate & Medio-alta \\
+Word/sense embeddings & Molto alto & Molto alta & Testi larga scala & Alta \\
+Corpus manager & Variabile & Alta & Corpora reali & Media \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+Altre risorse: \textbf{FrameNet} (Baker et al., 1998) organizza il lessico in ``frame semantici'' (es. frame COMMERCIAL\_TRANSACTION: buyer, seller, goods, money), utile per semantic role labeling. \textbf{PropBank} (Palmer et al., 2005) annota ruoli semantici verbali, focus su alternanze di diathesis (voce attiva/passiva). \textbf{ConceptNet} (Speer et al., 2017) conoscenza di senso comune crowd-sourced (es. (coffee, UsedFor, staying awake)). \textbf{Property Norms} (McRae et al., 2005) proprietà percettive/funzionali da dati psicologici sperimentali (es. ``banana'': is yellow, is curved). \textbf{Tendenza recente}: integrare risorse simboliche con embeddings (retrofitting, Faruqui et al., 2015; knowledge graph embeddings, Bordes et al., 2013).
+
+\subsection{Il Ruolo delle Definizioni}
+
+Tutte le risorse condividono un principio: \textbf{descrivere un concetto tramite altri concetti}. Questo, noto come \textbf{circolarit\`a definitoria}, \`e inevitabile ma problematico: ``Cane'' $\to$ mammifero $\to$ animale $\to$ essere vivente $\to$ ... forma un grafo concettuale potenzialmente ciclico. Dove si ferma la regressione? Esistono ``primitive semantiche'' (Wierzbicka, 1996)?
+
+Tipi di definizione: per \textbf{genere e differenza specifica} (Aristotele); \textbf{ostensiva} (per esempi); \textbf{operazionale} (per procedure). Quali propriet\`a sono rilevanti: necessarie vs. sufficienti (teoria classica dei concetti); \textbf{propriet\`a prototipiche} (Rosch, 1973 -- un pettirosso \`e pi\`u ``uccello'' di un pinguino); propriet\`a distintive. Come distinguere concetti simili: ``cup'' vs ``mug'' vs ``glass'' hanno confini sfumati dipendenti dal contesto culturale; \textbf{minimal pairs} differiscono per una sola feature critica.
+
+\begin{quizbox}
+\textbf{Prospettiva computazionale moderna}: gli LLM imparano definizioni implicitamente dai pattern d'uso, senza rappresentazioni esplicite. Un modello che usa correttamente ``cane'' in migliaia di contesti ``comprende'' cosa \`e un cane? \`E una variante del \textbf{Chinese Room argument} (Searle, 1980): performance linguistica $\equiv$ comprensione semantica?
+\end{quizbox}
+
+%% ============================================================
+\section{Definizioni, Semasiologia e Ricerca Onomasiologica}
+%% ============================================================
+
+\subsection{Introduzione}
+
+La semantica computazionale non coincide con un unico modo di rappresentare il significato, ma con una pluralit\`a di approcci (lessicale, formale, distribuzionale, generativo) che condividono una domanda di fondo: \emph{come si descrive un concetto?} Ogni volta che definiamo una parola compiamo un'operazione teorica e pratica delicata: selezioniamo alcune propriet\`a, ne escludiamo altre, decidiamo cosa \`e centrale e cosa periferico, scegliamo un livello di generalit\`a. \textbf{La definizione non \`e solo uno strumento lessicografico: \`e una forma di modellizzazione del significato.}
+
+\begin{defbox}
+Una definizione \`e, in termini generali, un testo progettato per guidare il lettore -- o, pi\`u in generale, il \emph{consumer} -- verso un possibile significato associato a un termine in un determinato contesto. La relazione tra termini e significati \emph{non \`e univoca}: un singolo termine pu\`o essere associato a una molteplicit\`a di significati, e uno stesso significato pu\`o essere espresso tramite definizioni differenti, pi\`u o meno accurate, pi\`u o meno orientate a uno scopo comunicativo specifico.
+\end{defbox}
+
+Il problema della definizione \`e quindi anche un problema di: selezione delle propriet\`a rilevanti; granularit\`a concettuale; controllo dell'ambiguit\`a; adeguatezza rispetto al pubblico di riferimento; rappresentabilit\`a computazionale.
+
+\subsection{Le Definizioni come Oggetti Linguistici e Computazionali}
+
+Definire significa molto pi\`u che spiegare una parola: significa stabilire un ponte tra una forma linguistica e una struttura concettuale. Le definizioni svolgono quindi una funzione insieme: \textbf{descrittiva} (forniscono informazioni sul significato); \textbf{distintiva} (separano un concetto da altri concetti simili); \textbf{comunicativa} (devono essere comprensibili a un destinatario); \textbf{operativa} (possono essere utilizzate in compiti di retrieval, classificazione, disambiguazione e generazione). La definizione \textbf{non \`e mai neutra}: cambia in funzione dello scopo, del dominio, del livello di specializzazione e persino del tipo di utente previsto.
+
+\begin{examplebox}
+Il termine \textit{microscopio} pu\`o essere definito in modi diversi, mettendo in rilievo aspetti diversi pur riferendosi allo stesso concetto:
+\begin{itemize}
+  \item \textbf{genus-differentia}: ``strumento ottico usato per osservare oggetti troppo piccoli per essere visti a occhio nudo'';
+  \item \textbf{per esempio d'uso}: ``apparecchio usato in laboratorio per ingrandire cellule, tessuti o microrganismi'';
+  \item \textbf{operazionale}: ``dispositivo che consente l'osservazione ad alta risoluzione di strutture microscopiche tramite lenti o altri sistemi di ingrandimento''.
+\end{itemize}
+\end{examplebox}
+
+\subsection{Tipi di Definizioni}
+
+Esistono diversi tipi di definizioni, classificabili in base alla strategia esplicativa adottata; nessuna tipologia \`e universalmente migliore delle altre -- la scelta dipende dal compito e dall'obiettivo.
+
+\begin{itemize}
+  \item \textbf{Genus-differentia} (modello classico aristotelico): identifica una categoria generale (\emph{genus}) e poi specifica le propriet\`a distintive (\emph{differentia}) che separano il concetto dai suoi vicini semantici. Es.: \textit{Cane}: mammifero domestico della famiglia dei canidi; \textit{Triangolo}: poligono con tre lati. Vantaggi: esplicita la collocazione tassonomica, facilita la classificazione, si presta bene alla formalizzazione computazionale. Limite: non sempre sufficiente per concetti astratti, prototipici o culturalmente variabili.
+  \item \textbf{Definizioni per esempio}: mostrano casi tipici o contesti d'uso invece di esplicitare la struttura concettuale. Es.: \textit{Euristica}: una strategia mentale come ``provare la soluzione pi\`u semplice per prima'' o ``seguire una regola approssimativa''. Pi\`u accessibili per un pubblico non specialista, ma meno rigorose dal punto di vista classificatorio.
+  \item \textbf{Definizioni per riferimento o rinvio}: descrivono un concetto richiamandone altri gi\`a noti. Es.: \textit{Felino}: animale appartenente alla stessa famiglia del gatto, del leone e della tigre. Utili in sistemi lessicali fortemente interconnessi, ma rischiano di amplificare la circolarit\`a definitoria.
+  \item \textbf{Definizioni per parafrasi, sinonimia o descrizione operativa}: riformulano il significato in modo pi\`u accessibile o funzionale. Es.: \textit{Pericolo}: situazione in cui esiste la possibilit\`a di un danno; \textit{Algoritmo}: insieme ordinato di passi per risolvere un problema. Frequenti nei contesti educativi e nella comunicazione tecnico-divulgativa.
+\end{itemize}
+
+\subsection{Aspetti Metodologici e Risorse Lessico-Semantiche}
+
+Tutte le strategie definitorie si basano sulla descrizione di una parola tramite l'uso di altre parole. Questo porta a riflessioni fondamentali: come si descrive un concetto? Quali caratteristiche devono essere menzionate? Quali propriet\`a lo distinguono da altri concetti? Come si scrive una definizione, e chi decide se \`e ``giusta''? Come si valuta la qualit\`a e la completezza di una definizione? Queste domande sono centrali per chi costruisce dizionari, thesauri, knowledge graph, risorse terminologiche, dataset per il NLP, o sistemi generativi che devono produrre spiegazioni coerenti.
+
+Altre dimensioni rilevanti per le risorse: \textbf{espressivit\`a} (quanto una risorsa rappresenta conoscenze ricche, astratte e relazionali); \textbf{scalabilit\`a} (quanto pu\`o essere ampliata automaticamente o semi-automaticamente); \textbf{sorgente} (annotatori esperti, crowd-sourcing, dati testuali/visivi, esperimenti cognitivi); \textbf{ambiguit\`a e soggettivit\`a} (alcune risorse tentano di eliminare l'ambiguit\`a, altre la accolgono come parte costitutiva del linguaggio naturale).
+
+\begin{resultbox}
+\begin{center}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Risorsa} & \textbf{Potere espr.} & \textbf{Scalabilit\`a} & \textbf{Sorgente} & \textbf{Ambig./Sogg.}\\
+\midrule
+Dizionari elettronici & Medio-alto & Medio-bassa & Manuale & Bassa \\
+Property norms & Alto & Bassa & Esperimenti/Crowd & Alta \\
+Frames & Alto & Media & Annotatori esperti & Media \\
+Common-sense knowledge & Molto alto & Alta & Crowd-sourcing/ML & Molto alta \\
+Visual Attributes & Medio & Medio-alta & Immagini annotate & Medio-alta \\
+Word/sense embeddings & Molto alto & Molto alta & Testi su larga scala & Alta \\
+Corpus manager & Variabile & Alta & Corpora reali & Media \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+Esempi concreti: \textbf{dizionari elettronici} (WordNet, BabelNet) organizzano il lessico tramite synset, glosse e relazioni semantiche; le \textbf{Property Norms} raccolgono propriet\`a associate ai concetti tramite esperimenti cognitivi (utili per studiare quali caratteristiche vengono spontaneamente considerate salienti); il \textbf{common-sense knowledge} (es. ConceptNet) rappresenta relazioni come \textit{UsedFor}, \textit{CapableOf}, \textit{AtLocation}; i \textbf{Visual Attributes} raccolgono propriet\`a fisionomiche/percettive (colore, forma, texture); i \textbf{corpus manager} (es. SketchEngine) permettono di esplorare grandi corpora e osservare usi reali, collocazioni e pattern definitori.
+
+\subsection{Il Problema della Qualit\`a Definizionale}
+
+Una definizione non \`e utile solo perch\'e \`e grammaticalmente ben formata: deve essere anche informativa, discriminante e adeguata a uno scopo. \textbf{Criteri di qualit\`a}: \textbf{chiarezza} (\`e comprensibile senza ulteriori spiegazioni?); \textbf{accuratezza} (descrive correttamente il concetto?); \textbf{specificit\`a} (distingue il concetto da altri simili?); \textbf{completezza} (include le propriet\`a essenziali?); \textbf{adeguatezza} (\`e appropriata per il pubblico/task?); \textbf{disambiguazione} (evita letture alternative fuorvianti?).
+
+\begin{examplebox}
+Per il concetto \textit{pericolo}: Definizione A -- ``qualcosa di brutto che pu\`o succedere'' (intuitiva ma vaga); Definizione B -- ``situazione o condizione in cui esiste la possibilit\`a di un danno, di una perdita o di una minaccia'' (pi\`u strutturata, informativa, adatta a un contesto lessicografico/computazionale).
+\end{examplebox}
+
+La qualit\`a definizionale dipende anche dal \textbf{tipo di concetto}: i concetti \textbf{concreti} tendono a essere pi\`u facilmente ancorabili a propriet\`a percettive e funzionali; i concetti \textbf{astratti} richiedono spesso relazioni, situazioni, effetti o inferenze; i concetti \textbf{specifici} sono spesso pi\`u vincolati; i concetti \textbf{generici} tendono ad avere confini pi\`u sfumati.
+
+\subsection{Valutazione delle Definizioni: Approcci Intrinseci ed Estrinseci}
+
+\begin{defbox}
+\textbf{Valutazione intrinseca}: misura la qualit\`a considerando esclusivamente le propriet\`a interne della definizione, senza riferimento a un task applicativo -- verifica quanto sia coerente, informativa e semanticamente allineata al concetto. Metriche: \textbf{similarit\`a semantica} (cosine similarity tra embedding della definizione e del termine); \textbf{overlap lessicale} (Jaccard similarity, overlap coefficient); \textbf{ricchezza lessicale} (variet\`a/distribuzione del vocabolario); \textbf{coerenza interna} (consistenza tra le propriet\`a espresse).
+
+\textbf{Valutazione estrinseca}: misura la qualit\`a in base al contributo che la definizione fornisce alla performance di un sistema in un task applicativo reale (la definizione non \`e valutata isolatamente, ma come componente di un sistema pi\`u ampio). Task tipici: WSD (es. algoritmo di Lesk), Question Answering, Information Retrieval, Machine Translation, Text Classification.
+\end{defbox}
+
+\begin{resultbox}
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Aspetto} & \textbf{Intrinseca} & \textbf{Estrinseca} \\
+\midrule
+Velocit\`a & Alta & Bassa \\
+Costo computazionale & Basso & Alto \\
+Necessit\`a di task & No & S\`i \\
+Utilit\`a reale & Limitata & Elevata \\
+Dipendenza dal modello & Alta & Media \\
+Generalizzabilit\`a & Bassa & Media \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+I due approcci rispondono a esigenze diverse e \textbf{non sono alternativi in senso stretto}. \textbf{Limiti della valutazione intrinseca}: forte dipendenza dal modello usato (es. BERT vs. GPT), incapacit\`a di valutare la qualit\`a lessicografica in senso umano, sensibilit\`a al contesto. \textbf{Limiti della valutazione estrinseca}: dipendenza dal task specifico, influenza del dataset e dei suoi bias, error propagation da altri moduli del sistema.
+
+\begin{quizbox}
+\textbf{Best practice -- triangolazione delle valutazioni}: la strategia pi\`u efficace combina pi\`u modalit\`a di valutazione: l'intrinseca \`e utile per uno screening rapido e lo sviluppo iterativo; l'estrinseca \`e fondamentale per la validazione finale; l'analisi qualitativa permette di interpretare i risultati e comprendere le discrepanze. Quando le diverse valutazioni convergono si ha maggiore fiducia nella qualit\`a della definizione; le divergenze possono segnalare problemi strutturali da approfondire.
+\end{quizbox}
+
+\subsection{Semasiologia e Onomasiologia}
+
+\begin{defbox}
+\textbf{Approccio semasiologico} (forma $\to$ contenuto): parte da un termine linguistico e mira a determinarne il significato/i significati possibili -- l'approccio tipico dei dizionari tradizionali (es. data la parola \textit{penna}, il dizionario fornisce definizioni come ``strumento per scrivere'', ``piuma di uccello''). Centrale in: definizione lessicale, disambiguazione di sensi, consultazione di dizionari, interpretazione di termini ambigui.
+
+\textbf{Approccio onomasiologico} (contenuto $\to$ forma): procede nel verso opposto -- si parte da un concetto/definizione/descrizione e si cerca di risalire alla forma linguistica che pu\`o esprimerlo (es. data ``strumento usato per scrivere con inchiostro'', si risale a \textit{penna}). Problema cruciale non solo in lessicografia, ma anche in NLP, information retrieval, text generation e supporto alla scrittura.
+\end{defbox}
+
+Aspetti correlati alla ricerca onomasiologica: \textbf{dizionari analogici} (organizzati per concetti/campi semantici, non per forma alfabetica); \textbf{tip-of-the-tongue phenomenon} (il parlante dispone del contenuto concettuale ma non riesce a recuperare la forma lessicale appropriata); il \textbf{meccanismo genus-differentia} pu\`o facilitare la risalita al concetto corretto. Molti sistemi computazionali moderni combinano continuamente i due movimenti: comprendono parole/frasi per risalire a concetti, e generano parole/frasi a partire da rappresentazioni concettuali o istruzioni.
+
+\subsection{Definizioni, Retrieval e NLP}
+
+Nei sistemi classici una definizione ben costruita poteva essere usata per classificare concetti, popolare risorse lessicali, facilitare la disambiguazione, guidare la ricerca in basi di conoscenza. Nei sistemi moderni (LLM, approcci retrieval-based) le definizioni hanno assunto funzioni aggiuntive: diventano \textbf{query semantiche} per il recupero di concetti; sono usate come \textbf{prompt} o descrizioni di target concettuali; possono essere confrontate automaticamente tramite similarit\`a lessicale/semantica; fungono da ponte tra linguaggio naturale e strutture formali (synset, frame, entit\`a in un knowledge graph). Una definizione pu\`o quindi essere vista come una \textbf{rappresentazione linguistica compressa} di un contenuto semantico.
+
+\subsection{Esercizio di Laboratorio: Complessit\`a Definizionale (Lab 1)}
+
+\begin{defbox}
+\textbf{LAB-1 -- Schema delle Dispense.}
+Misurazione dell'overlap lessicale tra definizioni per concetti generici/specifici e concreti/astratti, su \textbf{4 concetti}: due concreti (uno generico, es. \textit{pantalone}; uno specifico, es. \textit{microscopio}) e due astratti (uno generico, es. \textit{pericolo}; uno specifico, es. \textit{euristica}).
+\end{defbox}
+
+\textbf{Schema in 5 fasi}: (1) \textbf{creazione condivisa} delle definizioni per i 4 concetti, scegliendo liberamente la strategia (genus-differentia, esempi, parafrasi, o combinazioni); (2) \textbf{analisi collettiva} delle scelte linguistiche, del grado di specificit\`a, delle difficolt\`a per i concetti astratti rispetto ai concreti; (3) \textbf{task di analisi lessicale e semantica}: calcolo del grado di sovrapposizione lessicale e semantica tra le definizioni dello stesso concetto prodotte da persone diverse; (4) \textbf{calcolo della similarit\`a lessicale (SimLex)} -- conteggio dei termini in comune dopo stopword removal/lemmatizzazione, oppure Jaccard/overlap coefficient -- e \textbf{semantica (SimSem)} -- rappresentazione vettoriale (Word2Vec, GloVe, fastText, BERT, Sentence-BERT) + cosine similarity -- aggregando i valori per concretezza e specificit\`a; (5) \textbf{riflessione}: la sovrapposizione lessicale \`e risultata pi\`u alta o pi\`u bassa delle aspettative? La sovrapposizione semantica riflette meglio l'intuizione di somiglianza? Ci sono differenze tra concetti concreti/astratti o generici/specifici?
+
+\textbf{Implementazione concreta del laboratorio} (concetti usati: Albero/Teiera/Musica/Etica, vedi dettagli e codice in Sez.~\ref{sec:simlex} e seguenti): \textbf{SimLex} (Jaccard su insiemi di parole lemmatizzate) misura overlap lessicale puro; \textbf{SimSem} (coseno TF-IDF) misura prossimit\`a semantica. Risultato chiave: per concetti astratti SimSem $>$ SimLex (il modello vettoriale allinea sinonimi che l'overlap puro non vede); per i concetti concreti i punteggi sono pi\`u alti e pi\`u vicini tra loro perch\'e il referente fisico vincola fortemente il vocabolario usato da persone diverse.
+
+\subsection{Esercizio di Laboratorio: Valutazione delle Definizioni -- Content-to-Form (Lab 2)}
+
+\begin{defbox}
+\textbf{LAB-2 -- Ricerca Onomasiologica.}
+I dizionari comuni partono dalla forma per arrivare al contenuto. I dizionari \textbf{analogici} funzionano al contrario: non si ricerca per parola, ma per definizione o contenuto concettuale (\textbf{ricerca onomasiologica}). \textbf{Obiettivo}: verificare se e quanto le definizioni prodotte nel Lab 1 siano sufficientemente informative e ben strutturate da permettere l'identificazione del \emph{synset} corretto in WordNet (o risorsa equivalente).
+\end{defbox}
+
+\textbf{Procedimento}: (1) per ciascun concetto, raccogliere tutte le definizioni disponibili; (2) analizzare ogni definizione (singolarmente o aggregata) cercando in WordNet il synset che meglio corrisponde al significato espresso; (3) durante la ricerca: attenzione alle ambiguit\`a lessicali, uso di iperonimi e relazioni tassonomiche come guida, principio del \emph{genus} per orientarsi nel grafo semantico; (4) registrare, per ogni definizione, il synset individuato e motivare la scelta.
+
+\textbf{Domande guida}: Quanto \`e stato facile risalire al synset corretto usando solo la definizione? Quali definizioni si sono rivelate pi\`u efficaci? Alcune definizioni hanno generato ambiguit\`a o errori di interpretazione, perch\'e? Le definizioni basate su genus-differentia si sono dimostrate pi\`u utili di altre?
+
+\textbf{Implementazione concreta del laboratorio} (vedi dettagli, codice e risultati completi in Sez.~\ref{sec:lab2-impl}): procedura automatizzata con TF-IDF + coseno tra definizione e 5 glosse candidate per concetto, predizione = synset con score massimo. \textbf{Risultato chiave}: i concetti concreti sono fino a 2.1$\times$ pi\`u recuperabili degli astratti (Accuracy: Albero 89.3\% vs. Musica 32.1\%) -- il referente fisico vincola il vocabolario rendendo le definizioni pi\`u standardizzate e quindi pi\`u facili da far corrispondere alla glossa corretta tramite TF-IDF. Limite: TF-IDF fallisce sulla sinonimia pura (richiede embedding contestuali per i concetti astratti).
+
+\subsection{Esempi Applicativi e Laboratorio (Estensione)}
+
+Come esercizio di consolidamento (singolarmente o a gruppi): (1) \textbf{integrare risorse eterogenee} (es. WordNet + ConceptNet, o FrameNet + embeddings) per valutare la complementarit\`a tra definizioni esplicite, relazioni simboliche e similarit\`a distribuzionale; (2) \textbf{estendere/arricchire una risorsa esistente} (es. migliorare la copertura semantica delle Property Norms, aggiungere metadati sulle strategie definitorie). Criteri di valutazione: corretta comprensione delle risorse, completezza dell'analisi, capacit\`a critica/interpretativa, qualit\`a delle visualizzazioni (tabelle, grafi, heatmap), codice ben documentato, riflessione finale su utilit\`a e limiti.
+
+\subsection{Perch\'e Tutto Questo \`e Importante per l'NLP Contemporaneo}
+
+\begin{quizbox}
+A prima vista, il problema delle definizioni potrebbe sembrare marginale rispetto all'NLP contemporaneo (embeddings, transformer, modelli generativi). In realt\`a \`e vero il contrario: ogni sistema che deve spiegare un concetto, distinguere tra significati simili, recuperare un termine da una descrizione, generare una risposta definitoria, o valutare la correttezza semantica di un testo, si confronta direttamente col problema della definizione. Anche i LLM, pur non possedendo definizioni esplicite nel senso tradizionale, mostrano comportamenti che dipendono fortemente da regolarit\`a definizionali apprese dai dati -- quando un modello completa correttamente ``Uno strumento usato per osservare oggetti molto piccoli si chiama \_\_\_'' sta sfruttando associazioni distribuzionali, pattern definitori e conoscenza lessicale interiorizzata durante l'addestramento. Questo non significa che il modello ``possegga'' il significato come una risorsa simbolica, ma mostra che il confine tra definizione esplicita e conoscenza implicita \`e oggi uno dei punti pi\`u interessanti della riflessione semantica.
+\end{quizbox}
+
+\subsection{Conclusione}
+
+Punti chiave del capitolo: una definizione non \`e solo una spiegazione, ma una forma di rappresentazione del significato; i diversi tipi di definizione mettono in luce strategie descrittive differenti; la qualit\`a definizionale dipende da chiarezza, specificit\`a, adeguatezza e capacit\`a di disambiguazione; l'approccio \textbf{semasiologico} parte dalla forma per arrivare al contenuto, l'\textbf{onomasiologico} parte dal contenuto per arrivare alla forma; questi problemi hanno applicazioni dirette in lessicografia, retrieval semantico, classificazione e NLP.
+
+\begin{quizbox}
+Il punto pi\`u importante \`e forse un altro: \textbf{definire significa sempre scegliere una prospettiva sul concetto}. Non esiste quasi mai una definizione perfettamente neutrale, definitiva o completa -- esistono definizioni pi\`u o meno utili, pi\`u o meno efficaci, pi\`u o meno adatte a un certo scopo cognitivo o computazionale. Studiare le definizioni non significa occuparsi di un residuo teorico della lessicografia tradizionale, ma affrontare una domanda centrale della semantica: \emph{in che modo il significato pu\`o essere reso accessibile, confrontabile e operativamente utilizzabile?}
+\end{quizbox}
+
+%% ============================================================
+\section{Privacy, Rilascio dei Dati e Disinformazione Online}
+%% ============================================================
+
+\subsection{Introduzione}
+
+Nel NLP contemporaneo il linguaggio non \`e solo un oggetto di analisi, ma un punto di intersezione tra sistemi computazionali, pratiche sociali e processi decisionali. All'interno di questo ecosistema emergono due problemi profondamente interconnessi pur essendo spesso trattati separatamente: il \textbf{rilascio di dati personali e sensibili} e la \textbf{circolazione di contenuti non verificati o fuorvianti}. Da un lato gli utenti condividono informazioni che possono esporli a rischi di privacy, talvolta senza esserne consapevoli; dall'altro sono immersi in flussi informativi in cui la distinzione tra informazione affidabile e misinformation non \`e sempre immediata.
+
+\begin{quizbox}
+Il punto centrale non \`e soltanto \emph{proteggere} ci\`o che viene comunicato o \emph{filtrare} ci\`o che viene ricevuto, ma costruire sistemi che aiutino l'utente a comprendere entrambi i processi. La nozione di \textbf{user empowerment} \`e chiave: l'obiettivo non \`e sostituire il giudizio umano con decisioni automatiche, ma fornire strumenti che lo rendano pi\`u informato, consapevole e controllabile.
+\end{quizbox}
+
+\subsection{Il Rilascio dei Dati come Problema Semantico}
+
+Il rilascio dei dati \`e spesso interpretato come una questione puramente tecnica, legata alla presenza o assenza di determinati attributi identificativi -- ma questa visione \`e riduttiva. Nei contesti digitali contemporanei, il rischio di un contenuto \textbf{non dipende solo da ci\`o che \`e esplicitamente dichiarato, ma anche da ci\`o che pu\`o essere inferito}. Un testo apparentemente innocuo pu\`o contenere elementi che, combinati con altre informazioni disponibili online, permettono di ricostruire aspetti rilevanti dell'identit\`a o del comportamento di un individuo.
+
+\begin{defbox}
+Il problema della privacy \`e quindi \textbf{intrinsecamente semantico}: riguarda la relazione tra espressioni linguistiche, contesto e interpretazione. Non basta individuare entit\`a sensibili: bisogna capire come tali entit\`a si inseriscano in una rete di relazioni e quali inferenze possano essere attivate. Il rischio privacy emerge da un'interazione tra \emph{contenuto}, \emph{contesto} e \emph{conoscenza esterna}. Questo supera i modelli binari (visibile/nascosto): \`e pi\`u corretto adottare strategie di \textbf{rilascio controllato}, dove il contenuto viene trasformato, generalizzato o parzialmente oscurato per ridurre il rischio mantenendo utilit\`a informativa.
+\end{defbox}
+
+\subsection{La Stima del Rischio e il Ruolo dell'Utente}
+
+Il rischio privacy non \`e una propriet\`a statica ma dipende da molteplici fattori: serve quindi un modello \emph{dinamico} che consideri la presenza di dati sensibili, il contesto di pubblicazione, le possibilit\`a di propagazione e la combinabilit\`a con altre fonti. In questo quadro l'utente assume un ruolo centrale: non si tratta pi\`u di applicare regole predefinite, ma di \textbf{supportare decisioni situate}. Un sistema efficace dovrebbe fornire indicazioni comprensibili sul rischio associato a un contenuto, esplicitare quali elementi contribuiscono a tale rischio, e suggerire possibili strategie di mitigazione.
+
+Questo capitolo fa riferimento agli strumenti sviluppati nell'ambito del progetto nazionale PRIN \textbf{KURAMi}, che propone un approccio integrato ai problemi del rilascio dei dati personali e della disinformazione online, utilizzando i concetti di \emph{privacy release} e \emph{misinformation}.
+
+\subsection{Accesso all'Informazione e Misinformation}
+
+Se il rilascio dei dati riguarda ci\`o che l'utente \textbf{espone}, l'accesso all'informazione riguarda ci\`o a cui l'utente \`e \textbf{esposto}. Qui il problema non \`e solo recuperare contenuti pertinenti, ma garantire che siano affidabili. Tradizionalmente i sistemi di Information Retrieval sono progettati per massimizzare la \emph{rilevanza} rispetto a una query -- ma rilevanza non coincide con veridicit\`a: un documento pu\`o essere altamente pertinente e al tempo stesso inaccurato o fuorviante. La misinformation introduce quindi una nuova dimensione di valutazione: non solo se un documento risponde alla query, ma se ne fornisce una rappresentazione adeguata dei fatti -- richiedendo modelli che integrino coerenza con fonti affidabili, presenza di evidenze e qualit\`a della fonte.
+
+\subsection{Explainability e Fiducia nei Sistemi}
+
+Un elemento comune a privacy e misinformation \`e la necessit\`a di rendere \textbf{interpretabili} le decisioni dei sistemi: quando un sistema segnala un rischio o valuta un contenuto come poco affidabile, l'utente deve poter comprendere il perch\'e. L'explainability non si limita a rendere il sistema pi\`u trasparente, ma contribuisce a costruire un rapporto di fiducia basato sulla comprensione -- senza spiegazioni, le decisioni automatiche rischiano di apparire arbitrarie o di essere accettate in modo acritico.
+
+\subsection{LLM, RAG e Conoscenza Esterna}
+
+I LLM hanno ampliato le possibilit\`a di analisi e generazione del linguaggio, ma hanno anche sollevato questioni sull'affidabilit\`a delle informazioni prodotte. Il problema principale sono le \textbf{hallucinations}: generazione di contenuti plausibili ma non supportati da evidenze, particolarmente critica quando i modelli vengono usati per verificare informazioni o supportare decisioni. Per affrontarlo si diffonde l'uso di tecniche di \textbf{Retrieval-Augmented Generation}, che ancorano la generazione a fonti esterne, migliorando la verificabilit\`a dei contenuti.
+
+\subsection{Il Legame tra Privacy e Misinformation}
+
+\begin{quizbox}
+Un aspetto interessante \`e l'ipotesi di un legame tra rilascio dei dati personali e \textbf{vulnerabilit\`a alla misinformation}: questa relazione non \`e immediata, ma suggerisce che determinati comportamenti di disclosure possano essere associati a maggiore esposizione a contenuti non verificati. Se esiste un legame tra ci\`o che l'utente condivide e ci\`o a cui \`e esposto, privacy e qualit\`a dell'informazione \textbf{non possono essere trattate come problemi indipendenti}, ma diventano due aspetti di una stessa dinamica informativa.
+\end{quizbox}
+
+\subsection{Sperimentazione: Annotazione Assistita e Ruolo del RAG}
+
+\subsubsection{Struttura Generale dell'Attivit\`a}
+
+L'esercitazione si articola in \textbf{tre fasi distinte}, da svolgere in ordine preciso:
+\begin{enumerate}
+  \item \textbf{Fase 1 (PRE)}: ciascun partecipante annota una serie di contenuti basandosi \emph{esclusivamente} sul testo fornito. Non \`e consentito consultare l'output del sistema RAG, n\'e (per la privacy) usare fonti esterne. Per la misinformation \`e ammessa solo una consultazione minima di fonti, limitata alla verifica di fatti, senza usare modelli generativi.
+  \item \textbf{Fase 2}: viene reso visibile l'output del sistema RAG (classificazione + spiegazione). L'output \`e solo letto e interpretato, \textbf{non} modificato.
+  \item \textbf{Fase 3 (POST)}: i partecipanti rivedono la propria annotazione alla luce dell'informazione fornita dal sistema -- possono mantenerla, modificarla, o confermarla con un diverso livello di confidenza. Devono inoltre valutare la qualit\`a della spiegazione (chiarezza, pertinenza, completezza).
+\end{enumerate}
+
+\subsubsection{Annotazione PRE e POST: una Prospettiva Comparativa}
+
+\begin{defbox}
+La distinzione PRE/POST \`e il cuore metodologico dell'esperimento. L'annotazione \textbf{PRE} \`e un giudizio non assistito, basato solo su comprensione individuale e conoscenze pregresse. L'annotazione \textbf{POST} introduce una dimensione riflessiva: il partecipante confronta la propria interpretazione con quella del sistema. Pu\`o: (a) portare a una \textbf{revisione} della classificazione; (b) \textbf{rafforzare} una valutazione gi\`a formulata, aumentando la confidenza; (c) risultare \textbf{poco convincente}, evidenziando limiti/ambiguit\`a nella spiegazione. L'obiettivo \emph{non} \`e stabilire qual \`e la risposta ``corretta'', ma analizzare il processo di costruzione del giudizio e come viene influenzato da un supporto computazionale.
+\end{defbox}
+
+\subsubsection{Definizioni Operative}
+
+\begin{itemize}
+  \item \textbf{Privacy} (annotazione \textbf{binaria}, violazione si/no): si considera violazione la presenza di informazioni sensibili che potrebbero identificare individui, esporre credenziali o dati finanziari, rivelare comunicazioni riservate, o rendere inferibili aspetti personali come abitudini, relazioni o condizioni di salute.
+  \item \textbf{Misinformation} (scala \textbf{ordinale}): distingue contenuti accurati, parzialmente fuorvianti, misti e prevalentemente falsi. La scala graduata riconosce che la misinformation non \`e un fenomeno binario, ma si distribuisce lungo un continuum.
+\end{itemize}
+
+\subsubsection{Valutazione della Confidenza e della Spiegazione}
+
+Per ogni annotazione si richiede un livello di \textbf{confidenza}, sia in fase PRE che POST -- elemento fondamentale per distinguere cambiamenti nella decisione da cambiamenti nella sicurezza percepita. Si valuta inoltre la qualit\`a della spiegazione RAG su tre dimensioni: \textbf{chiarezza} (quanto \`e comprensibile), \textbf{pertinenza} (quanto \`e rilevante rispetto al contenuto), \textbf{completezza} (quanto copre gli aspetti importanti del caso). Si richiede infine di indicare esplicitamente \emph{se e come} il sistema ha influenzato la valutazione -- per distinguere cambiamenti nella classificazione, variazioni nella confidenza, o effetti pi\`u sottili nei commenti qualitativi.
+
+\subsubsection{Interpretazione dei Risultati}
+
+I dati raccolti permettono di osservare in quali casi il sistema ha avuto impatto maggiore (sulla classificazione o sulla confidenza), e se esistono differenze tra il dominio privacy e quello misinformation. Spiegazioni chiare, pertinenti e complete sono pi\`u probabile che influenzino il giudizio; spiegazioni vaghe tendono a essere ignorate o a generare incertezza.
+
+\begin{examplebox}
+\textbf{Esempio di schema di annotazione PRE--RAG--POST.}
+\begin{center}
+\small
+\begin{tabular}{p{1.5cm}p{4cm}cccc}
+\toprule
+\textbf{ID} & \textbf{Testo (estratto)} & \textbf{PRE} & \textbf{Conf.} & \textbf{RAG} & \textbf{POST Conf.} \\
+\midrule
+P5 & ``Joe, we would like to make an urgent request... Michelle Lokay's hotline number 18000...'' & S\`i & 4 & Violation S\`i & 5 \\
+P8 & ``Glad you finally made it!... Saturday I have a haircut...'' & No & 3 & Violation S\`i & 4 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{Interpretazione}: in P5 la violazione \`e esplicita e facilmente identificabile gi\`a in fase preliminare (nomi propri, numeri interni, contatti telefonici) -- il RAG \textbf{rafforza} la valutazione, aumentando la confidenza. In P8 la violazione \`e meno evidente perch\'e basata su inferenze contestuali (informazioni implicite su relazioni familiari e routine) -- il sistema rende espliciti elementi non inizialmente considerati, \textbf{portando a una revisione} della classificazione (da No a Violation S\`i). Questo mostra che il supporto del sistema non si limita a confermare decisioni gi\`a prese, ma pu\`o rendere visibili forme di rischio meno immediate, legate a informazioni implicite, routine e relazioni personali.
+\end{examplebox}
+
+\textbf{Estensione dello schema}: nel dataset completo ogni istanza include anche: motivazione dell'annotazione nella fase PRE; valutazione dettagliata della spiegazione RAG; indicazione esplicita dell'influenza del sistema sulla decisione; commenti qualitativi dell'annotatore.
+
+\subsection{Discussione: Annotazione, Explainability e User Empowerment}
+
+L'attivit\`a collega in modo concreto tre dimensioni: la valutazione del contenuto, la spiegabilit\`a del sistema, il ruolo attivo dell'utente. Emerge chiaramente che il giudizio non \`e un processo statico, ma una costruzione dinamica influenzabile da nuove informazioni e da strumenti di supporto. Nel quadro dello user empowerment, \textbf{un sistema non contribuisce all'empowerment semplicemente fornendo una risposta}, ma nella misura in cui rende l'utente capace di comprendere, valutare e, se necessario, \emph{contestare} tale risposta -- l'explainability \`e quindi una \textbf{condizione} per un'interazione equilibrata tra umano e macchina, non un accessorio. L'influenza del sistema non \`e uniforme: in alcuni casi corregge errori evidenti, in altri introduce dubbi o interpretazioni alternative, in altri ancora risulta poco convincente -- la qualit\`a delle spiegazioni, la competenza dell'utente e il contesto determinano questa variabilit\`a.
+
+\subsection{Il Progetto KURAMi: Framework Concettuale e Contributi}
+
+\begin{defbox}
+\textbf{KURAMi} (\emph{Knowledge-based, explainable User empowerment in Releasing private data and Assessing Misinformation in online environments}) \`e un progetto nazionale \textbf{PRIN}, finanziato dal Ministero dell'Universit\`a e della Ricerca, coordinato dall'Universit\`a degli Studi di Torino (Prof. Di Caro) in collaborazione con l'Universit\`a di Milano-Bicocca e l'Universit\`a Statale di Milano.
+
+Si basa su \textbf{due pilastri}:
+\begin{enumerate}
+  \item \textbf{Rappresentazione della conoscenza}: costruzione di modelli che catturino non soltanto informazioni fattuali, ma anche relazioni argomentative, fonti e gradi di certezza.
+  \item \textbf{User empowerment}: progettazione di sistemi che non sostituiscono il giudizio umano, ma lo supportano tramite spiegazioni, visualizzazioni e strumenti di controllo.
+\end{enumerate}
+Sito ufficiale: \url{https://kurami.disco.unimib.it} (pubblicazioni, dataset annotati, documentazione, demo interattive).
+\end{defbox}
+
+\subsection{Conclusione}
+
+\begin{quizbox}
+La privacy non si riduce a un controllo dell'accesso, ma va interpretata come un problema di \textbf{inferenza e contesto}; la misinformation richiede modelli che integrino rilevanza \emph{e} veridicit\`a; explainability e knowledge grounding sono essenziali per sistemi affidabili. Privacy e misinformation convergono verso una visione dell'NLP come disciplina non solo tecnica, ma anche \textbf{epistemica e sociale}: il linguaggio non \`e solo un dato da elaborare, ma un mezzo attraverso cui si costruiscono conoscenza, identit\`a e decisioni. Progettare sistemi che operano sul linguaggio significa quindi intervenire direttamente su questi processi, con tutte le responsabilit\`a che ne derivano.
+\end{quizbox}
+
+\subsection{Bibliografia Essenziale per Area Tematica}
+
+\textbf{Privacy e anonimizzazione}: Sweeney (2002) \emph{k-anonymity: A model for protecting privacy} -- il modello classico di k-anonymity (gi\`a visto nel corso di Privacy); Dwork (2006) \emph{Differential privacy}; Lison et al. (2021) \emph{Anonymisation models for text data}; Pil\'an et al. (2022) \emph{TAB: Text Anonymization Benchmark}.
+
+\textbf{Misinformation e fact-checking}: Thorne et al. (2018) \emph{FEVER: a large-scale dataset for fact extraction and verification}; Zhou \& Zafarani (2020) \emph{A survey of fake news}; Kotonya \& Toni (2020) \emph{Explainable automated fact-checking for public health claims}.
+
+\textbf{Explainability}: Ribeiro et al. (2016) \emph{``Why should I trust you?'' -- LIME}; Doshi-Velez \& Kim (2017) \emph{Towards a rigorous science of interpretable ML}; Jacovi \& Goldberg (2020) \emph{faithfully interpretable NLP systems}; Atanasova et al. (2020) \emph{Generating fact checking explanations}.
+
+\textbf{Retrieval-Augmented Generation}: Lewis et al. (2020) \emph{RAG for knowledge-intensive NLP tasks}; Guu et al. (2020) \emph{REALM}; Gao et al. (2023) \emph{RARR: researching and revising what LMs say}.
+
+\textbf{Human-AI interaction e user empowerment}: Shneiderman (2020) \emph{Human-centered AI}; Bansal et al. (2021) \emph{Does the whole exceed its parts? Effect of AI explanations on team performance}.
+
+\textbf{Risorse online}: KURAMi Project (\url{https://kurami.disco.unimib.it}); ACL Anthology (\url{https://aclanthology.org}); Papers With Code (\url{https://paperswithcode.com}).
+
+%% ============================================================
+\section{Polisemia: Complessit\`a, Struttura e Variazioni Multilingue}
+%% ============================================================
+
+\subsection{Introduzione: dalla Disambiguazione alla Complessit\`a}
+
+Nelle lezioni precedenti l'ambiguit\`a lessicale era stata affrontata in termini di \textbf{disambiguazione}: dato un contesto, quale senso \`e quello corretto (WSD)? In questo capitolo si cambia punto di vista: non \emph{come scegliere} il senso corretto, ma:
+
+\begin{quizbox}
+\emph{Quanto \`e complesso il sistema dei sensi di una parola? Come si distribuiscono questi sensi nell'uso reale? Quanto sono separabili tra loro? E come varia tutto questo tra lingue diverse?}
+\end{quizbox}
+
+La polisemia \textbf{non \`e un fenomeno binario}: alcune parole hanno pochi sensi e un significato dominante, altre presentano molti sensi distribuiti in modo relativamente equilibrato; alcune hanno sensi fortemente distinti, altre mostrano confini semantici sfumati. Possiamo quindi considerare la polisemia come una \textbf{propriet\`a graduale, strutturata e misurabile} -- importante perch\'e la complessit\`a polisemica influenza direttamente la difficolt\`a di task come WSD, Machine Translation, Information Retrieval, QA, e l'uso di embeddings contestuali e LLM.
+
+\subsection{Dal Problema della Disambiguazione al Problema della Complessit\`a}
+
+\textbf{La prospettiva tradizionale}: nel paradigma classico della WSD il problema si esprime come $(w, C) \longrightarrow s_i$, dove $w$ \`e una parola, $C$ il contesto, $s_i$ il senso corretto da un inventario. Questa formulazione lascia in ombra domande importanti: perch\'e alcune parole sono molto pi\`u difficili da disambiguare di altre? Il numero di sensi \`e sufficiente a spiegare la difficolt\`a? Conta di pi\`u il numero dei sensi o la loro distribuzione? I sensi sono sempre chiaramente separabili?
+
+\begin{defbox}
+\textbf{La polisemia come complessit\`a intrinseca}: la ricerca recente suggerisce che la difficolt\`a della disambiguazione non dipende solo dai modelli o dai dataset, ma da una propriet\`a pi\`u profonda -- \textbf{la complessit\`a della polisemia \`e una propriet\`a intrinseca della parola e del suo comportamento nell'uso}. Alcune parole sono pi\`u complesse non semplicemente perch\'e hanno ``molti sensi'', ma perch\'e i loro sensi: sono distribuiti in modo pi\`u equilibrato; sono meno facilmente separabili nei contesti reali; presentano relazioni semantiche interne articolate; variano in modo diverso da lingua a lingua.
+\end{defbox}
+
+\subsection{Dimensioni della Polisemia}
+
+\subsubsection{Numero di Sensi}
+
+La misura pi\`u intuitiva: $N(w) = |\{s_1, s_2, \dots, s_n\}|$. Esempi: \textit{oxygen} o \textit{giraffe} hanno profilo quasi monosemico; \textit{bank} o \textit{paper} hanno pochi sensi ma non banali; \textit{run}, \textit{charge}, \textit{set} mostrano polisemia molto elevata. \textbf{Limite}: questa misura \`e insufficiente -- una parola pu\`o avere molti sensi nel dizionario ma usarne abitualmente solo pochi, e le risorse lessicali dipendono dalle scelte di granularit\`a (WordNet distingue sensi che gli umani non percepiscono come nettamente separati).
+
+\subsubsection{Distribuzione dei Sensi}
+
+Due parole con lo stesso numero di sensi possono avere complessit\`a molto diversa: Parola A con due sensi distribuiti 95\%/5\% \`e meno complessa di Parola B con distribuzione 50\%/50\% (deve scegliere tra due interpretazioni \emph{entrambe} plausibili).
+
+\begin{formulabox}
+\textbf{Entropia dei sensi}:
+\[
+H(w) = -\sum_i p(s_i|w)\log p(s_i|w)
+\]
+dove $p(s_i|w)$ \`e la probabilit\`a del senso $s_i$ dato il lemma $w$. \textbf{Interpretazione}: entropia bassa $\to$ un senso dominante; entropia alta $\to$ sensi pi\`u bilanciati; maggiore entropia $\to$ maggiore complessit\`a polisemica.
+\end{formulabox}
+
+\begin{examplebox}
+\textit{school}: nella maggior parte dei casi significa ``istituzione educativa'', il senso ``gruppo di pesci'' \`e raro $\to$ entropia bassa. \textit{bank}: in inglese i sensi ``istituto finanziario'' e ``riva del fiume'' possono essere entrambi rilevanti $\to$ entropia pi\`u alta. \textit{run}: numerosi sensi con distribuzione articolata $\to$ alta complessit\`a.
+\end{examplebox}
+
+\subsubsection{Separabilit\`a Semantica}
+
+Non tutti i sensi sono uguali: alcuni sono semanticamente lontani, altri vicini e sfumati, altri ancora collegati da relazioni regolari (metafora o metonimia). Esempi: \textit{bass} ``pesce'' vs. \textit{bass} ``strumento musicale'' sono sensi molto distanti; \textit{paper} ``materiale''/``documento''/``articolo'' forma una catena di estensioni collegate; \textit{book} indica sia l'oggetto fisico sia il contenuto informativo. \textbf{La polisemia non riguarda solo quanti sensi esistono, ma anche quanto sono vicini o lontani tra loro nello spazio semantico.}
+
+\subsection{Polisemia e Embeddings Contestuali}
+
+\textbf{Dagli embeddings statici agli embeddings contestuali}: nei modelli classici (Word2Vec, GloVe) ogni parola ha un solo vettore -- tutti i sensi vengono ``compressi'' in una singola rappresentazione. Con i modelli contestuali (ELMo, BERT, transformer pi\`u recenti), ogni occorrenza genera un embedding diverso a seconda del contesto: $V(w) = \{v_1, v_2, \dots, v_n\}$, dove ogni $v_i$ \`e la rappresentazione contestuale di un'occorrenza. Questo rende possibile osservare la polisemia come \textbf{distribuzione geometrica} di punti nello spazio vettoriale.
+
+\begin{defbox}
+\textbf{Cluster di senso}: se i contesti che esprimono sensi diversi sono sufficientemente distinti, i vettori tendono a formare cluster separati (sensi ben distinti $\to$ cluster separati; sensi correlati $\to$ cluster vicini; sensi sfumati $\to$ forte sovrapposizione). Esempi: \textit{bass} tende a produrre cluster lontani; \textit{bank} mostra cluster distinguibili ma non sempre del tutto separati; \textit{paper} d\`a una struttura pi\`u continua e sovrapposta.
+\end{defbox}
+
+\begin{formulabox}
+\textbf{Distanza inter-senso} (tra i centroidi dei cluster di sensi $s_i, s_j$):
+\[
+d(s_i, s_j) = 1 - \cos(\vec{s_i}, \vec{s_j})
+\]
+Distanza alta $\to$ sensi ben separati; distanza bassa $\to$ sensi simili o parzialmente sovrapposti.
+\end{formulabox}
+
+\textbf{Overlap contestuale}: anche se due sensi sono separabili \emph{in media}, possono presentare molti casi borderline -- la polisemia va osservata non solo in termini di distanza globale, ma anche di \textbf{confusione locale} tra occorrenze reali.
+
+\subsection{Polisemia e Variazione Multilingue}
+
+\subsubsection{Non Esiste una Polisemia Universale}
+
+Una stessa area semantica pu\`o essere lessicalizzata in modi diversi tra lingue. Esempio classico: inglese \textit{bank} (unica forma) vs. italiano \textit{banca}/\textit{riva} e spagnolo \textit{banco}/\textit{orilla} (forme separate).
+
+\begin{quizbox}
+\textbf{Asimmetrie cross-linguistiche}: la polisemia non \`e solo una propriet\`a della parola, ma anche del modo in cui una lingua organizza il proprio lessico. Lingue diverse possono fondere pi\`u significati in una sola parola, oppure distribuire significati diversi su parole distinte; possono avere profili polisemici simili solo parzialmente; possono presentare convergenze o divergenze influenzate da vicinanza genealogica, tipologica e culturale.
+\end{quizbox}
+
+\textbf{Implicazioni per il NLP multilingue}: queste asimmetrie hanno effetti diretti su machine translation, cross-lingual transfer, allineamento di embeddings multilingui, rappresentazione dei sensi in risorse come BabelNet o WordNet multilingue. Un modello addestrato su una lingua pu\`o trovarsi in difficolt\`a quando incontra, in un'altra lingua, un'organizzazione polisemica diversa da quella appresa.
+
+\subsection{Una Metodologia per Misurare la Complessit\`a della Polisemia}
+
+Si distinguono \textbf{tre livelli di analisi}:
+
+\subsubsection{Livello 1 -- Distribuzione dei Sensi}
+
+Considera la distribuzione empirica dei sensi in corpora annotati. Metriche: numero di sensi attestati; entropia normalizzata; quota del senso pi\`u frequente (\emph{top-1 share}). Permettono di distinguere parole quasi monosemiche, con un senso dominante, con distribuzione equilibrata, o ad alta complessit\`a polisemica.
+
+\subsubsection{Livello 2 -- Separabilit\`a nello Spazio Vettoriale}
+
+Osserva come i sensi si organizzano nello spazio degli embeddings contestuali. Metriche: distanza media tra sensi; overlap contestuale; coesione dei cluster; dispersione intra-senso. Permette di distinguere parole con sensi molti ma facilmente separabili, sensi pochi ma molto confondibili, strutture polisemiche compatte o diffuse/complesse.
+
+\subsubsection{Livello 3 -- Visualizzazione in Spazi Ridotti}
+
+Usa tecniche come UMAP o t-SNE per proiettare gli embeddings in due dimensioni. Non sostituisce l'analisi quantitativa, ma la rende intuitivamente interpretabile: cluster compatti $\to$ struttura semantica stabile; cluster separati $\to$ buona distinguibilit\`a dei sensi; cluster sovrapposti $\to$ polisemia pi\`u sfumata; strutture diverse tra lingue $\to$ differenze nell'organizzazione lessicale.
+
+\subsection{Polisemia e Qualit\`a dei Corpora}
+
+\begin{quizbox}
+\textbf{Distribuzione sbilanciata della complessit\`a}: molti corpora usati per WSD e analisi semantica mostrano un problema ricorrente: contengono molte parole a bassa entropia, sottorappresentano i casi realmente complessi, privilegiano parole frequenti e relativamente stabili. Conseguenza: \textbf{le performance dei sistemi possono essere sovrastimate} se il dataset contiene soprattutto parole facili.
+\end{quizbox}
+
+\textbf{Valutazione pi\`u realistica}: \`e utile costruire benchmark pi\`u bilanciati, che includano parole a bassa, media e alta entropia; parole con diversa separabilit\`a geometrica; casi sia monolingui sia multilingui; parole con senso dominante e parole con sensi distribuiti uniformemente.
+
+\subsection{Effetto della Complessit\`a Polisemica sulla Disambiguazione}
+
+Le metriche di complessit\`a non sono solo descrittive, ma anche \textbf{predittive}. Confrontando un sistema classico (es. Lesk) su parole a bassa e alta complessit\`a: le parole a bassa complessit\`a ottengono accuratezza sensibilmente pi\`u alta; le parole ad alta complessit\`a sono molto pi\`u difficili da trattare; la difficolt\`a non dipende solo dal numero di sensi, ma dalla \textbf{combinazione} di entropia, separabilit\`a e struttura contestuale. La polisemia ha quindi un impatto operativo diretto sulle performance dei sistemi NLP, non solo teorico.
+
+\subsection{Polisemia come Struttura Semantica}
+
+\begin{defbox}
+Un errore frequente \`e pensare alla polisemia come a un problema o un rumore da eliminare. In realt\`a \`e anche una \textbf{risorsa cognitiva e linguistica fondamentale}: non \`e un difetto del lessico, ma una forma di organizzazione del significato. Le estensioni polisemiche seguono spesso principi regolari: \textbf{metafora}, \textbf{metonimia}, \textbf{generalizzazione}, \textbf{specializzazione}, convenzioni culturali e discorsive. Esempi: \textit{head} (testa, capo, cima); \textit{paper} (materiale, documento, articolo); \textit{book} (oggetto fisico e contenuto). Questi sensi non sono arbitrari: riflettono modi sistematici in cui i concetti si estendono e si riorganizzano.
+\end{defbox}
+
+\subsection{Polisemia e Large Language Models}
+
+I modelli generativi attuali non rappresentano esplicitamente i sensi come nodi discreti, ma apprendono regolarit\`a d'uso distribuite su enormi quantit\`a di dati. Questo permette loro di usare spesso correttamente parole polisemiche, adattare il significato al contesto, produrre parafrasi o spiegazioni coerenti. Restano problemi aperti: difficolt\`a con sensi rari; difficolt\`a con sensi molto simili; instabilit\`a nelle disambiguazioni sottili; scarsa trasparenza su come il senso venga effettivamente rappresentato internamente. La quantificazione della complessit\`a polisemica pu\`o quindi diventare anche uno strumento per valutare i limiti dei modelli neurali contemporanei.
+
+\subsection{Conclusione}
+
+\begin{quizbox}
+Il capitolo sposta l'attenzione da una domanda classica (\emph{quale senso \`e corretto?}) a una pi\`u profonda: \emph{com'\`e organizzata la polisemia di una parola, e quanto \`e complessa?} Punti chiave: la polisemia \`e un fenomeno multidimensionale; il numero di sensi non basta a descriverla; la distribuzione dei sensi \`e cruciale e si misura con l'entropia; la separabilit\`a nello spazio degli embeddings fornisce informazione complementare; la polisemia varia tra lingue e non \`e universale; influenza direttamente le performance NLP; tecniche di visualizzazione e metriche quantitative permettono di studiarla in modo sistematico. \textbf{Studiare la polisemia significa osservare il punto in cui il significato smette di apparire come una lista discreta di etichette e comincia a rivelarsi come uno spazio continuo, dinamico e differenziato tra lingue, usi e contesti.}
+\end{quizbox}
+
+\textbf{Domande di riflessione dalle dispense}: Una parola con molti sensi \`e sempre pi\`u complessa di una con pochi sensi? In che modo l'entropia offre una misura pi\`u informativa del semplice conteggio? Qual \`e la differenza tra avere molti sensi e avere sensi molto sovrapposti? La polisemia va rappresentata meglio come inventario discreto o come struttura continua? Perch\'e la polisemia varia tra lingue diverse -- dipende solo dal lessico o anche dalla cultura e dall'uso? I LLM rappresentano davvero i sensi o apprendono soltanto configurazioni contestuali?
+
+\textbf{Bibliografia essenziale}: Kilgarriff (1997) \emph{I don't believe in word senses}; Pustejovsky (1995) \emph{The Generative Lexicon}; Apresjan (1974) \emph{Regular polysemy}; Navigli (2009) \emph{Word sense disambiguation: a survey}; McCarthy et al. (2004) \emph{Finding predominant word senses in untagged text}; Pasini \& Navigli (2020) \emph{XL-WSD}; Miller (1995) \emph{WordNet}; Navigli \& Ponzetto (2012) \emph{BabelNet}; Bond \& Foster (2013) \emph{Linking and extending an open multilingual wordnet}.
+
+%% ============================================================
+\section{Il Problema della Complessit\`a Lessicale: Basic Level}
+%% ============================================================
+
+\subsection{Introduzione}
+
+La ricerca NLP si \`e tradizionalmente concentrata sull'analisi sintattica/grammaticale, relegando lo studio del vocabolario a un ruolo secondario. Ma \textbf{il contenuto semantico \`e incapsulato nelle parole, che possono avere livelli di complessit\`a radicalmente diversi}: non tutte le parole sono create uguali.
+
+\begin{examplebox}
+Due descrizioni della stessa scena: \textbf{Versione 1 (base)}: ``Un \textit{cane} marrone corre nel \textit{parco}.'' \textbf{Versione 2 (avanzata)}: ``Un \textit{canide domestico} dalla \textit{pelliccia fulva} si muove rapidamente attraverso un'\textit{area verde ricreativa urbana}.'' Stessa scena, ma la prima usa parole di \textbf{base} (\textit{cane, parco, correre}), la seconda termini \textbf{avanzati} -- una differenza non meramente stilistica, che riflette distinzioni cognitive, acquisizionali e comunicative profonde.
+\end{examplebox}
+
+\textbf{Perch\'e il basic level \`e importante}: (1) \textbf{acquisizione linguistica} -- i bambini apprendono prima le parole di base (\textit{cane}) e solo dopo iperonimi (\textit{animale}) e iponimi (\textit{barboncino}); (2) \textbf{apprendimento L2} -- gli studenti di lingue straniere hanno bisogno di un vocabolario di \emph{sopravvivenza} per comunicare efficacemente; (3) \textbf{accessibilit\`a comunicativa} -- testi semplificati per persone con disturbi del linguaggio o bassa alfabetizzazione richiedono un vocabolario controllato; (4) \textbf{sistemi NLP} -- Machine Translation, Text Simplification, Summarization, Question Answering beneficiano tutti di una comprensione esplicita della complessit\`a lessicale.
+
+\textbf{Il dinamismo del vocabolario}: a differenza della grammatica (relativamente stabile), il vocabolario \`e in costante evoluzione -- \textbf{neologismi} (\textit{selfie, clickbait, ghosting}), \textbf{shift semantici} (\textit{virale} da biologico a social media), \textbf{specializzazione} (termini tecnici diventano mainstream: \textit{cloud, streaming, podcast}), \textbf{variazione sociolinguistica} (comunit\`a diverse usano vocabolari diversi). Questa dinamicit\`a rende ancora pi\`u cruciale identificare un \emph{nucleo stabile} di parole fondamentali.
+
+\subsection{L'Origine: Roger Brown e la Domanda Fondamentale}
+
+\begin{defbox}
+\textbf{``How Shall a Thing be Called?'' (1958).}
+Lo psicologo Roger Brown pone la domanda: \emph{data un'entit\`a del mondo reale, quale termine linguistico dovremmo usare per riferirci ad essa?} Di fronte a un'immagine mentale di un cane Golden Retriever, potremmo chiamarlo: \textit{Animale} (iperonimo, troppo generico), \textit{Mammifero} (iperonimo, categoria tassonomica), \textbf{\textit{Cane}} (livello base -- scelta naturale), \textit{Golden Retriever} (iponimo, troppo specifico per uso quotidiano), \textit{Rex} (nome proprio, massima specificit\`a). \textbf{Osservazione empirica di Brown}: in contesti neutri, parlanti nativi convergono sistematicamente verso il livello base (\textit{cane}), evitando spontaneamente sia iperonimi troppo vaghi sia iponimi eccessivamente specifici.
+\end{defbox}
+
+\textbf{Criteri di Brown per il Basic Level}: (1) \textbf{brevit\`a} -- parole corte, tipicamente 1-2 sillabe (\textit{cane} vs \textit{canide domestico}; \textit{casa} vs \textit{abitazione residenziale}); (2) \textbf{concretezza} -- riferimento a entit\`a percepibili sensorialmente (\textit{mela} vs \textit{malus domestica}; \textit{tavolo} vs \textit{mobile d'arredo orizzontale}); (3) \textbf{facilit\`a di pronuncia} -- fonologia semplice, assenza di cluster consonantici complessi (\textit{gatto} vs \textit{felino domestico}); (4) \textbf{alta frequenza} -- uso frequente nella lingua parlata e scritta (le parole di base sono tipicamente nel top 5-10\% per frequenza).
+
+\textbf{Il contributo di Rosch: Basic Level Categories} (1970s): Eleanor Rosch estende il lavoro di Brown dal punto di vista cognitivo. Le categorie di livello base sono il livello di astrazione al quale si \textbf{massimizza la distintivit\`a percettiva tra categorie}, si \textbf{massimizza la similarit\`a intra-categoria}, e si \textbf{minimizza lo sforzo cognitivo} di categorizzazione.
+
+\begin{examplebox}
+Esperimento empirico di Rosch (mostrando immagini di mobili): livello \textbf{superordinato} (\textit{mobile}) -- riconoscimento lento, pochi attributi distintivi; livello \textbf{base} (\textit{sedia}) -- riconoscimento rapido, molti attributi distintivi; livello \textbf{subordinato} (\textit{sedia da ufficio ergonomica}) -- riconoscimento lento, attributi ridondanti. Risultato: i partecipanti categorizzano pi\`u velocemente e accuratamente al livello base.
+\end{examplebox}
+
+\subsection{Basic Level vs. Middle Level: Collocazione Gerarchica}
+
+Le parole si organizzano naturalmente in gerarchie tassonomiche, es. nel dominio degli animali: Essere vivente $\to$ Animale (superordinato) $\to$ Mammifero (superordinato) $\to$ \textbf{Cane (LIVELLO BASE)} $\to$ Bassotto (subordinato) $\to$ Bassotto a pelo lungo (subordinato specifico). Il livello base si colloca tipicamente \emph{a met\`a} della gerarchia, da cui il termine alternativo \textbf{middle level}.
+
+\textbf{Sequenza di acquisizione} (studi sullo sviluppo linguistico infantile): \textbf{Fase 1 (12-24 mesi)} -- acquisizione del livello base (``cane'' per tutti i cani, ``palla'' per oggetti sferici, ``auto'' per veicoli); \textbf{Fase 2 (24-36 mesi)} -- espansione verso iperonimi (apprendimento di ``animale'' come categoria superiore, comprensione che cane/gatto/uccello sono tutti animali); \textbf{Fase 3 (3-5 anni)} -- differenziazione subordinata (distinzione tra bassotto, pastore tedesco, barboncino).
+
+\textbf{Asimmetria nella generalizzazione}: i bambini mostrano pattern asimmetrici di over-generalizzazione. \textbf{Over-extension verso l'alto} (rara): un bambino che conosce ``cane'' raramente chiama un gatto ``animale'' invece di cercare un termine pi\`u specifico. \textbf{Over-extension verso il basso} (comune): un bambino che conosce ``cane'' chiama spesso tutti i cani ``cane'', senza distinguere le razze. Questo suggerisce che il livello base \`e il \textbf{punto di ancoraggio cognitivo} da cui si espandono sia generalizzazioni (verso l'alto) sia specificazioni (verso il basso).
+
+\subsection{Definizioni Moderne del Basic Level}
+
+\textbf{Basic English di Ogden (1930)}: C.K. Ogden propose un sistema radicale -- ridurre l'intero vocabolario inglese a \textbf{850 parole fondamentali}, basato su \textbf{minimalismo lessicale} (850 parole sufficienti per esprimere qualsiasi concetto), \textbf{composizionalit\`a} (concetti complessi si costruiscono combinando parole base), \textbf{universalit\`a} (le parole base sono simili tra lingue diverse). Esempio: \textit{physician} (medico, termine avanzato) $\to$ in Basic English ``person who makes sick people well''.
+
+\textbf{Critiche a Ogden}: eccessivamente rigido e prescrittivo; non tiene conto della variazione contestuale; alcune parafrasi diventano innaturalmente lunghe; ignora la dimensione pragmatica (registro, formalit\`a).
+
+\begin{resultbox}
+\textbf{Definizioni di Basic Level nella letteratura recente}:
+\begin{center}
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Approccio} & \textbf{Definizione} \\
+\midrule
+Psicolinguistico & Parole apprese precocemente in L1, prioritarie in L2 \\
+Cognitivo & Termini che massimizzano distintivit\`a percettiva/min. sforzo \\
+Frequenziale & Parole nel top 10\% per frequenza in corpora bilanciati \\
+Comunicativo & Lessico necessario per la ``sopravvivenza sociale'' \\
+Computazionale & Parole con alta inter-annotator agreement, bassa ambiguit\`a \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+\textbf{Basic Vocabulary per la sopravvivenza sociale} (prospettiva influente nei contesti L2): insieme minimo di parole necessarie per soddisfare bisogni primari (cibo, alloggio, salute), interagire in contesti quotidiani, comprendere istruzioni e segnaletica essenziali. Esempi per categoria: \textbf{Salute} (medico, ospedale, dolore, medicina, aiuto); \textbf{Cibo} (acqua, pane, mangiare, fame, ristorante); \textbf{Alloggio} (casa, letto, dormire, bagno, porta); \textbf{Trasporti} (autobus, treno, biglietto, fermare, andare); \textbf{Emergenze} (polizia, pericolo, perso, chiamare, numero). Questa prospettiva enfatizza la dimensione pragmatica e funzionale del basic level.
+
+\subsection{Propriet\`a e Fenomenologia del Basic Level}
+
+\textbf{Il legame termine-concetto: non sempre 1:1}. \textbf{Polisemia e multi-funzionalit\`a}: parole di base possono riferirsi a concetti avanzati in domini specifici. Es. \textit{cane}: senso base = ``mammifero domestico della famiglia dei canidi''; senso avanzato (armeria) = ``nelle armi da fuoco, barretta d'acciaio cilindrica che percuote il detonatore provocando l'accensione della carica di lancio''. \textbf{Implicazione}: il basic level \`e \textbf{domain-dependent} -- \textit{cane} \`e basic nel senso zoologico quotidiano ma advanced/tecnico nel dominio armiero.
+
+\textbf{Lacune lessicali (lexical gaps)}: alcune lingue mancano di termini di livello base per concetti comuni in altre culture. Esempio (colori): italiano ha \textit{blu} (base); il russo distingue \textit{siniy} (blu scuro) vs \textit{goluboy} (blu chiaro) -- due termini base distinti; alcune lingue amazzoniche hanno un solo termine per blu+verde. \textbf{Conseguenza}: il basic level \textbf{non \`e universale}, ma culturalmente e linguisticamente condizionato.
+
+\begin{quizbox}
+\textbf{Soggettivit\`a del Basic Level}: lo studio \emph{Torrielli, Rapp, Di Caro (2023), ``How Shall a Machine Call a Thing?''} ha dimostrato sperimentalmente che la classificazione basic/advanced \`e \textbf{soggettiva}: annotatori umani mostrano significativa variabilit\`a nel giudicare quali termini siano di base.
+\end{quizbox}
+
+\textbf{Fonti di variabilit\`a}: (1) \textbf{background educativo} (un botanico considera ``quercia'' basic, un non-esperto preferisce ``albero''; un informatico usa ``server'' come basic, altri preferiscono ``computer''); (2) \textbf{et\`a} (bambini: vocabolario base pi\`u ristretto; adulti: categoria intermedia pi\`u ampia; anziani: possibile ritorno a vocabolario pi\`u semplice); (3) \textbf{contesto d'uso} (conversazione informale: preferenza per basic; scrittura formale: tendenza verso advanced; comunicazione specialistica: termini tecnici diventano ``basic'' nel dominio); (4) \textbf{L1 vs L2} (parlanti nativi: intuizione naturale del basic level; apprendenti L2: possono sovrastimare la complessit\`a di parole comuni).
+
+\textbf{Implicazioni per l'annotazione}: nei dataset annotati per basicness, l'inter-annotator agreement (IAA) \`e tipicamente \textbf{moderato} (Cohen's $\kappa = 0.4$-$0.6$). Strategie di mitigazione: usare annotatori multipli (5-10 per item), definire linee guida chiare con esempi, calcolare consenso maggioritario, identificare ``borderline cases'' per analisi separate.
+
+\textbf{La definizione di ``Advanced'' per esclusione}: a differenza del basic level, i termini advanced non hanno una definizione positiva consolidata: $\text{Advanced} = \neg \text{Basic}$ -- tutto ci\`o che non \`e basic \`e, per definizione, advanced. Questa definizione negativa \`e problematica perch\'e: (1) \textbf{assume dicotomia} (ignora la gradualit\`a -- alcune parole sono ``moderatamente complesse''); (2) \textbf{manca granularit\`a} (non distingue tra tecnico, formale, raro, arcaico); (3) \textbf{non cattura domini} (``mitocondrio'' \`e advanced in generale ma basic in biologia). \textbf{Proposta alternativa}: modellare la basicness come \textbf{continuum} $[0,1]$ piuttosto che dicotomia -- es. $1.0$: cane, casa, mangiare, acqua; $0.7$: veicolo, abitazione, consumare, liquido; $0.4$: quadrupede, domicilio, ingerire, sostanza idrica; $0.1$: canide, dimora, deglutire, H$_2$O.
+
+\subsection{Applicazioni del Basic Level in NLP}
+
+\textbf{Text Simplification} (l'applicazione pi\`u diretta): pipeline -- identificare termini advanced (es. \textit{dermatologo, dermatite atopica, allergeni ambientali}), sostituire con equivalenti basic (\textit{dermatologo}$\to$``medico della pelle''; \textit{dermatite atopica}$\to$``irritazione della pelle''; \textit{allergeni ambientali}$\to$``cose nell'aria che causano allergie''). Sfide: \emph{loss of precision} (la semplificazione pu\`o perdere informazione), \emph{verbosity} (le parafrasi basic sono spesso pi\`u lunghe), \emph{naturalezza} (sostituzioni automatiche possono risultare innaturali), \emph{domain adaptation} (in contesti medici, ``dermatologo'' potrebbe essere necessario).
+
+\textbf{Second Language Learning}: sequenziamento del vocabolario per livelli CEFR -- A1 (500-800 parole, core basic), A2 (1000-1500, basic esteso), B1 (2000-3000, transizione basic-intermediate), B2 (4000-5000, semi-advanced), C1 (6000-8000, advanced+idiomatico), C2 (10000+, near-native). Sistemi NLP per L2 possono fare \emph{vocabulary profiling} (assegnare livelli di difficolt\`a ai testi), \emph{personalized exercises}, \emph{reading assistance} (glossare automaticamente termini advanced), \emph{writing feedback}.
+
+\textbf{Word Sense Disambiguation (WSD)}: ipotesi -- i sensi basic di parole polisemiche sono pi\`u frequenti e pi\`u facili da disambiguare. Esempio \textit{bank}: Senso 1 base (istituto finanziario, 80\% occorrenze); Senso 2 advanced (riva del fiume, 15\%); Senso 3 advanced (inclinazione aereo, 5\%). Strategia: dare priorit\`a a sensi basic in assenza di contesto disambiguante.
+
+\textbf{Machine Translation (MT)}: preservare il livello di registro -- ``The doctor examined the patient'' (source basic) $\to$ Traduzione 1 (preserva basic): ``Il medico ha visitato il paziente''; Traduzione 2 (eleva registro): ``Il clinico ha esaminato il malato''. Un sistema MT sensibile al basic level dovrebbe preferire la Traduzione 1 in contesti generali. \textbf{Out-of-Vocabulary (OOV) handling}: se basic, alta priorit\`a per trovare traduzione (probabile gap nel modello); se advanced, pu\`o usare translitterazione o parafrasi esplicativa.
+
+\textbf{Summarization}: i riassunti dovrebbero privilegiare vocabolario basic per massimizzare accessibilit\`a -- un riassunto basic-oriented sostituisce termini advanced con equivalenti basic, privilegiando chiarezza su concisione.
+
+\textbf{Health Communication e Language Disorders}: \textbf{afasia} (pazienti con disturbi linguistici post-ictus beneficiano di vocabolario semplificato); \textbf{dislessia} (parole basic facilitano la decodifica fonologica); \textbf{comunicazione medico-paziente} (evitare gergo medico migliora la comprensione); \textbf{informed consent} (documenti legali-medici devono essere accessibili).
+
+\subsection{Metriche e Risorse Computazionali}
+
+\textbf{Come misurare la Basicness} -- sei approcci:
+
+\begin{enumerate}
+  \item \textbf{Frequenza}: $\text{Basicness}_{\text{freq}}(w) = \frac{\text{count}(w)}{\text{total\_tokens}}$, normalizzata con $\log(\text{count}(w)+1)$ per ridurre skewness. Pro: facile da calcolare, buona correlazione con giudizi umani, risorsa-agnostica. Contro: dipendenza dal corpus (news vs conversazione), non distingue polisemia, parole funzionali (\textit{di, a, il}) dominano.
+  \item \textbf{Age of Acquisition (AoA)}: et\`a media a cui una parola viene appresa. $\text{Basicness}_{\text{AoA}}(w) = \frac{1}{\text{AoA}(w)}$. Dataset di Kuperman et al. (2012): \textit{mamma} AoA=1.2 anni (molto basic); \textit{dinosauro} AoA=3.5 anni (basic); \textit{fotosintesi} AoA=11 anni (advanced).
+  \item \textbf{Concreteness}: grado di tangibilit\`a/percepibilit\`a, scala [1,5] -- 5 (massima): pietra, mela, cane; 3 (intermedia): amore, libert\`a, scienza; 1 (minima): ontologia, paradigma, epistemologia. Le parole concrete tendono a essere basic.
+  \item \textbf{Word Length}: $\text{Basicness}_{\text{len}}(w) = \frac{1}{\text{len}(w)}$. Le parole basic sono tipicamente 4-6 caratteri in italiano/inglese.
+  \item \textbf{Semantic Neighborhood Density}: numero di sinonimi/termini correlati. Parola basic (\textit{cane}): molti sinonimi/iponimi (can, cagnolino, cucciolo, bastardo, randagio, bassotto...) $\to$ alta densit\`a. Parola advanced (\textit{coleottero}): pochi sinonimi generici (insetto, scarafaggio) $\to$ bassa densit\`a.
+  \item \textbf{Composite Score}: $\text{Basicness}(w) = \alpha \cdot \log(\text{freq}) + \beta \cdot \frac{1}{\text{AoA}} + \gamma \cdot \text{concr} + \delta \cdot \frac{1}{\text{len}}$, dove $\alpha,\beta,\gamma,\delta$ sono pesi appresi da annotazioni umane.
+\end{enumerate}
+
+\textbf{Risorse e Dataset}: WordNet (organizzazione gerarchica per livelli tassonomici); BabelNet (WordNet multilingue, studi cross-linguistici); AoA Norms (et\`a di acquisizione per migliaia di parole); Concreteness Ratings ($\sim$40k parole inglesi); SUBTLEX (frequenze basate su sottotitoli, pi\`u rappresentative del parlato); CEFR Vocabulary Lists; Simple Wikipedia (versione semplificata con vocabolario controllato).
+
+\subsection{Esperimenti e Annotazione}
+
+\textbf{Task di annotazione Basic/Advanced -- Protocollo}: (1) \textbf{selezione stimoli} (campionare parole da fasce di frequenza diverse, bilanciare parti del discorso, includere concrete e astratte); (2) \textbf{linee guida per annotatori} -- ``Una parola \`e BASIC se: la useresti parlando con un bambino di 6 anni; \`e una delle prime 1000 parole che impareresti in una lingua straniera; pu\`o essere spiegata senza usare termini tecnici. Altrimenti, \`e ADVANCED.''; (3) \textbf{formato}: scala binaria (BASIC/ADVANCED), scala Likert (1-5), o scala continua (slider 0-100); (4) \textbf{calcolo agreement}.
+
+\begin{formulabox}
+\textbf{Cohen's Kappa} per 2 annotatori: $\kappa = \frac{P_o - P_e}{1 - P_e}$, dove $P_o$ = proporzione di accordo osservato, $P_e$ = proporzione di accordo atteso per caso. Interpretazione: $\kappa<0.2$ poor; $0.2$-$0.4$ fair; $0.4$-$0.6$ moderate; $0.6$-$0.8$ substantial; $\geq 0.8$ almost perfect. \textbf{Risultati tipici}: $\kappa = 0.45$-$0.65$ per basicness (moderate agreement).
+\end{formulabox}
+
+\textbf{Modelli supervised per Basicness Prediction}: feature lessicali (lunghezza, affissi derivazionali, POS tag), corpus-based (log-frequenza, document frequency, distribuzione su registri), psicolinguistiche (AoA, concreteness, imageability), semantiche da WordNet (profondit\`a, n. iperonimi/iponimi, n. sensi), embeddings (Word2Vec/FastText, BERT contestualizzato). Modelli: Logistic Regression (baseline interpretabile), Random Forest, Gradient Boosting/XGBoost (tipicamente le migliori performance), Neural Networks (MLP, BERT fine-tuned). Performance tipiche: Accuracy 75-85\%, F1-score 0.72-0.82.
+
+\textbf{Possibile progetto di laboratorio: Ranking di Synset in WordNet}. \textbf{Approccio graph-based}: WordNet \`e un grafo diretto (nodi=synset, archi=relazioni semantiche). Idea: synset basic sono quelli ``centrali'' nel grafo.
+
+\begin{formulabox}
+\textbf{PageRank-based Basicness}: $\text{PR}(s) = (1-d) + d\sum_{s' \in \text{in}(s)} \frac{\text{PR}(s')}{|\text{out}(s')|}$, dove $\text{in}(s)$ = synset che puntano a $s$ (iperonimi), $\text{out}(s')$ = synset a cui $s'$ punta (iponimi), $d$ = damping factor (0.85). Ipotesi: synset con alto PageRank sono pi\`u basic.
+\end{formulabox}
+
+\textbf{Approccio supervised}: (1) annotare un subset di synset per basicness; (2) estrarre feature per ogni synset (depth in hierarchy, number of hyponyms, frequency of lemmas, gloss length/complexity); (3) addestrare un regressore synset $\to$ basicness score $\in [0,1]$; (4) propagare predizioni a tutto WordNet.
+
+\subsection{Sfide Aperte e Direzioni Future}
+
+\textbf{Multilingualit\`a}: il basic level \`e universale o language-specific? \textbf{Ipotesi universalista}: concetti basic (cibo, famiglia, corpo) sono simili tra lingue. \textbf{Evidenza relativista}: lessicalizzazioni variano (colori, parentela, spazio). Serve ricerca comparativa su larga scala con annotazioni parallele.
+
+\textbf{Dinamicit\`a temporale}: il basic vocabulary evolve nel tempo -- ``computer'' (advanced negli anni '60 $\to$ basic oggi), ``smartphone'' (neologismo 2007 $\to$ basic entro 2015), ``telegrafo'' (basic nel 1900 $\to$ arcaico oggi). Sfida: modelli che si adattano dinamicamente, tracciando l'evoluzione diacronica.
+
+\textbf{Context-Dependent Basicness}: la stessa parola pu\`o essere basic o advanced a seconda del contesto -- ``virus'': contesto medico quotidiano = BASIC (``Ho preso un virus''); contesto virologico specialistico = pu\`o essere basic tra esperti ma advanced per il pubblico generale; contesto informatico = BASIC (``virus nel computer''). Direzione futura: modelli contestuali che predicono basicness dato (parola, contesto).
+
+\textbf{Granularit\`a -- oltre la dicotomia}: basic/advanced \`e una semplificazione; serve modellazione pi\`u sfumata: multi-class (BASIC/INTERMEDIATE/ADVANCED/TECHNICAL), continuous (score $\in[0,1]$), multi-dimensional (frequenza d'uso, complessit\`a concettuale, registro stilistico, dominio di specializzazione).
+
+\textbf{Integrazione in LLM}: i LLM potrebbero beneficiare di conoscenza esplicita sul basic level -- \emph{controllable generation} (generare testo con vocabolario di livello specificato), \emph{adaptive explanation} (spiegare concetti complessi usando termini progressivamente pi\`u basic), \emph{audience adaptation}. Approccio possibile: fine-tuning con reinforcement learning, premiando output che rispettano vincoli di basicness.
+
+\subsection{Conclusioni}
+
+\textbf{Ricapitolazione}: (1) \textbf{fondamenti teorici} -- da Roger Brown (1958) a Eleanor Rosch, il basic level \`e un principio cognitivo fondamentale; (2) \textbf{propriet\`a} -- brevit\`a, concretezza, alta frequenza, facilit\`a di apprendimento; (3) \textbf{collocazione gerarchica} -- il basic level come ``middle level'' in tassonomie concettuali; (4) \textbf{variabilit\`a} -- soggettivit\`a, dipendenza dal contesto, non-universalit\`a; (5) \textbf{applicazioni NLP} -- text simplification, L2 learning, MT, WSD, summarization, health communication; (6) \textbf{metriche} -- frequenza, AoA, concreteness, lunghezza, approcci compositi; (7) \textbf{modellazione computazionale} -- classificazione supervised, ranking in WordNet, approcci graph-based.
+
+\begin{quizbox}
+\textbf{Il paradosso del Basic Level}: \`e simultaneamente \textbf{universale} (pattern simili emergono in tutte le lingue e culture) e \textbf{particolare} (le specifiche lessicalizzazioni sono language-specific); \textbf{oggettivo} (correlazioni robuste con metriche misurabili: frequenza, AoA) e \textbf{soggettivo} (variabilit\`a significativa nei giudizi individuali); \textbf{stabile} (parole core restano basic attraverso generazioni) e \textbf{dinamico} (neologismi e arcaismi spostano continuamente i confini). Questa tensione riflette la natura stessa del linguaggio: un sistema contemporaneamente strutturato e fluido, universale e culturalmente situato, biologicamente radicato e socialmente costruito.
+\end{quizbox}
+
+\textbf{Implicazioni per NLP}: non tutte le parole hanno lo stesso status cognitivo e comunicativo. Sistemi NLP che ignorano questa stratificazione lessicale rischiano di produrre output innaturali, inaccessibili o pragmaticamente inappropriati. Incorporare consapevolezza del basic level pu\`o migliorare accessibilit\`a, naturalezza e adattivit\`a dei sistemi.
+
+\textbf{Domande di riflessione}: Il basic level \`e una propriet\`a delle parole o dei concetti? Quanto \`e soggettiva la basicness -- esiste un basic level ``oggettivo'' o solo un'approssimazione statistica? Come cambia il basic level con l'expertise (per un medico, ``ECG'' \`e basic -- relativo alla comunit\`a di pratica)? I LLM hanno una nozione implicita di basic level, o la simulano soltanto? \`E possibile una lingua con sole parole basic (il Basic English di Ogden, 850 parole, \`e davvero sufficiente)? Come evolver\`a il basic level con l'AI?
+
+\textbf{Bibliografia essenziale}: Brown (1958) \emph{How shall a thing be called?}; Rosch et al. (1976) \emph{Basic objects in natural categories}; Lakoff (1987) \emph{Women, Fire, and Dangerous Things}; Ogden (1930) \emph{Basic English}; Nation (2001) \emph{Learning Vocabulary in Another Language}; Coxhead (2000) \emph{A new academic word list}; Kuperman et al. (2012) \emph{Age-of-acquisition ratings for 30,000 English words}; Brysbaert et al. (2014) \emph{Concreteness ratings for 40 thousand English word lemmas}; \textbf{Torrielli, Rapp, Di Caro (2023), ``How Shall a Machine Call a Thing?''} (studio del professore sulla soggettivit\`a della classificazione basic/advanced).
+
+%% ============================================================
+\section{Pre-LLM NLP: dal Text Mining in poi}
+%% ============================================================
+
+\subsection{Introduzione: Perch\'e Studiare il Pre-LLM}
+
+Quando oggi interroghiamo ChatGPT, Claude o GPT-4, tendiamo a dare per scontato ci\`o che sembrano capacit\`a quasi ``magiche''. Ma ogni rivoluzione tecnologica ha radici profonde. Prima dell'avvento degli LLM -- datatabile simbolicamente al 2017 con ``Attention is All You Need'' di Vaswani, ma che esplode realmente nel 2022-23 con ChatGPT -- esisteva un intero universo di tecniche, filosofie e paradigmi che ha reso possibile quella rivoluzione: il \textbf{Pre-LLM NLP}.
+
+\begin{quizbox}
+Questo capitolo non \`e un museo di tecnologie obsolete. \`E una mappa genealogica che traccia come siamo arrivati fin qui -- e perch\'e molte di quelle ``vecchie'' tecniche non sono affatto scomparse, ma continuano a vivere, spesso nascoste sotto la superficie dei sistemi moderni che usiamo quotidianamente. Per capire davvero cosa significhi ``fare NLP'' oggi, dobbiamo chiederci: \emph{cosa abbiamo guadagnato con gli LLM? E cosa, forse, abbiamo perso lungo la strada?}
+\end{quizbox}
+
+\textbf{Il Text Mining: quando i dati divennero protagonisti}. Negli anni '80-'90, mentre la linguistica computazionale classica si concentrava su grammatiche formali scritte a mano da esperti, una comunit\`a parallela inizi\`o a guardare al testo in modo radicalmente diverso: non come manifestazione di regole astratte da codificare, ma come \textbf{fonte di dati} da cui estrarre pattern, tendenze, conoscenza. Nacque cos\`i il Text Mining: applicazione delle tecniche del Data Mining (nate per database strutturati) al linguaggio naturale non strutturato. Era il trionfo del \textbf{bottom-up sul top-down}, dell'empirismo sul razionalismo, dell'induzione sulla deduzione -- e funzionava, su milioni di documenti, su lingue diverse, su domini che nessun linguista avrebbe potuto codificare manualmente.
+
+\subsection{Una Storia in Quattro Atti: l'Evoluzione del NLP}
+
+\begin{defbox}
+\textbf{Atto I -- L'Era Simbolica (1950s-1980s): il sogno della macchina pensante.}
+Se il linguaggio \`e governato da regole (Chomsky), allora possiamo codificare quelle regole e costruire macchine che ``capiscono'' il linguaggio, non lo processano superficialmente. \`E l'epoca di \textbf{ELIZA} (Weizenbaum, 1966), il primo chatbot, che simulava uno psicoterapeuta rogersiano con pattern matching e riformulazioni (``Mi sento triste'' $\to$ ``Perch\'e ti senti triste?'') -- nessuna comprensione reale, solo manipolazione sintattica, eppure molti utenti si convincevano di parlare con un essere pensante. \`E anche l'epoca di \textbf{SHRDLU} (Winograd, 1970), che manipolava blocchi virtuali rispondendo a comandi in inglese naturale -- funzionava perfettamente in quel mondo artificiale ristretto, ma appena fuori da quel dominio il sistema crollava, non generalizzava. \textbf{Limite}: l'approccio simbolico era elegante e teoricamente solido, ma tremendamente fragile -- ogni eccezione grammaticale richiedeva una nuova regola scritta a mano. Eredit\`a viva oggi: l'idea di parsing sintattico, rappresentazione della conoscenza in strutture formali, inferenza logica su proposizioni estratte dal testo (es. i moderni knowledge graph).
+\end{defbox}
+
+\begin{defbox}
+\textbf{Atto II -- L'Era Statistica (1990s-2010s): quando i numeri presero il sopravvento.}
+Gli anni '90 portano processori pi\`u potenti, memorie pi\`u capienti, e soprattutto: \textbf{dati}. Il web esplode da poche migliaia di pagine a miliardi. Nuovo paradigma: invece di codificare faticosamente le regole, lasciare che i modelli le \textbf{imparino} automaticamente dai dati. Nascono gli \textbf{Hidden Markov Models} per il PoS tagging (basta osservare abbastanza esempi, non servono pi\`u regole esplicite per decidere se ``bank'' \`e sostantivo o verbo); le \textbf{Conditional Random Fields} per la NER (il sistema impara da solo che sequenze come ``Barack Obama'' tendono a essere nomi di persona). Nascono i classificatori testuali: \textbf{Naive Bayes} (assume ingenuamente l'indipendenza tra parole -- un'assunzione palesemente falsa -- ma distingue spam da email legittime con accuratezza sorprendente); \textbf{Support Vector Machines} (trovano iperpiani ottimali in spazi a decine di migliaia di dimensioni). E nasce, forse pi\`u importante di tutto, l'idea che il significato delle parole possa essere catturato dalla loro \textbf{distribuzione}: TF-IDF dice che una parola \`e importante in un documento se appare spesso l\`i ma raramente altrove; le matrici di co-occorrenza dicono che due parole sono semanticamente simili se tendono a comparire negli stessi contesti, anche se non compaiono mai nella stessa frase. Questa epoca inventa anche il concetto stesso di \textbf{benchmark}: dataset standardizzati, metriche quantitative riproducibili (precision, recall, F1-score). \textbf{Limite}: tutto resta ancora \textbf{superficiale}. TF-IDF non capisce che ``car'' e ``automobile'' sono sinonimi. Le bag-of-words ignorano completamente l'ordine (``dog bites man'' e ``man bites dog'' sono identiche).
+\end{defbox}
+
+\begin{defbox}
+\textbf{Atto III -- L'Era Neurale Pre-Transformer (2010-2017): il significato come geometria.}
+Intorno al 2010 le reti neurali -- esistenti da decenni ma abbandonate dopo l'``AI winter'' degli anni '80 -- tornano prepotentemente sulla scena, grazie a backpropagation efficiente su GPU sempre pi\`u potenti. Portano con s\'e un'idea rivoluzionaria: il significato delle parole pu\`o essere catturato come \textbf{vettori densi} in uno spazio geometrico ad alta dimensionalit\`a -- non pi\`u vettori sparsi one-hot di 100.000 dimensioni dove ogni parola \`e ortogonale a tutte le altre, ma \textbf{embeddings densi} di 300 dimensioni dove la similarit\`a semantica diventa prossimit\`a geometrica. \textbf{Word2Vec} (Mikolov, 2013) diventa un fenomeno culturale: l'idea \`e disarmante per semplicit\`a -- addestrare una rete a predire parole da contesto (o viceversa) -- e nel processo la rete impara rappresentazioni che catturano relazioni semantiche sorprendenti: $\vec{king}-\vec{man}+\vec{woman}\approx\vec{queen}$, una propriet\`a \emph{emergente} genuina, non un trucco. Il significato non \`e pi\`u una lista di definizioni in un dizionario, n\'e un nodo in un'ontologia costruita a mano: \`e una \textbf{posizione} in uno spazio geometrico, e le relazioni semantiche sono \textbf{direzioni} in quello spazio -- un cambio di paradigma profondo, dalla semantica discreta alla semantica continua, dalla logica alla geometria. Arrivano le \textbf{LSTM}, reti ricorrenti che ``ricordano'' dipendenze lunghe; arrivano i meccanismi di \textbf{attention}. Ma siamo ancora in un mondo dove i task sono separati: un modello per traduzione, uno per sentiment analysis, uno per QA -- non c'\`e ancora l'idea di un modello davvero universale.
+\end{defbox}
+
+\begin{defbox}
+\textbf{Atto IV -- L'Era Transformer e LLM (2017-presente): l'unificazione.}
+Nel 2017 arriva ``Attention is All You Need'' (Vaswani et al.): non servono pi\`u reti ricorrenti complesse, basta attention -- la capacit\`a di metter in relazione ogni parola con ogni altra parola dell'input, in modo parallelo, efficiente, scalabile a sequenze lunghissime. I Transformer scalano in modo che le architetture precedenti non potevano: pi\`u parametri, pi\`u dati, pi\`u compute producono miglioramenti costanti, senza plateau (almeno non ancora trovato). Nel 2018 BERT introduce il \textbf{masked language modeling}: pre-training massiccio + fine-tuning leggero, e batte ogni benchmark esistente, spesso di tanto. Ma \`e \textbf{GPT-3} (2020), con 175 miliardi di parametri su 45TB di testo, a cambiare le regole del gioco: mostra \textbf{few-shot learning} -- imparare nuovi task da pochi esempi nel prompt, senza fine-tuning, senza gradient updates, solo dalla capacit\`a di riconoscere pattern e adattarli al contesto fornito. E quando arrivano ChatGPT (2022), GPT-4 (2023), Claude, vediamo qualcosa che nessuno aveva davvero anticipato: conversazione fluente, contestuale, che sembra ``capire'' intenzioni e sfumature.
+\end{defbox}
+
+\begin{quizbox}
+\textbf{Sembra. Quella parola \`e cruciale.} Sotto la superficie di questa fluidit\`a impressionante restano domande profonde senza risposta definitiva: questi modelli ``capiscono'' davvero il linguaggio? O sono pattern matcher incredibilmente sofisticati che hanno memorizzato cos\`i tanti esempi da poter approssimare comprensione senza possederla realmente? \`E una domanda filosofica che forse trascende la possibilit\`a di risposta empirica.
+\end{quizbox}
+
+\textbf{Il quinto atto ancora da scrivere}: oggi gli LLM dominano titoli di giornale, conferenze, investimenti, sembrano il futuro inevitabile del NLP. Ma sotto questo entusiasmo, una realt\`a pi\`u sfumata: i motori di ricerca di Google usano ancora BM25 (tecnica statistica anni '90) per il retrieval iniziale, prima di chiamare reranker neurali; molte aziende usano ancora SVM o Naive Bayes per classificazione produttiva, non per ignoranza ma perch\'e servono decisioni interpretabili, auditabili, con latenza sotto il millisecondo; le pipeline di sentiment analysis su larga scala usano ancora TF-IDF perch\'e processare 10 milioni di tweet con GPT-4 costerebbe decine di migliaia di dollari e giorni. \textbf{Forse la storia del NLP non \`e una successione di rivoluzioni che cancellano il passato, ma una stratificazione}: ogni epoca aggiunge un layer di capacit\`a, senza necessariamente rimuovere quelli precedenti. Ogni tecnica trova la sua nicchia ecologica dove eccelle.
+
+\textbf{Dove si colloca il Text Mining}: si posiziona decisamente nel campo bottom-up, nato come reazione pragmatica alla fragilit\`a dei sistemi simbolici -- ``cosa possiamo fare con milioni di documenti e tecniche statistiche, senza costruire ontologie a mano?''. Sorprendentemente tanto: raggruppare per tema (clustering), classificare apprendendo pattern dai dati, estrarre termini chiave, riassumere documenti -- tutto attraverso metodi statistici su frequenze, co-occorrenze, distribuzioni. Ma \textbf{il Text Mining intelligente non ignora completamente la conoscenza linguistica}: usa lemmatization, POS tagging, dependency parsing dove serve aggiungere valore reale misurabile. Non \`e purismo metodologico, \`e ingegneria responsabile -- capire \emph{quando} ciascun approccio \`e appropriato, \emph{dove} i suoi punti di forza risolvono problemi reali, e \emph{come} combinarli intelligentemente invece di vederli come filosofie incompatibili in guerra permanente.
+
+\subsection{Dalle Frequenze al Significato: l'Intuizione Distribuzionale}
+
+\begin{defbox}
+\textbf{``You Shall Know a Word by the Company It Keeps'' (Firth, 1957).}
+Questa frase cattura un'idea profonda ma semplice: il significato di una parola non sta in qualche definizione astratta nel cielo platonico delle idee, ma nelle sue \textbf{relazioni d'uso} con altre parole nel linguaggio reale. Se due parole compaiono sistematicamente negli stessi contesti -- se possono essere sostituite l'una con l'altra in molte frasi mantenendo coerenza semantica -- allora probabilmente hanno significati simili. ``Car''/``automobile'', ``dog''/``canine'', ``happy''/``joyful'' non compaiono MAI nella stessa frase (sarebbero ridondanti), ma compaiono in frasi molto simili, con verbi simili, aggettivi simili, contesti simili. \textbf{Paradossalmente}, per capire la similarit\`a semantica non si deve guardare alla co-occorrenza diretta (rarissima tra sinonimi), ma alla similarit\`a dei \emph{pattern} di co-occorrenza con \emph{altre} parole.
+\end{defbox}
+
+\textbf{Dal Vector Space Model agli embeddings: un viaggio concettuale}. Gerard Salton (1974) propone di rappresentare ogni documento come un vettore in uno spazio ad alta dimensionalit\`a, dove ogni dimensione corrisponde a un termine del vocabolario -- la similarit\`a diventa un problema geometrico (coseno dell'angolo tra vettori). TF-IDF raffina pesando i termini per distintivit\`a. Ma tutto questo opera nel paradigma \textbf{sparse}: vettori con 100.000 dimensioni dove il 99\% sono zeri, e ogni dimensione ha un'interpretazione esplicita (corrisponde a una parola specifica). Il salto concettuale -- che arriva negli anni 2000 con LSA e poi esplode con Word2Vec nel 2013 -- \`e passare a rappresentazioni \textbf{dense}: vettori di sole 300 dimensioni, tutte non-zero, dove le dimensioni non corrispondono pi\`u a parole specifiche, ma sono ``direzioni latenti'' che il modello scopre automaticamente. E qui la magia: in questo spazio denso, ``car'' e ``automobile'' finiscono vicini anche se non co-occorrono mai direttamente, perch\'e condividono pattern di contesto.
+
+\begin{quizbox}
+\textbf{Cosa Abbiamo Guadagnato, Cosa Abbiamo Perso (1).}
+Gli embeddings densi hanno portato: \textbf{cattura di sinonimi e relazioni semantiche} senza co-occorrenza diretta; \textbf{analogie emergenti} (king:queen = man:woman come parallelismo geometrico); \textbf{generalizzazione a parole mai viste}; \textbf{compressione dimensionale} (da 100.000 sparse a 300 dense); \textbf{transfer learning} (embeddings pre-addestrati riusabili con pochi dati). Ma abbiamo perso: \textbf{interpretabilit\`a} (le matrici di co-occorrenza erano trasparenti, gli embeddings densi sono opachi -- non puoi guardare la dimensione 47 e dire ``ah, questa cattura l'animatezza''); \textbf{determinismo} (TF-IDF \`e completamente deterministico, Word2Vec ha randomness nell'inizializzazione e nel training); \textbf{verificabilit\`a} (con TF-IDF potevi ispezionare la matrice e capire esattamente perch\'e due documenti risultavano simili; con gli embeddings \`e un mistero dentro trasformazioni non-lineari); \textbf{controllo} (potevi modificare manualmente pesi TF-IDF, con embeddings neurali interventi manuali sono quasi impossibili). Questo pattern -- guadagnare potenza ma perdere trasparenza -- si ripeter\`a ancora pi\`u drammaticamente con BERT, GPT e gli LLM moderni: fino a che punto siamo disposti ad accettare opacit\`a in cambio di capacit\`a? Dipende dall'applicazione (raccomandare film su Netflix \`e diverso da concedere un prestito bancario o diagnosticare una malattia).
+\end{quizbox}
+
+\subsection{I Task del Text Mining: Cosa Cercavamo di Risolvere}
+
+\subsubsection{Clustering: Scoprire Strutture Nascoste}
+
+Problema umano: hai 10.000 documenti, non sai quali temi contengano, non hai tempo di leggerli tutti. Il \textbf{clustering non supervisionato} scopre le categorie guardando solo le similarit\`a tra documenti, senza etichette. Negli anni '80, Stuart Lloyd (Bell Labs) propone \textbf{K-means}: sorprendentemente semplice -- scegli $k$ centroidi casuali, assegna ogni documento al centroide pi\`u vicino, ricalcola i centroidi, ripeti fino a convergenza. \textbf{Problema filosofico}: come sapere se un clustering \`e ``buono''? Nella classificazione supervisionata hai la verit\`a oggettiva (le etichette); nel clustering, manca -- puoi misurare compattezza e separazione, ma sono propriet\`a geometriche che catturano solo \emph{approssimativamente} la ``bont\`a semantica''. Due sistemi di clustering possono produrre partizioni diverse, entrambe geometricamente valide, ma semanticamente una ha senso per gli umani e l'altra no -- non esiste un modo algoritmico puramente automatico per decidere quale sia ``migliore'' senza giudizio umano.
+
+\subsubsection{Classificazione: Apprendere da Esempi Etichettati}
+
+Qui la situazione \`e pi\`u chiara: hai esempi etichettati (5.000 email marcate spam/ham), vuoi un sistema che impari i pattern e classifichi email nuove. Negli anni '90, McCallum dimostra che \textbf{Naive Bayes} (assunzione ingenuamente falsa di indipendenza tra parole) funziona sorprendentemente bene -- cattura comunque segnali statistici forti (``viagra'', ``lottery'' compaiono molto pi\`u in spam). Poi arrivano le \textbf{Support Vector Machines} (Joachims, 1998), che diventano lo standard per un decennio. \textbf{Cosa hanno in comune questi metodi classici con i classificatori neurali moderni}? Pi\`u di quanto sembri: il principio fondamentale resta identico -- \textbf{apprendere pattern da dati annotati}. Ci\`o che \`e cambiato \`e la capacit\`a di catturare pattern non-lineari complessi (BERT ``capisce'' che ``not bad'' \`e positivo anche se contiene ``bad'', perch\'e ha appreso la negazione come trasformazione semantica; Naive Bayes vedrebbe solo ``bad'' e classificherebbe probabilmente negativo). Ma il trade-off interpretabilit\`a vs. performance persiste: con Naive Bayes/SVM lineari puoi ispezionare i pesi; con BERT fine-tuned \`e una scatola nera da 110 milioni di parametri. Per applicazioni regolamentate (medicina, finanza, legale) questa opacit\`a \`e spesso inaccettabile, e SVM/Logistic Regression restano in uso per necessit\`a di accountability, non per ignoranza.
+
+\subsubsection{Summarization: l'Essenza del Testo}
+
+I primi sistemi \textbf{estrattivi} (anni '90-2000) selezionavano le frasi pi\`u ``salienti'' (euristiche: prima frase di ogni paragrafo, frasi con TF-IDF alto, frasi lunghe) e le concatenavano. Nel 2004, Rada Mihalcea propone \textbf{TextRank}: tratta le frasi come nodi di un grafo con archi pesati dalla similarit\`a lessicale, applica PageRank per trovare frasi ``centrali''. Limite fondamentale: i metodi estrattivi potevano solo \textbf{selezionare e riordinare} -- non potevano parafrasare, condensare, fondere informazioni da frasi multiple in una frase nuova pi\`u concisa. I metodi \textbf{astrattivi} (reti neurali seq2seq, 2015-2017) rimasero fantascienza fino a BART e T5 (2019-2020), pre-addestrati su enormi quantit\`a di testo. Ma abbiamo perso qualcosa: i metodi estrattivi erano \textbf{fedeli per costruzione} (copiavano frasi esatte dal testo); i metodi astrattivi possono generare riassunti pi\`u fluidi ma anche dire cose che il documento originale non conteneva. \`E una feature o un bug? Dipende: per legal document summarization \`e un bug; per news aggregation forse \`e una feature.
+
+\subsubsection{Information Retrieval: dal Boolean Search al Semantic Search}
+
+Storia affascinante che riflette tutta l'evoluzione del NLP. Anni '60-'70: \textbf{Boolean search} (query come ``(machine AND learning) OR (neural AND network)'', match rigido binario, nessuna nozione di rilevanza parziale). Anni '70-'90: Salton introduce il VSM e il ranking graduato basato su cosine similarity; \textbf{BM25} di Robertson (anni '90) perfeziona pesando per distintivit\`a e normalizzando per lunghezza documento, diventando lo standard de facto per 25+ anni -- e ancora oggi (2024) Google Search usa BM25 (o varianti) per il primo stage di retrieval su miliardi di pagine, perch\'e \`e velocissimo, deterministico, comprensibile. Anni 2010, con Word2Vec/GloVe: emerge l'idea di \textbf{semantic search} -- query ``automobile'' dovrebbe matchare documenti con ``car'' anche senza sovrapposizione di parole. \textbf{Dense retrieval} (2019-2020): ogni query/documento diventa embedding denso via BERT, similarity = dot product; cattura sinonimia/paraphrasing che BM25 perdeva, ma calcolare similarit\`a contro tutti i documenti non scala oltre 10M documenti senza approssimazioni (ANN). \textbf{Risultato}: i sistemi moderni usano \textbf{pipeline ibride} -- (1) BM25 recupera 1000 candidati (CPU, millisecondi); (2) BERT cross-encoder reranka top-100 (GPU, secondi); (3) GPT-4 genera snippet o risponde direttamente (opzionale). Tecniche di epoche diverse coesistono in simbiosi, ciascuna eccellendo dove le altre sono debili -- non sostituzione, ma stratificazione.
+
+\subsubsection{Topic Modeling: Scoprire Temi Nascosti}
+
+Il ponte pi\`u evidente tra approccio classico e moderno. Diverso dal clustering: non vuoi solo raggruppare documenti simili, vuoi \textbf{caratterizzare} quei gruppi con liste di parole chiave interpretabili.
+
+\textbf{L'era classica -- LDA}: \textbf{Latent Dirichlet Allocation} (Blei, Ng, Jordan, 2003) -- idea probabilistica elegante: ogni documento \`e una ``miscela'' di topic, ogni topic \`e una distribuzione di probabilit\`a su parole (es. un paper potrebbe essere 40\% ``machine learning'', 30\% ``computer vision'', 30\% ``NLP''). Limiti evidenti: opera su bag-of-words (ignora ordine/sintassi); non cattura sinonimia (``car''/``automobile'' parole separate); richiede di specificare $k$ a priori; interpretare i topic richiede ancora giudizio umano.
+
+\textbf{L'era moderna -- BERTopic e Neural Topic Models}: con gli embeddings neurali il paradigma cambia radicalmente -- invece di modellare distribuzioni di parole su topic astratti, si parte da rappresentazioni semantiche dense dei documenti. \textbf{BERTopic} (Grootendorst, 2022) \`e paradigmatico, pipeline ibrida: (1) encoding neurale (BERT/Sentence-BERT); (2) UMAP riduce a 5-10 dimensioni preservando struttura locale; (3) HDBSCAN trova cluster di densit\`a variabile, gestendo outliers; (4) class-based TF-IDF estrae parole pi\`u distintive per ogni cluster (non le pi\`u frequenti in assoluto, ma quelle che \emph{distinguono} quel cluster dagli altri). Risultato: topic molto pi\`u coerenti semanticamente -- documenti su ``autonomous vehicles'' e ``self-driving cars'' finiscono nello stesso cluster anche senza condividere parole.
+
+\begin{examplebox}
+Caso d'uso: 45.000 abstract NLP da ArXiv $\to$ BERTopic. Senza specificare nulla a priori, emergono topic come: \textit{Topic 0}: translation, machine, neural, attention, encoder $\to$ Neural Machine Translation; \textit{Topic 1}: sentiment, opinion, polarity, aspect $\to$ Sentiment Analysis; \textit{Topic 2}: question, answer, retrieval, passage, squad $\to$ Question Answering; \textit{Topic 3}: graph, knowledge, entity, relation, embedding $\to$ Knowledge Graphs. Emersi automaticamente dalla struttura semantica latente, interpretabili guardando le parole chiave.
+\end{examplebox}
+
+\begin{quizbox}
+\textbf{Cosa Abbiamo Guadagnato, Cosa Abbiamo Perso (2): LDA vs. BERTopic.}
+Guadagnato: coerenza semantica (topic pi\`u interpretabili di LDA); robustezza a sinonimi; gestione outliers (documenti fuori tema non forzati in cluster arbitrari); visualizzabilit\`a (mappa concettuale via UMAP 2D); flessibilit\`a (cambiare embedding model cambia granularit\`a catturata). Perso: \textbf{interpretabilit\`a probabilistica} (LDA dava distribuzioni esplicite ``questo documento \`e 40\% topic A''; BERTopic assegna cluster hard, senza probabilit\`a); \textbf{modello generativo} (non puoi ``campionare'' nuovi documenti da un topic come con LDA); \textbf{trasparenza} (perch\'e BERT ha messo questo documento in quel cluster? mistero); \textbf{costi computazionali} (encoding 100k documenti con BERT richiede GPU e ore; LDA scala meglio su CPU). Per collezioni massive dove velocit\`a conta pi\`u di qualit\`a (monitoring social media real-time), LDA pu\`o essere preferibile; per analisi profonde dove coerenza semantica \`e cruciale, i metodi neurali eccellono.
+\end{quizbox}
+
+\subsection{Conclusione: Cosa Abbiamo Imparato, Dove Stiamo Andando}
+
+\textbf{Il paradosso del progresso}: mentre celebriamo (giustamente) la rivoluzione degli LLM, rischiamo di dimenticare le fondamenta su cui quella rivoluzione \`e stata costruita -- e di perdere qualcosa di prezioso. TF-IDF, BM25, Naive Bayes, K-means, TextRank non sono solo acronimi in paper polverosi: sono intuizioni profonde su come estrarre significato da simboli, su come misurare rilevanza senza ``capire'', su come trovare struttura in dati non annotati. Quando BERT usa masked language modeling, sta facendo distributional semantics -- la stessa idea di Firth, solo su scala massiccia. Quando GPT-4 fa in-context learning da pochi esempi, sta facendo una forma di k-NN nei suoi spazi latenti -- come K-means ma infinitamente pi\`u sofisticato. \textbf{Il paradosso}: mentre i metodi specifici evolvono radicalmente, i \textbf{principi sottostanti} mostrano notevole continuit\`a -- l'ipotesi distribuzionale resta valida, il trade-off interpretabilit\`a vs. potenza resta irrisolto, la necessit\`a di valutazione empirica rigorosa resta centrale.
+
+\textbf{Cosa gli LLM hanno risolto (e cosa no)}. \textbf{Risolto (o quasi)}: generalizzazione cross-task (un modello, mille applicazioni senza retraining); comprensione contestuale profonda (sfumature, sarcasmo, implicazioni); few-shot learning; generazione fluente; accessibilit\`a (chiunque pu\`o ``programmare'' con linguaggio naturale). \textbf{Non risolto (o peggiorato)}: \textbf{interpretabilit\`a} (cosa ha imparato GPT-4 nei suoi 1.7 trilioni di parametri? mistero quasi completo); \textbf{controllabilit\`a} (come garantire che non generi contenuti dannosi, falsi, biased? problema aperto); \textbf{efficienza} (TF-IDF classifica 100k documenti in secondi su laptop; GPT-4 richiede cluster GPU e milioni di dollari); \textbf{riproducibilit\`a} (temperature sampling rende output stocastico); \textbf{verit\`a e hallucination} (inventano fatti, citazioni con sicurezza disarmante); \textbf{costi economici ed ecologici} (training GPT-3 ha emesso CO\textsubscript{2} come cinque auto in tutta la loro vita); \textbf{concentrazione di potere} (solo poche corporation possono addestrare frontier models). Progresso innegabile, ma non panacea universale -- e problemi classici (evaluation, bias, fairness, robustness) persistono o si amplificano.
+
+\textbf{La stratificazione, non la sostituzione}: il progresso tecnologico nel NLP raramente \`e sostituzione completa; pi\`u spesso \`e \textbf{stratificazione}. Sistemi reali in produzione nel 2024: Google Search (Stage 1 BM25, Stage 2 reranker neurali, Stage 3 LLM per snippet); classificazione spam (Naive Bayes/SVM per latenza <10ms su milioni di email); sentiment analysis su larga scala (TF-IDF+Logistic Regression: poche ore, \$100 di compute, vs. \$50.000+ e giorni con GPT-4 per accuratezza extra che spesso non vale il costo 500$\times$); sistemi di raccomandazione (Word2Vec su sequenze di acquisti funziona ancora benissimo: ``if it ain't broke, don't fix it''). Non \`e nostalgia, \`e \textbf{pragmatismo ingegneristico}: tool diversi sono ottimali per problemi diversi, constraint diversi, requirement diversi.
+
+\textbf{Quattro lezioni dal passato per il futuro}:
+\begin{enumerate}
+  \item \textbf{L'importanza delle assunzioni esplicite}: i metodi pre-LLM avevano un vantaggio sottovalutato -- le loro assunzioni erano \emph{esplicite} (TF-IDF assume che termini rari siano discriminativi; Naive Bayes assume indipendenza condizionale). Potevano essere sbagliate, ma sapevamo quali fossero -- c'era trasparenza epistemologica. Con gli LLM, le assunzioni sono \emph{implicite}, sepolte in miliardi di parametri ottimizzati da gradient descent stocastico: non sappiamo cosa ha davvero imparato il modello, quali bias ha assorbito, quali scorciatoie spurie usa invece di ragionamento profondo.
+  \item \textbf{Il valore della semplicit\`a}: TF-IDF fu proposto nel 1972; cinquant'anni dopo \`e ancora usato in produzione perch\'e \`e semplice, veloce, deterministico, comprensibile. Non \`e il metodo pi\`u accurato, ma queste propriet\`a valgono spesso pi\`u dell'accuratezza marginale che un modello complesso potrebbe dare -- la complessit\`a ha costi computazionali, manutentivi, di debugging, di deployment, ecologici.
+  \item \textbf{L'illusione della generalit\`a}: ogni epoca del NLP ha avuto il suo ``modello universale'' che prometteva di risolvere tutto (anni '80: sistemi esperti; anni '90: SVM con kernel universali; 2010s: BERT pre-addestrato; 2020s: GPT-4 e few-shot prompting). Ogni volta entusiasmo genuino, ogni volta col tempo si scoprivano limiti e failure mode. GPT-4 \`e straordinariamente versatile, ma metodi specializzati battono ancora i LLM generici su task specifici (NER domain-specific con CRF; parsing sintattico formalmente corretto con parser neurali specializzati; classificazione binaria ad altissimo throughput con SVM ottimizzate).
+  \item \textbf{Il costo nascosto dei dati}: ogni generazione richiede pi\`u dati, pi\`u compute, pi\`u energia, fino a un punto di insostenibilit\`a economica (solo poche corporation possono permetterselo) ed ecologica (emissioni paragonabili a paesi piccoli), e socialmente problematica (dati raschiati dal web senza consenso degli autori -- questioni di copyright, privacy, equit\`a). Per il futuro: investire in metodi \textbf{data-efficient} e \textbf{compute-efficient} (distillation, pruning, quantization), non solo modelli sempre pi\`u grandi.
+\end{enumerate}
+
+\textbf{Guardando avanti: il dialogo tra generazioni}. Il modo migliore per pensare alla relazione tra Pre-LLM NLP e LLM non \`e come successione lineare (vecchio vs. nuovo, obsoleto vs. moderno), ma come \textbf{dialogo continuo} tra approcci complementari. Gli LLM eccellono in generazione fluente, adattamento rapido a nuovi task, comprensione contestuale profonda, ma sono opachi, costosi, stocastici, difficili da controllare. I metodi classici eccellono in efficienza computazionale, interpretabilit\`a, controllabilit\`a, determinismo, deployment leggero, ma sono rigidi e catturano solo pattern superficiali. Il futuro probabilmente sar\`a \textbf{ibridazione intelligente}: LLM per generare candidati creativi, metodi classici per validation e ranking; embeddings neurali per rappresentazione ricca, metriche classiche interpretabili per valutazione; few-shot prompting per prototipazione rapida, fine-tuning supervisionato per deployment produttivo robusto; neural retrieval per recall semantico, BM25 come fallback quando il neurale fallisce o per vincoli di latenza; GPT-4 per task complessi con alta tolleranza a errori, SVM per task semplici con zero tolleranza.
+
+\subsection{Laboratorio LAB-4: Topic Modeling con BERTopic}
+
+\begin{defbox}
+\textbf{Obiettivo}: costruire una pipeline di clustering e topic modeling su un dataset di articoli scientifici, usando embeddings neurali, riduzione dimensionale e algoritmi di clustering denso. L'obiettivo non \`e solo ottenere topic coerenti, ma capire \emph{perch\'e} certe scelte funzionano meglio di altre per questo specifico dominio. \textbf{Dataset}: $\sim$45.000 abstract di paper NLP da ArXiv (\texttt{huggingface.co/datasets/MaartenGr/arxiv\_nlp}), variabili \texttt{Abstracts} e \texttt{Titles}. Scelto perch\'e: abbastanza grande da mostrare pattern statistici robusti, domain-specific (topic interpretabili), moderatamente challenging (linguaggio tecnico e sovrapposizioni tematiche).
+\end{defbox}
+
+\textbf{Pipeline in 5 fasi} (vedi anche Sez.~\ref{sec:bertopic-lab} per l'implementazione concreta svolta e i risultati comparativi):
+\begin{enumerate}
+  \item \textbf{Preprocessing} (opzionale ma consigliato): lowercase, rimozione caratteri speciali/numeri/URL, rimozione stopword domain-specific (``paper'', ``method'', ``propose''), lemmatization vs stemming vs nessuno. Domanda da esplorare: il preprocessing migliora davvero la coerenza, o gli embeddings neurali sono gi\`a robusti al rumore?
+  \item \textbf{Embedding dei documenti}: modello consigliato iniziale \texttt{thenlper/gte-small} (General Text Embeddings, ottimizzato per similarit\`a semantica generale); alternative: \texttt{all-MiniLM-L6-v2} (pi\`u veloce, 384-dim), \texttt{all-mpnet-base-v2} (pi\`u lento, qualit\`a superiore, 768-dim), modelli domain-specific (SciBERT-based).
+  \item \textbf{Riduzione dimensionale con UMAP}: parametri da sperimentare -- \texttt{n\_components} (5 vs 10 vs 15: pi\`u componenti = pi\`u informazione preservata ma clustering pi\`u difficile), \texttt{min\_dist} (0.0 cluster compatti vs 0.1 pi\`u spazio), \texttt{metric} (cosine vs euclidean), \texttt{n\_neighbors} (15 default vs 30 vs 50, controlla balance locale/globale).
+  \item \textbf{Clustering con HDBSCAN}: parametri critici -- \texttt{min\_cluster\_size} (50 vs 100 vs 200: pi\`u alto = cluster pi\`u grandi/stabili ma perdita di granularit\`a), \texttt{cluster\_selection\_method} (``eom''/Excess of Mass vs ``leaf''), \texttt{min\_samples} (controllo rumore).
+  \item \textbf{Topic Modeling con BERTopic}: integra embedding+UMAP+HDBSCAN, estrae keyword interpretabili con c-TF-IDF; esplorazione con \texttt{get\_topic\_info()}, \texttt{get\_topic(n)}, \texttt{get\_representative\_docs(n)}.
+\end{enumerate}
+
+\textbf{Visualizzazione e validazione}: \texttt{visualize\_documents()} (proietta embeddings in 2D colorati per cluster -- cercare cluster compatti e separati, outlier distribuiti o concentrati); \texttt{visualize\_barchart()} (top parole per topic -- validazione qualitativa: le parole hanno senso insieme?); \texttt{visualize\_hierarchy()} e \texttt{visualize\_heatmap()} (relazioni tra topic, utile per capire over-segmentation o under-segmentation).
+
+\textbf{Requisiti e deliverable}: implementare la pipeline completa; sperimentare almeno 3 configurazioni diverse (embedding model, parametri UMAP, parametri HDBSCAN); per ogni configurazione documentare numero di topic, \% outlier, top-5 parole per i 10 topic pi\`u popolati, tempo computazionale; validazione qualitativa su almeno 5 topic (esaminare documenti rappresentativi); confronto critico finale (quale configurazione produce topic pi\`u interpretabili, perch\'e, quali trade-off). Bonus opzionali: dataset alternativo, query-based search, tracking temporale, confronto con LDA classico.
+
+\textbf{Suggerimenti pratici}: iniziare piccolo (5k documenti per debug, poi scalare a 45k); visualizzare sempre (i numeri mentono, gli scatter plot rivelano se i cluster sono arbitrari); leggere documenti random da un cluster invece di fidarsi ciecamente delle parole chiave; pianificare i costi computazionali (embedding di 45k documenti pu\`o richiedere 10-30 minuti su GPU, ore su CPU); usare \texttt{random\_state=42} per riproducibilit\`a (UMAP e HDBSCAN hanno componenti stocastiche); variare un parametro alla volta per capire l'impatto individuale.
+
+\textbf{Domande di riflessione dalle dispense}: L'approccio top-down (simbolico) e bottom-up (statistico) riflettono filosofie diverse sul linguaggio -- quale \`e pi\`u ``corretto'', o \`e la domanda stessa mal posta? TF-IDF cattura importanza senza ``capire'' significato; GPT-4 genera testo che sembra ``capire'' -- cos'\`e davvero ``capire'', \`e una propriet\`a binaria o un continuum? Cosa rende certi che gli LLM non siano solo l'ultimo capitolo di un'illusione ricorrente (di aver finalmente risolto il problema)? I metodi pre-LLM sono ancora usati in produzione non per ignoranza, ma per scelta -- cosa dice questo sui limiti reali (non solo teorici) degli LLM? Se addestrare GPT-5 richiedesse emissioni di CO\textsubscript{2} equivalenti a una nazione di medie dimensioni, sarebbe giustificabile? Word2Vec ha mostrato che analogie semantiche emergono automaticamente da semplice predizione contestuale -- cosa implica sulla natura del significato linguistico?
+
+\textbf{Bibliografia essenziale}: Firth (1957) \emph{A synopsis of linguistic theory}; Harris (1954) \emph{Distributional structure}; Weizenbaum (1966) \emph{ELIZA}; Winograd (1972) \emph{Understanding natural language}; Salton et al. (1975) \emph{A vector space model for automatic indexing}; Robertson \& Walker (1994) \emph{2-Poisson model -- BM25}; Manning et al. (2008) \emph{Introduction to Information Retrieval}; Mikolov et al. (2013) \emph{Distributed representations of words and phrases}.
+
+%% ============================================================
+\section{Retrieval-Augmented Generation: tra Memoria Esterna, Retrieval e LLM}
+%% ============================================================
+
+\subsection{Introduzione}
+
+I LLM sono in grado di generare testo fluido, coerente e spesso sorprendentemente informato. Tuttavia questa capacit\`a nasconde una fragilit\`a strutturale: il loro sapere \`e \textbf{implicito}, distribuito nei parametri, e soprattutto \textbf{non verificabile}. Un modello come GPT non possiede un archivio consultabile -- non pu\`o ``andare a controllare'' una fonte, pu\`o solo produrre la continuazione pi\`u probabile di una sequenza in base a ci\`o che ha appreso durante il training. Quando il modello non ha conoscenza sufficiente su un argomento, \textbf{non si ferma}: continua comunque a generare. \`E qui che emergono le \textbf{allucinazioni}: risposte plausibili ma false, o risposte corrette ma obsolete -- particolarmente critico nei domini specialistici (medico, legale) dove la conoscenza evolve rapidamente. La RAG nasce precisamente come risposta a questo limite: non tenta di rendere il modello ``onnisciente'', ma introduce un principio diverso -- \textbf{separare la capacit\`a di generare linguaggio dalla capacit\`a di accedere alla conoscenza}.
+
+\subsection{Il Problema dell'Aggiornamento}
+
+Esempio concreto: chiediamo a un LLM addestrato fino al 2023 informazioni su eventi del 2024. Il modello non pu\`o sapere cosa \`e accaduto dopo il training cutoff: pu\`o solo inventare una risposta plausibile (allucinazione), ammettere di non sapere (se opportunamente istruito), o generalizzare da pattern simili visti durante il training. \textbf{Nessuna di queste opzioni \`e soddisfacente} per applicazioni che richiedono precisione fattuale. La RAG risolve questo problema fondamentale: invece di affidarsi solo alla memoria parametrica del modello, introduce una memoria esterna aggiornabile, interrogabile e verificabile.
+
+\subsection{Dal Sapere Implicito al Sapere Accessibile}
+
+\begin{defbox}
+Un LLM tradizionale funziona come una \textbf{memoria compressa}: tutto ci\`o che ``sa'' \`e codificato nei pesi del modello, senza accesso selettivo (non possiamo interrogare direttamente i suoi parametri per estrarre un fatto specifico). La RAG introduce una seconda forma di memoria, esplicita e interrogabile. Due livelli: \textbf{memoria parametrica (interna)} -- conoscenza distribuita nei parametri, appresa durante il pretraining, implicita, compressa, difficile da modificare; \textbf{memoria non-parametrica (esterna)} -- documenti, database, collezioni testuali, esplicita, strutturata, facilmente aggiornabile.
+\end{defbox}
+
+\begin{quizbox}
+Il punto cruciale \`e che la risposta non viene pi\`u generata esclusivamente dalla memoria interna, ma \`e il risultato dell'interazione tra queste due fonti. Questo porta a un cambiamento epistemologico profondo: \emph{un modello non deve pi\`u sapere tutto. Deve sapere come trovare ci\`o che non sa.}
+\end{quizbox}
+
+\subsection{Information Retrieval: il Problema del Trovare}
+
+L'IR si occupa di un problema apparentemente semplice: dato un bisogno informativo, trovare i documenti pi\`u rilevanti in una collezione. Un sistema di IR non deve generare una risposta -- deve \emph{selezionare}, da una collezione di documenti, quelli pi\`u pertinenti. Questo introduce una tensione fondamentale tra due dimensioni: \textbf{Precision} (quanto i documenti recuperati sono rilevanti rispetto alla query) e \textbf{Recall} (quanta della conoscenza rilevante disponibile viene effettivamente recuperata).
+
+\begin{formulabox}
+\[
+\text{Precision} = \frac{\text{documenti rilevanti recuperati}}{\text{documenti totali recuperati}}, \qquad
+\text{Recall} = \frac{\text{documenti rilevanti recuperati}}{\text{documenti rilevanti totali}}
+\]
+Esiste un trade-off fondamentale: aumentare il recall spesso significa diminuire la precision, e viceversa.
+\end{formulabox}
+
+\subsubsection{Approcci Classici: TF-IDF e BM25}
+
+\textbf{TF-IDF}: assegna un peso a ogni termine in base a quanto frequentemente appare nel documento (TF) e quanto raramente appare nell'intera collezione (IDF) -- parole comuni (``il'', ``di'') hanno poco valore discriminante, parole rare e specifiche sono pi\`u informative. $\text{TF-IDF}(t,d) = \text{TF}(t,d) \times \log(N/\text{DF}(t))$.
+
+\textbf{BM25} \`e un'evoluzione di TF-IDF che introduce saturazione: dopo un certo punto, aumentare la frequenza di un termine non aumenta significativamente il suo peso. \textbf{Limite di entrambi}: non catturano il significato -- una query su ``auto'' potrebbe non recuperare documenti che parlano di ``automobile'' o ``veicolo'', anche se semanticamente equivalenti (\textbf{vocabulary mismatch}).
+
+\subsection{Semantica Distribuzionale e Retrieval Semantico}
+
+La semantica distribuzionale rappresenta le parole come vettori in uno spazio continuo, dove la vicinanza riflette similarit\`a semantica. La stessa idea si estende ai documenti tramite \textbf{embeddings densi}. In un sistema di \textbf{dense retrieval}, sia la query che i documenti vengono proiettati nello stesso spazio vettoriale ad alta dimensionalit\`a (768 o 1024 dimensioni): (1) la query diventa $\vec{q}\in\mathbb{R}^d$; (2) ogni documento diventa $\vec{d_i}\in\mathbb{R}^d$; (3) si calcola la similarit\`a (tipicamente coseno: $\text{sim}(\vec{q},\vec{d})=\cos(\theta)=\frac{\vec{q}\cdot\vec{d}}{||\vec{q}||\,||\vec{d}||}$, o alternativamente distanza euclidea/dot product); (4) si selezionano i $k$ documenti pi\`u vicini (top-$k$ retrieval).
+
+\subsubsection{Modelli per Dense Retrieval}
+
+\textbf{Sentence-BERT (SBERT)}: variante di BERT con architettura siamese/a triplette, per embeddings di frase confrontabili tramite coseno -- risolve l'inefficienza computazionale di BERT per semantic search/clustering, riducendo il tempo da 65 ore a 5 secondi per 10.000 frasi su STS benchmark. \textbf{DPR (Dense Passage Retrieval)}: encoder BERT duali che mappano query e passaggi in spazio a 768 dimensioni; supera i metodi sparsi come BM25 del 9-19\% in accuracy top-20 per open-domain QA. \textbf{ColBERT}: embeddings contestualizzati a livello di token (non documento); architettura ``late interaction'' con MaxSim, retrieval efficiente su grandi collezioni. \textbf{Contriever}: retrieval denso self-supervised con contrastive learning, senza dati supervisionati; competitivo con BM25 su benchmark BEIR. Questi modelli sono addestrati con un obiettivo \textbf{contrastivo}: massimizzare similarit\`a tra query e documenti rilevanti, minimizzarla con documenti non rilevanti.
+
+\subsection{Architettura RAG: uno Schema Concettuale}
+
+La RAG \`e una composizione di due sistemi: un sistema di retrieval (IR) e un sistema generativo (LLM). Schema generale: Utente $\to$ Query $\to$ Retriever $\to$ Documenti $\to$ LLM $\to$ Risposta. Questo schema lineare nasconde una struttura pi\`u ricca, con \textbf{cinque componenti fondamentali}: (1) \textbf{Document Store} (la collezione di documenti); (2) \textbf{Indexing} (preprocessing e creazione di embeddings); (3) \textbf{Query Processing} (trasformazione della query in embedding); (4) \textbf{Retrieval} (selezione dei documenti pi\`u rilevanti); (5) \textbf{Generation} (sintesi della risposta dal contesto recuperato).
+
+\begin{examplebox}
+\textbf{Esempio completo -- ``Quali sono i sintomi del diabete di tipo 2?''.}
+\textbf{1. Encoding della query}: $\vec{q}=\text{Encoder}(\text{``Quali sono i sintomi...''})$. \textbf{2. Retrieval}: il sistema recupera i 3 documenti pi\`u simili (es. Doc 1 sim=0.89: ``Il diabete di tipo 2 \`e caratterizzato da iperglicemia...''; Doc 2 sim=0.85; Doc 3 sim=0.82). \textbf{3. Costruzione del prompt}: ``Contesto fornito: [Doc 1][Doc 2][Doc 3]. Domanda: [query]. Rispondi basandoti esclusivamente sul contesto fornito sopra.'' \textbf{4. Generazione}: il modello produce una risposta sintetizzata dai 3 documenti -- \textbf{non} \`e pi\`u una semplice continuazione linguistica, ma una sintesi guidata da evidenze documentali.
+\end{examplebox}
+
+\textbf{Varianti architetturali}: \textbf{RAG-Sequence} (ogni documento recuperato genera una risposta separata, poi si aggregano); \textbf{RAG-Token} (a ogni step di generazione si pu\`o re-interrogare il retriever); \textbf{Self-RAG} (il modello decide autonomamente quando invocare il retrieval); \textbf{Iterative RAG} (si alternano cicli di retrieval e generazione per query complesse).
+
+\subsection{Chunking: il Problema della Granularit\`a della Conoscenza}
+
+Non si lavora direttamente con documenti interi, ma con porzioni pi\`u piccole chiamate \textbf{chunk}, per tre motivi: gli LLM hanno limiti di contesto (context window); troppa informazione irrilevante degrada la qualit\`a della risposta (effetto ``dilution''); chunk pi\`u piccoli consentono retrieval pi\`u preciso. Ma questo introduce una nuova versione del problema della granularit\`a, gi\`a visto nella semantica lessicale: \emph{qual \`e la dimensione ``giusta'' di un'unit\`a di significato?} Se i chunk sono troppo piccoli (singole frasi), si perde contesto (una frase isolata pu\`o essere ambigua); se troppo grandi (pagine intere), si introduce rumore e si rischia di superare il context window.
+
+\textbf{Strategie di chunking}: (1) \textbf{chunking fisso} -- dividere ogni $N$ token/caratteri ($N\in[256,512,1024]$ tipicamente, con overlap 10-20\%); semplice e veloce ma ignora la struttura del testo, pu\`o spezzare frasi/concetti; (2) \textbf{chunking strutturale} -- usa i marcatori naturali del testo (paragrafi, sezioni, capitoli); rispetta la struttura logica ma chunk di dimensione molto variabile; (3) \textbf{chunking semantico} -- il pi\`u sofisticato: con una finestra scorrevole, si seleziona una porzione di testo (es. 3 frasi), si divide in due parti, si calcola l'embedding di ciascuna, si calcola la distanza coseno tra i due embedding, e se la distanza supera una soglia si inserisce un confine di chunk (le due parti trattano argomenti diversi $\Rightarrow$ punto naturale di separazione). Questo trasforma il chunking da operazione sintattica a operazione \textbf{semantica}.
+
+\textbf{Metadata enrichment}: arricchire ogni chunk con metadati (titolo, autore, data, sezione, parole chiave), usabili per filtrare risultati (``solo articoli dopo il 2020''), re-rankare (priorit\`a a fonti autorevoli), fornire citazioni nella risposta generata.
+
+\subsection{Vector Database e Scalabilit\`a}
+
+Per rendere il retrieval efficiente su milioni di documenti non si pu\`o calcolare la similarit\`a con ogni chunk uno per uno (troppo lento) -- servono i \textbf{vector database}: FAISS (Meta, open-source, CPU/GPU); Annoy (Spotify, random projection trees); HNSW (grafo navigabile gerarchico); Pinecone/Weaviate/Qdrant (soluzioni managed); ChromaDB (semplicit\`a, integrazione rapida con LLM).
+
+\begin{defbox}
+\textbf{Approximate Nearest Neighbors (ANN).}
+Invece di confrontare la query con tutti gli embedding, si crea una struttura che permette di ``saltare'' regioni dello spazio che sicuramente non contengono i vicini pi\`u prossimi. Es. HNSW costruisce un grafo multi-livello: livelli superiori = navigazione grossolana, salti grandi; livelli inferiori = navigazione fine, salti piccoli. Questo riduce la complessit\`a da $O(n)$ (ricerca lineare) a $O(\log n)$, rendendo possibile il retrieval in real-time anche su dataset enormi.
+\end{defbox}
+
+\subsection{Hybrid Search: Combinazione di Livelli Lessicale e Semantico}
+
+Combina retrieval lessicale (BM25) e semantico (embeddings), sfruttando il fatto che i due approcci hanno punti di forza complementari: BM25 eccellente per keyword esatte, nomi propri, codici, date; semantic search eccellente per concetti, sinonimi, parafrasi.
+
+\begin{formulabox}
+\[
+\text{score}(q,d) = \alpha \cdot \text{BM25}(q,d) + (1-\alpha)\cdot\text{similarity}(\vec{q},\vec{d})
+\]
+dove $\alpha\in[0,1]$ bilancia i due contributi. Alcuni sistemi usano approcci pi\`u sofisticati come il \textbf{re-ranking}: prima si recuperano molti candidati con BM25 (veloce), poi si re-rankano con embeddings (pi\`u accurati).
+\end{formulabox}
+
+\subsection{RAG come Integrazione di Paradigmi}
+
+\begin{quizbox}
+La RAG \`e interessante non solo come tecnica, ma come punto di convergenza tra \textbf{tre grandi paradigmi} della NLP: \textbf{semantica distribuzionale} (rappresentazione vettoriale del significato), \textbf{information retrieval} (selezione di informazione rilevante), \textbf{modelli generativi} (produzione di linguaggio naturale). Pipeline: il significato viene \textbf{rappresentato} (embeddings), \textbf{cercato} (retrieval), \textbf{espresso} (generazione) -- una delle architetture pi\`u complete del panorama attuale.
+\end{quizbox}
+
+\subsection{Evaluation: Misurare la Qualit\`a di un Sistema RAG}
+
+\textbf{Metriche per il retrieval}: Precision@k, Recall@k, \textbf{MRR} (Mean Reciprocal Rank, posizione media del primo documento rilevante), \textbf{NDCG} (Normalized Discounted Cumulative Gain, tiene conto dell'ordine e della rilevanza graduata). \textbf{Metriche per la generazione}: \textbf{Faithfulness} (la risposta \`e supportata dai documenti recuperati?), \textbf{Answer Relevance} (la risposta \`e pertinente alla query?), \textbf{Context Relevance} (i documenti recuperati sono pertinenti?) -- framework come \textbf{RAGAS} forniscono metriche automatiche per questi aspetti. \textbf{End-to-end evaluation}: dataset annotati con (query, risposta corretta, documenti rilevanti); metriche come BLEU/ROUGE (limitate: focus su n-gram overlap); valutazione umana (accuracy, completezza, coerenza); \textbf{LLM-as-a-judge} (usare un LLM forte per valutare le risposte).
+
+\subsection{Limiti e Questioni Aperte}
+
+\begin{quizbox}
+Nonostante i vantaggi, la RAG non elimina le difficolt\`a fondamentali. Il problema principale resta: \emph{il modello non capisce documenti. Li utilizza.} Il retrieval introduce grounding, ma non garantisce comprensione semantica profonda.
+\end{quizbox}
+
+\textbf{Limiti tecnici}: \textbf{dipendenza critica dalla qualit\`a del retrieval} (se il retriever non trova documenti rilevanti, l'LLM non pu\`o generare una buona risposta -- ``garbage in, garbage out''); \textbf{difficolt\`a nel combinare informazioni da fonti multiple} (se la risposta richiede sintesi di informazioni sparse in molti documenti, la RAG fatica); \textbf{limiti della finestra di contesto} (anche con 100k+ token, non possiamo includere intere biblioteche); \textbf{latenza} (il retrieval aggiunge overhead temporale); \textbf{contraddizioni tra fonti} (cosa fare se documenti recuperati si contraddicono?).
+
+\textbf{Problemi aperti}: \textbf{reasoning multi-hop} (query che richiedono concatenare informazioni da step multipli); \textbf{temporal reasoning} (gestire informazioni che cambiano nel tempo); \textbf{bias e fairness} (i documenti possono contenere bias, che vengono amplificati); \textbf{attribution e citation} (come fornire citazioni precise e verificabili).
+
+\subsection{Direzioni Future}
+
+\textbf{Adaptive RAG} (il sistema decide autonomamente quando e come usare il retrieval); \textbf{Multimodal RAG} (integrare testo, immagini, tabelle, codice); \textbf{Conversational RAG} (gestire dialoghi multi-turno con memoria); \textbf{fine-tuning del retriever} (addestrare retriever e generatore end-to-end insieme); \textbf{knowledge editing} (aggiornare selettivamente la conoscenza del modello).
+
+\subsection{Conclusione}
+
+\begin{quizbox}
+La RAG rappresenta una delle evoluzioni pi\`u significative nell'NLP recente. Non sostituisce i modelli generativi, ma li completa. Non elimina le allucinazioni, ma le riduce drasticamente. Non risolve il problema del significato, ma lo riformula in termini pi\`u pragmatici: \emph{il significato non \`e solo ci\`o che un modello ha appreso, ma anche ci\`o che \`e in grado di recuperare e utilizzare nel momento giusto.} Questo sposta l'attenzione dalla rappresentazione statica del significato alla sua \textbf{attivazione dinamica e contestuale} -- apre una nuova direzione per la ricerca: \emph{non pi\`u modelli che sanno tutto, ma sistemi che sanno interagire intelligentemente con la conoscenza.}
+\end{quizbox}
+
+\subsection{Lab-5 (Dispense): Costruire un Sistema RAG su Articoli Scientifici NLP}\label{sec:lab5-overview}
+
+\begin{defbox}
+Le dispense propongono un sistema RAG completo su \texttt{MaartenGr/arxiv\_nlp}, per creare un assistente che risponde a domande sulla letteratura scientifica NLP citando le fonti. \textbf{Setup}: \texttt{datasets, transformers, sentence-transformers, faiss-cpu, torch, accelerate}. \textbf{Step 1}: caricamento dataset, auto-rilevamento colonne titolo/abstract, combinazione titolo+abstract in un unico chunk (semanticamente coesi), metadata separati per citazioni. \textbf{Step 2}: embeddings con \texttt{all-MiniLM-L6-v2} (alternative: \texttt{all-mpnet-base-v2} pi\`u accurato; SciBERT per domini scientifici). \textbf{Step 3}: vector store FAISS \texttt{IndexFlatIP} (ricerca esatta; alternative \texttt{IndexIVFFlat} per clustering+approssimata, \texttt{IndexHNSW} per il miglior rapporto velocit\`a/accuratezza). \textbf{Step 4}: funzione di retrieval top-$k$. \textbf{Step 5}: LLM locale leggero (\texttt{Qwen2.5-0.5B-Instruct}, alternative SmolLM-360M, Phi-2). \textbf{Step 6}: funzione \texttt{rag\_answer} end-to-end -- retrieval $\to$ costruzione contesto (troncato a 1500 caratteri per modelli piccoli) $\to$ prompt con chat template $\to$ generazione (temperature 0.3) $\to$ risposta + sezione fonti.
+\end{defbox}
+
+\textbf{Estensioni possibili}: hybrid search (BM25+embeddings), re-ranking con cross-encoder, evaluation (Precision@k, Recall@k, faithfulness), Self-RAG, interfaccia (Gradio/Streamlit).
+
+\textbf{Takeaway principali delle dispense}: (1) la qualit\`a del retrieval \`e critica -- un cattivo retriever rende inutile anche il miglior LLM; (2) il chunking richiede bilanciamento tra contesto e precisione; (3) l'hybrid search spesso supera gli approcci singoli; (4) i modelli locali (Qwen, Phi) sono alternative valide a OpenAI; (5) la valutazione \`e multidimensionale (retrieval, faithfulness, relevance). \textbf{La RAG trasforma gli LLM da ``oracoli statici'' a ``ricercatori dinamici''}, capaci di accedere, valutare e sintetizzare conoscenza esterna.
+
+\begin{quizbox}
+\textbf{Nota sull'implementazione effettivamente svolta}: il laboratorio concretamente realizzato (vedi Parte II, Sez.~\ref{sec:lab5-detail} e seguenti) usa scelte leggermente diverse da quelle suggerite nelle dispense -- encoder SciBERT (768-dim) invece di MiniLM, LLM \texttt{Phi-3.5-mini-instruct} invece di Qwen, e un confronto sistematico hybrid (BM25+FAISS+RRF) vs. baseline su 5 dimensioni di corpus (1K--44.9K documenti), non presente come tale nelle dispense. Sono scelte implementative equivalenti nello spirito del laboratorio proposto, riportate in dettaglio nella Parte II.
+\end{quizbox}
+
+%% ============================================================
+\part{Laboratori (Dettaglio Implementativo e Risultati)}
+%% ============================================================
+
+%% ============================================================
+\section{Introduzione: Contenuto vs. Forma Lessicale}
+%% ============================================================
+
+\begin{defbox}
+\textbf{Due direzioni nel lessico:}
+\begin{itemize}
+  \item \textbf{Semasiologica} (Forma $\to$ Contenuto): dato un lemma, cerco il suo significato. Direzione classica del dizionario.
+  \item \textbf{Onomasiologica} (Contenuto $\to$ Forma): data una descrizione/definizione, trovo la parola corretta. Problema di \emph{content-to-form retrieval}.
+\end{itemize}
+\end{defbox}
+
+\medskip
+Il percorso del corso copre tre macro-temi:
+\begin{enumerate}
+  \item \textbf{Similarit\`a lessicale/semantica} (Lab 1--2): misure Jaccard e TF-IDF coseno su definizioni umane
+  \item \textbf{Topic Modeling neurale} (Lab 4): pipeline BERTopic per scoperta automatica di argomenti
+  \item \textbf{RAG ibrido} (Lab 5): retrieval aumentato con FAISS semantico + BM25 lessicale + RRF + LLM
+\end{enumerate}
+
+%% ============================================================
+\section{I Quattro Tipi Concettuali}
+%% ============================================================
+
+Nei lab 1 e 2 si lavora su quattro concetti scelti lungo due assi: \textbf{concretezza} (concreto/astratto) e \textbf{specificit\`a} (generico/specifico).
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Tipo} & \textbf{Sigla} & \textbf{Esempio} & \textbf{Concretezza} & \textbf{Specificit\`a}\\
+\midrule
+Concrete Generic   & CG & Albero (Tree)  & Concreto  & Generico \\
+Concrete Specific  & CS & Teiera (Teapot) & Concreto  & Specifico \\
+Abstract Generic   & AG & Musica (Music)  & Astratto  & Generico \\
+Abstract Specific  & AS & Etica (Ethics)  & Astratto  & Specifico \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{defbox}
+\textbf{Caratteristiche per tipo:}
+\begin{itemize}
+  \item \textbf{CG (Albero)}: referente fisico, classe ampia. Definizioni usano vocabolario condiviso (radici, tronco, rami, foglie). Alta coerenza cross-individuale.
+  \item \textbf{CS (Teiera)}: referente fisico specifico, funzione primaria. Vocabolario concentrato su funzione (infusione, versare).
+  \item \textbf{AG (Musica)}: nessun referente fisico, classe ampia. Definizioni variano enormemente: operative, sensoriali, emotive.
+  \item \textbf{AS (Etica)}: nessun referente fisico, dominio filosofico. Alta influenza culturale e contestuale. Eterogeneit\`a massima.
+\end{itemize}
+\end{defbox}
+
+%% ============================================================
+\section{Similarit\`a Lessicale e Semantica (Lab 1)}
+%% ============================================================
+
+\subsection{SimLex -- Indice di Jaccard}\label{sec:simlex}
+
+\begin{formulabox}
+\[
+\text{SimLex}(A, B) = \frac{|A \cap B|}{|A \cup B|}
+\]
+dove $A$ e $B$ sono insiemi di parole lemmatizzate e filtrate (stopwords rimosse) delle due definizioni.
+\end{formulabox}
+
+\textbf{Cosa misura:} sovrapposizione \emph{lessicale} pura -- due testi con stesso significato ma parole diverse $\to$ score basso.
+
+\textbf{Pipeline di preprocessing:}
+\begin{enumerate}
+  \item Lowercase
+  \item Rimozione punteggiatura
+  \item Tokenizzazione (NLTK \texttt{word\_tokenize})
+  \item Rimozione stopwords (NLTK \texttt{stopwords.words('italian')})
+  \item Lemmatizzazione
+  \item Conversione in \texttt{set}
+\end{enumerate}
+
+\begin{codebox}
+\begin{lstlisting}[style=python]
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+import re, string
+
+def preprocess_to_set(text, lang='italian'):
+    text = text.lower()
+    text = re.sub(r'[^\w\s]', '', text)
+    tokens = word_tokenize(text, language=lang)
+    stop = set(stopwords.words(lang))
+    tokens = [t for t in tokens if t not in stop and len(t) > 1]
+    return set(tokens)  # set per Jaccard
+
+def simlex(defA, defB):
+    A = preprocess_to_set(defA)
+    B = preprocess_to_set(defB)
+    if not A and not B:
+        return 0.0
+    return len(A & B) / len(A | B)
+\end{lstlisting}
+\end{codebox}
+
+\subsection{SimSem -- Coseno TF-IDF}
+
+\begin{formulabox}
+\[
+\text{SimSem}(A, B) = \cos(\vec{v}_A, \vec{v}_B) = \frac{\vec{v}_A \cdot \vec{v}_B}{||\vec{v}_A|| \cdot ||\vec{v}_B||}
+\]
+dove $\vec{v}$ \`e la rappresentazione TF-IDF del testo.
+\[
+\text{TF-IDF}(t, d) = \text{TF}(t,d) \times \log\frac{N}{\text{df}(t)}
+\]
+\end{formulabox}
+
+\textbf{Cosa misura:} prossimit\`a \emph{semantica} -- cattura sinonimi e termini correlati che il semplice overlap non coglie.
+
+\begin{codebox}
+\begin{lstlisting}[style=python]
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+def simsem(defA, defB):
+    corpus = [preprocess_text(defA), preprocess_text(defB)]
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(corpus)
+    return cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+\end{lstlisting}
+\end{codebox}
+
+\subsection{Confronto tra coppie -- tutte le combinazioni}
+
+Il codice usa \texttt{itertools.combinations} per calcolare similarit\`a tra tutte le coppie di concetti:
+
+\begin{codebox}
+\begin{lstlisting}[style=python]
+import itertools, csv
+
+concetti = ['Musica', 'Etica', 'Albero', 'Teiera']
+definizioni = {c: [...] for c in concetti}  # lista def per c
+
+risultati = []
+for c1, c2 in itertools.combinations(concetti, 2):
+    for def1, def2 in zip(definizioni[c1], definizioni[c2]):
+        sl = simlex(def1, def2)
+        ss = simsem(def1, def2)
+        risultati.append({'concetto1': c1, 'concetto2': c2,
+                          'simlex': sl, 'simsem': ss})
+
+# salva su CSV
+with open('risultati_similarita.csv', 'w') as f:
+    writer = csv.DictWriter(f, fieldnames=risultati[0].keys())
+    writer.writeheader()
+    writer.writerows(risultati)
+\end{lstlisting}
+\end{codebox}
+
+\subsection{Risultati Lab 1}
+
+\begin{resultbox}
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Concetto} & \textbf{SimLex (Jaccard)} & \textbf{SimSem (Coseno)} \\
+\midrule
+Albero (CG)  & 0.084 & 0.077 \\
+Teiera (CS)  & 0.057 & 0.062 \\
+Etica (AS)   & 0.034 & 0.041 \\
+Musica (AG)  & 0.034 & 0.036 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+\textbf{Osservazioni chiave:}
+\begin{itemize}
+  \item Valori molto bassi ovunque (3--8\%): enorme variabilit\`a del linguaggio naturale anche per lo stesso referente.
+  \item \textbf{Concreto > Astratto}: i concetti fisici hanno referenti che vincolano il vocabolario.
+  \item \textbf{Per i concetti astratti, SimSem > SimLex}: il modello vettoriale allinea sinonimi e termini correlati che la Jaccard pura non vede. Questo dimostra il valore aggiunto della rappresentazione semantica.
+  \item Etica: sebbene \texttt{simlex = simsem = 0.034}, le definizioni condividono \emph{struttura concettuale} nonostante parole diverse.
+\end{itemize}
+
+%% ============================================================
+\section{Content-to-Form: Ricerca Onomasiologica (Lab 2)}
+%% ============================================================
+
+\subsection{Il Task}\label{sec:lab2-impl}
+
+\begin{defbox}
+\textbf{Ricerca onomasiologica}: data una definizione in linguaggio naturale, recuperare il \emph{synset} WordNet corretto.\\[4pt]
+Input: \textit{"Branch of philosophy that studies human behavior by trying to define what is right and wrong"} \\
+Output: \texttt{ethics.n.01}
+\end{defbox}
+
+\`E l'inverso della classica consultazione dizionario: si parte dal concetto/significato per trovare la forma lessicale.
+
+\subsection{Procedura Lab 2}
+
+\begin{enumerate}
+  \item \textbf{Selezione candidati}: per ogni concetto target, 5 synset WordNet candidati con relative glosse (incluse forme alternate e iperonimi)
+  \item \textbf{Preprocessing}: lowercase, rimozione punteggiatura, filtro stopwords su definizione utente E glosse
+  \item \textbf{Vettorizzazione TF-IDF}: l'intero corpus = [definizione\_pulita] + [glosse\_candidate\_pulite]
+  \item \textbf{Coseno}: similarit\`a tra definizione e ogni glossa candidata
+  \item \textbf{Predizione}: synset con score massimo = risposta del sistema
+  \item \textbf{Valutazione}: confronto con synset target
+\end{enumerate}
+
+\begin{codebox}
+\begin{lstlisting}[style=python]
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Per ogni concetto: definizione umana + 5 glosse candidate
+concetti = {
+    'Albero': {
+        'target': 'tree.n.01',
+        'definizioni': [...],  # definizioni degli studenti
+        'candidati': {
+            'tree.n.01': 'a tall perennial woody plant having...',
+            'plant.n.01': 'a living organism lacking the power...',
+            # ... altri 3 candidati
+        }
+    },
+    # ... altri concetti
+}
+
+def content_to_form(defn, glosse_dict):
+    glosse = list(glosse_dict.values())
+    synsets = list(glosse_dict.keys())
+    corpus = [clean(defn)] + [clean(g) for g in glosse]
+
+    vec = TfidfVectorizer()
+    mat = vec.fit_transform(corpus)
+    scores = cosine_similarity(mat[0:1], mat[1:])[0]
+    best_idx = scores.argmax()
+    return synsets[best_idx], scores[best_idx]
+\end{lstlisting}
+\end{codebox}
+
+\subsection{Struttura Genus-Differentia}
+
+\begin{defbox}
+\textbf{Schema Aristotelico}: la migliore strategia definitoria \`e \emph{genus proximum + differentia specifica}:
+\begin{itemize}
+  \item \textbf{Genus}: categoria sovraordinata (spesso corrisponde all'ipernimo WordNet)
+  \item \textbf{Differentia}: propriet\`a che distinguono il concetto dagli altri della stessa classe
+\end{itemize}
+\textbf{Esempio efficace:} \textit{"Branch of philosophy [genus] that studies moral values [differentia]"}\\
+Corrisponde quasi letteralmente alla glossa \texttt{ethics.n.01}: \textit{"the philosophical study of moral values and rules"}
+\end{defbox}
+
+\subsection{Risultati Lab 2}
+
+\begin{resultbox}
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Concetto} & \textbf{Tipo} & \textbf{Accuracy} & \textbf{Score Avg} & \textbf{Score Max} \\
+\midrule
+Albero (CG)  & Concreto/Generico  & 89.3\% & 0.1025 & 0.2919 \\
+Teiera (CS)  & Concreto/Specifico & 71.4\% & 0.1272 & 0.3063 \\
+Etica (AS)   & Astratto/Specifico & 42.9\% & 0.1524 & 0.6295 \\
+Musica (AG)  & Astratto/Generico  & 32.1\% & 0.1298 & 0.3981 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\bigskip
+\textbf{Aggregato per dimensione:}
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Dimensione} & \textbf{Accuracy} & \textbf{Score Avg} \\
+\midrule
+Concreto & 80.4\% & 0.1149 \\
+Astratto & 37.5\% & 0.1411 \\
+Generico & 60.7\% & 0.1162 \\
+Specifico & 57.1\% & 0.1398 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+\textbf{Analisi:}
+\begin{itemize}
+  \item Concetti concreti: 2.1$\times$ pi\`u recuperabili degli astratti. Il referente fisico vincola il vocabolario.
+  \item Definizione migliore per Etica (score 0.63): ``Branch of philosophy that studies human behavior by trying to define what is right and what is wrong, often influenced by historical and sociocultural context.'' -- ha genus-differentia esplicita.
+  \item TF-IDF fallisce su sinonimia: richiede embedding contestuali per i concetti astratti.
+\end{itemize}
+
+%% ============================================================
+\section{Topic Modeling con BERTopic (Lab 4)}
+%% ============================================================
+
+\subsection{Architettura della Pipeline}\label{sec:bertopic-lab}
+
+\begin{defbox}
+\textbf{Pipeline BERTopic} (4 stadi):
+\[
+\text{Documenti} \xrightarrow{\text{1. Embedding}} \xrightarrow{\text{2. UMAP}} \xrightarrow{\text{3. HDBSCAN}} \xrightarrow{\text{4. c-TF-IDF}} \text{Topic interpretabili}
+\]
+\end{defbox}
+
+\subsection{Stadio 1: Embedding}
+
+Ogni documento viene rappresentato come vettore denso semantico tramite un \emph{SentenceTransformer}.
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Modello} & \textbf{Dimensioni} & \textbf{Caratteristiche} \\
+\midrule
+\texttt{thenlper/gte-small} & 384 & Qualit\`a alta, lento su CPU (13.484s) \\
+\texttt{all-MiniLM-L6-v2} & 384 & Compatto, veloce su CPU, comparabile \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Stadio 2: UMAP (Riduzione Dimensionale)}
+
+\begin{defbox}
+\textbf{UMAP} (Uniform Manifold Approximation and Projection): riduce le dimensioni preservando sia struttura locale che globale.
+\begin{itemize}
+  \item \textbf{n\_components}: dimensioni output (meno = pi\`u veloce, meno dettaglio semantico)
+  \item \textbf{n\_neighbors}: dimensione del vicinato locale (basso = focus locale; alto = focus globale)
+  \item \textbf{min\_dist}: distanza minima tra punti (0.0 per clustering; pi\`u alto per visualizzazione)
+  \item \textbf{metric}: ``cosine'' per embedding normalizzati
+\end{itemize}
+Vantaggio su t-SNE: preserva struttura globale oltre a quella locale.
+\end{defbox}
+
+\subsection{Stadio 3: HDBSCAN (Clustering)}
+
+\begin{defbox}
+\textbf{HDBSCAN} (Hierarchical Density-Based Spatial Clustering of Applications with Noise):
+\begin{itemize}
+  \item Identifica cluster di forma arbitraria (non solo sferici)
+  \item Assegna automaticamente outlier all'etichetta $-1$
+  \item \textbf{Non richiede} di specificare il numero di cluster a priori
+  \item Parametro chiave: \textbf{min\_cluster\_size} -- dimensione minima cluster
+\end{itemize}
+\end{defbox}
+
+\subsection{Stadio 4: c-TF-IDF (Estrazione Keywords Topic)}
+
+\begin{formulabox}
+\[
+c\text{-TF-IDF}(t, c) = \frac{\text{freq}(t, c)}{|c|} \times \log\frac{N_{\text{docs}}}{|\{d : t \in d\}|}
+\]
+dove $c$ \`e il cluster (topic), non il singolo documento.
+\end{formulabox}
+
+Differenza da TF-IDF classico: la frequenza viene calcolata \emph{all'interno del cluster} come contesto, non del singolo documento. Produce keyword interpretabili e specifiche per ogni topic.
+
+\subsection{Configurazioni Testate}
+
+\begin{center}
+\begin{tabular}{llccc}
+\toprule
+ & \textbf{Modello} & \textbf{UMAP} & \textbf{HDBSCAN} & \textbf{Effetto} \\
+\midrule
+Config 1 (base)   & gte-small   & comp=5, neigh=15  & mcs=50  & Bilanciato \\
+Config 2 (fine)   & MiniLM-L6   & comp=10, neigh=10 & mcs=30  & Granulare \\
+Config 3 (coarse) & MiniLM-L6   & comp=5, neigh=30  & mcs=150 & Grossolano (fallimento) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Risultati Comparativi}
+
+\begin{resultbox}
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Metrica} & \textbf{Config 1} & \textbf{Config 2} & \textbf{Config 3} \\
+\midrule
+\# Topic (escl. $-1$) & 151 & 171 & 49 \\
+Outlier count         & 14.357 & 12.747 & 14.899 \\
+Outlier \%            & 31.9\% & 28.4\% & 33.1\% \\
+Runtime               & $\sim$3h 47m & $\sim$17m 30s & $\sim$11m \\
+\midrule
+Topic 0 keywords & speech, asr, recognition & dialogue, response, conv. & dialogue, \textbf{the}, \textbf{to}, \textbf{and} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+\textbf{Analisi failure mode Config 3:}
+
+\begin{itemize}
+  \item \texttt{min\_cluster\_size=150}: cluster troppo grandi e tematicamente eterogenei
+  \item Il c-TF-IDF non riesce a estrarre segnale discriminativo: le stopwords emergono nel top-5
+  \item Solo 49 topic (vs. 151--171 degli altri) con outlier percentuale paradossalmente pi\`u alta
+  \item \textbf{Lezione}: parametri troppo grossolani $\to$ perdita di interpretabilit\`a
+\end{itemize}
+
+\textbf{Config 2 (raccomandata per CPU):}
+
+\begin{codebox}
+\begin{lstlisting}[style=python]
+from sentence_transformers import SentenceTransformer
+from bertopic import BERTopic
+from umap import UMAP
+from hdbscan import HDBSCAN
+
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+umap_model  = UMAP(n_components=10, n_neighbors=10,
+                   min_dist=0.0, metric='cosine')
+hdbscan_model = HDBSCAN(min_cluster_size=30,
+                        cluster_selection_method='eom',
+                        prediction_data=True)
+
+topic_model = BERTopic(
+    embedding_model=embedding_model,
+    umap_model=umap_model,
+    hdbscan_model=hdbscan_model,
+    language="english",
+    verbose=True
+)
+
+topics, probs = topic_model.fit_transform(docs)
+print(topic_model.get_topic_info().head(10))
+\end{lstlisting}
+\end{codebox}
+
+Dataset: \texttt{MaartenGr/arxiv\_nlp} (HuggingFace) -- 44.949 abstract di paper NLP.
+
+%% ============================================================
+\section{RAG: Retrieval-Augmented Generation}
+%% ============================================================
+
+\subsection{Architettura Generale}\label{sec:lab5-detail}
+
+\begin{defbox}
+\textbf{RAG} combina un \emph{retriever} (recupera documenti rilevanti) con un \emph{generatore} (LLM che risponde basandosi sul contesto):
+\[
+\text{Query} \to \underbrace{[\text{Retriever}]}_{\text{top-}k\text{ docs}} \to \underbrace{[\text{Context Assembly}]}_{\text{concatenazione}} \to \underbrace{[\text{LLM}]}_{\text{risposta}} \to \text{Answer}
+\]
+
+\textbf{Vantaggi rispetto a LLM standalone:}
+\begin{itemize}
+  \item Accesso a conoscenza esterna e aggiornabile senza retraining
+  \item Riduzione delle \emph{allucinazioni} (risposta ancorata ai documenti)
+  \item Possibilit\`a di citare le fonti
+  \item Adattabile a domini specifici
+\end{itemize}
+\end{defbox}
+
+\subsection{Retrieval Semantico con FAISS + SciBERT}
+
+\begin{defbox}
+\textbf{FAISS} (Facebook AI Similarity Search): libreria per nearest-neighbor efficiente su vettori densi.
+\begin{itemize}
+  \item \textbf{IndexFlatIP}: inner product search su vettori normalizzati = cosine similarity
+  \item Vettori: SciBERT (\texttt{allenai/scibert\_scivocab\_uncased}), 768 dimensioni
+  \item SciBERT: BERT pre-trained su 1.14M paper scientifici (Semantic Scholar)
+\end{itemize}
+\end{defbox}
+
+\begin{formulabox}
+\[
+\text{Cosine}(q, d) = \frac{\vec{q} \cdot \vec{d}}{||\vec{q}|| \cdot ||\vec{d}||} \quad \text{(equivalente a inner product su vettori normalizzati)}
+\]
+\end{formulabox}
+
+\textbf{Punti di forza}: cattura relazioni semantiche e sinonimi\\
+\textbf{Limiti}: impreciso su termini tecnici esatti (acronimi, nomi di algoritmi)
+
+\subsection{Retrieval Lessicale con BM25}\label{sec:bm25-lab}
+
+\begin{formulabox}
+\textbf{BM25} (Best Match 25):
+\[
+\text{BM25}(D,Q) = \sum_{i} \text{IDF}(q_i) \cdot \frac{f(q_i,D) \cdot (k_1+1)}{f(q_i,D) + k_1 \cdot \left(1 - b + b \cdot \frac{|D|}{\text{avgdl}}\right)}
+\]
+\[
+\text{IDF}(q_i) = \log\frac{N - n(q_i) + 0.5}{n(q_i) + 0.5}
+\]
+dove $k_1 = 1.5$, $b = 0.75$, $N$ = dimensione corpus, $n(q_i)$ = doc frequency del termine.
+\end{formulabox}
+
+\begin{itemize}
+  \item \textbf{Saturazione}: l'effetto della frequenza del termine raggiunge un plateau (parametro $k_1$)
+  \item \textbf{Normalizzazione per lunghezza}: documenti lunghi non avvantaggiati ingiustamente (parametro $b$)
+  \item Molto veloce (nessuna inferenza neurale)
+\end{itemize}
+
+\textbf{Punti di forza}: preciso su vocabolario tecnico (acronimi, termini specifici)\\
+\textbf{Limiti}: nessuna comprensione semantica (sinonimi = miss), sensibile alla distribuzione del vocabolario
+
+\subsection{Hybrid Search: Reciprocal Rank Fusion (RRF)}\label{sec:rrf-lab}
+
+\begin{defbox}
+\textbf{Problema}: FAISS e BM25 hanno punteggi non confrontabili (cosine $\in [0,1]$ vs score BM25 $\in \mathbb{R}^+$).\\
+\textbf{Soluzione}: combinare le \emph{classifiche} (rankings) anzich\'e i punteggi assoluti.
+\end{defbox}
+
+\begin{formulabox}
+\[
+\text{RRF}(d) = \sum_{r \in R} \frac{1}{k + \text{rank}_r(d)}
+\]
+dove $R$ = insieme dei retriever, $k = 60$ (costante di smorzamento standard).
+\end{formulabox}
+
+\textbf{Perch\'e funziona:}
+\begin{itemize}
+  \item Robusto all'eterogeneit\`a degli score
+  \item Favorisce documenti in cima a pi\`u classifiche (complementariet\`a)
+  \item Nessun tuning manuale di pesi relativi
+  \item Semplice e interpretabile
+\end{itemize}
+
+\textbf{Procedura Lab 5:}
+\begin{enumerate}
+  \item BM25: top-20 per score lessicale
+  \item FAISS: top-20 per cosine similarity semantica
+  \item RRF: somma $\frac{1}{k+\text{rank}}$ per ogni documento nelle due liste
+  \item Re-ranking per score RRF finale, restituire top-$k$
+\end{enumerate}
+
+\begin{codebox}
+\begin{lstlisting}[style=python]
+from rank_bm25 import BM25Okapi
+import faiss, numpy as np
+
+# Inizializzazione
+tokenized_docs = [doc.lower().split() for doc in documents]
+bm25 = BM25Okapi(tokenized_docs)
+faiss_index = faiss.IndexFlatIP(768)
+faiss_index.add(embeddings_normalized)
+
+def hybrid_retrieve(query, k=5, k_rrf=60):
+    # BM25 retrieval
+    bm25_scores = bm25.get_scores(query.lower().split())
+    bm25_top = np.argsort(bm25_scores)[::-1][:20]
+
+    # FAISS retrieval
+    q_emb = encode_and_normalize(query)
+    _, faiss_top = faiss_index.search(q_emb, 20)
+    faiss_top = faiss_top[0]
+
+    # Reciprocal Rank Fusion
+    rrf_scores = {}
+    for rank, idx in enumerate(bm25_top):
+        rrf_scores[idx] = rrf_scores.get(idx, 0) + 1/(k_rrf + rank + 1)
+    for rank, idx in enumerate(faiss_top):
+        rrf_scores[idx] = rrf_scores.get(idx, 0) + 1/(k_rrf + rank + 1)
+
+    sorted_docs = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
+    return [documents[i] for i, _ in sorted_docs[:k]]
+\end{lstlisting}
+\end{codebox}
+
+\subsection{Componenti del Sistema (Lab 5)}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Componente} & \textbf{Implementazione} \\
+\midrule
+Dataset & \texttt{MaartenGr/arxiv\_nlp} (44.949 abstract NLP) \\
+Encoder & \texttt{allenai/scibert\_scivocab\_uncased} (768-dim) \\
+Semantic Index & FAISS \texttt{IndexFlatIP} \\
+Lexical Retriever & \texttt{BM25Okapi} (\texttt{rank-bm25}) \\
+Fusion & Reciprocal Rank Fusion ($k=60$) \\
+LLM Generator & \texttt{microsoft/Phi-3.5-mini-instruct} (3.8B param) \\
+Max tokens gen. & 300 \\
+Temperature & 0.3 (quasi deterministico) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Prompt template:}
+\begin{codebox}
+\begin{lstlisting}[style=python]
+system_prompt = (
+    "You are an expert NLP research assistant. "
+    "Answer ONLY based on the provided context. "
+    "Cite the papers you use."
+)
+context_text = "\n\n".join([doc[:200] for doc in retrieved_docs[:5]])
+context_text = context_text[:3000]  # troncamento a 3000 char
+
+messages = [
+    {"role": "system", "content": system_prompt},
+    {"role": "user",   "content": f"Context:\n{context_text}\n\nQuestion: {query}"}
+]
+\end{lstlisting}
+\end{codebox}
+
+%% ============================================================
+\section{Metriche di Valutazione (Lab 5)}
+%% ============================================================
+
+\subsection{Precision@K}\label{sec:metriche-lab5}
+
+\begin{formulabox}
+\[
+P@K = \frac{|\text{documenti rilevanti nei top-}K|}{K}
+\]
+\end{formulabox}
+Un documento \`e ``rilevante'' se il titolo contiene almeno una keyword del Gold Standard.
+
+\textbf{Gold Standard Lab 5} -- 5 query NLP con keyword attese:
+\begin{itemize}
+  \item ``BERT / self-attention'' $\to$ keyword: bert, attention, transformer, self-attention
+  \item ``word2vec'' $\to$ keyword: word2vec, word embeddings, word vectors
+  \item ``machine translation'' $\to$ keyword: translation, multilingual, parallel corpus
+  \item ``topic modeling'' $\to$ keyword: topic, lda, latent dirichlet
+  \item ``named entity recognition'' $\to$ keyword: ner, named entity, entity recognition
+\end{itemize}
+
+\subsection{Context Relevance (CR)}
+
+\begin{formulabox}
+\[
+\text{CR} = \frac{1}{|R|} \sum_{d \in R} \cos\!\left(\text{emb}(q),\, \text{emb}(d[:200])\right)
+\]
+\end{formulabox}
+Allineamento semantico medio tra query e snippet dei documenti recuperati.
+
+\subsection{Answer Relevance (AR)}
+
+\begin{formulabox}
+\[
+\text{AR} = \cos\!\left(\text{emb}(q),\, \text{emb}(\text{risposta})\right)
+\]
+\end{formulabox}
+Misura se la risposta generata rimane centrata sulla query.
+
+\subsection{Faithfulness (FF)}
+
+\begin{formulabox}
+\[
+\text{FF} = \frac{|\{w \in \text{answer}: w \in \text{context}\}|}{|\text{answer\_content\_words}|}
+\]
+\end{formulabox}
+Proxy lessicale: quante parole di contenuto della risposta compaiono nel contesto recuperato. Alta FF = risposta ancorata ai documenti (meno allucinazioni).
+
+\subsection{Robustness}
+
+\begin{formulabox}
+\[
+\text{Rob} = \frac{1}{|P|} \sum_{p \in P} \frac{|R_5(q) \cap R_5(p)|}{5}
+\]
+\end{formulabox}
+Overlap tra risultati per query originale e parafrasi. Alta robustezza = retrieval stabile a riformulazioni.
+
+%% ============================================================
+\section{Risultati Lab 5: Esperimento Multi-Corpus}
+%% ============================================================
+
+\subsection{Disegno Sperimentale}
+
+Variare la dimensione del corpus: $N \in \{1.000, 5.000, 15.000, 25.000, 44.949\}$
+
+\subsection{Tabella Risultati Completa}
+
+\begin{resultbox}
+\begin{center}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{N} & \textbf{Metrica} & \textbf{Base (FAISS)} & \textbf{Hybrid (RRF)} & $\Delta$ & \textbf{\% Migl.}\\
+\midrule
+\multirow{4}{*}{1K}   & P@5   & 0.160 & 0.400 & +0.240 & +150\% \\
+                       & CR    & 0.716 & 0.718 & +0.001 & trascur. \\
+                       & AR    & 0.697 & 0.684 & -0.014 & -2\% \\
+                       & FF    & 0.516 & 0.588 & +0.072 & +14\% \\
+\midrule
+\multirow{4}{*}{5K}   & P@5   & 0.240 & 0.560 & +0.320 & +133\% \\
+                       & CR    & 0.724 & 0.714 & -0.010 & -1.4\% \\
+                       & AR    & 0.687 & 0.674 & -0.014 & -2\% \\
+                       & FF    & 0.572 & 0.667 & +0.095 & +16.6\% \\
+\midrule
+\multirow{4}{*}{15K}  & P@5   & 0.160 & 0.520 & +0.360 & +225\% \\
+                       & CR    & 0.713 & 0.719 & +0.007 & +1\% \\
+                       & AR    & 0.686 & 0.667 & -0.018 & -2.6\% \\
+                       & FF    & 0.562 & 0.647 & +0.084 & +15\% \\
+\midrule
+\multirow{4}{*}{25K}  & P@5   & 0.200 & 0.440 & +0.240 & +120\% \\
+                       & CR    & 0.720 & 0.730 & +0.010 & +1.4\% \\
+                       & AR    & 0.679 & 0.682 & +0.003 & +0.4\% \\
+                       & FF    & 0.560 & 0.587 & +0.027 & +4.8\% \\
+\midrule
+\multirow{4}{*}{44.9K} & P@5  & 0.120 & 0.360 & +0.240 & +200\% \\
+                        & CR   & 0.719 & 0.726 & +0.007 & +1\% \\
+                        & AR   & 0.678 & 0.666 & -0.012 & -1.8\% \\
+                        & FF   & 0.496 & 0.569 & +0.074 & +14.9\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+\subsection{Analisi Critica dei Risultati}
+
+\textbf{1. P@5: miglioramento sistematico del Hybrid}
+
+L'approccio ibrido migliora consistentemente la P@5 su tutte le dimensioni corpus (+120\% a +225\%). BM25 recupera paper con acronimi tecnici esatti (NER, LDA, word2vec) che i soli embedding tendono a generalizzare.
+
+\textbf{2. P@5 non monotona con la dimensione del corpus}
+\begin{itemize}
+  \item Picco a $N=5.000$ (P@5 hybrid = 0.560)
+  \item Declino a $N=44.949$ (P@5 hybrid = 0.360)
+  \item Spiegazione: corpus piccolo = paper rilevanti concentrati, alta densit\`a. Corpus grande = spazio raro, segnale di rilevanza diluito, pi\`u candidati competono
+\end{itemize}
+
+\textbf{3. CR e AR: differenze minime}
+
+CR e AR sono costruiti su embedding SciBERT (usato da entrambi i sistemi). BM25 porta documenti lessicalmente precisi ma semanticamente pi\`u dispersi $\to$ leggero calo AR nel hybrid.
+
+\textbf{4. Faithfulness: miglioramento consistente}
+
+I documenti BM25 contengono i termini esatti della query $\to$ il LLM li riusa nell'answer $\to$ maggiore overlap lessicale answer-context. Questo \`e particolarmente utile nei domini tecnici dove il vocabolario \`e vincolato.
+
+\textbf{5. Robustness: declino catastrofico con la scala}
+
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+\textbf{N docs} & \textbf{Robustness (overlap@5)} \\
+\midrule
+1.000   & 0.233 (23.3\%) \\
+5.000   & 0.100 (10.0\%) \\
+15.000  & 0.033 (3.3\%) \\
+25.000  & 0.000 (0.0\%) \\
+44.949  & 0.033 (3.3\%) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+In corpus piccoli pochi paper dominanti $\to$ le parafrasi recuperano gli stessi. In corpus grandi lo spazio \`e denso di candidati vicini $\to$ una minima riformulazione cambia completamente i top-5. Soluzioni: query expansion, ensemble retriever, re-ranking gerarchico.
+
+\textbf{6. Precision per query (hybrid)}
+\begin{center}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Query} & 1K & 5K & 15K & 25K & 44.9K \\
+\midrule
+BERT/self-attention & 0.20 & 0.40 & 0.40 & 0.00 & 0.20 \\
+word2vec            & 0.40 & 0.60 & 0.60 & 0.60 & 0.40 \\
+machine translation & 0.20 & 0.40 & 0.60 & 0.60 & 0.40 \\
+topic modeling      & 0.40 & 0.60 & 0.20 & 0.20 & 0.20 \\
+named entity recog. & 0.80 & 0.80 & 0.80 & 0.80 & 0.60 \\
+\midrule
+\textbf{Media}      & \textbf{0.40} & \textbf{0.56} & \textbf{0.52} & \textbf{0.44} & \textbf{0.36} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+``Named entity recognition'' \`e il top performer stabile: acronimo NER molto specifico, BM25 lo identifica bene. ``BERT/self-attention'' instabile (0.00 a 25K): entrambi i termini sono ubiqui nel corpus NLP.
+
+%% ============================================================
+\section{Confronto Approcci: Tabella Sinottica}
+%% ============================================================
+
+\begin{center}
+\begin{tabular}{p{2.8cm}p{3.5cm}p{3.5cm}p{3.5cm}}
+\toprule
+\textbf{Aspetto} & \textbf{TF-IDF/Jaccard (Lab 1-2)} & \textbf{BERTopic (Lab 4)} & \textbf{RAG Hybrid (Lab 5)} \\
+\midrule
+\textbf{Task} & Misura similarit\`a definizioni; recupero onomasiologico & Scoperta automatica topic & Risposta a domande su corpus \\
+\midrule
+\textbf{Rappresentazione} & Vettori sparsi (BoW / TF-IDF) & Embedding densi + riduzione dim & Embedding densi (FAISS) + sparsi (BM25) \\
+\midrule
+\textbf{Semantica} & Limitata (no sinonimi) & Alta (SentenceTransformer) & Alta semantica + alta precisione lessicale \\
+\midrule
+\textbf{Scalabilit\`a} & Alta, veloce & Media (UMAP/HDBSCAN) & Dipende da corpus (best: 5K-15K) \\
+\midrule
+\textbf{Output} & Score similarit\`a / synset & Lista topic + keywords & Risposta in linguaggio naturale \\
+\midrule
+\textbf{Limite principale} & Manca comprensione semantica profonda & Config errata $\to$ failure mode & Robustness degrada con scala \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%% ============================================================
+\section{Teoria: Embedding e Retrieval}
+%% ============================================================
+
+\subsection{Dense vs. Sparse Representation}
+
+\begin{defbox}
+\textbf{Rappresentazioni sparse} (TF-IDF, BM25):
+\begin{itemize}
+  \item Dimensione = vocabolario (tipicamente $10^4$--$10^6$)
+  \item Quasi tutte le componenti sono zero
+  \item Interpretabili: ogni dimensione = un termine
+  \item Veloci, nessuna inferenza neurale
+\end{itemize}
+
+\textbf{Rappresentazioni dense} (BERT, SentenceTransformer):
+\begin{itemize}
+  \item Dimensione fissa ridotta (128--1024)
+  \item Tutte le componenti non-zero
+  \item Catturano significato distribuito, sinonimi, relazioni implicite
+  \item Pi\`u lente (require inferenza del modello)
+\end{itemize}
+\end{defbox}
+
+\subsection{Sentence Transformers}
+
+\begin{defbox}
+\textbf{SentenceTransformer}: modello BERT fine-tuned per produrre rappresentazioni a livello di frase.
+\begin{itemize}
+  \item Training Siamese/triplet: frasi simili vicine, dissimili lontane nello spazio vettoriale
+  \item Pooling sull'ultimo layer per ottenere vettore singolo per la frase
+  \item Modelli comuni: \texttt{all-MiniLM-L6-v2} (384-dim, leggero), \texttt{all-mpnet-base-v2} (768-dim, alta qualit\`a)
+\end{itemize}
+\end{defbox}
+
+\subsection{SciBERT vs. BERT generale}
+
+SciBERT (\texttt{allenai/scibert\_scivocab\_uncased}):
+\begin{itemize}
+  \item Stessa architettura BERT (12 layer, 768-dim base)
+  \item Vocabolario costruito su testi scientifici (formule, termini tecnici, notazione matematica)
+  \item Pre-training su 1.14M paper da Semantic Scholar
+  \item Superiore su IR scientifico rispetto a BERT generale
+\end{itemize}
+
+\subsection{Cos'\`e HDBSCAN: Intuizione}
+
+HDBSCAN costruisce una gerarchia di cluster basata sulla densit\`a:
+\begin{enumerate}
+  \item Calcola la core distance di ogni punto (distanza al $k$-esimo vicino)
+  \item Costruisce il minimum spanning tree con distanze di mutua raggiungibilit\`a
+  \item Condensa la gerarchia: rimuove rami che ``si dividono'' troppo rapidamente
+  \item Estrae cluster stabili con Excess of Mass (\texttt{eom})
+  \item Punti non assegnati a nessun cluster = outlier ($-1$)
+\end{enumerate}
+
+Vantaggio fondamentale per BERTopic: non si specifica quanti topic esistono, emergono dai dati.
+
+%% ============================================================
+\section{Riepilogo Formule}
+%% ============================================================
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lll}
+\toprule
+\textbf{Formula} & \textbf{Espressione} & \textbf{Uso} \\
+\midrule
+Jaccard (SimLex) & $|A \cap B| / |A \cup B|$ & Overlap lessicale definizioni \\
+Cosine Similarity & $\vec{a} \cdot \vec{b} \,/\, (||\vec{a}|| \cdot ||\vec{b}||)$ & SimSem, FAISS, CR, AR \\
+TF-IDF & $\text{tf}(t,d) \times \log(N/\text{df}(t))$ & Vettorizzazione Lab1-2 \\
+BM25 score & $\sum_i \text{IDF}(q_i) \cdot \frac{f(q_i,D)(k_1+1)}{f(q_i,D)+k_1(1-b+b|D|/\text{avg})}$ & Retrieval lessicale \\
+RRF score & $\sum_{r} 1/(k + \text{rank}_r(d))$ & Fusione ranking ibrido \\
+c-TF-IDF & $\frac{f(t,c)}{|c|} \cdot \log\frac{N}{\text{df}(t)}$ & Topic keywords (BERTopic) \\
+Precision@K & $|\text{rilevanti} \cap \text{top-}K| \,/\, K$ & Qualit\`a retrieval \\
+Faithfulness & $|\{w \in \text{ans}: w \in \text{ctx}\}| / |\text{ans}|$ & Grounding LLM \\
+Robustness & $\frac{1}{|P|}\sum_p |R_5(q) \cap R_5(p)| \,/\, 5$ & Stabilit\`a a parafrasi \\
+Context Rel. & $\frac{1}{|R|}\sum_d \cos(q, d[:200])$ & Pertinenza contesto \\
+Answer Rel. & $\cos(\text{emb}(q), \text{emb}(\text{ans}))$ & Centramento risposta \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%% ============================================================
+\section{Domande Tipiche da Esame}
+%% ============================================================
+
+\begin{enumerate}
+  \item \textbf{Differenza tra SimLex e SimSem}: Jaccard misura overlap lessicale puro su insiemi di parole; TF-IDF coseno misura prossimit\`a semantica in spazio vettoriale. Per concetti astratti SimSem > SimLex perch\'e cattura sinonimi.
+
+  \item \textbf{Cos'\`e la ricerca onomasiologica?} Data una definizione, recuperare il synset WordNet corretto. Inverso della consultazione dizionario. Implementata con TF-IDF coseno tra definizione e glosse candidate.
+
+  \item \textbf{Perch\'e i concetti concreti sono pi\`u recuperabili?} Il referente fisico vincola il vocabolario: persone diverse usano parole simili per descriverlo. I concetti astratti hanno alta variabilit\`a e dipendenza culturale.
+
+  \item \textbf{Descrivere la pipeline BERTopic}: Documenti $\to$ Embedding (SentenceTransformer) $\to$ Riduzione dimensionale (UMAP) $\to$ Clustering (HDBSCAN) $\to$ Estrazione keyword (c-TF-IDF).
+
+  \item \textbf{Perch\'e la Config 3 di BERTopic fallisce?} \texttt{min\_cluster\_size=150} crea cluster troppo grandi e tematicamente eterogenei. Il c-TF-IDF non riesce a estrarre segnale discriminativo e le stopwords emergono nel top-5.
+
+  \item \textbf{Cos'\`e RRF e perch\'e si usa?} Reciprocal Rank Fusion combina ranking da retriever diversi (FAISS + BM25) senza richiedere normalizzazione degli score: $\sum_r 1/(k+\text{rank}_r(d))$. Sfrutta la complementariet\`a di retrieval semantico e lessicale.
+
+  \item \textbf{Trend P@5 vs. corpus size}: non monotono, picco a 5K. Corpus troppo piccolo = pochi documenti rilevanti. Corpus troppo grande = segnale di rilevanza diluito in spazio denso di candidati.
+
+  \item \textbf{Perch\'e la robustezza crolla a scala?} In corpus grandi lo spazio embedding \`e molto denso: una minima riformulazione della query sposta i top-k verso documenti simili ma diversi. Fix: query expansion, ensemble retrieval, re-ranking.
+
+  \item \textbf{Differenza BM25 vs. TF-IDF}: BM25 aggiunge saturazione della frequenza dei termini ($k_1$) e normalizzazione per lunghezza del documento ($b$), migliorando il ranking rispetto al semplice TF-IDF.
+
+  \item \textbf{Cosa misura la Faithfulness?} La percentuale di parole di contenuto della risposta LLM che compaiono nel contesto recuperato. Proxy lessicale per l'assenza di allucinazioni.
+\end{enumerate}
+
+\end{document}
