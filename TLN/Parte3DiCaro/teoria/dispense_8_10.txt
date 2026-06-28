@@ -1,0 +1,1428 @@
+--- page 203 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting
+e Human-AI Interaction
+8.1 Introduzione
+I Large Language Models (LLMs) rappresentano un punto di svolta
+nell’elaborazione del linguaggio naturale. A differenza dei modelli
+tradizionali, addestrati per task specifici, gli LLMs sono sistemi gene-
+rali capaci di svolgere molteplici compiti attraverso il solo linguaggio
+naturale.
+Questa capacità emerge da due fattori chiave. Innanzitutto, lascala:
+modelli con miliardi di parametri addestrati su enormi quantità di
+testo catturano pattern linguistici complessi e conoscenza implicita. In
+secondo luogo, l’architettura Transformer: il meccanismo di attenzione
+consente di catturare dipendenze a lungo raggio nel testo, superando i
+limiti delle architetture ricorrenti precedenti.
+Ma ciò che rende gli LLMs particolarmente significativi non è solo la
+loro capacità tecnica, bensì il modo in cui modificano l’interazione tra
+umani e sistemi di intelligenza artificiale. Per la prima volta, possiamo
+comunicare con un sistema computazionale utilizzando linguaggio natu-
+rale non vincolato, senza dover tradurre le nostre intenzioni in comandi
+predefiniti o interfacce strutturate.
+203
+--- page 204 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+8.1.1 Dai modelli base agli instruction-tuned models
+Non tutti gli LLMs sono uguali. Esistono due grandi categorie che
+differiscono profondamente nel comportamento e nell’utilizzo.
+Ibase language modelssono addestrati esclusivamente sulla predizione
+del token successivo. Questi modelli completano testo in modo fluido
+e coerente, ma non seguono istruzioni esplicite. Se chiediamo a un
+modello base “La capitale dell’Italia è”, otterremo una continuazione
+naturale come “Roma, situata nel Lazio centrale, è una città di circa
+tre milioni di abitanti...”. Il modello completa il testo come se stesse
+scrivendo un articolo, ma non sta rispondendo a una domanda.
+Gliinstruction-tuned models, invece, sono stati ulteriormente adde-
+strati tramite fine-tuning su coppie domanda-risposta. Questi modelli
+hanno imparato a interpretare l’input come una richiesta e a generare ri-
+sposte appropriate. Alla stessa domanda “Qual è la capitale dell’Italia?”,
+un modello instruction-tuned risponderà semplicemente “La capitale
+dell’Italia è Roma”, riconoscendo che si tratta di una domanda a cui
+fornire una risposta diretta.
+Il passaggio da modelli base a instruction-tuned avviene attraverso
+diverse tecniche. La più diretta è ilSupervised Fine-T uning(SFT), dove
+il modello viene addestrato su migliaia di esempi annotati di interazioni
+umane di alta qualità. Tuttavia, questa tecnica da sola non è sufficiente
+per catturare le preferenze umane complesse.
+Per questo motivo, molti modelli moderni utilizzano ilReinforcement
+Learning from Human Feedback(RLHF). In questo approccio, umani
+valutano diverse risposte del modello per la stessa domanda, creando
+un modello di ricompensa che cattura le preferenze umane. Il mo-
+dello viene poi ottimizzato per massimizzare questa ricompensa. Più
+recentemente, tecniche comeDirect Preference Optimization(DPO)
+hanno semplificato questo processo, ottenendo risultati simili senza la
+complessità del reinforcement learning esplicito.
+204
+--- page 205 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+8.1.2 Risorse per comprendere i Transformer
+Per una comprensione approfondita dell’architettura alla base degli
+LLMs:
+1. The Illustrated Transformer (visualizzazione interattiva)
+2. Visual Intro to Transformers (spiegazione video)
+3. Attention in Transformers Visually Explained
+4. Attention Is All You Need (paper originale)
+8.2 Prompting: L’arte di comunicare con gli
+LLMs
+Il prompting è il processo di formulare input testuali che guidano il
+comportamento del modello. Non si tratta di semplice “dare comandi”,
+ma di costruire un’interfaccia linguistica efficace tra intenzione umana e
+capacità del modello. È un’abilità che richiede comprensione sia delle
+potenzialità che dei limiti degli LLMs.
+8.2.1 Perché il prompting è cruciale
+A differenza dei sistemi tradizionali, dove l’interazione è mediata da
+interfacce grafiche predefinite con pulsanti, menu e moduli, con gli
+LLMs l’interfacciaè il linguaggio stesso. Questo cambiamento apparen-
+temente semplice introduce implicazioni profonde.
+Da un lato, otteniamo unaflessibilitàsenza precedenti: possiamo espri-
+mere task arbitrariamente complessi senza dover aspettare che qualcuno
+implementi una funzionalità specifica. Dall’altro, dobbiamo confrontarci
+con l’ambiguitàintrinseca del linguaggio naturale. La stessa richiesta
+può essere interpretata in modi diversi, e piccole variazioni nel prompt
+205
+--- page 206 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+possono portare a output molto diversi. Questaimprevedibilitàrichiede
+un approccio iterativo e sperimentale.
+8.2.2 Principi fondamentali del prompting
+Il primo principio fondamentale è lachiarezza e specificità. Un prompt
+vago produce inevitabilmente output generici. Consideriamo la dif-
+ferenza tra chiedere semplicemente “Parlami di Roma” e fornire una
+richiesta dettagliata: “Descrivi in tre paragrafi la storia di Roma antica,
+concentrandoti sul periodo repubblicano (509-27 a.C.). Includi l’organiz-
+zazione politica, l’espansione territoriale, e i fattori che hanno portato
+alla transizione verso l’impero.” La seconda versione fornisce vincoli
+chiari che guidano il modello verso un output più utile e rilevante.
+Un secondo aspetto importante riguarda l’uso di delimitatoriper sepa-
+rare chiaramente le diverse componenti del prompt. Quando forniamo
+un testo da analizzare insieme alle istruzioni su come analizzarlo, è
+essenziale che il modello non confonda le due parti. Utilizziamo quindi
+marcatori espliciti come virgolette triple, tag XML, o separatori visivi
+per delineare le sezioni.
+Altrettanto importante èspecificare il formato di outputdesiderato.
+Se vogliamo che il modello estragga informazioni strutturate da un
+testo, possiamo chiedere esplicitamente un formato JSON con campi
+specifici. Se desideriamo un riassunto, possiamo indicare il numero di
+frasi o parole. Questa precisione elimina ambiguità e rende l’output
+direttamente utilizzabile.
+Infine, il prompting è intrinsecamente unprocesso iterativo. Raramente
+il primo tentativo produce il risultato ottimale. L’approccio più effi-
+cace consiste nel generare una prima versione del prompt, analizzare
+attentamente l’output, identificare i problemi (ambiguità, informazioni
+mancanti, formato errato), raffinare il prompt di conseguenza, e ripetere
+questo ciclo fino a ottenere risultati soddisfacenti. Ogni iterazione ci
+insegna qualcosa sul comportamento del modello specifico che stiamo
+utilizzando.
+206
+--- page 207 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+8.2.3 Strategie avanzate di prompting
+Oltre ai principi base, esistono tecniche più sofisticate che migliorano
+significativamente le prestazioni degli LLMs su task complessi.
+Chain-of-Thought (CoT)
+Una delle scoperte più significative nell’ambito del prompting è che
+chiedere al modello di “pensare ad alta voce” migliora drasticamente
+le performance su task di ragionamento. Invece di richiedere diretta-
+mente la risposta finale, chiediamo al modello di esplicitare i passaggi
+intermedi del suo ragionamento.
+Consideriamo un semplice problema aritmetico: “Ho 15 mele. Ne
+mangio 3, poi ne compro il doppio di quelle mangiate. Quante mele ho
+ora?” Un prompt standard potrebbe ottenere una risposta errata o non
+ben giustificata. Se invece aggiungiamo “Ragiona passo-passo prima
+di rispondere”, il modello tipicamente produce un output strutturato:
+parte dalle 15 mele iniziali, sottrae le 3 mangiate arrivando a 12, calcola
+il doppio di 3 che fa 6, e infine somma per ottenere 18 mele totali.
+Questo approccio è particolarmente efficace per la matematica, la logica,
+e qualsiasi task che richiede pianificazione o ragionamento multi-step.
+Il modello, forzato a esplicitare i passaggi intermedi, commette meno
+errori di calcolo e mantiene meglio la coerenza logica.
+Few-shot Learning
+A volte la descrizione verbale di un task non è sufficiente. In questi casi,
+fornire esempi espliciti di input-output desiderato può fare la differenza.
+Questa tecnica si chiama few-shot learning perché forniamo “pochi
+esempi” (tipicamente da 1 a 5) direttamente nel prompt.
+La differenza con l’approccio zero-shot (nessun esempio) è sostanziale.
+Immaginiamo di voler classificare il sentiment di recensioni. Un approc-
+207
+--- page 208 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+cio zero-shot consisterebbe semplicemente nel chiedere “Classifica il
+sentiment: Il prodotto è arrivato rotto”. Un approccio few-shot, invece,
+fornirebbe prima alcuni esempi: “Ottimo prodotto, lo consiglio! →
+Positivo”, “Non funziona, deluso → Negativo”, “Nella media, niente di
+speciale → Neutro”, e solo dopo presenterebbe il caso da classificare.
+Gli esempi forniscono al modello un template concreto del formato e
+del tipo di classificazione desiderato.
+Self-Consistency
+Un’altra tecnica avanzata sfrutta il fatto che i modelli sono stocastici.
+Invece di generare una singola risposta, possiamo generare multiple so-
+luzioni indipendenti (tipicamente con temperature leggermente più alta
+del normale) e poi selezionare la risposta che appare più frequentemente.
+Questo approccio di “majority voting” tende a migliorare l’accuratezza,
+specialmente su task dove esistono soluzioni ben definite.
+Role Prompting
+Assegnare un ruolo o una persona al modello può migliorare la qualità
+dell’output in modi sottili ma significativi. Prefissare il prompt con
+“Sei un esperto di storia romana” prima di fare domande storiche, o
+“Sei un programmatore senior Python” prima di chiedere codice, può
+influenzare positivamente il tono, il livello di dettaglio, e la competenza
+apparente della risposta.
+8.2.4 Cosa evitare nel prompting
+Alcuni pattern portano sistematicamente a risultati peggiori. Uno dei più
+comuni è l’uso eccessivo dinegazioni. Invece di dire cosa il modellonon
+deve fare (“Non usare termini tecnici”), è molto più efficace specificare
+positivamente cosadevefare (“Usa linguaggio semplice comprensibile
+208
+--- page 209 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+a un bambino di 10 anni”). I modelli tendono a processare meglio
+istruzioni costruttive.
+Un altro errore frequente è l’ambiguità. Pronomi vaghi (“Riassumilo”,
+“Traducilo”) o riferimenti non chiari creano incertezza. È sempre me-
+glio essere espliciti: “Riassumi il testo sopra in 3 bullet points” indica
+chiaramente cosa riassumere e in che formato.
+8.3 Task comuni con LLMs
+Gli LLMs eccellono in una varietà di compiti di elaborazione del lin-
+guaggio. In questa sezione esploreremo i task più comuni, mostrando
+come il prompting appropriato possa guidare il modello verso output
+di qualità.
+8.3.1 Summarization
+La sintesi automatica è probabilmente uno dei task più utili e frequen-
+temente utilizzati. Gli LLMs possono condensare documenti lunghi
+preservando le informazioni essenziali, ma la vera potenza emerge
+quando riusciamo a controllare finemente cosa e come sintetizzare.
+La sintesi può essere orientata in molteplici modi. Possiamo chiedere
+di focalizzarsi su aspetti specifici: una recensione di ristorante può
+essere riassunta concentrandosi sulla qualità del cibo, sul servizio, o
+sul rapporto qualità-prezzo. Possiamo controllare il livello di dettaglio
+richiesto, specificando se vogliamo un paragrafo, tre frasi, o anche una
+singola parola chiave.
+Un approccio particolarmente efficace è lasintesi progressiva, dove
+chiediamo al modello di produrre versioni sempre più condensate dello
+stesso contenuto. Partendo da un paragrafo, possiamo ridurlo a tre frasi,
+poi a una frase, e infine a una singola parola chiave. Questo ci permette
+di scegliere il livello di granularità più adatto alle nostre esigenze.
+209
+--- page 210 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+La sintesi può anche essereorientata all’audience. Lo stesso documento
+tecnico può essere riassunto in modo molto diverso per un manager
+(focus su implicazioni business e decisioni), per un tecnico (dettagli im-
+plementativi), o per il pubblico generale (linguaggio semplice e concetti
+ad alto livello).
+8.3.2 Inference e Classificazione
+Prima degli LLMs, task come sentiment analysis o named entity recogni-
+tion richiedevano dataset annotati manualmente e training di modelli
+specifici. Oggi possiamo definire questi task interamente a livello di
+prompt.
+Lasentiment analysis, ad esempio, può essere ridotta a una semplice
+domanda: “Questa recensione è positiva, negativa, o neutra?” Ma
+possiamo andare oltre la semplice polarità. Possiamo chiedere una lista
+di emozioni specifiche espresse nel testo (gioia, frustrazione, delusione,
+entusiasmo), o un punteggio numerico su una scala da 1 a 10. La
+flessibilità del linguaggio naturale ci permette di adattare il task alle
+nostre esigenze specifiche senza dover riaddestrrare modelli.
+Ilnamed entity recognitiontradizionalmente richiedeva modelli adde-
+strati su categorie predefinite (persona, luogo, organizzazione). Con gli
+LLMs possiamo definire categorie arbitrarie on-the-fly. Possiamo chiede-
+re di estrarre non solo entità standard, ma anche concetti domain-specific
+come nomi di farmaci, procedure mediche, o tecnologie specifiche.
+Latopic detectionè un altro esempio illuminante. Invece di addestrare
+modelli di topic modeling complessi, possiamo semplicemente chiedere:
+“Quali sono i 5 argomenti principali discussi in questo articolo?” Pos-
+siamo specificare il formato (massimo 3 parole per topic), o fornire una
+lista predefinita di topic e chiedere quali sono presenti nel testo.
+210
+--- page 211 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+8.3.3 Trasformazione
+Gli LLMs non si limitano a analizzare testo, ma possono trasformarlo
+in modi sofisticati. Latraduzioneè l’esempio più ovvio, ma va ben
+oltre il semplice trasferimento tra lingue. Possiamo tradurre tra registri
+linguistici (formale a colloquiale), tra stili (accademico a divulgativo), o
+persino tra formati (da prosa a bullet points).
+La trasformazione può essere puramente strutturale. Un file CSV può
+essere convertito in JSON, una tabella HTML in formato Markdown, o
+dati non strutturati in un database relazionale. Quello che un tempo
+richiedeva script complessi di parsing può ora essere espresso come una
+semplice richiesta in linguaggio naturale.
+Lacorrezione di erroriè un’altra trasformazione utile. Non solo errori
+ortografici e grammaticali, ma anche normalizzazione di formati (date,
+indirizzi, numeri di telefono), pulizia di dati sporchi, o anche riparazione
+di JSON malformato.
+8.3.4 Espansione
+Il processo inverso della sintesi è l’espansione: generare testo più lungo
+e dettagliato a partire da input concisi. Questo è particolarmente utile
+per task come la generazione di email da bullet points, l’espansione di
+outline in articoli completi, o la creazione di documentazione a partire
+da specifiche tecniche schematiche.
+L’espansione introduce un parametro cruciale: latemperatura. Questo
+valore controlla la casualità (o “creatività”) del modello. Una temperatu-
+ra bassa (0.0-0.3) produce output deterministico e conservativo, ideale
+per documentazione tecnica, risposte fattuali, o generazione di codice
+dove la consistenza è critica. Una temperatura media (0.5-0.7) bilan-
+cia prevedibilità e varietà. Una temperatura alta (0.8-1.0 o superiore)
+produce output più vario e imprevedibile, utile per scrittura creativa,
+brainstorming, o quando vogliamo esplorare molteplici varianti.
+211
+--- page 212 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+La scelta della temperatura dipende fortemente dal contesto. Per gene-
+rare un contratto legale o una procedura medica, vogliamo temperatura
+bassissima. Per scrivere una campagna marketing creativa o generare
+idee per una storia, una temperatura alta può portare a risultati più
+interessanti e inaspettati.
+8.4 Limiti e Problematiche degli LLMs
+Nonostante le capacità impressionanti, gli LLMs presentano limiti strut-
+turali importanti che è fondamentale comprendere per utilizzarli in
+modo responsabile ed efficace.
+8.4.1 Allucinazioni
+Il problema più noto e insidioso degli LLMs è la loro tendenza a generare
+informazioni plausibili ma completamente false, presentandole con alta
+confidenza. Questo fenomeno, chiamato “allucinazione”, non è un
+bug occasionale ma una conseguenza diretta di come questi modelli
+funzionano.
+Consideriamo un esempio concreto. Se chiediamo a un LLM “Chi ha
+vinto il premio Nobel per la letteratura nel 2025?”, il modello potrebbe
+rispondere con sicurezza: “Lo scrittore giapponese Haruki Murakami
+ha vinto il Nobel per la letteratura nel 2025 per il suo romanzo ’I confini
+dell’alba”’. Questa risposta è completamente inventata. Il modello non
+sa che stiamo nel 2025, non ha accesso a informazioni post-training, e
+il romanzo menzionato non esiste. Eppure la risposta è formulata in
+modo così naturale e specifico da sembrare assolutamente credibile.
+Le allucinazioni sono particolarmente pericolose perché il modello non
+mostra alcuna esitazione. Non dice “non sono sicuro” o “potrebbe
+essere”. Genera fatti inventati con la stessa fluidità di fatti reali. Questo
+deriva dal fatto che gli LLMs sono fondamentalmente generatori statistici
+212
+--- page 213 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+di testo: producono ciò che è più probabile seguire il prompt, non ciò
+che è vero.
+Esistono strategie per mitigare questo problema. L’approccio più efficace
+è il Retrieval-Augmented Generation (RAG), visto nel capitolo preceden-
+te, che ancora il modello a documenti reali verificabili. Possiamo anche
+chiedere esplicitamente citazioni o fonti, richiedere verifiche incrociate,
+o calibrare la confidenza del modello. Ma nessuna di queste tecniche
+elimina completamente il rischio.
+8.4.2 Conoscenza statica
+Gli LLMs “congelano” la loro conoscenza al momento del training.
+Un modello addestrato con dati fino al 2023 non sa nulla di eventi
+successivi. Non può aggiornarsi autonomamente, non legge le notizie,
+non apprende continuamente dal mondo.
+Questo crea situazioni paradossali. Il modello può spiegare in dettaglio
+eventi storici di secoli fa, ma non sa chi ha vinto le elezioni dell’anno
+scorso. Può descrivere teorie scientifiche consolidate, ma ignora scoperte
+recentissime. La sua conoscenza è vasta ma datata.
+La soluzione più robusta è l’integrazione con sistemi di retrieval esterni o
+strumenti di ricerca. Invece di affidarsi alla memoria statica del modello,
+questi sistemi recuperano informazioni aggiornate da database, motori
+di ricerca, o API in tempo reale. Il modello mantiene la capacità di
+comprendere e sintetizzare, ma attinge a fonti fresche.
+8.4.3 Bias e fairness
+I modelli riflettono inevitabilmente i bias presenti nei dati di training. Se
+il corpus di addestramento contiene stereotipi, pregiudizi, o rappresen-
+tazioni squilibrate di gruppi sociali, il modello apprenderà e riprodurrà
+questi pattern.
+213
+--- page 214 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+Gli esempi documentati sono numerosi e preoccupanti. Associazioni ste-
+reotipate tra professioni e genere (medici maschi, infermiere femmine),
+rappresentazione squilibrata di culture e lingue minoritarie, amplifi-
+cazione di pregiudizi razziali o sociali. Questi bias non sono errori
+superficiali ma pattern profondamente radicati nei pesi del modello.
+La mitigazione richiede interventi a più livelli. Durante la creazione
+del dataset, attraverso curation attenta e bilanciamento. Durante il
+training, con tecniche di debiasing. Dopo il deployment, attraverso red
+teaming (test aggressivi per scoprire comportamenti problematici) e
+monitoraggio continuo. Possiamo anche usare istruzioni esplicite nel
+prompt per guidare il modello verso risposte più equilibrate, anche se
+questo è meno affidabile delle soluzioni tecniche.
+8.4.4 Ragionamento superficiale
+Gli LLMs eccellono nel pattern matching e nel completamento statistico,
+ma faticano con forme di ragionamento più profonde. Il loro “pensiero”
+è fondamentalmente diverso dal ragionamento umano.
+Il ragionamento causale è particolarmente problematico. Il modello può
+sapere che “il fumo causa il cancro” come fatto memorizzato, ma non
+comprende veramente la catena causale sottostante. Non ha un modello
+mentale di come funzionano polmoni, cellule, o carcinogenesi. Ripete
+correlazioni apprese, non ragiona su meccanismi.
+La pianificazione multi-step complessa è un’altra area debole. Per
+task che richiedono tenere traccia di stati intermedi, revisionare piani
+in base a nuove informazioni, o considerare controfattuali complessi,
+le performance degradano rapidamente. Il modello tende a perdere
+coerenza su catene di inferenza lunghe.
+La comprensione fisica del mondo reale è quasi assente. Il modello
+non sa veramente cosa significa che un oggetto è pesante, che l’acqua
+bagna, che la gravità fa cadere le cose. Ha solo pattern testuali su questi
+concetti, non esperienza diretta.
+214
+--- page 215 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+8.4.5 Context window limitato
+Anche i modelli più recenti con finestre di 100k+ token mostrano limiti.
+La performance degrada man mano che il contesto si allunga. Fenomeni
+come “lost in the middle” (peggiore attenzione alle informazioni centrali
+del contesto) sono ben documentati.
+Mantenere coerenza su documenti molto lunghi è difficile. Il modello
+può contraddirsi tra l’inizio e la fine di una risposta lunga, dimenticare
+dettagli menzionati prima, o perdere il filo del discorso complessivo.
+Inoltre, finestre più grandi hanno costi computazionali quadratici. Pro-
+cessare 100k token richiede risorse enormemente maggiori di processare
+4k token, limitando l’applicabilità pratica di questi approcci.
+8.4.6 Costi computazionali
+Il training di un LLM all’avanguardia costa milioni di euro e produce
+emissioni di CO2 equiparabili a quelle di centinaia di voli intercontinen-
+tali. L’infrastruttura richiesta include migliaia di GPU specializzate in
+datacenter dedicati.
+Anche l’inference ha costi non trascurabili. Ogni query a un modello
+grande consuma energia, richiede memoria, e ha una latenza misurabile.
+Per applicazioni ad alto volume, questi costi si accumulano rapidamente.
+Il deployment richiede infrastruttura specializzata. Non si può sempli-
+cemente eseguire GPT-4 su un laptop. Servono server dedicati, ottimiz-
+zazioni software complesse, e spesso hardware specializzato come TPU
+o GPU high-end.
+Questi fattori economici ed ambientali vanno considerati quando si
+decide se e come usare LLMs. Non ogni task giustifica queste risorse.
+215
+--- page 216 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+8.5 Human-AI Interaction: La nuova frontiera
+L’avvento degli LLMs ha trasformato radicalmente il modo in cui gli
+umani interagiscono con i sistemi di AI. Non si tratta più di interfacce
+predefinite, ma diconversazioni aperte. Questo cambio di paradigma
+ha implicazioni profonde che vanno ben oltre la semplice comodità
+d’uso.
+8.5.1 Dal task-oriented al goal-oriented
+Le interfacce tradizionali richiedono che l’utente conosca in anticipo
+le funzionalità disponibili. Deve navigare menu predefiniti, compilare
+form strutturati, e soprattutto deve adattare il proprio obiettivo alle
+capacità del sistema. Se il sistema non prevede una certa funzionalità,
+l’utente non può ottenerla. L’interazione è rigidamente task-oriented: il
+sistema offre task specifici, e l’utente deve scegliere tra quelli disponibili.
+Le interfacce basate su LLMs ribaltano questa dinamica. L’utente può
+esprimere obiettivi in linguaggio naturale, senza dover conoscere in
+anticipo cosa il sistema sa fare. Può raffinare iterativamente la richiesta
+attraverso il dialogo, scoprendo le capacità del sistema man mano che in-
+teragisce con esso. L’interazione diventa goal-oriented: l’utente descrive
+cosa vuole ottenere, e il sistema cerca di comprenderlo e soddisfarlo.
+Questo passaggio non è solo più comodo: è qualitativamente diverso.
+Abbassa drasticamente la barriera d’ingresso per utilizzare tecnologie
+complesse. Un utente non tecnico può chiedere operazioni sofisticate
+senza dover imparare interfacce complesse o linguaggi di programma-
+zione. Ma introduce anche nuove sfide: come può l’utente sapere cosa
+chiedere se non conosce i limiti del sistema? Come evita di chiedere
+l’impossibile?
+216
+--- page 217 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+8.5.2 Nuovi pattern di interazione
+Questa trasformazione ha fatto emergere pattern di interazione comple-
+tamente nuovi, che prima non erano possibili o praticabili.
+Co-creazione
+L’AI non è più uno strumento passivo che esegue comandi, ma diven-
+ta unpartner creativonel processo. Nella scrittura collaborativa, ad
+esempio, il pattern tipico è iterativo: l’umano fornisce l’idea iniziale e la
+direzione generale, l’AI espande con dettagli e varianti, l’umano selezio-
+na le parti migliori e fornisce feedback, e il ciclo si ripete. Nessuno dei
+due attori lavora in isolamento: è una vera collaborazione.
+Questo pattern si applica a molti domini. Nella programmazione, l’u-
+mano descrive l’obiettivo e l’AI genera codice, che l’umano poi rivede,
+raffina, e usa come punto di partenza per ulteriori richieste. Nel design,
+l’umano fornisce vincoli e l’AI propone soluzioni che l’umano valuta e
+modifica. La chiave è che l’AI non sostituisce l’umano, ma amplifica le
+sue capacità fornendo rapidamente alternative da esplorare.
+Debugging conversazionale
+Quando qualcosa non funziona, l’approccio tradizionale richiede di
+interpretare messaggi di errore criptici e modificare parametri o codice.
+Con gli LLMs, l’utente può semplicemente dire: “L’output non è quello
+che volevo. Voglio che sia più conciso e tecnico.” Il sistema può rispon-
+dere chiedendo chiarimenti (“Quanto conciso? Posso vedere un esempio
+di quello che ti aspetti?”), proporre alternative, o spiegare perché ha
+prodotto quell’output.
+Questo debugging conversazionale è particolarmente potente perché
+abbassa il carico cognitivo. L’utente non deve tradurre il suo problema
+217
+--- page 218 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+in termini tecnici o navigare documentazione complessa. Può esprimersi
+nel suo linguaggio naturale, e il sistema fa il lavoro di interpretazione.
+Delega progressiva
+Gli LLMs permettono livelli crescenti di autonomia nella delega di
+compiti. Al livello più basso, l’utente fornisce task specifici e ben definiti:
+“Traduci questo testo in inglese.” A un livello intermedio, aggiunge
+vincoli e preferenze: “Traduci questo testo mantenendo il tono formale
+e usando terminologia tecnica.” Al livello più alto, descrive obiettivi
+generali: “Adatta questo documento per un pubblico internazionale non
+tecnico.”
+Il modello deve inferire sempre più informazioni da solo. Nel primo caso,
+basta applicare una traduzione letterale. Nel secondo, deve comprendere
+cosa significa “tono formale” e “terminologia tecnica” nel contesto
+specifico. Nel terzo, deve decidere autonomamente cosa semplificare,
+cosa omettere, come ristrutturare.
+Questa delega progressiva richiede fiducia crescente nel sistema. L’uten-
+te deve sentirsi sicuro che il modello comprenda veramente l’obiettivo
+alto-livello e non produrrà risultati completamente sbagliati. È un
+equilibrio delicato tra automazione e controllo.
+8.5.3 Sfide nella Human-AI Interaction
+Questi nuovi pattern introducono sfide significative che non hanno
+ancora soluzioni consolidate.
+Calibrazione della fiducia
+Gli utenti tendono a posizionarsi agli estremi. Alcuni mostranoover-
+trust: accettano output senza verifica, assumono che il modello abbia
+218
+--- page 219 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+sempre ragione, e delegano anche decisioni critiche senza controllo
+umano. Questo è pericoloso perché gli LLMs fanno errori, anche gravi,
+ma li presentano con la stessa sicurezza di risposte corrette. Un utente
+che si fida ciecamente non rileva questi errori.
+Altri mostranounder-trust: ignorano suggerimenti potenzialmente vali-
+di, verificano ossessivamente ogni minimo dettaglio anche ovvio, e so-
+stanzialmente non sfruttano le capacità del sistema. Questo è inefficiente
+e frustrante, e porta l’utente ad abbandonare lo strumento.
+Il problema di fondo è che gli LLMs non comunicano bene la propria
+incertezza. Quando sono sicuri e quando no, producono output iden-
+ticamente fluido e sicuro. Non dicono “forse” o “potrei sbagliarmi”.
+L’utente non ha feedback chiaro su quando fidarsi e quando verificare.
+Il design challenge qui è: come rendere l’incertezza visibile e intuitiva?
+Soluzioni possibili includono confidence scores mostrati accanto all’out-
+put, evidenziazione di parti incerte (“questa informazione potrebbe non
+essere aggiornata”), o presentazione di alternative esplicite (“ho trovato
+tre interpretazioni diverse della tua domanda”). Ma nessuna di queste è
+perfetta, e il rischio di sovra-complicare l’interfaccia è reale.
+Responsabilità e accountability
+Quando un LLM genera contenuto problematico, etico, discriminatorio,
+o semplicemente sbagliato, chi è responsabile? L’utente che ha fatto la
+domanda? Il creatore del modello che non ha previsto e mitigato quel
+caso? L’organizzazione che ha deciso di deployare il sistema?
+Questa domanda non ha risposte facili. In sistemi tradizionali, la catena
+di responsabilità è più chiara: il programmatore scrive codice specifico,
+che viene testato, revisionato, e deployato. Se quel codice causa danni, si
+può risalire a chi lo ha scritto e perché. Con gli LLMs, il comportamento
+emerge da pattern statistici appresi da miliardi di esempi. Non c’è una
+singola linea di codice che genera una specifica risposta problematica.
+Come tracciare la catena decisionale in questi sistemi? Come permettere
+219
+--- page 220 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+agli utenti di fare appello quando ricevono output ingiusti o danno-
+si? Quali meccanismi di trasparenza e audit sono necessari? Queste
+sono domande aperte che richiedono sia soluzioni tecniche che policy
+regolamentari.
+Opacità del sistema
+Gli LLMs sono fondamentalmenteblack box. L’utente vede input e
+output, ma non ha visibilità su cosa succede in mezzo. Non sa perché
+il modello ha dato quella specifica risposta invece di un’altra. Non sa
+su quali dati è stato addestrato, quindi non può valutare potenziali
+bias. Non sa come funziona internamente, quindi non può intuire i suoi
+limiti.
+Questa opacità crea problemi multipli. Rende difficile debuggare: se
+l’output è sbagliato, come capire perché? Rende difficile fidarsi: come
+sapere che il sistema non ha bias nascosti? Rende difficile imparare:
+l’utente non può costruire un modello mentale di come funziona il
+sistema.
+Possibili soluzioni includono tecniche di explainability (“ho risposto così
+perché nel contesto c’era questa informazione”), transparency reports
+(“questo modello è stato addestrato su questi dataset, ha questi limiti
+conosciuti”), e audit trails (“ecco la storia di tutte le risposte generate
+per query simili”). Ma anche qui, non è chiaro quanto queste soluzioni
+siano praticabili senza sovra-complicare l’interazione.
+Deskilling
+C’è un rischio reale che gli utenti perdano competenze fondamentali se
+delegano troppo all’AI. Se uno studente usa sempre l’AI per scrivere sag-
+gi, svilupperà mai capacità di scrittura proprie? Se un programmatore
+genera sempre codice via AI, imparerà mai a programmare veramente?
+Se un analista usa sempre l’AI per pensiero critico, manterrà quella
+capacità?
+220
+--- page 221 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+Questo fenomeno, chiamato deskilling, non è nuovo. È successo con le
+calcolatrici (capacità di calcolo mentale diminuite), con i GPS (capacità di
+orientamento spaziale ridotte), con i correttori ortografici (ortografia peg-
+giorata). Ma gli LLMs operano a un livello più alto: non assistono solo
+calcoli o memorie, ma processo di pensiero, creatività, ragionamento.
+Il bilanciamento ideale è usare l’AI comeamplificatoredi capacità esi-
+stenti, non come sostituto. L’AI dovrebbe permettere a chi già sa scrivere
+di scrivere meglio e più velocemente, non sostituire completamente
+l’atto di scrivere. Dovrebbe aiutare chi programma a esplorare solu-
+zioni più rapidamente, non eliminare la necessità di capire il codice.
+Ma ottenere questo bilanciamento richiede sia design attento dell’in-
+terfaccia, sia educazione degli utenti su come usare questi strumenti
+responsabilmente.
+8.5.4 Design principles per interfacce LLM
+Data la complessità di queste sfide, emergono alcuni principi di design
+che possono guidare la creazione di interfacce LLM più responsabili ed
+efficaci.
+Il primo principio cruciale èrendere l’incertezza visibile. Gli LLMs
+generano output con diversi livelli di confidenza, ma tipicamente non
+lo comunicano. Un sistema ben progettato dovrebbe mostrare espli-
+citamente quando il modello è sicuro e quando no. Questo può av-
+venire attraverso confidence scores numerici, evidenziazione visiva di
+parti incerte (forse con colori o annotazioni), o presentazione esplicita
+di alternative (“ecco tre possibili interpretazioni della tua domanda,
+quale intendevi?”). L’obiettivo non è scoraggiare l’uso, ma calibrare
+appropriatamente le aspettative dell’utente.
+Il secondo principio èsupportare l’iterazione. Raramente il primo out-
+put è perfetto. Il sistema dovrebbe facilitare il processo di raffinamento:
+bottoni per “prova di nuovo con più dettaglio”, “riformula in modo
+più conciso”, “spiega il ragionamento”. Dovrebbe mantenere una storia
+delle varianti generate, permettendo all’utente di confrontarle e combi-
+221
+--- page 222 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+narle. Funzionalità di undo/redo dovrebbero essere ovvie e accessibili.
+L’interazione non dovrebbe mai sembrare un vicolo cieco: c’è sempre
+un modo per migliorare.
+Il terzo principio èeducare l’utente. Non si può assumere che gli utenti
+capiscano automaticamente cosa gli LLMs possono e non possono fare.
+Il sistema dovrebbe spiegare attivamente le proprie capacità e limiti:
+“posso aiutarti a scrivere codice, ma non posso eseguirlo o testarlo”;
+“posso tradurre testi, ma potrebbero esserci errori in lingue che conosco
+meno”. Dovrebbe fornire esempi concreti di prompt efficaci: “invece di
+chiedere ’parlami di X’, prova ’spiega X in 3 paragrafi concentrandoti
+su Y”’. Dovrebbe mostrare best practices attraverso l’uso, non solo in
+documentazione separata.
+Il quarto principio èdare controlloall’utente. Anche quando l’AI è
+molto capace, l’utente dovrebbe sempre sentire di essere al comando.
+Parametri come temperatura, lunghezza, livello di dettaglio dovrebbero
+essere regolabili con controlli intuitivi. Dovrebbe sempre essere possi-
+bile intervenire manualmente per correggere o guidare l’output. Una
+modalità “explain why” dovrebbe permettere all’utente di capire il ra-
+gionamento del modello quando necessario. Il sistema dovrebbe essere
+trasparente su cosa sta facendo (“sto cercando informazioni rilevanti...”,
+“sto generando una risposta basata su...”).
+Questi principi non risolvono tutti i problemi, ma forniscono una di-
+rezione per design più responsabile. L’obiettivo ultimo è un sistema
+che amplifica le capacità umane mantenendo l’umano informato, in
+controllo, e consapevole dei limiti.
+8.5.5 Casi d’uso emergenti
+Man mano che la tecnologia matura e il design migliora, emergono
+nuovi casi d’uso interessanti che vanno oltre la semplice generazione di
+testo.
+Gliassistenti personali contestualinon sono più generici, ma altamente
+222
+--- page 223 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+specializzati. Un assistente per il dominio medico comprende termi-
+nologia clinica, linee guida, e protocolli. Un assistente legale conosce
+precedenti, statuti, e linguaggio contrattuale. Un assistente per ricercato-
+ri sa come strutturare paper, citare correttamente, e mantenere rigore
+metodologico. La specializzazione non riguarda solo la conoscenza,
+ma anche lo stile di interazione: un assistente per studenti adotta un
+tono educativo e socratico, uno per manager è conciso e orientato alle
+decisioni.
+Gli LLMs comecognitive scaffoldingrappresentano un uso ancora più
+interessante. Invece di produrre output finali, aiutano il processo di
+pensiero. In sessioni di brainstorming, il modello genera idee iniziali
+che l’umano può espandere e combinare. Come “devil’s advocate”
+automatico, il modello sfida attivamente le assunzioni dell’utente (“hai
+considerato che X potrebbe avere l’effetto opposto?”). Nel Socratic
+questioning, il modello non dà risposte ma pone domande che guidano
+l’utente a scoprire la soluzione da solo. Questi usi trasformano l’AI da
+“rispositore” a “facilitatore di pensiero”.
+Lamediazione culturale e linguisticava oltre la semplice traduzione
+letterale. Un buon sistema non traduce parola-per-parola, ma adatta il
+contenuto per essere culturalmente appropriato. Un riferimento cultura-
+le incomprensibile in un’altra cultura viene sostituito con un equivalente
+locale. L’umorismo basato su giochi di parole viene ri-creato piuttosto
+che tradotto. Espressioni idiomatiche vengono localizzate. Il modello
+spiega anche contesti culturali che potrebbero essere opachi (“questa
+frase fa riferimento a un evento storico specifico in quella cultura”), e
+adatta il livello di formalità alle norme locali.
+Questi casi d’uso mostrano che gli LLMs stanno evolvendo da semplici
+“generatori di testo” a strumenti sofisticati per amplificare diverse forme
+di intelligenza umana. La chiave è mantenere l’umano al centro: la
+tecnologia facilita, media, espande, ma non sostituisce il giudizio, la
+creatività, e la responsabilità umana.
+223
+--- page 224 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+8.6 Laboratorio (non obbligatorio):
+Esperimenti pratici con strategie di
+prompting
+Questo laboratorio rappresenta solamente un approfondimento per
+mostrare empiricamente limiti e funzionalità degli LLMs attraverso
+esperimenti controllati.
+8.6.1 Obiettivi
+1. Osservare l’impatto di diverse strategie di prompting
+2. Identificare pattern di fallimento comuni
+3. Comprendere quando usare tecniche avanzate (CoT, few-shot)
+4. Valutare trade-off tra accuratezza e computazione
+8.6.2 Setup: Modelli open-source
+Utilizzeremo modelli piccoli, facilmente eseguibili su hardware consu-
+mer:
+•Qwen2.5-0.5B-Instruct: 500MB, veloce
+•Phi-3.5-mini-instruct: 3.8B, qualità migliore
+Perché modelli piccoli?
+• Accessibili (CPU-only)
+• Gratuiti
+• Riproducibili
+224
+--- page 225 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+• Mostrano limiti in modo più evidente
+8.6.3 Setup tecnico
+import torch
+from transformers import AutoModelForCausalLM,
+AutoTokenizer, pipeline
+# Carica modello
+model_id = "Qwen/Qwen2.5-0.5B-Instruct"
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(
+model_id,
+torch_dtype=torch.float16 if torch.cuda.is_available()
+else torch.float32,
+device_map="auto",
+low_cpu_mem_usage=True
+)
+# Crea pipeline
+llm = pipeline(
+"text-generation",
+model=model,
+tokenizer=tokenizer,
+max_new_tokens=300,
+temperature=0.3
+)
+8.6.4 Esperimento 1: Matematica semplice
+Task: Problemi aritmetici multi-step
+225
+--- page 226 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+Test 1.1: Zero-shot senza CoT
+prompt = """
+Ho 23 mele. Ne mangio 7, poi compro il triplo di quelle mangiate.
+Quante mele ho ora?
+"""
+# Output tipico (modello piccolo):
+# "Hai 37 mele." [SBAGLIATO - risposta corretta: 37]
+Test 1.2: Zero-shot con CoT
+prompt = """
+Ho 23 mele. Ne mangio 7, poi compro il triplo di quelle mangiate.
+Quante mele ho ora?
+Ragiona passo-passo prima di rispondere.
+"""
+# Output tipico (migliorato):
+# Passo 1: Inizio con 23 mele
+# Passo 2: Mangio 7 mele: 23 - 7 = 16
+# Passo 3: Compro il triplo di 7: 7×3 = 21
+# Passo 4: Totale: 16 + 21 = 37
+# Risposta: 37 mele
+Osservazione: CoT migliora significativamente l’accuratezza.
+Test 1.3: Few-shot con esempi
+prompt = """
+Risolvi questi problemi:
+226
+--- page 227 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+Esempio 1:
+Ho 10 caramelle, ne mangio 3, poi ne compro 5.
+Quante ne ho ora?
+Soluzione: 10 - 3 + 5 = 12
+Esempio 2:
+Ho 20 euro, spendo 8 euro, poi guadagno il doppio
+di quanto speso.
+Quanti euro ho ora?
+Soluzione: 20 - 8 + (8×2) = 20 - 8 + 16 = 28
+Ora risolvi:
+Ho 23 mele. Ne mangio 7, poi compro il triplo di
+quelle mangiate.
+Quante mele ho ora?
+"""
+# Output: più affidabile
+8.6.5 Esperimento 2: Classificazione e Sentiment
+Test 2.1: Zero-shot classificazione
+prompt = """
+Classifica il sentiment: Positivo, Negativo, o Neutro.
+Testo: "Il prodotto funziona ma la confezione era danneggiata."
+Sentiment:
+"""
+# Potrebbe dare risposte inconsistenti
+Test 2.2: Few-shot con esempi calibrati
+227
+--- page 228 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+prompt = """
+Classifica il sentiment come Positivo, Negativo, o Neutro.
+"Fantastico, lo ricomprerei!"→Positivo
+"Non funziona, pessimo acquisto."→Negativo
+"Va bene, niente di speciale."→Neutro
+"Ottimo prezzo ma qualità scarsa."→Neutro
+"Arrivato rotto, rimborso immediato."→Negativo
+"Il prodotto funziona ma la confezione era danneggiata."
+→
+"""
+# Output più consistente
+8.6.6 Esperimento 3: Allucinazioni
+Test 3.1: Domande fattuali oltre il training cutoff
+# Modello con cutoff 2023
+prompt = "Chi ha vinto il campionato di Serie A 2024-2025?"
+# Output tipico: inventa una risposta plausibile
+# "L’Inter ha vinto il campionato..." [potenzialmente falso]
+Test 3.2: Domande su entità inesistenti
+prompt = """
+Parlami del romanzo "I confini dell’alba"
+di Haruki Murakami.
+"""
+# Il libro non esiste, ma il modello potrebbe:
+# - Inventare una trama
+228
+--- page 229 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+# - Descrivere temi "tipici" di Murakami
+# - Generare citazioni false
+Mitigazione: Richiesta esplicita di incertezza
+prompt = """
+Parlami del romanzo "I confini dell’alba"
+di Haruki Murakami.
+Se non sei sicuro o il libro non esiste, dillo chiaramente.
+"""
+# Output migliorato:
+# "Non ho informazioni su un libro con questo titolo
+# di Murakami..."
+8.6.7 Esperimento 4: Effetto della temperatura
+Test 4.1: Temperatura bassa (0.1)
+temperature = 0.1
+prompt = "Scrivi una breve storia su un gatto."
+# Output: molto consistente tra run multiple
+# Tende a generare storie simili/ripetitive
+Test 4.2: Temperatura alta (1.0)
+temperature = 1.0
+prompt = "Scrivi una breve storia su un gatto."
+# Output: varia significativamente tra run
+# Più creativo ma potenzialmente meno coerente
+229
+--- page 230 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+8.6.8 Esperimento 5: Robustezza a variazioni prompt
+Test 5.1: Sensibilità a frasi
+# Variante 1
+"Classifica il sentiment di questo testo:"
+# Variante 2
+"Qual è il sentiment espresso qui?"
+# Variante 3
+"Questo testo è positivo, negativo o neutro?"
+# Possono dare risultati diversi!
+Test 5.2: Ordine degli esempi (few-shot)
+# Ordine A: esempi positivi prima
+# Ordine B: esempi negativi prima
+# Ordine C: alternati
+# L’ordine può influenzare il bias del modello
+8.6.9 Esperimento 6: Limiti di ragionamento
+Test 6.1: Ragionamento controfattuale
+prompt = """
+Se l’acqua bollisse a 50°C invece che 100°C,
+cosa cambierebbe nella cucina quotidiana?
+"""
+# Modelli piccoli faticano con scenari controfattuali
+# Potrebbero dare risposte superficiali o incoerenti
+230
+--- page 231 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+Test 6.2: Logica multi-step
+prompt = """
+Tutti i gatti sono animali.
+Alcuni animali volano.
+Quindi: alcuni gatti volano?
+Ragiona logicamente.
+"""
+# Senza CoT, può sbagliare sillogismi semplici
+8.6.10 Metriche di valutazione
+Per ciascun esperimento, traccia:
+•Accuratezza: % risposte corrette
+•Consistenza: similarità tra run multiple
+•Latenza: tempo di generazione
+•Failure modes: tipi di errori osservati
+8.6.11 Deliverable del laboratorio
+1.Report: Documenta risultati di tutti gli esperimenti
+2.Notebook: Codice riproducibile
+3.Analisi: Pattern di successo/fallimento
+4.Best practices: Linee guida per prompting efficace
+231
+--- page 232 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+8.6.12 Domande di riflessione
+• Quando vale la pena usare CoT vs. zero-shot?
+• Come bilanciare accuratezza e costo computazionale?
+• Quali task sono inadatti per LLMs (anche grandi)?
+• Come progettare prompt robusti a variazioni?
+• Quali strategie mitigano le allucinazioni?
+8.7 Conclusioni
+Gli LLMs rappresentano un cambio di paradigma nell’interazione human-
+computer. Non sono semplicemente “strumenti più potenti”, ma intro-
+ducono una modalità fondamentalmente nuova di comunicazione con i
+sistemi.
+8.7.1 Takeaway chiave
+1. Ilprompting è un’abilitàche richiede pratica e iterazione
+2. Gli LLMs hannolimiti strutturali(allucinazioni, bias, ragionamen-
+to)
+3. Lestrategie avanzate(CoT, few-shot) migliorano significativamen-
+te le performance
+4. Lahuman-AI interactionrichiede nuovi principi di design
+5. Laresponsabilitànell’uso di LLMs è cruciale
+232
+--- page 233 ---
+©Luigi Di Caro TLN 2026
+8 Large Language Models, Prompting e Human-AI Interaction
+8.7.2 Direzioni future
+•Multimodalità: integrazione testo-immagine-audio
+•Agenticità: LLMs come agenti autonomi con strumenti
+•Personalizzazione: modelli adattati a utenti/domini specifici
+•Efficienza: modelli più piccoli con capacità maggiori
+•Alignment: modelli sempre più allineati con valori umani
+8.7.3 Messaggio finale
+Gli LLMs non sono “intelligenza artificiale generale”. Sono sistemi
+potenti ma limitati, che richiedono:
+• Comprensione dei loro meccanismi
+• Uso consapevole e critico
+• Verifica degli output
+• Considerazione etica
+La vera potenza degli LLMs emerge quando vengono usati comeampli-
+ficatori dell’intelligenza umana, non come sostituti.
+233
+--- page 234 ---
+©Luigi Di Caro TLN 2026
+9 Valutazione per la terza parte del
+corso di TLN (2025/2026)
+9.1 La mia idea di valutazione
+Valutare la conoscenza nel Natural Language Processing è un esercizio
+complicato. Questo capitolo cerca di spiegare bene la mia visione, senza
+usare un freddo elenco di criteri. Volendo riassumere la miaideadi
+valutazione, sarebbe la seguente:
+L’obiettivo non è superare l’esame. L’obiettivo è diventare qualcuno che sa fare
+NLP — che sa quando usare BERT e quando bastano SVM, che capisce perché
+un topic model ha fallito, che può spiegare trade-off complessi a non-tecnici, che
+costruisce sistemi robusti invece di demo fragili.
+L’esame è strutturato per testare questo tipo di competenza profonda,
+non la memorizzazione superficiale. Vediamo come.
+9.2 Struttura dell’esame
+L’esame è composto da due parti complementari, ciascuna progettata
+per valutare aspetti diversi ma ugualmente cruciali:
+1. Parte Teorico-Critica: Domande sulla parte descrittiva e concet-
+tuale del corso
+2. Parte Laboratoriale: Discussione degli esercizi pratici implementa-
+ti (Lab-npiù il progetto esteso)
+234
+--- page 235 ---
+©Luigi Di Caro TLN 2026
+9 Valutazione per la terza parte del corso di TLN (2025/2026)
+9.3 Parte I: Teoria e pensiero critico
+9.3.1 Cosa viene valutato (e perché)
+La prima parte dell’esame non testa se avete memorizzato le slide.
+Testa se aveteinternalizzatoi concetti al punto da poterli usare come
+strumenti di pensiero.
+Tre criteri guidano la valutazione:
+1. Linguaggio tecnico preciso
+Cosa cerco: la capacità di usare terminologia tecnica con precisione,
+senza vaghe approssimazioni.
+Perché conta: Nell’NLP , le parole hanno significati precisi. “Embedding”
+non è un sinonimo generico di “rappresentazione”. “Attention” non
+significa “il modello guarda qualcosa”. TF-IDF non è “una specie
+di frequenza delle parole”. La precisione lessicale riflette precisione
+concettuale.
+2. Chiarezza concettuale e contestuale
+Cosa cerco: idee precise e chiare sulle definizioni, e comprensione del
+contesto storico, metodologico e applicativoin cui quei concetti vivono.
+Perché conta: Un concetto isolato è sterile. Capire “cosa è Word2Vec”
+senza capireperchéfu rivoluzionario nel 2013, quali problemi risolveva
+rispetto a bag-of-words, quali limiti aveva che BERT poi ha superato è
+memorizzazione, non comprensione.
+235
+--- page 236 ---
+©Luigi Di Caro TLN 2026
+9 Valutazione per la terza parte del corso di TLN (2025/2026)
+3. Pensiero comparativo e integrativo
+Cosa cerco: la capacità dimettere in dialogoconcetti diversi, confrontare
+approcci, valutare trade-off, costruire ponti tra aree apparentemente
+separate del corso.
+Perché conta: Questa è la competenza che distingue un esperto da
+un novizio. Il novizio sa definire cos’è un embedding. L’esperto sa
+quando Word2Vec è sufficiente e quando serve BERT contestuale, perché
+TF-IDF potrebbe ancora battere embeddings neurali su certi task di
+retrieval, come gli embeddings si inseriscono in pipeline downstream
+(classificazione, clustering, semantic search), quali assunzioni porta
+ciascun metodo (Word2Vec assume stazionarietà del significato, BERT
+cattura polisemia contestuale ma è computazionalmente costoso) e come
+queste limitano l’applicabilità in scenari reali.
+9.4 Parte II: Laboratorio e Implementazione
+9.4.1 Cosa viene valutato (e perché)
+La seconda parte dell’esame parte dagli esercizi di laboratorio che avete
+implementato. Ma non vi chiedo di recitare il codice a memoria. Vi
+chiedo di dimostrareownership- che quel codice capite cosa fa, perché
+lo fa così, e cosa potreste fare diversamente.
+Tre criteri:
+1. Conoscenza personale del codice
+Cosa cerco: Capacità di navigare il codice, spiegare sezioni specifiche,
+modificare al volo, rispondere a “cosa succederebbe se...”.
+236
+--- page 237 ---
+©Luigi Di Caro TLN 2026
+9 Valutazione per la terza parte del corso di TLN (2025/2026)
+Perché conta: Chiunque può copiare un notebook da GitHub e farlo gi-
+rare. Ma se non capisciperchéquella riga di codice è lì, cosa romperebbe
+se la togliessi, quale assunzione sottende, è un problema.
+Durante l’esame, potrei chiedere:
+• “Mostrami dove fai embedding dei documenti. Quale modello hai
+usato? Perché quello?”
+• “Qui usi n_components=5 in UMAP . Cosa succederebbe con 15?
+Quando vorresti più componenti?”
+• “Vedo che hai min_cluster_size=50. Come hai scelto questo
+valore? Hai sperimentato con altri numeri?”
+2. Correttezza, semplicità, leggibilità
+Cosa cerco: Codice che funziona, ma anche codiceleggibile, con nomi
+variabili sensati, struttura chiara, commenti dove servono (e silenzio
+dove sono ovvi).
+Perché conta: Nel mondo reale, il codice è letto 10 volte più spesso di
+quanto è scritto. Codice funzionante ma incomprensibile crea problemi.
+3. Profondità di analisi dei risultati
+Cosa cerco: Questa è la parte che separa davvero competenza superficia-
+le da profonda. Non basta dire “ho ottenuto 15 topic”. Devi saper dire:
+“Ho ottenuto 15 topic, ma 3 sembrano overlap semantico, 2 sono rumore
+probabilmente, il topic 7 è sorprendentemente coerente e cattura X che
+non mi aspettavo. Ho provato min_cluster_size=100 e sono scesi a 10
+topic più stabili ma ho perso granularità su Y. Il trade-off dipende da...”
+Perché conta: Questa è scienza sperimentale. Gli esperimenti falliscono,
+danno risultati inaspettati, rivelano assunzioni sbagliate. La capacità di
+riflettere criticamentesu risultati è il cuore del metodo scientifico.
+237
+--- page 238 ---
+©Luigi Di Caro TLN 2026
+9 Valutazione per la terza parte del corso di TLN (2025/2026)
+9.5 Criteri di valutazione: griglia sintetica
+Per trasparenza, ecco come i criteri si traducono in valutazione:
+9.5.1 Parte I: Teoria (circa 50% del voto)
+Criterio Insufficiente Eccellente
+Linguaggio tecnico Termini vaghi, impre-
+cisi, o usati scorretta-
+mente
+Terminologia precisa,
+usata con consapevo-
+lezza di sfumature
+Chiarezza concettua-
+le
+Definizioni isolate,
+senza contesto stori-
+co/metodologico
+Concetti contestualiz-
+zati, con motivazioni,
+assunzioni, limiti
+Pensiero comparati-
+vo
+Risposte isolate per
+ogni domanda, nessu-
+na connessione
+Capacità di confronta-
+re, integrare, valutare
+trade-off tra approcci
+9.5.2 Parte II: Laboratorio (circa 50% del voto)
+Criterio Insufficiente Eccellente
+Ownership codice Non sa spiegare se-
+zioni, “ho copiato da
+tutorial”
+Naviga fluentemente,
+spiega scelte, modifi-
+ca al volo
+Qualità codice Funziona ma illeggi-
+bile, nomi variabili
+opachi
+Leggibile, strutturato,
+commenti appropria-
+ti
+Analisi risultati “Ho ottenuto X topic”
+senza riflessione
+Validazione qualita-
+tiva, comparazione
+configurazioni, consa-
+pevolezza limiti
+238
+--- page 239 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica,
+Conoscenza e Futuro del NLP
+10.1 Il percorso compiuto
+Questo corso ha tracciato un percorso attraverso diverse prospettive
+sulla comprensione computazionale del linguaggio. Non si è trattato di
+una semplice sequenza di tecniche, ma di un viaggio concettuale che ha
+esplorato come possiamo catturare, rappresentare e generare significato
+attraverso sistemi computazionali.
+Abbiamo iniziato dalla semantica computazionale nella sua triplice arti-
+colazione: il significato come inventario strutturato (semantica lessicale),
+come condizioni di verità (semantica formale), e come distribuzione
+nell’uso (semantica distribuzionale). Questi tre approcci non sono alter-
+nativi ma complementari, e la loro integrazione rimane una sfida aperta.
+La semantica lessicale ci fornisce struttura e organizzazione esplicita;
+la semantica formale ci dà rigore e composizionalità; la semantica di-
+stribuzionale ci offre flessibilità e capacità di apprendimento dai dati. I
+sistemi moderni, inclusi i Large Language Models, in realtà combinano
+implicitamente tutti e tre questi paradigmi, anche se in modi che non
+sempre comprendiamo completamente.
+Le definizioni, oggetto del secondo capitolo, rappresentano un ponte
+cruciale tra conoscenza esplicita e computazione. Abbiamo visto come
+le definizioni non siano semplici stringhe di testo, ma strutture com-
+plesse che codificano relazioni semantiche, vincoli d’uso, e knowledge
+organization. La distinzione tra approccio semasiologico (dal termine al
+significato) e onomasiologico (dal concetto al termine) ci ha mostrato
+239
+--- page 240 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica, Conoscenza e Futuro del NLP
+che la direzione del processo semantico non è neutrale: cercare il si-
+gnificato di una parola è qualitativamente diverso dal cercare la parola
+per esprimere un concetto. Questo diventa particolarmente rilevante
+quando integriamo sistemi di retrieval con modelli generativi, come nel
+caso del RAG.
+Il terzo capitolo ha affrontato temi che vanno oltre la pura tecnica: priva-
+cy, rilascio dati, e disinformazione sono problemi semantici tanto quanto
+computazionali. La capacità di identificare e mitigare misinformation
+richiede comprensione profonda del linguaggio, dei bias, e dei meccani-
+smi di fiducia. L’explainability non è un lusso ma una necessità etica: gli
+utenti hanno diritto di capire perché un sistema produce certe risposte,
+specialmente quando quelle risposte influenzano decisioni importanti. Il
+progetto PRIN KURAMi ( https://kurami.disco.unimib.it) menzio-
+nato a lezione e discusso in quel capitolo, mostra come l’annotazione
+assistita possa aumentare la consapevolezza degli utenti.
+La polisemia, analizzata nel quarto capitolo, ci ha rivelato che l’ambigui-
+tà non è un bug ma una feature fondamentale del linguaggio umano.
+Non tutte le parole polisemiche sono ugualmente complesse: la struttu-
+ra della polisemia, la distribuzione dei sensi, la separabilità semantica
+variano enormemente. Abbiamo visto che questa complessità non è
+universale ma dipende dalla lingua, dalla cultura, dal dominio. Gli
+embeddings contestuali catturano questa variazione in modi sofisticati,
+ma la sfida di disambiguare rimane aperta, specialmente quando i sensi
+non sono nettamente separati ma formano un continuum.
+Il concetto di basic level, esplorato nel quinto capitolo, ci ha mostrato
+che esiste una granularità privilegiata nella concettualizzazione: né
+troppo generica né troppo specifica, ma cognitivamente naturale. Questa
+nozione, derivata dalla psicologia cognitiva, ha implicazioni pratiche
+profonde per text simplification, language learning, e human-computer
+interaction. Non esiste però un basic level universale: ciò che è basico
+dipende dal contesto, dalla competenza dell’utente, dal dominio di
+applicazione. Riconoscere e modellare questa variabilità rimane una
+sfida aperta.
+240
+--- page 241 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica, Conoscenza e Futuro del NLP
+Il sesto capitolo ha tracciato la storia del NLP pre-LLM, mostrando
+come siamo passati da approcci simbolici a statistici, poi neurali, e
+infine ai Transformer. Questa non è stata una semplice successione di
+paradigmi: ogni era ha lasciato contributi concettuali e metodologici che
+informano ancora il presente. Il text mining, con task come clustering,
+classificazione, topic modeling, e information retrieval, rappresenta un
+patrimonio di tecniche che non sono scomparse con l’avvento degli LLM,
+ma si sono integrate in architetture più complesse. La lezione chiave è
+che il progresso non cancella il passato, ma lo stratifica.
+Il RAG, discusso nel settimo capitolo, rappresenta un punto di conver-
+genza tra retrieval classico e generazione neurale. Invece di affidarsi
+solo alla memoria parametrica (limitata e statica) degli LLM, ancoriamo
+la generazione a documenti esterni recuperati dinamicamente. Questa
+architettura non solo mitiga le allucinazioni e aggiorna la conoscenza,
+ma introduce anche verificabilità: possiamo tracciare da dove proven-
+gono le informazioni. Il RAG non è una soluzione perfetta, ma un
+paradigma che riconosce i limiti degli LLM puri e li complementa con
+accesso esplicito a knowledge bases.
+Infine, l’ottavo capitolo ha affrontato gli LLM stessi: le loro capacità
+impressionanti, i loro limiti strutturali, e soprattutto il modo in cui
+trasformano l’interazione human-AI. Il prompting non è una tecnica
+superficiale ma un’abilità complessa che richiede comprensione dei mo-
+delli, iterazione, e creatività. Gli LLM introducono nuovi pattern di
+interazione (co-creazione, debugging conversazionale, delega progres-
+siva) ma anche nuove sfide (calibrazione della fiducia, responsabilità,
+opacità, deskilling). La human-AI interaction non è più mediata da
+interfacce rigide ma da conversazioni aperte, con tutti i benefici e i rischi
+che questo comporta.
+10.2 Temi trasversali
+Attraversando questi capitoli, emergono temi ricorrenti che vale la pena
+esplicitare.
+241
+--- page 242 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica, Conoscenza e Futuro del NLP
+10.2.1 La tensione tra simbolico e subsimbolico
+Il NLP contemporaneo vive una tensione produttiva tra rappresentazioni
+simboliche esplicite (ontologie, grafi di conoscenza, definizioni formali) e
+rappresentazioni distribuite subsimboliche (embeddings, neuroni, layer).
+I sistemi puramente simbolici offrono interpretabilità e controllo ma
+faticano a scalare e gestire l’ambiguità. I sistemi puramente neurali
+apprendono pattern complessi dai dati ma sono opachi e difficili da
+debuggare. La direzione più promettente sembra essere l’integrazione:
+neuro-symbolic AI che combina apprendimento statistico con reasoning
+strutturato. Il RAG è un esempio di questa integrazione: retrieval
+esplicito su documenti strutturati combinato con generazione neurale.
+10.2.2 Conoscenza implicita vs esplicita
+Gli LLM codificano enormi quantità di conoscenza nei loro parametri,
+ma questa conoscenza è implicita, non accessibile direttamente, non veri-
+ficabile. Le knowledge bases tradizionali (WordNet, Wikidata, ontologie
+di dominio) codificano conoscenza esplicita, strutturata, verificabile, ma
+statica e costosa da mantenere. Anche qui, l’integrazione sembra la
+via: sistemi ibridi che usano LLM per popolare e aggiornare knowledge
+bases, e knowledge bases per guidare e verificare la generazione degli
+LLM.
+10.2.3 Task-specific vs general-purpose
+Il NLP pre-LLM era prevalentemente task-specific: modelli diversi per
+sentiment analysis, NER, POS tagging, parsing, translation, etc. Gli
+LLM sono sistemi general-purpose che risolvono task multipli attraverso
+prompting. Questo ha vantaggi enormi (flessibilità, zero-shot, riduzione
+costi di sviluppo) ma anche svantaggi (performance non ottimale su
+task specifici, difficoltà di controllo, consumo risorse). La tendenza
+242
+--- page 243 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica, Conoscenza e Futuro del NLP
+attuale è verso sistemi ibridi: LLM come backbone generale, fine-tuned
+o augmented per task specifici.
+10.2.4 Dati vs modelli
+Una domanda ricorrente: cosa conta di più, i dati o i modelli? La
+risposta evolve. Nell’era statistica, i dati erano tutto: “there’s no data
+like more data”. Nell’era deep learning, l’architettura divenne cruciale:
+Transformer ha battuto LSTM non per più dati ma per design migliore.
+Nell’era LLM, la scala di entrambi è essenziale: modelli enormi su
+dataset enormi. Ma emergono tecniche che sfidano questa narrativa:
+few-shot learning, parameter-efficient fine-tuning, retrieval-augmented
+generation. Forse la domanda stessa è mal posta: dati e modelli co-
+evolvono, e l’ottimizzazione di uno senza l’altro è limitante.
+10.2.5 Evaluation: il problema della misura
+Come valutiamo un sistema NLP? La risposta dipende dal task, dal
+contesto, dagli stakeholder. Metriche automatiche (BLEU, ROUGE, F1,
+perplexity) sono riproducibili ma spesso correlano male con qualità
+percepita. Valutazioni umane catturano sfumature ma sono costose,
+soggettive, non scalabili. Valutazioni estrinsiche (task downstream)
+misurano utilità reale ma confondono molteplici fattori. Non esiste
+una metrica perfetta, e la triangolazione (combinare metodi diversi) è
+essenziale. Con gli LLM, la sfida si amplifica: come valutiamo creativi-
+tà, faithfulness, harmlessness? Nuove metriche emergono (instruction
+following, toxicity detection, factual accuracy) ma rimangono imperfette.
+10.2.6 Multilingualità e universalità
+L’NLP ha storicamente favorito l’inglese: più dati, più ricerca, più
+risorse. Gli LLM multilingue (mBERT, XLM-R, mT5) hanno migliorato la
+243
+--- page 244 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica, Conoscenza e Futuro del NLP
+situazione, ma asimmetrie persistono. Concetti che sembrano universali
+(basic level, polisemia, definizioni) variano cross-linguisticamente in
+modi sottili ma significativi. Un sistema addestrato principalmente su
+inglese potrebbe non generalizzare bene ad altre lingue con strutture
+semantiche diverse. La vera multilingualità richiede non solo traduzione
+ma comprensione di variazione culturale e concettuale.
+10.3 Sfide aperte
+Nonostante i progressi impressionanti, l’NLP affronta sfide fondamentali
+che rimangono irrisolte.
+10.3.1 Comprensione profonda vs pattern matching
+Gli LLM eccellono nel riconoscere pattern statistici su scale enormi,
+ma quanto comprendono veramente? Possono completare frasi fluen-
+temente, ma capiscono la causalità? Possono generare codice corretto,
+ma hanno un modello mentale di come funziona? Possono tradurre
+testi, ma colgono sfumature pragmatiche e culturali? Il dibattito su cosa
+significhi “comprensione” per un sistema computazionale è filosofico
+tanto quanto tecnico, ma ha implicazioni pratiche: se un modello non
+comprende veramente, i suoi errori saranno sistematici e imprevedibili.
+10.3.2 Groundedness e riferimento al mondo
+Il linguaggio umano ègrounded: le parole si riferiscono a oggetti, eventi,
+relazioni nel mondo fisico e sociale. Gli LLM sono addestrati solo
+su testo, senza esperienza diretta del mondo. Questo crea problemi:
+possono descrivere come “preparare il caffè” senza aver mai visto una
+macchinetta; possono parlare di “gravità” senza aver mai visto oggetti
+cadere. I sistemi multimodali (che integrano testo, immagini, audio,
+244
+--- page 245 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica, Conoscenza e Futuro del NLP
+video) stanno affrontando questa limitazione, ma siamo ancora lontani
+da una veragrounded understanding.
+10.3.3 Ragionamento e composizionalità
+Il linguaggio umano ècompositional: il significato di frasi complesse
+emerge dalla combinazione sistematica di parti più semplici. Gli LLM
+mostrano capacità composizionali emergenti, ma limitate. Faticano con
+ragionamento multi-step, specialmente quando si richiede backtracking
+o revisione di assunzioni. Chain-of-Thought prompting aiuta, ma non
+risolve il problema fondamentale: i Transformer processano sequenze,
+non alberi sintattici o grafi semantici. Architetture che integrano struttu-
+ra esplicita potrebbero essere necessarie ed emergenti nel futuro della
+ricerca.
+10.3.4 Long-term memory e learning continuo
+Gli LLM hanno memoria contestuale (il prompt, eventualmente arric-
+chito con RAG) e memoria parametrica (i pesi addestrati), ma nessuna
+memoria episodica a lungo termine. Non ricordano conversazioni pre-
+cedenti, non apprendono incrementalmente dall’uso, non costruiscono
+knowledge bases personali. Ogni interazione è isolata. Sistemi con
+memoria esterna (database, knowledge graphs, retrieval systems) miti-
+gano questo limite, ma l’integrazione profonda di learning continuo e
+memoria episodica rimane aperta.
+10.3.5 Efficienza e sostenibilità
+Il training di LLM all’avanguardia richiede risorse computazionali im-
+mense, con costi economici ed ambientali significativi. L’inference non
+è trascurabile, specialmente su larga scala. La ricerca su modelli più
+efficienti (distillation, pruning, quantization, sparse models) è cruciale.
+245
+--- page 246 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica, Conoscenza e Futuro del NLP
+Ma oltre l’efficienza computazionale, c’è la questione di sostenibilità
+sociale: chi può permettersi di addestrare questi modelli? Chi controlla
+i dati? Come garantire accesso equo? Questi non sono solo problemi
+tecnici ma politici ed etici.
+10.3.6 Robustezza e adversarial attacks
+Gli LLM sono vulnerabili a input adversariali: prompt appositamente
+costruiti per elicitare comportamenti indesiderati, estrarre informazioni
+private, o bypassare safety filters. La robustness a questi attacchi è
+difficile perché lo spazio degli input è infinito e creativo. Tecniche come
+red teaming, adversarial training, e constitutional AI aiutano, ma è una
+corsa continua tra attaccanti e difensori.
+10.3.7 Alignment e valori
+Come assicuriamo che gli LLM siano allineati con valori umani? RLHF
+è un passo, ma quali valori? Chi li definisce? Valori universali non
+esistono: culture, società, individui hanno priorità diverse. Un modello
+addestrato prevalentemente su testi occidentali riflette quei valori. Co-
+me costruiamo sistemi che rispettano diversità culturale pur evitando
+relativismo morale su questioni fondamentali (diritti umani, dignità, giu-
+stizia)? Questa è una sfida profondamente interdisciplinare che richiede
+filosofia, etica, sociologia, oltre all’Informatica.
+10.4 Direzioni future
+Guardando avanti, diverse direzioni sembrano particolarmente promet-
+tenti.
+246
+--- page 247 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica, Conoscenza e Futuro del NLP
+10.4.1 Agenticità e tool use
+Gli LLM stanno evolvendo da generatori passivi ad agenti attivi che
+possono usare strumenti esterni: eseguire codice, interrogare database,
+navigare il web, invocare API. Sistemi come AutoGPT, LangChain, ecc.
+mostrano questa direzione. L’agenticità introduce nuove capacità ma
+anche nuovi rischi: un agente autonomo può fare errori con conseguenze
+reali. Il design di safety constraints e human-in-the-loop mechanisms è
+essenziale.
+10.4.2 Multimodalità profonda
+I sistemi multimodali attuali (GPT-4V , Gemini, CLIP) integrano visione
+e linguaggio, ma spesso in modo superficiale. La vera multimodalità
+richiederebbe rappresentazioni unificate dove concetti visivi, linguistici,
+uditivi, e tattili coesistono e si informano reciprocamente. Questo avvi-
+cinerebbe i sistemi alla cognizione umanaembodied, dove il significato
+emerge dall’interazione sensorimotoria con il mondo.
+10.4.3 Personalizzazione e contextualizzazione
+Gli LLM attuali sono general-purpose, ma il futuro potrebbe vedere
+modelli personali che si adattano a utenti specifici, ricordando preferen-
+ze, apprendendo stili comunicativi. Questo solleva questioni di privacy
+(quanti e quali dati personali immagazzinare?) e lock-in (quanto dipen-
+dente si diventa da un assistente personalizzato?), ma offre anche UX
+superiore e assistenza più utile.
+10.4.4 Neuro-symbolic integration
+Combinare forza degli approcci neurali (apprendimento dai dati, robu-
+stezza, generalizzazione) con vantaggi degli approcci simbolici (inter-
+247
+--- page 248 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica, Conoscenza e Futuro del NLP
+pretabilità, reasoning, verificabilità) è una frontiera attiva. Knowledge
+graphs aumentati con embeddings, logical reasoning guidato da LLM,
+program synthesis con neural networks sono tutte direzioni promettenti.
+10.4.5 Modelli small e più efficienti
+Mentre i modellileaderdiventano sempre più grandi, c’è una tendenza
+parallela verso modelli più piccoli ma altamente efficienti. Distilla-
+tion, quantization, mixture-of-experts, sparse activation permettono di
+comprimere capacità in footprint ridotti. Modelli come Phi-2 o Mistral
+mostrano che architetture intelligenti e dati di qualità possono competere
+con modelli 10x più grandi.
+10.4.6 Evaluation e benchmarking next-generation
+I benchmark attuali (GLUE, SuperGLUE, MMLU) saturano rapidamente.
+Servono valutazioni che testino capacità più profonde: reasoning causale,
+planning a lungo termine, robustezza a distributional shift, comprensio-
+ne pragmatica, creatività genuina. Benchmark dinamici che evolvono e
+si adattano (per evitare overfitting) sono una direzione interessante.
+10.5 Riflessioni metodologiche
+Oltre ai contenuti tecnici, questa terza parte del corso TLN ha cercato di
+trasmettere un approccio metodologico e variegato all’NLP .
+10.5.1 Pensiero critico sui sistemi
+Non basta sapere come usare un tool o una libreria. Serve capire le
+assunzioni sottostanti, i limiti, i trade-off. Quando usiamo un LLM,
+248
+--- page 249 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica, Conoscenza e Futuro del NLP
+chiediamoci: su quali dati è stato addestrato? Quali bias potrebbe avere?
+Quando tende a fallire? Quando usiamo un dataset, chiediamoci: come
+è stato raccolto? Quanto è rappresentativo? Quali artefatti potrebbe
+contenere? Il pensiero critico porta ad analisi costruttive.
+10.5.2 Iterazione e sperimentazione
+L’NLP è empirico. Le ipotesi vanno testate, i modelli vanno validati,
+i risultati vanno replicati. Ma sperimentazione non significa trial-and-
+error cieco: serve design sperimentale attento, controllo delle variabili,
+interpretazione rigorosa. La cultura della riproducibilità (condividere
+codice, dati, procedure) è essenziale per un progresso cumulativo.
+10.5.3 Interdisciplinarità
+L’NLP non è solo computer science. Incorpora linguistica (fonologia,
+morfologia, sintassi, semantica, pragmatica), psicologia cognitiva (memo-
+ria, attenzione, categorizzazione), filosofia del linguaggio (riferimento,
+significato, verità), sociologia (variazione sociale, potere, identità), etica
+(bias, fairness, privacy). Un ricercatore NLP completo deve navigare
+questi domini o almeno riconoscere quando servono expertise esterne.
+10.5.4 Consapevolezza storica
+Molte “nuove” idee hanno radici profonde. Gli embeddings distribuiti
+echeggiano i vector space models degli anni ’70, come abbiamo visto in
+qualche capitolo precedente. Il prompting ricorda i template-based sy-
+stems. L’attention mechanism ha precedenti come le memory networks.
+Conoscere la storia aiuta a capire cosa è genuinamente nuovo e cosa è
+re-packaging. Aiuta anche a evitare di ripetere errori del passato.
+249
+--- page 250 ---
+©Luigi Di Caro TLN 2026
+10 Conclusioni: Semantica, Conoscenza e Futuro del NLP
+10.5.5 Responsabilità etica
+La tecnologia NLP ha impatto reale su persone reali. Sistemi di senti-
+ment analysis influenzano assunzioni, sistemi di moderazione decidono
+cosa è visibile online, sistemi di traduzione mediano comunicazione
+cross-culturale. Le scelte che facciamo (quali dati usare, come valutare,
+quali applicazioni deployare) hanno conseguenze etiche. Serve quindi
+unaconsapevolezza attivadi bias, fairness, privacy, accountability.
+10.6 Il futuro è conversazione
+Se dovessi riassumere in una frase la trasformazione portata dagli LLM,
+sarebbe questa: abbiamo spostato l’interfaccia human-computer dal
+codice alla conversazione.
+Prima degli LLM, per interagire con un computer serviva tradurre inten-
+zioni in linguaggio formale: command-line, SQL, API calls, GUI clicks.
+L’utente doveva adattarsi alla macchina. Con gli LLM, la macchina si
+adatta all’utente: possiamo esprimere obiettivi in linguaggio naturale,
+raffinare attraverso dialogo, scoprire capacità conversando. Con limiti e
+rischi, ovviamente.
+Questo abbassa drasticamente le barriere d’accesso. Ma introduce anche
+responsabilità: se tutti possono usare l’AI, come preveniamo ilmisuse?
+Se l’AI diventa così fluente, come distinguiamo verità da finzione? Se
+deleghiamo tanto, cosa perdiamo in competenza?
+La conversazione come interfaccia non è solo più comoda: è quali-
+tativamente diversa. Cambia cosa è possibile, chi può partecipare,
+come pensiamo al rapporto human-machine. Siamo solo all’inizio
+dell’esplorazione di queste implicazioni.
+250

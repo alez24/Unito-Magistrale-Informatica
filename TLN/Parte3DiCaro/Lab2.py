@@ -28,7 +28,7 @@ WORDNET_SYNSETS = {
     'Ethics': [
         ('ethics.n.01', 'the philosophical study of moral values and rules'),
         ('ethical_motive.n.01', 'motivation based on ideas of right and wrong'),
-        ('ethics.n.02', 'a system of principles governing morality and acceptable conduct'),
+        ('ethics.n.02e wqtrewqt9r', 'a system of principles governing morality and acceptable conduct'),
         ('morality.n.01', 'concern with the distinction between good and evil or right and wrong; right or good conduct'),
         ('moral_philosophy.n.01', 'the branch of philosophy that studies the principles of right and wrong in human conduct'),
     ],
@@ -50,6 +50,7 @@ WORDNET_SYNSETS = {
 
 # ---------------------------------------------------------------------------
 # 2. STOPWORDS E PULIZIA TESTO
+# da modificare e implementare NTLK per rimuovere stopwords e punteggiatura, e per lemmatizzare le parole
 # ---------------------------------------------------------------------------
 STOPWORDS = set([
     'a','an','the','and','or','but','in','on','of','to','for','is','are',

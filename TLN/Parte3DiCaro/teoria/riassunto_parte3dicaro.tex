@@ -17,13 +17,47 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning, arrows.meta}
 \usepackage{needspace}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
 
-\geometry{top=2cm, bottom=2cm, left=2.5cm, right=2.5cm}
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
 
 \hypersetup{
     colorlinks=true,
     linkcolor=blue!70!black,
     urlcolor=blue
+}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+% --- Stile titoli di sezione: numero su sfondo blu + riga sotto ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue!40!black}}
+  {\colorbox{blue!12}{\parbox{1.4em}{\centering\thesection}}\hspace{0.6em}}
+  {0pt}
+  {}
+  [\vspace{2pt}\textcolor{blue!30!black}{\titlerule[0.8pt]}]
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{blue!55!black}}
+  {\thesubsection}
+  {0.7em}
+  {}
+\titlespacing{\section}{0pt}{2.2em}{1.2em}
+
+% --- Intestazioni di pagina ---
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\small\itshape\nouppercase{\leftmark}}
+\fancyhead[R]{\small\itshape\nouppercase{\rightmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+\renewcommand{\subsectionmark}[1]{\markright{#1}}
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
 }
 
 % Box definizione (grigio)
@@ -103,15 +137,82 @@
     backgroundcolor=\color{gray!5}
 }
 
-\title{\textbf{TLN -- Parte 3: Di Caro}\\[0.3em]
-\large Teoria Completa (Dispense Ufficiali) + Laboratori\\[0.2em]
-\normalsize A.A. 2025/26 -- UniTO Magistrale Informatica}
-\author{Riassunto per lo studio -- fonte: dispense ufficiali del Prof. Di Caro}
-\date{}
-
 \begin{document}
-\maketitle
+\raggedbottom
+
+% ============================================================
+% FRONTESPIZIO
+% ============================================================
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+
+  {\Large\textbf{Universit\`a degli Studi di Torino}\\[0.3em]
+  Corso di Laurea Magistrale in Informatica}
+
+  \vspace{1cm}
+  \HRule\\[0.4em]
+  {\LARGE\textbf{Tecnologie del Linguaggio Naturale}}\\[0.3em]
+  {\large Parte 3 -- Prof.\ Luigi Di Caro}\\[0.2em]
+  \HRule
+
+  \vspace{1.2cm}
+  {\huge\textbf{Riassunto Completo}}\\[0.5em]
+  {\LARGE Teoria (Capitoli 1--10) e Laboratori}\\[0.6em]
+  {\large Semantica computazionale \(\cdot\) Definizioni \(\cdot\) Privacy e misinformation \(\cdot\) Polisemia \(\cdot\)\\
+  Basic level \(\cdot\) Pre-LLM NLP \(\cdot\) RAG \(\cdot\) LLM e prompting \(\cdot\) Valutazione \(\cdot\) Conclusioni}
+
+  \vspace{1.8cm}
+  {\large\textbf{A cura di:}}\\[0.5em]
+  {\large Alessandro Olivero}\\[0.3em]
+  {\small Matricola 915069}
+
+  \vspace{1.5cm}
+  \begin{tabular}{ll}
+    \textbf{Fonte:}            & Dispense ufficiali del Prof.\ Luigi Di Caro \\[0.3em]
+    \textbf{Anno Accademico:}  & 2025/2026 \\
+  \end{tabular}
+
+  \vspace{1cm}
+  {\small\itshape Documento di studio personale -- non sostituisce le dispense ufficiali}
+
+  \vfill
+  {\large \today}
+\end{titlepage}
+
 \tableofcontents
+\newpage
+
+% ============================================================
+% LEGENDA DEI RIQUADRI
+% ============================================================
+\section*{Come leggere questo documento}
+\addcontentsline{toc}{section}{Come leggere questo documento}
+\markboth{Come leggere questo documento}{Come leggere questo documento}
+
+Il documento usa sei tipi di riquadro colorato per segnalare a colpo d'occhio il tipo di contenuto:
+
+\begin{defbox}
+\textbf{Definizione} (blu) -- concetti, terminologia e distinzioni teoriche fondamentali.
+\end{defbox}
+\begin{formulabox}
+\textbf{Formula} (verde acqua) -- espressioni matematiche e metriche quantitative.
+\end{formulabox}
+\begin{examplebox}
+\textbf{Esempio} (azzurro) -- casi concreti tratti dalle dispense o dai laboratori.
+\end{examplebox}
+\begin{resultbox}
+\textbf{Risultato} (arancione) -- tabelle riassuntive e dati sperimentali.
+\end{resultbox}
+\begin{codebox}
+\textbf{Codice} (verde) -- snippet Python rilevanti per l'implementazione.
+\end{codebox}
+\begin{quizbox}
+\textbf{Domanda/riflessione} (viola) -- spunti critici, citazioni dirette dalle dispense, domande da esame.
+\end{quizbox}
+
+\textbf{Struttura}: Parte I (Teoria) segue l'ordine dei dieci capitoli ufficiali delle dispense; Parte II (Laboratori) riporta in dettaglio l'implementazione e i risultati dei laboratori effettivamente svolti, con riferimenti incrociati ai concetti teorici corrispondenti.
+
 \newpage
 
 %% ============================================================
@@ -1139,6 +1240,286 @@ Le dispense propongono un sistema RAG completo su \texttt{MaartenGr/arxiv\_nlp},
 
 \begin{quizbox}
 \textbf{Nota sull'implementazione effettivamente svolta}: il laboratorio concretamente realizzato (vedi Parte II, Sez.~\ref{sec:lab5-detail} e seguenti) usa scelte leggermente diverse da quelle suggerite nelle dispense -- encoder SciBERT (768-dim) invece di MiniLM, LLM \texttt{Phi-3.5-mini-instruct} invece di Qwen, e un confronto sistematico hybrid (BM25+FAISS+RRF) vs. baseline su 5 dimensioni di corpus (1K--44.9K documenti), non presente come tale nelle dispense. Sono scelte implementative equivalenti nello spirito del laboratorio proposto, riportate in dettaglio nella Parte II.
+\end{quizbox}
+
+%% ============================================================
+\section{Large Language Models, Prompting e Human-AI Interaction}
+%% ============================================================
+
+\subsection{Introduzione}
+
+I \textbf{Large Language Model (LLM)} rappresentano un punto di svolta nell'NLP: a differenza dei modelli tradizionali, addestrati per task specifici, sono sistemi \emph{generali} capaci di svolgere molteplici compiti attraverso il solo linguaggio naturale. Questa capacit\`a emerge da due fattori: la \textbf{scala} (modelli con miliardi di parametri su enormi quantit\`a di testo catturano pattern linguistici complessi e conoscenza implicita) e l'architettura \textbf{Transformer} (il meccanismo di attention cattura dipendenze a lungo raggio, superando i limiti delle reti ricorrenti).
+
+\begin{quizbox}
+Ci\`o che rende gli LLM particolarmente significativi non \`e solo la capacit\`a tecnica, ma il modo in cui modificano l'interazione tra umani e sistemi di AI: per la prima volta possiamo comunicare con un sistema computazionale usando linguaggio naturale non vincolato, senza tradurre le intenzioni in comandi predefiniti o interfacce strutturate.
+\end{quizbox}
+
+\subsection{Dai Modelli Base agli Instruction-Tuned Models}
+
+\begin{defbox}
+I \textbf{base language model} sono addestrati esclusivamente sulla predizione del token successivo: completano testo in modo fluido ma \textbf{non seguono istruzioni}. Alla domanda ``La capitale dell'Italia \`e'', un modello base produce una continuazione naturale (``Roma, situata nel Lazio...''), non una risposta. Gli \textbf{instruction-tuned model} sono ulteriormente addestrati su coppie domanda-risposta: interpretano l'input come una richiesta e generano risposte appropriate (``Qual \`e la capitale dell'Italia?'' $\to$ ``La capitale dell'Italia \`e Roma'').
+\end{defbox}
+
+Il passaggio da base a instruction-tuned avviene tramite: \textbf{Supervised Fine-Tuning (SFT)} -- addestramento su migliaia di esempi annotati di interazioni umane di alta qualit\`a (da solo insufficiente per preferenze umane complesse); \textbf{Reinforcement Learning from Human Feedback (RLHF)} -- umani valutano risposte diverse, creando un modello di ricompensa che cattura le preferenze, usato poi per ottimizzare il modello; \textbf{Direct Preference Optimization (DPO)} -- tecnica pi\`u recente che ottiene risultati simili a RLHF senza la complessit\`a del reinforcement learning esplicito.
+
+\subsection{Prompting: l'Arte di Comunicare con gli LLM}
+
+\begin{defbox}
+Il \textbf{prompting} \`e il processo di formulare input testuali che guidano il comportamento del modello -- non ``dare comandi'', ma costruire un'interfaccia linguistica efficace tra intenzione umana e capacit\`a del modello.
+\end{defbox}
+
+\textbf{Perch\'e \`e cruciale}: con gli LLM l'interfaccia \`e il linguaggio stesso, non pulsanti/menu/moduli predefiniti. Questo d\`a \textbf{flessibilit\`a} senza precedenti (task arbitrariamente complessi senza attendere nuove funzionalit\`a), ma introduce \textbf{ambiguit\`a} intrinseca (la stessa richiesta pu\`o essere interpretata in modi diversi) e \textbf{imprevedibilit\`a} (piccole variazioni del prompt $\to$ output molto diversi), richiedendo un approccio iterativo.
+
+\subsubsection{Principi Fondamentali}
+
+\begin{enumerate}
+  \item \textbf{Chiarezza e specificit\`a}: un prompt vago produce output generici. ``Parlami di Roma'' vs. ``Descrivi in tre paragrafi la storia di Roma repubblicana (509-27 a.C.), includendo organizzazione politica, espansione territoriale e fattori di transizione verso l'impero'' -- la seconda versione fornisce vincoli chiari.
+  \item \textbf{Delimitatori}: marcatori espliciti (virgolette triple, tag XML, separatori) per separare testo da analizzare e istruzioni su come analizzarlo, evitando che il modello confonda le due parti.
+  \item \textbf{Formato di output esplicito}: specificare JSON con campi precisi, numero di frasi/parole per un riassunto, ecc. -- elimina ambiguit\`a e rende l'output direttamente utilizzabile.
+  \item \textbf{Iterazione}: raramente il primo tentativo \`e ottimale. Ciclo: generare $\to$ analizzare l'output $\to$ identificare problemi (ambiguit\`a, info mancanti, formato errato) $\to$ raffinare $\to$ ripetere.
+\end{enumerate}
+
+\subsubsection{Strategie Avanzate}
+
+\begin{examplebox}
+\textbf{Chain-of-Thought (CoT)}: chiedere al modello di ``pensare ad alta voce'' migliora drasticamente le performance su task di ragionamento. ``Ho 15 mele, ne mangio 3, poi compro il doppio di quelle mangiate. Quante mele ho ora? \emph{Ragiona passo-passo}'' $\to$ il modello esplicita: $15-3=12$, doppio di 3 = 6, $12+6=18$. Forzato a esplicitare i passaggi intermedi, il modello commette meno errori di calcolo e mantiene coerenza logica. Particolarmente efficace per matematica, logica, pianificazione multi-step.
+
+\textbf{Few-shot learning}: fornire 1-5 esempi espliciti di input-output nel prompt, invece di descrivere solo verbalmente il task (zero-shot). Per sentiment analysis: ``Ottimo prodotto, lo consiglio! $\to$ Positivo'', ``Non funziona, deluso $\to$ Negativo'', poi il caso da classificare -- gli esempi forniscono un template concreto.
+
+\textbf{Self-Consistency}: si generano multiple soluzioni indipendenti (temperature pi\`u alta) e si seleziona la risposta pi\`u frequente (majority voting) -- migliora l'accuratezza su task con soluzioni ben definite.
+
+\textbf{Role Prompting}: assegnare un ruolo (``Sei un esperto di storia romana'', ``Sei un programmatore senior Python'') influenza positivamente tono, livello di dettaglio e competenza apparente della risposta.
+\end{examplebox}
+
+\textbf{Cosa evitare}: \textbf{negazioni eccessive} -- specificare positivamente cosa il modello \emph{deve} fare (``Usa linguaggio semplice per un bambino di 10 anni'') \`e pi\`u efficace che dire cosa \emph{non} deve fare (``Non usare termini tecnici''); \textbf{ambiguit\`a referenziale} -- pronomi vaghi (``Riassumilo'') creano incertezza, meglio essere espliciti (``Riassumi il testo sopra in 3 bullet points'').
+
+\subsection{Task Comuni con gli LLM}
+
+\begin{resultbox}
+\begin{center}
+\small
+\begin{tabular}{lp{9.5cm}}
+\toprule
+\textbf{Task} & \textbf{Caratteristiche principali} \\
+\midrule
+Summarization & Pu\`o essere orientata (per aspetto specifico, livello di dettaglio, audience); \emph{sintesi progressiva} -- da paragrafo a 3 frasi a 1 frase a parola chiave. \\
+Inference/Classificazione & Sentiment analysis, NER, topic detection definiti interamente a prompt, con categorie arbitrarie on-the-fly senza training di modelli dedicati. \\
+Trasformazione & Traduzione (anche tra registri/stili), conversione di formato (CSV$\to$JSON), correzione di errori e normalizzazione. \\
+Espansione & Inverso della sintesi: da bullet points a email, da outline ad articolo completo. Introduce il parametro \textbf{temperatura}. \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+\begin{formulabox}
+\textbf{Temperatura}: controlla la casualit\`a/``creativit\`a'' del modello. \textbf{Bassa} ($0.0$--$0.3$): output deterministico, ideale per documentazione tecnica, codice, risposte fattuali. \textbf{Media} ($0.5$--$0.7$): bilancia prevedibilit\`a e variet\`a. \textbf{Alta} ($0.8$--$1.0+$): output vario e imprevedibile, utile per scrittura creativa e brainstorming. La scelta dipende dal contesto: temperatura bassissima per un contratto legale, alta per una campagna marketing creativa.
+\end{formulabox}
+
+\subsection{Limiti e Problematiche degli LLM}
+
+\begin{examplebox}
+\textbf{Allucinazioni}: il problema pi\`u insidioso. Alla domanda ``Chi ha vinto il Nobel per la letteratura nel 2025?'', un LLM potrebbe rispondere con sicurezza inventando uno scrittore e un romanzo inesistenti. Non \`e un bug occasionale ma una conseguenza diretta del funzionamento: gli LLM sono generatori statistici che producono ci\`o che \`e \emph{probabile} seguire il prompt, non ci\`o che \`e \emph{vero} -- e non mostrano esitazione, generando fatti inventati con la stessa fluidit\`a di fatti reali. Mitigazione principale: \textbf{RAG} (ancora il modello a documenti verificabili); nessuna tecnica elimina completamente il rischio.
+\end{examplebox}
+
+\begin{resultbox}
+\begin{center}
+\small
+\begin{tabular}{lp{9.7cm}}
+\toprule
+\textbf{Limite} & \textbf{Descrizione e mitigazione} \\
+\midrule
+Conoscenza statica & La conoscenza \`e ``congelata'' al training cutoff; non si aggiorna autonomamente. Mitigazione: retrieval esterno/strumenti di ricerca in tempo reale. \\
+Bias e fairness & Riflette stereotipi presenti nei dati (professione-genere, rappresentazione culturale squilibrata). Mitigazione: curation del dataset, debiasing, red teaming, monitoraggio. \\
+Ragionamento superficiale & Eccelle nel pattern matching, fatica con ragionamento causale profondo, pianificazione multi-step, comprensione fisica del mondo (non ha esperienza diretta). \\
+Context window limitato & Performance degrada con contesti lunghi (``lost in the middle''); costi quadratici nella lunghezza del contesto. \\
+Costi computazionali & Training di milioni di euro ed emissioni CO\textsubscript{2} equiparabili a centinaia di voli intercontinentali; anche l'inference ha costi energetici non trascurabili. \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+\subsection{Human-AI Interaction: la Nuova Frontiera}
+
+\subsubsection{Dal Task-Oriented al Goal-Oriented}
+
+\begin{defbox}
+Le interfacce tradizionali sono \textbf{task-oriented}: l'utente deve conoscere in anticipo le funzionalit\`a disponibili e adattare il proprio obiettivo alle capacit\`a del sistema (menu, form, comandi predefiniti). Le interfacce LLM sono \textbf{goal-oriented}: l'utente esprime obiettivi in linguaggio naturale, raffina iterativamente attraverso il dialogo, scopre le capacit\`a del sistema man mano che interagisce. Abbassa drasticamente la barriera d'ingresso, ma introduce una sfida: come sa l'utente cosa chiedere se non conosce i limiti del sistema?
+\end{defbox}
+
+\subsubsection{Nuovi Pattern di Interazione}
+
+\begin{itemize}
+  \item \textbf{Co-creazione}: l'AI diventa partner creativo in un ciclo iterativo (umano fornisce idea/direzione $\to$ AI espande con dettagli/varianti $\to$ umano seleziona e dà feedback $\to$ si ripete). Si applica a scrittura, programmazione, design: l'AI non sostituisce l'umano, amplifica le sue capacit\`a fornendo rapidamente alternative.
+  \item \textbf{Debugging conversazionale}: invece di interpretare messaggi di errore criptici, l'utente dice ``L'output non \`e quello che volevo, voglio che sia pi\`u conciso''; il sistema chiede chiarimenti o propone alternative -- abbassa il carico cognitivo, l'utente non deve tradurre il problema in termini tecnici.
+  \item \textbf{Delega progressiva}: livelli crescenti di autonomia, da task ben definiti (``Traduci questo testo'') a vincoli/preferenze (``mantenendo il tono formale'') a obiettivi generali (``Adatta per un pubblico internazionale non tecnico'') -- il modello deve inferire sempre pi\`u informazioni da solo, richiedendo fiducia crescente.
+\end{itemize}
+
+\subsubsection{Sfide nella Human-AI Interaction}
+
+\begin{quizbox}
+\textbf{Calibrazione della fiducia}: gli utenti si polarizzano. \textbf{Over-trust}: accettano output senza verifica, delegano decisioni critiche senza controllo -- pericoloso perch\'e gli LLM presentano errori con la stessa sicurezza di risposte corrette. \textbf{Under-trust}: ignorano suggerimenti validi, verificano ossessivamente, sotto-utilizzano il sistema. Il problema di fondo: gli LLM non comunicano bene la propria incertezza (non dicono ``forse''). Soluzioni possibili (imperfette): confidence scores, evidenziazione di parti incerte, presentazione di interpretazioni alternative.
+\end{quizbox}
+
+\begin{itemize}
+  \item \textbf{Responsabilit\`a e accountability}: quando un LLM genera contenuto problematico, chi \`e responsabile -- l'utente, il creatore del modello, l'organizzazione che lo ha deployato? A differenza del software tradizionale (dove si pu\`o risalire a una riga di codice specifica), il comportamento emerge da pattern statistici su miliardi di esempi: non c'\`e una singola causa identificabile. Domande aperte su trasparenza, audit, meccanismi di appello.
+  \item \textbf{Opacit\`a del sistema}: gli LLM sono \textbf{black box} -- l'utente non sa perch\'e il modello ha dato quella risposta, su quali dati \`e stato addestrato, come funziona internamente. Rende difficile debuggare, fidarsi, imparare. Possibili mitigazioni: explainability, transparency reports, audit trails.
+  \item \textbf{Deskilling}: rischio che gli utenti perdano competenze fondamentali delegando troppo all'AI (scrittura, programmazione, pensiero critico) -- fenomeno non nuovo (calcolatrici, GPS, correttori ortografici), ma gli LLM operano su processi di pensiero e creativit\`a, non solo calcoli o memoria. Bilanciamento ideale: l'AI come \textbf{amplificatore} di capacit\`a esistenti, non sostituto.
+\end{itemize}
+
+\subsubsection{Design Principles per Interfacce LLM}
+
+\begin{enumerate}
+  \item \textbf{Rendere l'incertezza visibile}: confidence scores, evidenziazione di parti incerte, presentazione esplicita di interpretazioni alternative.
+  \item \textbf{Supportare l'iterazione}: bottoni per raffinare (``pi\`u dettaglio'', ``pi\`u conciso'', ``spiega il ragionamento''), storia delle varianti, undo/redo accessibili -- l'interazione non deve mai essere un vicolo cieco.
+  \item \textbf{Educare l'utente}: spiegare attivamente capacit\`a e limiti del sistema, fornire esempi di prompt efficaci, mostrare best practice attraverso l'uso.
+  \item \textbf{Dare controllo}: parametri (temperatura, lunghezza, dettaglio) regolabili con controlli intuitivi, possibilit\`a di intervento manuale, modalit\`a ``explain why'' per il ragionamento del modello.
+\end{enumerate}
+
+\subsubsection{Casi d'Uso Emergenti}
+
+\textbf{Assistenti personali contestuali} altamente specializzati per dominio (medico, legale, ricerca) sia nella conoscenza sia nello stile di interazione. \textbf{Cognitive scaffolding}: l'AI non produce output finali ma facilita il pensiero -- genera idee in brainstorming, fa da ``devil's advocate'' sfidando assunzioni, pone domande socratiche invece di dare risposte dirette (da ``rispositore'' a ``facilitatore di pensiero''). \textbf{Mediazione culturale e linguistica}: oltre la traduzione letterale -- adatta riferimenti culturali, ricrea umorismo basato su giochi di parole, localizza espressioni idiomatiche, spiega contesti culturali opachi.
+
+\begin{quizbox}
+\textbf{Laboratorio opzionale (dalle dispense)}: un approfondimento non obbligatorio propone 6 esperimenti pratici con modelli piccoli (Qwen2.5-0.5B-Instruct, Phi-3.5-mini-instruct, eseguibili su CPU) per osservare empiricamente: l'effetto del CoT su problemi aritmetici multi-step; la consistenza del few-shot prompting sulla classificazione; le allucinazioni su domande oltre il training cutoff o su entit\`a inesistenti (e la mitigazione tramite richiesta esplicita di incertezza); l'effetto della temperatura sulla variet\`a/coerenza dell'output; la sensibilit\`a a piccole riformulazioni del prompt e all'ordine degli esempi few-shot; i limiti del ragionamento controfattuale e dei sillogismi senza CoT. Per ciascun esperimento si tracciano accuratezza, consistenza tra run, latenza e failure mode -- un esercizio di falsificazione empirica dei limiti discussi in questo capitolo, non di implementazione di un sistema.
+\end{quizbox}
+
+\subsection{Conclusioni}
+
+\textbf{Takeaway chiave}: (1) il prompting \`e un'abilit\`a che richiede pratica e iterazione; (2) gli LLM hanno limiti strutturali (allucinazioni, bias, ragionamento superficiale); (3) le strategie avanzate (CoT, few-shot, self-consistency) migliorano significativamente le performance; (4) la human-AI interaction richiede nuovi principi di design; (5) la responsabilit\`a nell'uso degli LLM \`e cruciale.
+
+\textbf{Direzioni future}: multimodalit\`a (integrazione testo-immagine-audio); agenticit\`a (LLM come agenti autonomi con strumenti); personalizzazione (modelli adattati a utenti/domini); efficienza (modelli pi\`u piccoli con capacit\`a maggiori); alignment (modelli sempre pi\`u allineati con valori umani).
+
+\begin{quizbox}
+\textbf{Messaggio finale}: gli LLM non sono ``intelligenza artificiale generale''. Sono sistemi potenti ma limitati, che richiedono comprensione dei meccanismi, uso consapevole e critico, verifica degli output, considerazione etica. La vera potenza degli LLM emerge quando vengono usati come \textbf{amplificatori dell'intelligenza umana}, non come sostituti.
+\end{quizbox}
+
+%% ============================================================
+\section{Valutazione per la Terza Parte del Corso di TLN}
+%% ============================================================
+
+\subsection{La Filosofia di Valutazione}
+
+\begin{quizbox}
+\textbf{Nelle parole del Prof.\ Di Caro}: \emph{``L'obiettivo non \`e superare l'esame. L'obiettivo \`e diventare qualcuno che sa fare NLP -- che sa quando usare BERT e quando bastano SVM, che capisce perch\'e un topic model ha fallito, che pu\`o spiegare trade-off complessi a non-tecnici, che costruisce sistemi robusti invece di demo fragili.''} L'esame \`e strutturato per testare questo tipo di competenza profonda, non la memorizzazione superficiale.
+\end{quizbox}
+
+\subsection{Struttura dell'Esame}
+
+L'esame \`e composto da due parti complementari: \textbf{Parte Teorico-Critica} (domande sulla parte descrittiva e concettuale del corso) e \textbf{Parte Laboratoriale} (discussione degli esercizi pratici implementati: Lab-$n$ pi\`u il progetto esteso).
+
+\subsection{Parte I: Teoria e Pensiero Critico}
+
+Tre criteri guidano la valutazione, in ordine di importanza crescente:
+
+\begin{enumerate}
+  \item \textbf{Linguaggio tecnico preciso}: capacit\`a di usare terminologia tecnica con precisione, senza vaghe approssimazioni. ``Embedding'' non \`e sinonimo generico di ``rappresentazione''; ``attention'' non significa ``il modello guarda qualcosa''; TF-IDF non \`e ``una specie di frequenza delle parole''. \emph{La precisione lessicale riflette precisione concettuale.}
+  \item \textbf{Chiarezza concettuale e contestuale}: idee precise sulle definizioni \emph{e} comprensione del contesto storico, metodologico e applicativo. Sapere ``cosa \`e Word2Vec'' senza capire \emph{perch\'e} fu rivoluzionario nel 2013, quali problemi risolveva rispetto al bag-of-words, quali limiti BERT ha poi superato, \`e memorizzazione, non comprensione.
+  \item \textbf{Pensiero comparativo e integrativo}: capacit\`a di mettere in dialogo concetti diversi, confrontare approcci, valutare trade-off, costruire ponti tra aree del corso. \`E la competenza che distingue un esperto da un novizio: non solo definire un embedding, ma sapere quando Word2Vec basta e quando serve BERT contestuale, quando TF-IDF batte ancora gli embeddings neurali su certi task di retrieval, quali assunzioni porta ciascun metodo e come limitano l'applicabilit\`a in scenari reali.
+\end{enumerate}
+
+\subsection{Parte II: Laboratorio e Implementazione}
+
+La seconda parte parte dagli esercizi di laboratorio implementati, ma non richiede di recitare il codice a memoria: richiede di dimostrare \textbf{ownership} -- che il codice sia compreso in cosa fa, perch\'e lo fa cos\`i, e cosa si potrebbe fare diversamente.
+
+\begin{enumerate}
+  \item \textbf{Conoscenza personale del codice}: capacit\`a di navigare il codice, spiegare sezioni specifiche, modificare al volo, rispondere a ``cosa succederebbe se...''. Esempi di domande: ``Qui usi \texttt{n\_components=5} in UMAP. Cosa succederebbe con 15? Quando vorresti pi\`u componenti?''; ``Come hai scelto \texttt{min\_cluster\_size=50}? Hai sperimentato con altri valori?''
+  \item \textbf{Correttezza, semplicit\`a, leggibilit\`a}: codice che funziona ma anche leggibile, con nomi variabili sensati, struttura chiara, commenti dove servono (e silenzio dove sono ovvi) -- nel mondo reale il codice \`e letto molto pi\`u spesso di quanto \`e scritto.
+  \item \textbf{Profondit\`a di analisi dei risultati}: il criterio che separa competenza superficiale da profonda. Non basta ``ho ottenuto 15 topic'': bisogna saper dire ``3 sembrano overlap semantico, 2 sono rumore probabilmente, il topic 7 \`e sorprendentemente coerente e cattura X che non mi aspettavo; ho provato \texttt{min\_cluster\_size=100} e sono scesi a 10 topic pi\`u stabili ma ho perso granularit\`a su Y; il trade-off dipende da...''. \`E il cuore del metodo scientifico: riflettere criticamente sui risultati, inclusi quelli inaspettati o i fallimenti.
+\end{enumerate}
+
+\subsection{Griglia di Valutazione Sintetica}
+
+\begin{resultbox}
+\textbf{Parte I -- Teoria (circa 50\% del voto)}
+\begin{center}
+\small
+\begin{tabular}{lp{4.3cm}p{4.3cm}}
+\toprule
+\textbf{Criterio} & \textbf{Insufficiente} & \textbf{Eccellente} \\
+\midrule
+Linguaggio tecnico & Termini vaghi, imprecisi o usati scorrettamente & Terminologia precisa, usata con consapevolezza di sfumature \\
+Chiarezza concettuale & Definizioni isolate, senza contesto storico/metodologico & Concetti contestualizzati, con motivazioni, assunzioni, limiti \\
+Pensiero comparativo & Risposte isolate per ogni domanda, nessuna connessione & Capacit\`a di confrontare, integrare, valutare trade-off \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+\begin{resultbox}
+\textbf{Parte II -- Laboratorio (circa 50\% del voto)}
+\begin{center}
+\small
+\begin{tabular}{lp{4.3cm}p{4.3cm}}
+\toprule
+\textbf{Criterio} & \textbf{Insufficiente} & \textbf{Eccellente} \\
+\midrule
+Ownership codice & Non sa spiegare sezioni, ``ho copiato da un tutorial'' & Naviga fluentemente, spiega scelte, modifica al volo \\
+Qualit\`a codice & Funziona ma illeggibile, nomi variabili opachi & Leggibile, strutturato, commenti appropriati \\
+Analisi risultati & ``Ho ottenuto X topic'' senza riflessione & Validazione qualitativa, comparazione configurazioni, consapevolezza dei limiti \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+%% ============================================================
+\section{Conclusioni: Semantica, Conoscenza e Futuro del NLP}
+%% ============================================================
+
+\subsection{Il Percorso Compiuto}
+
+Il corso ha tracciato un percorso attraverso diverse prospettive sulla comprensione computazionale del linguaggio -- non una sequenza di tecniche, ma un viaggio concettuale su come catturare, rappresentare e generare significato.
+
+\begin{itemize}
+  \item \textbf{Semantica computazionale} (Cap.~1): il significato come inventario (lessicale), come condizioni di verit\`a (formale), come distribuzione nell'uso (distribuzionale) -- complementari, non alternativi; i sistemi moderni, inclusi gli LLM, combinano implicitamente tutti e tre.
+  \item \textbf{Definizioni} (Cap.~2): ponte tra conoscenza esplicita e computazione; la distinzione semasiologico/onomasiologico mostra che la direzione del processo semantico non \`e neutrale -- rilevante quando si integra retrieval con generazione (RAG).
+  \item \textbf{Privacy e misinformation} (Cap.~3): problemi semantici tanto quanto computazionali; l'explainability \`e una necessit\`a etica, non un lusso (progetto KURAMi).
+  \item \textbf{Polisemia} (Cap.~4): l'ambiguit\`a non \`e un bug ma una feature del linguaggio; la complessit\`a polisemica non \`e universale ma varia per lingua, cultura, dominio.
+  \item \textbf{Basic level} (Cap.~5): esiste una granularit\`a cognitivamente privilegiata, n\'e troppo generica n\'e troppo specifica, ma non universale -- dipende da contesto, competenza, dominio.
+  \item \textbf{Pre-LLM NLP} (Cap.~6): da simbolico a statistico a neurale a Transformer -- non successione che cancella, ma \textbf{stratificazione}: BM25, SVM, TF-IDF restano in produzione non per ignoranza ma per scelta (interpretabilit\`a, costo, latenza).
+  \item \textbf{RAG} (Cap.~7): punto di convergenza tra retrieval classico e generazione neurale; non risolve il problema del significato, lo riformula -- non solo ci\`o che un modello ha appreso, ma ci\`o che \`e in grado di recuperare e usare al momento giusto.
+  \item \textbf{LLM e Human-AI Interaction} (Cap.~8): capacit\`a impressionanti, limiti strutturali, e soprattutto una trasformazione di come umani e AI interagiscono -- da interfacce rigide a conversazioni aperte, con benefici e rischi.
+\end{itemize}
+
+\subsection{Temi Trasversali}
+
+\begin{resultbox}
+\begin{center}
+\small
+\begin{tabular}{p{3.6cm}p{8.4cm}}
+\toprule
+\textbf{Tensione} & \textbf{Sintesi} \\
+\midrule
+Simbolico vs.\ subsimbolico & Rappresentazioni esplicite (interpretabili, rigide) vs.\ distribuite (potenti, opache). Direzione promettente: neuro-symbolic AI (es.\ RAG combina retrieval esplicito + generazione neurale). \\
+Conoscenza implicita vs.\ esplicita & Parametri LLM (impliciti, non verificabili) vs.\ knowledge base tradizionali (esplicite, statiche, costose). Direzione: sistemi ibridi che si aggiornano/verificano a vicenda. \\
+Task-specific vs.\ general-purpose & Pre-LLM: un modello per task; LLM: un modello, prompting multiplo. Tendenza attuale: LLM come backbone, fine-tuned/augmented per task specifici. \\
+Dati vs.\ modelli & Risposta in evoluzione -- dati (era statistica), architettura (era deep learning), scala di entrambi (era LLM); dati e modelli co-evolvono. \\
+Evaluation & Nessuna metrica perfetta (BLEU/ROUGE correlano male con qualit\`a percepita; valutazioni umane costose/soggettive); serve triangolazione di metodi. \\
+Multilingualit\`a & L'NLP ha storicamente favorito l'inglese; concetti ``universali'' (basic level, polisemia) variano cross-linguisticamente in modi sottili. \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+\subsection{Sfide Aperte}
+
+\begin{quizbox}
+\textbf{Comprensione vs.\ pattern matching}: gli LLM completano frasi fluentemente, ma capiscono la causalit\`a? Hanno un modello mentale del codice che generano? Il dibattito su cosa significhi ``comprensione'' \`e filosofico quanto tecnico, ma ha implicazioni pratiche: se un modello non comprende veramente, i suoi errori saranno sistematici e imprevedibili.
+\end{quizbox}
+
+\textbf{Groundedness}: il linguaggio umano \`e \emph{grounded} nel mondo fisico/sociale; gli LLM sono addestrati solo su testo, senza esperienza diretta -- i sistemi multimodali affrontano questa limitazione, ma siamo lontani da una vera \emph{grounded understanding}. \textbf{Composizionalit\`a}: i Transformer processano sequenze, non alberi sintattici o grafi semantici; il CoT aiuta ma non risolve il problema strutturale. \textbf{Long-term memory}: nessuna memoria episodica a lungo termine -- ogni interazione \`e isolata, mitigata solo da memoria esterna (RAG). \textbf{Efficienza e sostenibilit\`a}: costi economici/ambientali del training e dell'inference, e questioni di accesso equo (chi pu\`o permettersi di addestrare questi modelli?). \textbf{Robustezza}: vulnerabilit\`a ad attacchi adversariali (prompt injection, jailbreak) in una corsa continua tra attaccanti e difensori. \textbf{Alignment}: RLHF allinea a quali valori, definiti da chi? Non esistono valori universali, sfida profondamente interdisciplinare.
+
+\subsection{Direzioni Future}
+
+Agenticit\`a e tool use (LLM come agenti che eseguono codice, interrogano database, navigano il web -- nuove capacit\`a ma anche nuovi rischi); multimodalit\`a profonda (rappresentazioni unificate testo-visione-audio-tatto, pi\`u vicine alla cognizione \emph{embodied}); personalizzazione e contestualizzazione (modelli che si adattano a utenti specifici, con questioni di privacy e lock-in); neuro-symbolic integration (knowledge graph + embeddings, reasoning logico guidato da LLM); modelli pi\`u piccoli ed efficienti (distillation, quantization, mixture-of-experts -- Phi-2/Mistral competono con modelli $10\times$ pi\`u grandi); evaluation next-generation (benchmark dinamici oltre GLUE/MMLU, che testino reasoning causale, planning, robustezza).
+
+\subsection{Riflessioni Metodologiche}
+
+Oltre ai contenuti tecnici, il corso ha cercato di trasmettere un approccio metodologico: \textbf{pensiero critico sui sistemi} (capire assunzioni, limiti, trade-off, non solo l'uso di un tool); \textbf{iterazione e sperimentazione} (l'NLP \`e empirico -- design sperimentale attento, riproducibilit\`a); \textbf{interdisciplinarit\`a} (linguistica, psicologia cognitiva, filosofia del linguaggio, sociologia, etica); \textbf{consapevolezza storica} (gli embeddings distribuiti echeggiano i vector space model anni '70, il prompting ricorda i template-based system -- conoscere la storia evita di ripetere errori); \textbf{responsabilit\`a etica} (le scelte su dati, valutazione, applicazioni hanno conseguenze reali).
+
+\subsection{Il Futuro \`e Conversazione}
+
+\begin{quizbox}
+Se dovessimo riassumere in una frase la trasformazione portata dagli LLM: \emph{abbiamo spostato l'interfaccia human-computer dal codice alla conversazione.} Prima degli LLM, interagire con un computer richiedeva tradurre intenzioni in linguaggio formale (command-line, SQL, API, GUI); l'utente si adattava alla macchina. Con gli LLM, la macchina si adatta all'utente: obiettivi in linguaggio naturale, raffinamento tramite dialogo, scoperta delle capacit\`a conversando -- con limiti e rischi. Questo abbassa drasticamente le barriere d'accesso, ma introduce responsabilit\`a: se tutti possono usare l'AI, come si previene il \emph{misuse}? Se l'AI \`e cos\`i fluente, come distinguiamo verit\`a da finzione? Se deleghiamo tanto, cosa perdiamo in competenza? La conversazione come interfaccia non \`e solo pi\`u comoda: \`e qualitativamente diversa -- cambia cosa \`e possibile, chi pu\`o partecipare, come pensiamo al rapporto human-machine. Siamo solo all'inizio dell'esplorazione di queste implicazioni.
 \end{quizbox}
 
 %% ============================================================

@@ -53,16 +53,43 @@
 
 \hypersetup{colorlinks=true,linkcolor=blue!70!black}
 
-\title{
-  \Large\textbf{Intelligenza Artificiale -- Progetto Clingo}\\[0.5em]
-  \large Pianificazione di Torneo Pokémon con Answer Set Programming\\[0.3em]
-  \normalsize Sistema Svizzero -- Relazione Tecnica Dettagliata
-}
-\author{Alessandro Livero}
-\date{\today}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 
 \begin{document}
-\maketitle
+\raggedbottom
+
+% =====================================================================
+% FRONTESPIZIO
+% =====================================================================
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\Large\textbf{Universit\`a degli Studi di Torino}\\[0.3em]
+  Corso di Laurea Magistrale in Informatica}
+
+  \vspace{1cm}
+  \HRule\\[0.4em]
+  {\LARGE\textbf{Intelligenza Artificiale}}\\[0.3em]
+  {\large Progetto Clingo}\\[0.2em]
+  \HRule
+
+  \vspace{1.8cm}
+  {\huge\textbf{Pianificazione di Torneo Pok\'emon}}\\[0.6em]
+  {\Large con Answer Set Programming}\\[0.4em]
+  {\large Sistema Svizzero -- Relazione Tecnica Dettagliata}
+
+  \vspace{3cm}
+  {\large\textbf{Autore:}}\\[0.5em]
+  {\large Alessandro Livero}
+
+  \vspace{1.5cm}
+  {\large Anno Accademico 2025/2026}
+
+  \vfill
+  {\large \today}
+\end{titlepage}
+
 \tableofcontents
 \newpage
 
@@ -93,9 +120,9 @@ problemi combinatori. Il \textbf{grounding + solving} di Clingo funziona in due 
   box/.style={draw,rounded corners,minimum width=3cm,minimum height=1cm,align=center,font=\small},
   arrow/.style={-{Stealth},thick}
 ]
-  \node[box,fill=blue!15] (ground) {Grounding\\{\footnotesize sostituisce variabili\\con costanti}};
-  \node[box,fill=green!15, right=2.5cm of ground] (solve) {Solving\\{\footnotesize cerca \emph{answer sets}\\(modelli stabili)}};
-  \node[box,fill=orange!15, right=2.5cm of solve] (opt) {Ottimizzazione\\{\footnotesize seleziona i modelli\\con costo minimo}};
+  \node[box,fill=blue!15] (ground) {Grounding\\\shortstack{\footnotesize sostituisce variabili\\con costanti}};
+  \node[box,fill=green!15, right=2.5cm of ground] (solve) {Solving\\\shortstack{\footnotesize cerca \emph{answer sets}\\(modelli stabili)}};
+  \node[box,fill=orange!15, right=2.5cm of solve] (opt) {Ottimizzazione\\\shortstack{\footnotesize seleziona i modelli\\con costo minimo}};
   \draw[arrow] (ground) -- (solve);
   \draw[arrow] (solve) -- (opt);
 \end{tikzpicture}
@@ -261,13 +288,14 @@ match \emph{e} abbia il BYE. Le due alternative sono mutualmente esclusive.
 Tre vincoli che coprono tutti i casi di conflitto:
 
 \begin{center}
-\begin{tabular}{lll}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{cp{6.5cm}p{6cm}}
 \toprule
 \textbf{Vincolo} & \textbf{Proibisce} & \textbf{Esempio vietato} \\
 \midrule
-1 & P appare come P1 in due match diversi & match(emma,diego), match(emma,giada) \\
-2 & Q appare come P2 in due match diversi & match(diego,emma), match(giada,emma) \\
-3 & P appare in entrambi i ruoli & match(emma,diego), match(giada,emma) \\
+1 & P appare come P1 in due match diversi & \texttt{match(emma,diego)}, \texttt{match(emma,giada)} \\
+2 & Q appare come P2 in due match diversi & \texttt{match(diego,emma)}, \texttt{match(giada,emma)} \\
+3 & P appare in entrambi i ruoli & \texttt{match(emma,diego)}, \texttt{match(giada,emma)} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -385,11 +413,17 @@ Con tutti i punteggi uguali, l'ottimizzatore minimizza una somma di zeri:
 \emph{qualsiasi} abbinamento è ottimo. Clingo restituirà una soluzione arbitraria
 tra quelle valide (dipende dall'ordine di esplorazione).
 
-\begin{exbox}{Possibile output Turno 1}
+\begin{exbox}{Output reale -- \texttt{clingo torneo.lp turno1.lp 1 --opt-mode=optN}}
 \begin{verbatim}
-match(diego,emma)  match(giada,lorenzo)  bye(simone)
+Answer: 1
+bye(simone) match(giada,lorenzo) match(diego,emma)
+Optimization: 0
+OPTIMUM FOUND
 \end{verbatim}
-oppure qualsiasi altra combinazione di 2 match + 1 bye con giocatori distinti.
+La funzione obiettivo vale \textbf{0}, come previsto: tutti i giocatori sono a
+pari punteggio, quindi ogni possibile combinazione di 2 match + 1 bye è
+equivalentemente ottima (Clingo ne trova più di una con lo stesso costo
+durante la prova di ottimalità).
 \end{exbox}
 
 \subsection{Turno 2 -- 8 Giocatori, Punteggi Differenziati}
@@ -423,13 +457,22 @@ had_bye(giada).
   \item L'ottimizzatore cercherà di abbinare i ``2'' tra loro e i ``0'' tra loro.
 \end{itemize}
 
-\begin{exbox}{Possibile output ottimale Turno 2}
+\begin{exbox}{Output reale -- \texttt{clingo torneo.lp turno2.lp 1 --opt-mode=optN}}
 \begin{verbatim}
-match(giada,simone)   match(giada,lorenzo)? ...
+Answer: 1
+match(giada,lorenzo)  match(desiree,simone)
+match(diego,jacopo)   match(emma,thomas)
+Optimization: 2
+OPTIMUM FOUND
 \end{verbatim}
-Poiché i ``2'' sono 3 (dispari nel loro gruppo), uno verrà abbinato con un ``0'',
-contribuendo 2 alla somma totale. L'ottimizzatore minimizza questo inevitabile
-"across-group" match.
+Come previsto, \texttt{giada} e \texttt{lorenzo} (entrambi a 2 punti) vengono
+abbinati tra loro a costo 0. Poiché i giocatori a 2 punti sono 3 (numero
+dispari nel loro gruppo), \texttt{simone} resta senza un pari-punteggio
+disponibile e viene abbinato a \texttt{desiree} (0 punti): questo
+\emph{``across-group'' match} contribuisce $|2-0|=2$ alla somma, che è
+esattamente il valore minimo raggiungibile. Gli altri giocatori a 0 punti
+(\texttt{diego}, \texttt{emma}, \texttt{jacopo}, \texttt{thomas}) si abbinano
+liberamente tra loro a costo 0, rispettando i vincoli su \texttt{played\_already}.
 \end{exbox}
 
 % =====================================================================
