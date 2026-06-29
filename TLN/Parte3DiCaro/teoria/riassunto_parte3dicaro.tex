@@ -12,6 +12,10 @@
 \usepackage{bookmark}
 \usepackage{booktabs}
 \usepackage{array}
+% Colonna di tabella a larghezza fissa ma testo non giustificato e senza
+% sillabazione forzata: evita le righe con spazi enormi e le parole troncate
+% a met\`a che si avevano con le colonne p{} troppo strette.
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash\hyphenpenalty=10000\exhyphenpenalty=10000}p{#1}}
 \usepackage{multirow}
 \usepackage{enumitem}
 \usepackage{tikz}
@@ -45,15 +49,16 @@
 \titlespacing{\section}{0pt}{2.2em}{1.2em}
 
 % --- Intestazioni di pagina ---
+% Un solo segnalibro (il titolo della sezione corrente), centrato: con due
+% campi (sezione a sinistra + sottosezione a destra) i titoli lunghi di
+% questo documento finivano per sovrapporsi a met\`a pagina.
 \setlength{\headheight}{14pt}
 \pagestyle{fancy}
 \fancyhf{}
 \renewcommand{\headrulewidth}{0.4pt}
-\fancyhead[L]{\small\itshape\nouppercase{\leftmark}}
-\fancyhead[R]{\small\itshape\nouppercase{\rightmark}}
+\fancyhead[C]{\small\itshape\nouppercase{\leftmark}}
 \fancyfoot[C]{\thepage}
 \renewcommand{\sectionmark}[1]{\markboth{#1}{}}
-\renewcommand{\subsectionmark}[1]{\markright{#1}}
 \fancypagestyle{plain}{
   \fancyhf{}
   \fancyfoot[C]{\thepage}
@@ -61,13 +66,17 @@
 }
 
 % Box definizione (grigio)
+% nobreak=true: il riquadro non viene MAI spezzato a met\`a da un cambio
+% pagina -- se non c'\`e spazio sufficiente, va per intero nella pagina
+% successiva (altrimenti il testo veniva tagliato a met\`a frase).
 \newmdenv[
     backgroundcolor=gray!10,
     linecolor=blue!60!black,
     linewidth=1.5pt,
     roundcorner=5pt,
     innertopmargin=6pt,
-    innerbottommargin=6pt
+    innerbottommargin=6pt,
+    nobreak=true
 ]{defbox}
 
 % Box formula (teal)
@@ -77,7 +86,8 @@
     linewidth=1.5pt,
     roundcorner=5pt,
     innertopmargin=6pt,
-    innerbottommargin=6pt
+    innerbottommargin=6pt,
+    nobreak=true
 ]{formulabox}
 
 % Box codice (verde scuro)
@@ -87,7 +97,8 @@
     linewidth=1pt,
     roundcorner=3pt,
     innertopmargin=4pt,
-    innerbottommargin=4pt
+    innerbottommargin=4pt,
+    nobreak=true
 ]{codebox}
 
 % Box risultati (arancione)
@@ -97,7 +108,8 @@
     linewidth=1.5pt,
     roundcorner=5pt,
     innertopmargin=6pt,
-    innerbottommargin=6pt
+    innerbottommargin=6pt,
+    nobreak=true
 ]{resultbox}
 
 % Box esempio (azzurro/teal chiaro, per esempi dalle slide/dispense)
@@ -107,7 +119,8 @@
     linewidth=1pt,
     roundcorner=3pt,
     innertopmargin=5pt,
-    innerbottommargin=5pt
+    innerbottommargin=5pt,
+    nobreak=true
 ]{examplebox}
 
 % Box domanda (viola, domande tipiche di riflessione dalle dispense)
@@ -117,7 +130,8 @@
     linewidth=1pt,
     roundcorner=3pt,
     innertopmargin=5pt,
-    innerbottommargin=5pt
+    innerbottommargin=5pt,
+    nobreak=true
 ]{quizbox}
 
 % Stile listings Python
@@ -644,7 +658,7 @@ I dati raccolti permettono di osservare in quali casi il sistema ha avuto impatt
 \textbf{Esempio di schema di annotazione PRE--RAG--POST.}
 \begin{center}
 \small
-\begin{tabular}{p{1.5cm}p{4cm}cccc}
+\begin{tabular}{L{1.5cm}L{4cm}cccc}
 \toprule
 \textbf{ID} & \textbf{Testo (estratto)} & \textbf{PRE} & \textbf{Conf.} & \textbf{RAG} & \textbf{POST Conf.} \\
 \midrule
@@ -1298,7 +1312,7 @@ Il \textbf{prompting} \`e il processo di formulare input testuali che guidano il
 \begin{resultbox}
 \begin{center}
 \small
-\begin{tabular}{lp{9.5cm}}
+\begin{tabular}{lL{9.5cm}}
 \toprule
 \textbf{Task} & \textbf{Caratteristiche principali} \\
 \midrule
@@ -1324,7 +1338,7 @@ Espansione & Inverso della sintesi: da bullet points a email, da outline ad arti
 \begin{resultbox}
 \begin{center}
 \small
-\begin{tabular}{lp{9.7cm}}
+\begin{tabular}{lL{9.7cm}}
 \toprule
 \textbf{Limite} & \textbf{Descrizione e mitigazione} \\
 \midrule
@@ -1433,7 +1447,7 @@ La seconda parte parte dagli esercizi di laboratorio implementati, ma non richie
 \textbf{Parte I -- Teoria (circa 50\% del voto)}
 \begin{center}
 \small
-\begin{tabular}{lp{4.3cm}p{4.3cm}}
+\begin{tabular}{lL{4.9cm}L{4.9cm}}
 \toprule
 \textbf{Criterio} & \textbf{Insufficiente} & \textbf{Eccellente} \\
 \midrule
@@ -1449,7 +1463,7 @@ Pensiero comparativo & Risposte isolate per ogni domanda, nessuna connessione & 
 \textbf{Parte II -- Laboratorio (circa 50\% del voto)}
 \begin{center}
 \small
-\begin{tabular}{lp{4.3cm}p{4.3cm}}
+\begin{tabular}{lL{4.9cm}L{4.9cm}}
 \toprule
 \textbf{Criterio} & \textbf{Insufficiente} & \textbf{Eccellente} \\
 \midrule
@@ -1485,7 +1499,7 @@ Il corso ha tracciato un percorso attraverso diverse prospettive sulla comprensi
 \begin{resultbox}
 \begin{center}
 \small
-\begin{tabular}{p{3.6cm}p{8.4cm}}
+\begin{tabular}{L{5.7cm}L{7.6cm}}
 \toprule
 \textbf{Tensione} & \textbf{Sintesi} \\
 \midrule
@@ -2284,7 +2298,7 @@ named entity recog. & 0.80 & 0.80 & 0.80 & 0.80 & 0.60 \\
 %% ============================================================
 
 \begin{center}
-\begin{tabular}{p{2.8cm}p{3.5cm}p{3.5cm}p{3.5cm}}
+\begin{tabular}{L{3.6cm}L{3.7cm}L{3.7cm}L{3.7cm}}
 \toprule
 \textbf{Aspetto} & \textbf{TF-IDF/Jaccard (Lab 1-2)} & \textbf{BERTopic (Lab 4)} & \textbf{RAG Hybrid (Lab 5)} \\
 \midrule

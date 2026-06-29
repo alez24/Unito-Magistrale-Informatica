@@ -1,0 +1,208 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{parskip}
+
+\geometry{
+  top=2.5cm, bottom=2.5cm,
+  left=2.5cm, right=2.5cm
+}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+\title{\textbf{Progetto Esteso -- TLN Parte III}\\[0.3em]
+\large RAG Ibrido con Valutazione Quantitativa\\[0.2em]
+\normalsize Riassunto per lo studio}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-2em}
+\begin{center}
+Tecnologie del Linguaggio Naturale -- Prof. Di Caro -- A.A. 2025/2026
+\end{center}
+
+\tableofcontents
+
+\section{Cos'\`e RAG --- la base del progetto}
+
+RAG (\textbf{Retrieval-Augmented Generation}) \`e un sistema che risponde a domande combinando due componenti:
+
+\begin{enumerate}
+  \item Un \textbf{motore di ricerca} che recupera i documenti pi\`u rilevanti per la domanda;
+  \item Un \textbf{LLM} (Large Language Model) che legge quei documenti e genera la risposta.
+\end{enumerate}
+
+Il vantaggio \`e che il modello non deve ``ricordare'' tutto: accede a conoscenza esterna al momento del bisogno. Il flusso \`e:
+
+\begin{center}
+Query utente $\xrightarrow{\text{retrieval}}$ Documenti rilevanti $\xrightarrow{\text{generazione}}$ Risposta
+\end{center}
+
+\subsection{Cosa abbiamo costruito nel LAB-5}
+
+Nel quinto laboratorio abbiamo implementato un sistema RAG completo sul dataset \texttt{MaartenGr/arxiv\_nlp} di Hugging Face, contenente circa 45.000 abstract di paper scientifici NLP. Il sistema:
+
+\begin{itemize}
+  \item genera \textbf{embeddings semantici} degli abstract con \texttt{all-MiniLM-L6-v2};
+  \item indicizza i vettori con \textbf{FAISS} (Fast Approximate Nearest Neighbor);
+  \item recupera i $k$ documenti pi\`u simili alla query;
+  \item genera la risposta con un LLM locale (es. \texttt{Qwen2.5-0.5B}).
+\end{itemize}
+
+\section{Il problema del RAG base: perch\'e non basta}
+
+Il retrieval basato solo su embeddings ragiona per \textbf{concetti}, non per \textbf{parole esatte}. Questo crea problemi in due casi tipici:
+
+\begin{itemize}
+  \item Query con \textbf{termini tecnici specifici} (nomi di algoritmi, acronimi);
+  \item Query \textbf{molto brevi} dove il contesto semantico \`e insufficiente.
+\end{itemize}
+
+\textbf{Esempio.} Se cerchi ``BERT pre-training'', il sistema semantico potrebbe restituire documenti che parlano di transformer in generale, anche se non contengono letteralmente quelle parole.
+
+\section{Il progetto esteso: Hybrid Search}
+
+\subsection{BM25 --- il retrieval lessicale}
+
+BM25 (\textit{Best Match 25}) \`e un algoritmo di ranking classico che misura la rilevanza di un documento rispetto a una query basandosi sulla \textbf{frequenza delle parole} nel documento e nella collezione. A differenza degli embeddings, BM25 lavora sulle parole esatte.
+
+La formula di scoring \`e:
+
+\[
+\text{score}(D, Q) = \sum_{i=1}^{n} \text{IDF}(q_i) \cdot \frac{f(q_i, D) \cdot (k_1 + 1)}{f(q_i, D) + k_1 \left(1 - b + b \cdot \dfrac{|D|}{\text{avgdl}}\right)}
+\]
+
+dove $f(q_i, D)$ \`e la frequenza del termine nel documento, $|D|$ \`e la lunghezza del documento, $\text{avgdl}$ \`e la lunghezza media, e $k_1 = 1.5$, $b = 0.75$ sono parametri tipici.
+
+\subsection{Confronto tra i due approcci}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+ & \textbf{Embeddings semantici} & \textbf{BM25 lessicale} \\
+\midrule
+Punto di forza & Capisce sinonimi e concetti & Preciso su termini esatti \\
+Punto debole   & Impreciso su termini specifici & Non capisce il significato \\
+Buono per      & Query concettuali e lunghe & Query con termini tecnici \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Hybrid Search: la combinazione}
+
+Combiniamo i due metodi con \textbf{Reciprocal Rank Fusion (RRF)}:
+
+\[
+\text{RRF}(d) = \sum_{r \in R} \frac{1}{k + r(d)}
+\]
+
+dove $r(d)$ \`e il rank del documento $d$ nella lista $r$ e $k = 60$ \`e una costante tipica. In pratica:
+
+\begin{enumerate}
+  \item BM25 produce una lista ordinata di documenti;
+  \item Gli embeddings producono un'altra lista ordinata;
+  \item RRF fonde le due liste dando peso ai documenti che appaiono in cima a entrambe.
+\end{enumerate}
+
+\section{La valutazione quantitativa}
+
+Non ci limitiamo a dire ``funziona bene'': \textbf{misuriamo} quanto funziona bene.
+
+\subsection{Metriche di retrieval}
+
+\textbf{Precision@k} -- dei primi $k$ documenti restituiti, quanti sono rilevanti?
+
+\[
+P@k = \frac{|\text{documenti rilevanti tra i primi } k|}{k}
+\]
+
+\textbf{Recall@k} -- di tutti i documenti rilevanti esistenti, quanti ne ho recuperati?
+
+\[
+R@k = \frac{|\text{documenti rilevanti tra i primi } k|}{|\text{tutti i documenti rilevanti}|}
+\]
+
+\subsection{Faithfulness}
+
+La risposta generata \`e fedele ai documenti recuperati, o il modello ``inventa'' informazioni non presenti nel contesto?
+
+\subsection{Disegno sperimentale}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Configurazione} & \textbf{Retrieval} & \textbf{Atteso migliore su} \\
+\midrule
+RAG base  & Solo embeddings & Query concettuali \\
+RAG ibrido & BM25 + embeddings (RRF) & Query con termini precisi \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Log di esecuzione: generazione delle risposte}
+
+Durante la fase di valutazione qualitativa (Answer Relevance e Faithfulness), per ogni query del gold standard il sistema genera una risposta con l'LLM al $k$ migliore individuato:
+
+\begin{verbatim}
+Generazione risposte per valutazione qualitativa (k=3)...
+[transformers] Both `max_new_tokens` (=300) and `max_length`(=20) seem to
+have been set. `max_new_tokens` will take precedence. Please refer to the
+documentation for more information.
+(ripetuto una volta per ciascuna query del gold standard)
+\end{verbatim}
+
+\textbf{Descrizione.} Il warning \`e emesso dalla pipeline \texttt{text-generation} di Hugging Face a ogni chiamata di \texttt{generate()}. Il \texttt{GenerationConfig} caricato di default insieme al modello porta \texttt{max\_length=20}, mentre la pipeline \`e configurata con \texttt{max\_new\_tokens=300}; i due limiti convivono nella config finch\'e non si disattiva esplicitamente \texttt{max\_length}, e \texttt{transformers} segnala che user\`a \texttt{max\_new\_tokens} ignorando il valore residuo. \`E un avviso innocuo, non un errore: ogni risposta viene comunque generata con il budget di 300 token nuovi previsto. Compare una volta per ogni query del gold standard valutata.
+
+\section{Stack tecnologico}
+
+\begin{itemize}
+  \item \texttt{rank\_bm25} -- implementazione Python di BM25
+  \item \texttt{sentence-transformers} -- generazione embeddings
+  \item \texttt{faiss-cpu} -- vector store per nearest neighbor search
+  \item \texttt{datasets} (HuggingFace) -- caricamento dataset arXiv NLP
+  \item \texttt{transformers} + \texttt{torch} -- LLM locale per la generazione
+  \item \texttt{RAGAS} (opzionale) -- framework per valutazione automatica RAG
+\end{itemize}
+
+\section{Cosa dire domani al professore}
+
+\begin{quote}
+\textit{``Abbiamo completato tutti e cinque i laboratori. Come progetto esteso vorremmo partire dal LAB-5 e estenderlo in due direzioni.}
+
+\textit{La prima \`e implementare un hybrid search: invece di usare solo gli embeddings semantici, combiniamo BM25 con gli embeddings tramite Reciprocal Rank Fusion, e confrontiamo i risultati su query di tipo diverso.}
+
+\textit{La seconda \`e aggiungere una valutazione quantitativa con Precision@k, Recall@k e, se riusciamo, la faithfulness.}
+
+\textit{L'obiettivo non \`e solo far funzionare il sistema, ma confrontare almeno due configurazioni e analizzare i trade-off.''}
+\end{quote}
+
+\section{Perch\'e non \`e banale}
+
+\begin{itemize}
+  \item Non basta collegare due API: bisogna scegliere il parametro $k$ della fusion e gestire score su scale diverse (BM25 illimitato vs. cosine in $[-1,1]$).
+  \item La valutazione richiede un gold standard costruito a mano, non solo l'osservazione soggettiva delle risposte.
+  \item Bisogna analizzare i trade-off (precisione lessicale vs. recall semantico) invece di limitarsi a far funzionare il sistema.
+\end{itemize}
+
+\section{Connessione con il corso}
+
+\begin{itemize}
+  \item \textbf{Cap. 6 -- Pre-LLM NLP}: BM25 \`e citato esplicitamente come baseline robusta per il retrieval lessicale.
+  \item \textbf{Cap. 7 -- RAG}: il progetto \`e un'estensione diretta del LAB-5, citata nella sezione 7.14.8 della dispensa.
+  \item \textbf{Cap. 9 -- Valutazione}: le metriche Precision@k e faithfulness sono al centro della griglia di valutazione del prof.
+\end{itemize}
+
+\end{document}

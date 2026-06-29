@@ -1,0 +1,194 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage[protrusion=true,expansion=false]{microtype}
+
+\geometry{margin=2.7cm}
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+\newenvironment{citazione}{\begin{quote}\itshape}{\end{quote}}
+
+\hypersetup{colorlinks=true, linkcolor=blue!50!black, urlcolor=blue!50!black}
+
+\title{\textbf{Weapons of Math Destruction}\\[0.3em]
+\large Cathy O'Neil (2016) -- relazione di studio\\[0.3em]
+\normalsize Collegamenti con il corso \emph{Etica, Società e Privacy}\\
+Università di Torino -- Magistrale Informatica -- A.A. 2024/2025}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================================================
+\section{Chi scrive, e perché}
+%=============================================================================
+
+Cathy O'Neil è una matematica formata a Harvard (un dottorato in teoria algebrica dei numeri), che ha insegnato alla Barnard prima di passare al settore privato come \emph{quant} per il hedge fund D.\,E.\ Shaw e infine come data scientist in alcune startup di e-commerce. È un percorso che conta, perché il libro non è scritto da un'osservatrice esterna preoccupata per l'IA in abstracto, ma da qualcuno che ha visto da dentro come la matematica finanziaria abbia contribuito alla crisi del 2008, e che da quel momento ha iniziato a interrogarsi su cosa stesse succedendo, con la stessa logica, in molti altri settori: istruzione, lavoro, giustizia penale, credito, assicurazioni, politica.
+
+L'idea di fondo del libro è semplice da enunciare ma scomoda da accettare: i modelli matematici che oggi decidono se un'insegnante viene licenziata, se un imputato resta in carcere più a lungo, se una persona riceve un prestito o un colloquio di lavoro, \emph{non sono strumenti neutrali}. Sono, per usare l'espressione che O'Neil ripete più volte nel libro, ``opinioni incorporate nella matematica'' (\emph{models are opinions embedded in mathematics}): incorporano scelte umane su cosa misurare, quali dati usare come sostituti (\emph{proxy}) di ciò che davvero ci interessa, e quale obiettivo ottimizzare. Quando queste scelte vengono prese per motivi di profitto o di efficienza e poi presentate come output ``oggettivo'' di un calcolo, il risultato è spesso ingiusto -- e, soprattutto, indiscutibile, perché nessuno fuori dall'azienda che ha costruito il modello sa come funziona davvero.
+
+Per indicare questa categoria di algoritmi dannosi, O'Neil coniò un termine giocando sull'acronimo delle armi di distruzione di massa: \textbf{WMD, Weapon of Math Destruction}. Un modello diventa una WMD quando soddisfa contemporaneamente tre condizioni. La prima è l'\textbf{opacità}: chi viene valutato non sa quali dati entrano nel calcolo, né come sono pesati, e spesso non sa nemmeno di essere stato valutato. La seconda è la \textbf{scala}: il modello non resta un caso isolato, ma si applica a migliaia o milioni di persone, diventando uno standard di fatto -- pensiamo al ranking universitario \emph{U.S.\ News} o ai punteggi di credito. La terza è il \textbf{danno}: il modello produce conseguenze negative concrete -- un licenziamento, una pena più lunga, un interesse più alto -- e spesso genera quello che O'Neil chiama un \emph{feedback loop perverso}: il danno iniziale produce nuovi dati che confermano e aggravano il pregiudizio di partenza, in un circolo che si autoalimenta senza che nessuno verifichi mai se le previsioni del modello erano davvero giuste.
+
+%=============================================================================
+\section{Un termine di paragone: il modello del baseball}
+%=============================================================================
+
+Prima di passare in rassegna le WMD, O'Neil propone un contro-esempio per chiarire cosa renda ``sano'' un modello statistico: l'analisi dei dati nel baseball, raccontata nel celebre \emph{Moneyball} di Michael Lewis. I numeri usati per decidere dove posizionare i giocatori in campo, o quanto vale un fuoricampo rispetto a una base singola, sono pubblici e comprensibili da chiunque; misurano direttamente ciò che conta (i risultati in campo), non un sostituto indiretto; vengono continuamente aggiornati con i dati di ogni nuova partita, così che il modello impara dai propri errori; e infine chi costruisce il modello e chi viene misurato (le squadre, i giocatori) condividono lo stesso obiettivo, vincere. È la trasparenza, la pertinenza dei dati, il feedback continuo e l'allineamento degli obiettivi che separano un buon modello da una WMD: il \emph{value-added model} che valuta gli insegnanti americani, che vedremo a breve, non possiede nessuna di queste quattro qualità.
+
+C'è anche un'osservazione più scomoda, che O'Neil introduce di passaggio ma che vale la pena tenere a mente: il razzismo individuale, sostiene, funziona esso stesso come un modello predittivo -- difettoso. Generalizza un giudizio su un intero gruppo a partire da dati aneddotici e parziali, non testa mai le proprie previsioni e si conferma da sé grazie al bias di conferma. È lo stesso meccanismo, in miniatura, di molte WMD: dati distorti producono una previsione ingiusta, che produce a sua volta nuovi dati distorti.
+
+%=============================================================================
+\section{Il viaggio del libro, capitolo per capitolo}
+%=============================================================================
+
+\subsection{Il caso che apre il libro: Sarah Wysocki}
+
+O'Neil costruisce l'introduzione attorno alla storia di Sarah Wysocki, insegnante di quinta elementare a Washington D.C., licenziata nel 2011 nonostante valutazioni eccellenti da parte di colleghi e genitori. Il motivo del licenziamento è un punteggio bassissimo nel sistema \emph{value-added} chiamato IMPACT, che attribuisce a ciascun insegnante un voto basato sui progressi nei test standardizzati dei propri studenti. Nessuno, nemmeno gli amministratori del distretto, riesce a spiegarle in modo comprensibile come quel punteggio sia stato calcolato; un collega, Tim Clifford, racconterà più avanti nel libro di essere passato da un disastroso 6 su 100 a un quasi perfetto 96 su 100 in due anni consecutivi, con lo stesso identico lavoro: prova, secondo O'Neil, che quei numeri non misurano la qualità dell'insegnamento, ma producono rumore statistico travestito da giudizio oggettivo. È il caso perfetto per introdurre il concetto di WMD, perché mostra tutti e tre i criteri insieme: un modello opaco, applicato su scala nazionale, che distrugge carriere sulla base di un calcolo che nessuno può verificare né contestare.
+
+\subsection{Cosa è davvero un modello}
+
+Nel primo capitolo, \emph{Bomb Parts}, O'Neil spiega che ogni modello -- da Google Maps alla pianificazione dei pasti di una famiglia -- è una rappresentazione semplificata della realtà, costruita scegliendo cosa includere e cosa ignorare. Il problema comincia quando queste scelte di semplificazione, fatte da pochi tecnici, finiscono per decidere il destino di moltissime persone senza che nessuno possa discuterle. Il caso scelto per illustrarlo è quello del modello di recidiva \textbf{LSI--R}, usato in molti stati americani per orientare le sentenze penali: tra le domande del questionario compaiono il quartiere di residenza, i precedenti penali di amici e parenti, le esperienze passate con la polizia -- dati che funzionano come proxy della classe sociale e della razza più che del comportamento individuale del condannato. Chi viene classificato come ``ad alto rischio'' riceve una pena più lunga, passa più anni in un ambiente criminogeno, esce con meno opportunità di lavoro: un circolo vizioso che il modello stesso contribuisce a creare, e che poi cita come prova della propria accuratezza.
+
+\subsection{La crisi finanziaria vista da dentro}
+
+Il secondo capitolo, \emph{Shell Shocked}, è il più autobiografico: racconta gli anni di O'Neil in finanza, tra mutui subprime venduti a famiglie che non potevano permetterseli, agenzie di rating pagate dalle stesse banche che dovevano valutare, e prodotti derivati sempre più complessi (i CDO sintetici) costruiti sopra quei mutui. La sintesi del capitolo è in una frase: la matematica, in quegli anni, è servita a ``moltiplicare il caos, non a decifrarlo''. Quando il sistema crolla nel 2008, O'Neil capisce che il problema non era la finanza in sé, ma l'uso della matematica come schermo per nascondere il rischio reale -- ed è da questa disillusione che nasce il progetto di smascherare le stesse dinamiche in altri ambiti della vita quotidiana.
+
+\subsection{L'università come corsa agli armamenti}
+
+Nel terzo capitolo, \emph{Arms Race}, O'Neil racconta come una semplice classifica giornalistica -- il ranking annuale di \emph{U.S.\ News \& World Report}, nato nel 1983 -- si sia trasformata in uno standard nazionale che le università rincorrono ossessivamente. Il caso scelto, quello della Texas Christian University, mostra come un ateneo possa investire centinaia di milioni di dollari in infrastrutture e programmi sportivi solo per scalare qualche posizione in classifica, in una rincorsa che esclude gli studenti meno abbienti, fa lievitare le tasse universitarie (un dato che, non a caso, il ranking non misura) e genera un intero indotto di consulenti per l'ammissione, scuole specializzate nel preparare i test, e in alcuni casi vere frodi -- come quella della King Abdulaziz University in Arabia Saudita, che ha ``comprato'' affiliazioni di ricercatori molto citati per scalare artificialmente la classifica.
+
+\subsection{La pubblicità che sfrutta la vulnerabilità}
+
+Il quarto capitolo, \emph{Propaganda Machine}, analizza la pubblicità online predatoria, e in particolare il modello di business delle università for-profit come Corinthian College o ITT Technical Institute. Questi istituti usano il targeting comportamentale per individuare le persone più vulnerabili -- chi cerca online informazioni su disoccupazione, depressione, problemi familiari -- e promettere loro una mobilità sociale che i dati mostrano essere quasi sempre illusoria, finanziata da prestiti statali che molti studenti non riusciranno mai a restituire. La stessa logica predatoria, osserva O'Neil, vale per i prestiti payday, con tassi di interesse che possono superare il 500\% annuo.
+
+\subsection{La giustizia penale nell'era dei dati}
+
+Il quinto capitolo, \emph{Civilian Casualties}, è dedicato alla polizia predittiva. Software come PredPol concentrano le forze dell'ordine sui quartieri già poveri e già sorvegliati, generando un feedback loop quasi perfetto: più polizia in un quartiere significa più reati registrati (anche piccole infrazioni che altrove passerebbero inosservate), più reati registrati significano più dati che ``confermano'' la pericolosità del quartiere, e quindi ancora più polizia. Nello stesso capitolo trovano spazio il caso dello \emph{stop-and-frisk} a New York e quello, ancora più inquietante, delle liste predittive di Chicago, dove un giovane di nome Robert McDaniel viene segnalato dalla polizia non per qualcosa che ha fatto, ma per le persone che conosce nella sua rete sociale. O'Neil fa notare, con una certa amarezza, che gli stessi metodi statistici non vengono mai applicati con altrettanto zelo ai reati finanziari dei colletti bianchi.
+
+\subsection{Trovare un lavoro}
+
+Nel sesto capitolo, \emph{Ineligible to Serve}, il tema sono i test di personalità usati nelle assunzioni, esemplificati dal caso di Kyle Behm, escluso da un lavoro a salario minimo perché un test, mai validato scientificamente, rivela indirettamente il suo disturbo bipolare -- una violazione, secondo O'Neil, dello spirito se non della lettera dell'\emph{Americans with Disabilities Act}. Il paragone che l'autrice propone è efficace: questi test assomigliano alla frenologia del diciannovesimo secolo, una pseudoscienza che non viene mai messa alla prova e che si conferma sempre da sé.
+
+\subsection{Una volta ottenuto il lavoro}
+
+Il settimo capitolo, \emph{Sweating Bullets}, mostra come l'ottimizzazione algoritmica continui dopo l'assunzione. Il caso di Starbucks e della sua dipendente Jannette Navarro illustra il software di \emph{scheduling} ``just-in-time'', che impone turni imprevedibili (il cosiddetto \emph{clopening}, chiudere il negozio a notte tarda e riaprirlo poche ore dopo) per minimizzare i costi di personale, rendendo impossibile organizzare la cura dei figli o continuare gli studi. Nello stesso capitolo si racconta del modello Cataphora, che durante la crisi del 2008 classificava i dipendenti come ``generatori di idee'' o semplici ``connettori'' analizzando le loro email -- categorie usate per decidere chi licenziare, senza alcuna possibilità di verifica indipendente sulla loro accuratezza.
+
+\subsection{Il credito}
+
+L'ottavo capitolo, \emph{Collateral Damage}, racconta la nascita virtuosa del punteggio di credito FICO -- un modello relativamente trasparente, regolamentato, che valuta le persone sulla base del loro comportamento finanziario reale -- e la sua degenerazione nei moderni \textbf{e-score}, punteggi informali costruiti da broker di dati che usano proxy come il codice postale, l'ortografia nelle domande di prestito o la cronologia di navigazione. A differenza dei punteggi di credito tradizionali, gli e-score non sono regolamentati dalle leggi che proteggono i consumatori (come il \emph{Fair Credit Reporting Act}), e permettono quindi pratiche discriminatorie che sarebbero altrimenti illegali.
+
+\subsection{Le assicurazioni}
+
+Il nono capitolo, \emph{No Safe Zone}, parte da un episodio storico poco noto: nel 1896 lo statistico Frederick Hoffman pubblicò per la Prudential uno studio, statisticamente errato ma influente, secondo cui gli afroamericani erano ``non assicurabili'' -- un caso da manuale di pratica discriminatoria mascherata da rigore scientifico. O'Neil mostra come la stessa logica sopravviva negli algoritmi assicurativi contemporanei: uno studio di \emph{Consumer Reports} citato nel libro rivela che, nel calcolo dei premi auto, il punteggio di credito pesa più della fedina penale, al punto che un guidatore con una condanna per guida in stato di ebbrezza ma un buon credito può pagare meno di un guidatore con la fedina immacolata ma un credito basso.
+
+\subsection{La vita civica e il voto}
+
+Il decimo capitolo, \emph{The Targeted Citizen}, sposta lo sguardo sulla politica. Il \emph{microtargeting} elettorale -- perfezionato dalla campagna di Obama nel 2012 e portato alle estreme conseguenze dal caso Cambridge Analytica per la campagna di Ted Cruz -- permette a un candidato di mostrare versioni diverse e su misura di sé a segmenti diversi di elettorato, senza che nessuno possa confrontare i messaggi e accorgersi delle contraddizioni. È una minaccia diretta, secondo O'Neil, alla trasparenza che la democrazia presuppone: gli esperimenti di Facebook sul voto e sulle emozioni dei propri utenti, raccontati nello stesso capitolo, mostrano quanto potere abbia oggi una piattaforma privata su processi che dovrebbero restare pubblici.
+
+\subsection{La conclusione: una spirale che si autoalimenta}
+
+Nelle pagine finali O'Neil osserva che le WMD non agiscono isolatamente, ma si rincorrono a vicenda: un cattivo punteggio di credito riduce le possibilità di lavoro, un lavoro peggiore costringe a vivere in un quartiere più povero e più sorvegliato, quel quartiere alimenta nuovi dati che peggiorano ulteriormente il credito. È una vera e propria spirale, che colpisce soprattutto chi ha meno potere economico e meno strumenti legali per difendersi, mentre i più privilegiati restano protetti in ``silos'' di marketing su misura, spesso senza nemmeno accorgersi di quanto gli algoritmi che agiscono sui vicini più poveri siano diversi -- e più severi -- di quelli che agiscono su di loro.
+
+%=============================================================================
+\section{Quando i dati vengono usati per il bene}
+%=============================================================================
+
+Un aspetto che si rischia di perdere leggendo solo i casi peggiori del libro è che O'Neil non condanna la statistica in sé, ma l'uso che ne viene fatto. Nelle pagine conclusive racconta tre controesempi che meritano di essere ricordati. Il primo è un progetto a cui ha partecipato personalmente: un modello costruito per i servizi sociali di New York per prevedere quanto tempo una famiglia sarebbe rimasta nel sistema dei rifugi per senzatetto, con l'obiettivo di indirizzare le risorse giuste a chi ne aveva più bisogno -- un episodio in cui racconta anche le resistenze politiche incontrate quando i dati indicavano conclusioni scomode per l'amministrazione cittadina. Il secondo è il lavoro della matematica Mira Bernstein, che ha costruito un modello capace di individuare segnali di lavoro forzato nelle catene di fornitura industriali, per aiutare le aziende a liberarsene. Il terzo è un modello predittivo usato in Florida per individuare le famiglie a maggior rischio di abuso sui minori, non per punirle ma per indirizzare loro un sostegno preventivo -- un programma che, secondo i dati citati nel libro, ha eliminato i decessi per abuso nella contea dove è stato applicato. La differenza tra questi casi e le WMD non è tecnica, ma di obiettivo: gli stessi strumenti statistici, puntati a sostenere le persone invece che a scartarle o punirle, possono produrre effetti opposti.
+
+%=============================================================================
+\section{Cosa propone O'Neil per disarmare le WMD}
+%=============================================================================
+
+Il libro non si chiude con un atto d'accusa senza via d'uscita. O'Neil propone un insieme di rimedi che vanno dall'etica professionale alla regolamentazione. Suggerisce innanzitutto un giuramento simile a quello di Ippocrate per i data scientist, che li impegni a dichiarare i limiti e le assunzioni dei propri modelli invece di nasconderli dietro un'apparente oggettività matematica. Propone poi la creazione di \emph{audit algoritmici} indipendenti, capaci di analizzare un modello come una \emph{black box} -- osservando cosa entra e cosa esce -- per scoprirne i pregiudizi senza dover accedere al codice proprietario, sul modello di iniziative come il Web Transparency and Accountability Project dell'Università di Princeton. Sul piano legislativo, chiede di estendere ai nuovi modelli digitali le tutele che già esistono per il credito tradizionale (il \emph{Fair Credit Reporting Act} e l'\emph{Equal Credit Opportunity Act}), per la salute (\emph{HIPAA}) e per la disabilità (\emph{ADA}), che oggi vengono facilmente eluse semplicemente ribattezzando un dato sensibile con un nome diverso. Ma il punto più importante, quello che O'Neil ripete come un ritornello in tutto il libro, è che bisogna cambiare l'\emph{obiettivo} che i modelli sono chiamati a ottimizzare: non il profitto o l'efficienza a ogni costo, ma l'equità -- anche quando questo significa, esplicitamente, rinunciare a un po' di efficienza.
+
+%=============================================================================
+\section{Collegamenti con il corso di Etica}
+%=============================================================================
+
+\subsection{La tecnologia non è un destino: inevitabilismo e costruzione sociale}
+
+Il primo messaggio del corso è che la tecnologia e il suo impatto sulla società sono costruzioni sociali, prive di qualsiasi inevitabilità -- una tesi che si scontra con la retorica dell'\textbf{inevitabilismo tecnologico} discussa a lezione attraverso la celebre frase di Larry Page del 2001 (\emph{``tutta la vostra vita sarà searchable''}), che presenta l'invasività digitale come una legge di natura, al pari dell'evoluzione biologica. \emph{Weapons of Math Destruction} è, in un certo senso, la dimostrazione empirica di quella tesi: nessuno degli algoritmi raccontati nel libro è inevitabile. Ognuno nasce da decisioni umane concrete -- cosa misurare, quale proxy usare al posto del dato che davvero conta, quale obiettivo massimizzare -- decisioni quasi sempre motivate dal profitto e poi presentate come puro output ``oggettivo'' della matematica. O'Neil lo dice in modo diretto quando scrive che ``i processi Big Data codificano il passato, non inventano il futuro'': un modello costruito su dati storici non fa che riprodurre, con apparenza scientifica, le diseguaglianze che già esistevano prima di lui.
+
+\subsection{La retorica che nasconde chi decide}
+
+Le lezioni del corso analizzano la retorica come l'arte di convincere le persone a fare ciò che si vuole, e propongono un esempio di parallelismo grammaticale particolarmente istruttivo: la frase ``i robot sostituiranno gli esseri umani nei posti di lavoro'' è costruita esattamente come ``la cimice asiatica sostituirà la cimice verde nei nostri prati'', ma a differenza della seconda nasconde dietro un linguaggio impersonale e naturalizzante il vero soggetto della frase -- i datori di lavoro che scelgono di sostituire i dipendenti con macchine. È esattamente il meccanismo retorico che O'Neil smonta pagina dopo pagina: quando un'azienda dice che ``il modello ha calcolato un punteggio di rischio'' per negare un prestito o licenziare un'insegnante, sta usando un linguaggio tecnico per nascondere una scelta umana -- chi ha deciso quali dati contano, e chi paga il prezzo di quella decisione.
+
+\subsection{I punteggi come fatti costruiti, non fatti di natura}
+
+Il corso introduce il costruttivismo sociale di John Searle, secondo cui la realtà sociale in cui viviamo -- denaro, cittadinanza, contratti -- non è un fatto bruto della natura, ma esiste solo grazie a regole costitutive condivise da una comunità. È una lente che si applica perfettamente ai punteggi descritti da O'Neil: un credit score, un punteggio di rischio recidiva o un posto in un ranking universitario sono, nel linguaggio di Searle, \emph{fatti istituzionali}. Producono effetti reali -- un prestito negato, una pena più lunga, l'esclusione da un college -- soltanto perché un sistema di regole sociali (leggi, contratti, prassi aziendali) decide di attribuire loro quel potere. Non sono affatto fatti bruti della realtà materiale, eppure vengono trattati come verità oggettive e incontestabili: proprio l'errore contro cui il costruttivismo sociale invita a essere vigili, ricordando che ``il sapere è contestuale'' e non eterno.
+
+\subsection{Il bias come scelta politica, non come bug}
+
+A lezione viene mostrato come Stable Diffusion, alla richiesta di generare l'immagine di un giudice, produca quasi solo uomini bianchi, e la conclusione che ne viene tratta è netta: il problema non è tecnico, ma politico, perché le scelte che producono quel risultato le fanno gli ingegneri di un'azienda, un gruppo molto ristretto di persone. È lo stesso punto, declinato sul credito invece che sulle immagini, che O'Neil fa quando spiega perché includere il codice postale in un modello di rischio creditizio non sia una scelta neutra: significa decidere che la storia del comportamento finanziario di un intero quartiere debba determinare il prestito di una singola persona che vi abita. Dietro ogni proxy scelto in un modello -- il codice postale, l'ortografia in una domanda di lavoro, la presenza di un partner non sposato in casa -- c'è una decisione morale presa da pochi tecnici, non un'inferenza scientifica neutra.
+
+\subsection{Il lavoro invisibile dietro l'efficienza}
+
+Tra le immagini mostrate a lezione c'è quella del finto automa scacchista settecentesco usato per nascondere un uomo al suo interno -- una metafora dei lavoratori della gig economy che etichettano dati per l'IA restando invisibili e senza nome -- e quella del documentario \emph{The Cleaners}, sui lavoratori costretti a visionare contenuti orribili per ``pulire'' i social media. Il capitolo di O'Neil sullo scheduling algoritmico in Starbucks racconta una versione americana e più quotidiana dello stesso fenomeno: un software che tratta i lavoratori come variabili di un'equazione di ottimizzazione dei costi, producendo turni imprevedibili che spezzano le vite di chi li subisce. In entrambi i casi l'efficienza del sistema si costruisce sottraendo dignità e visibilità a chi sta, letteralmente o figurativamente, dietro l'algoritmo.
+
+\subsection{Le assicurazioni e l'erosione di un bene comune}
+
+Il corso ripercorre la storia dei \emph{commons}, i beni comuni -- foreste, fiumi, pascoli, ma anche, in senso più ampio, software open source o conoscenza collettiva -- e racconta come la loro gestione condivisa sia stata progressivamente eroso a partire dal feudalesimo, quando i signori si appropriarono di terre prima comuni, fino ai giorni nostri, in cui la stessa logica di erosione si applica a dati personali, orbite satellitari o spazio pubblico online. È una lente che si applica con grande precisione al capitolo di O'Neil sulle assicurazioni: l'assicurazione, ricorda l'autrice, nasce storicamente come un meccanismo che fa pagare alla maggioranza della comunità il costo della sfortuna di una minoranza -- una forma, in fondo, di bene comune gestito collettivamente. Quando gli algoritmi assicurativi smettono di calcolare un premio medio e iniziano a fissare un prezzo individuale costruito sul profilo di rischio di ciascuno, quella logica di condivisione collettiva del rischio viene smontata pezzo per pezzo: chi è già più vulnerabile finisce per pagare di più, da solo, esattamente ciò che la tragedia dei beni comuni descritta a lezione (la tendenza a sfruttare una risorsa condivisa fino a esaurirla, in assenza di regole) prevede quando manca una regolamentazione capace di proteggere l'interesse collettivo.
+
+\subsection{Un mercato lasciato a sé stesso, e la necessità di regole}
+
+A lezione viene ricordata la riflessione dello storico dell'economia Karl Polanyi, secondo cui il mercato lasciato a sé stesso tende a diventare distruttivo, e per questo servono istituzioni autorevoli capaci di arginarlo -- un punto che Polanyi univa a un'osservazione più generale: le cose non vanno mai in un'unica direzione per necessità, il mondo è sempre il risultato di una scelta sociale. È lo stesso principio che regge la conclusione di \emph{Weapons of Math Destruction}: O'Neil non chiede di abolire la statistica, ma di riconoscere che il modo in cui oggi viene usata -- per massimizzare profitto ed efficienza a scapito dell'equità -- è una scelta, non un destino, e propone proprio quel tipo di istituzioni autorevoli (audit indipendenti, leggi estese ai nuovi modelli digitali) che la storia della regolamentazione dei monopoli industriali, dallo Sherman Act allo smembramento della Standard Oil, aveva già mostrato necessarie per arginare un altro mercato lasciato troppo a lungo a sé stesso.
+
+\subsection{Quando una piattaforma diventa un piccolo sovrano}
+
+Il corso descrive il \emph{tecnofeudalesimo} osservando che Amazon non è più soltanto un mercato in cui domanda e offerta si incontrano: Jeff Bezos occupa piuttosto la posizione di un aristocratico che vive di rendita sul terreno che possiede, imponendo le proprie regole a chi lo attraversa -- come quando AmazonBasics usa i dati raccolti sulla piattaforma per fare concorrenza ai venditori che la stessa piattaforma ospita. È una descrizione che si adatta altrettanto bene ai broker di dati e alle agenzie di e-score raccontati nell'ottavo capitolo di O'Neil: anche loro non si limitano a partecipare a un mercato regolato, ma costruiscono un proprio sistema privato di regole -- chi è ``ad alto rischio'', chi merita un prestito, chi viene escluso -- che agisce con la forza di una legge non scritta, sottratto però a qualsiasi controllo democratico o giudiziario.
+
+%=============================================================================
+\section{Tabella di sintesi}
+%=============================================================================
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{p{6cm}p{8.5cm}}
+\toprule
+\textbf{Concetto del corso di Etica} & \textbf{Come si ritrova in \emph{Weapons of Math Destruction}} \\
+\midrule
+Inevitabilismo tecnologico come retorica & I modelli ``non possono risolvere i problemi che creano''; nessuna WMD è inevitabile, ognuna è una scelta \\
+Retorica che nasconde l'attore umano & Il linguaggio del ``punteggio di rischio'' nasconde le decisioni umane su dati e proxy \\
+Costruttivismo sociale di Searle & Credit score e ranking universitari come fatti istituzionali trattati erroneamente come fatti bruti \\
+Bias dell'AI come scelta politica & Ogni proxy (codice postale, ortografia) è una decisione morale di pochi tecnici, non una neutra inferenza \\
+Sfruttamento del lavoro invisibile & Lo scheduling algoritmico di Starbucks tratta i lavoratori come variabili di un'equazione di costo \\
+Commons e tragedia dei beni comuni & Le assicurazioni nascono per condividere il rischio collettivamente; il pricing individuale algoritmico smonta questa logica \\
+Polanyi: il mercato necessita di regole & La conclusione del libro chiede istituzioni e leggi capaci di arginare un mercato dei dati lasciato a sé stesso \\
+Tecnofeudalesimo & I broker di e-score costruiscono un sistema privato di regole che agisce come una legge non scritta, senza controllo democratico \\
+\bottomrule
+\end{tabular}
+\caption{Sintesi dei collegamenti tra il corso di Etica e \emph{Weapons of Math Destruction}.}
+\end{table}
+
+%=============================================================================
+\section{Domande utili per l'esposizione orale}
+%=============================================================================
+
+Una traccia di domande con cui mettersi alla prova, utile per ripassare prima dell'esame:
+
+\begin{enumerate}
+  \item Cos'è una WMD secondo O'Neil? Spiega i tre criteri -- opacità, scala, danno -- con un esempio per ciascuno tratto dal libro.
+  \item Perché il modello statistico del baseball non è una WMD, mentre il \emph{value-added model} per insegnanti lo è? Quali delle quattro qualità di un modello sano (trasparenza, dati pertinenti, feedback, obiettivi condivisi) mancano nel secondo caso?
+  \item Spiega il concetto di \emph{feedback loop perverso} con due esempi del libro, ad esempio il modello di recidiva LSI--R e il rapporto tra credit score e disoccupazione.
+  \item In che senso un credit score o un ranking universitario possono essere descritti, con il linguaggio di Searle, come ``fatti istituzionali'' piuttosto che ``fatti bruti''? Perché questa distinzione conta per giudicare l'equità di una WMD?
+  \item Perché O'Neil sostiene che la scelta dei proxy in un modello sia una decisione morale e non solo tecnica? Si può collegare questo punto all'esempio del bias di Stable Diffusion visto a lezione?
+  \item Quali soluzioni regolatorie e tecniche propone O'Neil nella conclusione del libro? In che modo si collegano ai temi di trasparenza e responsabilità affrontati nel corso?
+  \item Quali sono i casi in cui, secondo O'Neil, gli stessi strumenti statistici producono effetti positivi invece che dannosi? Cosa cambia, in quei casi, rispetto a una vera WMD?
+  \item In che senso l'assicurazione tradizionale può essere vista come una forma di bene comune, e perché il pricing algoritmico individuale ne mina la logica? Collega questo punto al concetto di ``tragedia dei beni comuni'' discusso a lezione.
+  \item Usa la riflessione di Karl Polanyi sul mercato lasciato a sé stesso per spiegare perché le proposte regolatorie finali di O'Neil non siano un'eccezione, ma seguano una logica storica già vista con la regolamentazione dei monopoli industriali.
+\end{enumerate}
+
+Un'ultima nota utile per l'orale: il professore apprezza quando lo studente porta un collegamento autonomo, non discusso esplicitamente a lezione. Usare i casi americani di \emph{Weapons of Math Destruction} -- giustizia penale, credito, lavoro -- per arricchire gli esempi europei e tecnologici discussi in aula è un buon modo per mostrarlo.
+
+\end{document}
