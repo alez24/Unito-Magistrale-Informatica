@@ -8,6 +8,7 @@
 \usepackage{enumitem}
 \usepackage{booktabs}
 \usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage{float}
 
 \geometry{margin=2.7cm}
 \setlength{\parskip}{0.5em}
@@ -17,8 +18,8 @@
 
 \hypersetup{colorlinks=true, linkcolor=blue!50!black, urlcolor=blue!50!black}
 
-\title{\textbf{Weapons of Math Destruction}\\[0.3em]
-\large Cathy O'Neil (2016) -- relazione di studio\\[0.3em]
+\title{\textbf{Weapons of Math Destruction} \& \textbf{Macchine ingannevoli}\\[0.3em]
+\large Cathy O'Neil (2016) e Simone Natale -- relazione di studio\\[0.3em]
 \normalsize Collegamenti con il corso \emph{Etica, Società e Privacy}\\
 Università di Torino -- Magistrale Informatica -- A.A. 2024/2025}
 \author{}
@@ -32,6 +33,8 @@ Università di Torino -- Magistrale Informatica -- A.A. 2024/2025}
 %=============================================================================
 \section{Chi scrive, e perché}
 %=============================================================================
+
+Questa relazione integra due testi complementari: \emph{Weapons of Math Destruction} di Cathy O'Neil (2016), che analizza come gli algoritmi producano danni sistemici concreti nei settori del lavoro, della giustizia e del credito, e \emph{Macchine ingannevoli} di Simone Natale, che ricostruisce la storia lunga dell'IA come arte della simulazione, mostrando perché gli esseri umani si fidino di sistemi che non comprendono nulla di ciò che elaborano. I due libri si leggono insieme: O'Neil documenta il danno, Natale spiega perché non lo vediamo.
 
 Cathy O'Neil è una matematica formata a Harvard (un dottorato in teoria algebrica dei numeri), che ha insegnato alla Barnard prima di passare al settore privato come \emph{quant} per il hedge fund D.\,E.\ Shaw e infine come data scientist in alcune startup di e-commerce. È un percorso che conta, perché il libro non è scritto da un'osservatrice esterna preoccupata per l'IA in abstracto, ma da qualcuno che ha visto da dentro come la matematica finanziaria abbia contribuito alla crisi del 2008, e che da quel momento ha iniziato a interrogarsi su cosa stesse succedendo, con la stessa logica, in molti altri settori: istruzione, lavoro, giustizia penale, credito, assicurazioni, politica.
 
@@ -112,6 +115,86 @@ Un aspetto che si rischia di perdere leggendo solo i casi peggiori del libro è 
 Il libro non si chiude con un atto d'accusa senza via d'uscita. O'Neil propone un insieme di rimedi che vanno dall'etica professionale alla regolamentazione. Suggerisce innanzitutto un giuramento simile a quello di Ippocrate per i data scientist, che li impegni a dichiarare i limiti e le assunzioni dei propri modelli invece di nasconderli dietro un'apparente oggettività matematica. Propone poi la creazione di \emph{audit algoritmici} indipendenti, capaci di analizzare un modello come una \emph{black box} -- osservando cosa entra e cosa esce -- per scoprirne i pregiudizi senza dover accedere al codice proprietario, sul modello di iniziative come il Web Transparency and Accountability Project dell'Università di Princeton. Sul piano legislativo, chiede di estendere ai nuovi modelli digitali le tutele che già esistono per il credito tradizionale (il \emph{Fair Credit Reporting Act} e l'\emph{Equal Credit Opportunity Act}), per la salute (\emph{HIPAA}) e per la disabilità (\emph{ADA}), che oggi vengono facilmente eluse semplicemente ribattezzando un dato sensibile con un nome diverso. Ma il punto più importante, quello che O'Neil ripete come un ritornello in tutto il libro, è che bisogna cambiare l'\emph{obiettivo} che i modelli sono chiamati a ottimizzare: non il profitto o l'efficienza a ogni costo, ma l'equità -- anche quando questo significa, esplicitamente, rinunciare a un po' di efficienza.
 
 %=============================================================================
+\section{Macchine ingannevoli -- Simone Natale}
+%=============================================================================
+
+\subsection{Chi scrive, e perché}
+
+Simone Natale è professore associato di storia dei media all'Università di Torino, specializzato nel rapporto tra tecnologie della comunicazione e vita sociale. Il suo punto di partenza è insolito rispetto alla maggior parte della letteratura sull'intelligenza artificiale: invece di chiedersi cosa farà l'IA in futuro, si chiede cosa ha fatto nel passato. \emph{Macchine ingannevoli} è la storia lunga -- e sorprendentemente coerente -- di come le macchine abbiano sempre simulato capacità che non possedevano, e di come gli esseri umani abbiano sempre partecipato volentieri a quell'illusione.
+
+La tesi di fondo è provocatoria: l'inganno non è un difetto dell'intelligenza artificiale che la ricerca cerca di correggere, ma una \emph{caratteristica costitutiva} che i suoi costruttori hanno deliberatamente coltivato fin dall'inizio, sfruttando la tendenza umana ad attribuire vita e intenzione agli oggetti che si comportano in modo socialmente riconoscibile. Comprendere questa storia è, per Natale, indispensabile per non restare vittime ignare della stessa illusione nella sua versione contemporanea.
+
+\subsection{Lo strumento è il passato, non il futuro}
+
+La scelta metodologica che distingue \emph{Macchine ingannevoli} dalla maggior parte dei libri sull'IA è dichiarata fin dalle prime pagine: «in questo libro lo strumento che viene usato non è il futuro ma il passato». La storia dell'IA è una storia di simulazioni -- di sistemi progettati per sembrare più capaci di quanto non siano -- e quella storia si ripete con sorprendente regolarità, cambiando solo il mezzo e il vocabolario. Ogni generazione ha incontrato le sue macchine ingannevoli presentate come novità assoluta, e ogni generazione le ha accolte con lo stesso misto di meraviglia e autoinganno collettivo.
+
+Questo approccio è anche una critica implicita all'inevitabilismo tecnologico: se l'impressione di trovarsi di fronte a un sistema ``quasi umano'' è sempre stata costruita deliberatamente, allora non è il risultato naturale del progresso, ma una scelta di design ripetuta nel tempo per ragioni economiche, culturali e istituzionali precise.
+
+\subsection{Le sedute spiritiche: il prototipo dell'inganno}
+
+Il libro si apre non con un computer, ma con un tavolino. Nel diciannovesimo secolo le \emph{sedute spiritiche} erano un fenomeno di massa: in salotti di New York, Londra e di tutta Europa, i partecipanti si raccoglievano attorno a un tavolo, posavano le mani sulla superficie e assistevano a movimenti spontanei che sembravano trasmettere messaggi dall'aldilà. Il fisico Michael Faraday sottopose il fenomeno a un esperimento controllato e dimostrò che i movimenti erano prodotti involontariamente dalle mani stesse dei partecipanti -- un fenomeno che oggi chiameremmo ideomotorio: il corpo esegue piccoli movimenti inconsci guidati dalle aspettative di chi li compie.
+
+Natale usa questo episodio come metafora fondante del libro. L'inganno delle macchine non richiede che qualcuno menta consapevolmente: richiede soltanto che il sistema produca comportamenti che le aspettative culturali del momento interpretano come segnali di intelligenza o di vita. I partecipanti alle sedute spiritiche non erano creduloni: erano persone che vivevano in una cultura che aveva già costruito l'idea che certi fenomeni potessero essere reali. Allo stesso modo, gli utenti di ELIZA o di un moderno assistente vocale non sono stupidi: sono persone immerse in una cultura che ha già costruito l'idea che le macchine possano capire, rispondere e persino provare qualcosa.
+
+\subsection{I pionieri e la nascita del campo}
+
+Il secondo nucleo storico del libro riguarda la fondazione dell'informatica e dell'intelligenza artificiale come disciplina. Natale racconta come negli anni quaranta e cinquanta del Novecento un gruppo di ricercatori -- tra cui John McCarthy (che coniò il termine ``intelligenza artificiale'' nel 1956), J.C.R. Licklider e Norbert Wiener -- costruì le basi teoriche e istituzionali del campo in un'epoca in cui i computer erano enormi macchine a lotti (\emph{batch processing}): si consegnava una serie di schede perforate, si attendevano ore, si riceveva l'output. Licklider immaginò qualcosa di radicalmente diverso -- il \emph{time-sharing}, la condivisione in tempo reale di un computer tra molti utenti -- e con esso la possibilità di un dialogo uomo-macchina che assomigliasse a una conversazione vera.
+
+Questa transizione dal batch processing al time-sharing è cruciale: è il momento in cui la macchina smette di essere uno strumento di calcolo remoto e diventa un interlocutore potenziale. Ed è in questo contesto che nasce la domanda al cuore del libro: una macchina con cui si dialoga in tempo reale è davvero diversa, nella percezione dell'utente, da un essere umano con cui si dialoga?
+
+\subsection{ELIZA e l'effetto ELIZA}
+
+Il caso che Natale analizza con maggiore profondità è \textbf{ELIZA}, il programma creato nel 1963 da Joseph Weizenbaum -- un ingegnere tedesco emigrato negli Stati Uniti che lavorava al MIT. ELIZA simulava un dialogo terapeutico ispirato alla psicoterapia rogersiana, e lo faceva nel modo più semplice possibile: rispecchiava le frasi dell'interlocutore riformulandole come domande («Mi sento triste» → «Perché si sente triste?»), oppure applicava regole IF-THEN elementari per estrarre parole chiave e costruire risposte pertinenti. Il programma non capiva nulla del contenuto: eseguiva un pattern matching su testo, senza alcuna comprensione semantica.
+
+Ciò che accadde nella pratica stupì lo stesso Weizenbaum. Gli utenti -- compresi colleghi e tecnici che conoscevano perfettamente il funzionamento del programma -- sviluppavano un attaccamento emotivo reale a ELIZA. La segretaria di Weizenbaum gli chiese esplicitamente di lasciarla sola durante le sessioni, perché voleva la privacy della conversazione. Studenti che erano stati informati del funzionamento del codice continuavano a fidarsi delle risposte del programma come se provenissero da un interlocutore intelligente. Weizenbaum fu così turbato da questa scoperta che scrisse un libro -- \emph{Computer Power and Human Reason} (1976) -- in cui avvertiva dei pericoli dell'antropomorfizzazione delle macchine.
+
+Natale chiama questo fenomeno \textbf{effetto ELIZA}: la tendenza degli utenti ad attribuire comprensione, empatia e intenzione a un sistema che non ne possiede alcuna, semplicemente perché il sistema produce output linguisticamente coerenti. L'effetto ELIZA non è una debolezza di utenti ingenui: è una caratteristica cognitiva profonda dell'essere umano, che ha evoluto la capacità di leggere intenzioni e stati mentali negli altri come strumento di sopravvivenza sociale, e che la applica automaticamente a qualunque sistema si comporti in modo socialmente riconoscibile.
+
+\subsection{Il test di Turing come performance culturale}
+
+Al centro della storia dell'IA c'è il \textbf{test di Turing}, proposto dal matematico britannico Alan Turing nel 1950. La formulazione è elegante: una macchina è intelligente se riesce a sostenere una conversazione testuale con un giudice umano in modo tale che questi non riesca a distinguerla da un interlocutore umano. Il test ha avuto un'influenza enorme sulla cultura e sulla ricerca dell'IA, ma Natale ne fa un'analisi critica che va contro l'uso convenzionale.
+
+Il test di Turing, sostiene Natale, non misura l'intelligenza: misura la capacità di \emph{simulare} l'intelligenza in un contesto conversazionale. È, in fondo, un test teatrale: vince chi recita meglio la parte dell'essere umano, non chi capisce davvero cosa sta dicendo. Questo riduce la valutazione dell'IA -- come osserva anche il filosofo David Gunkel -- a un gioco di apparenze, in cui la vittoria si ottiene ingannando il giudice, non comprendendo il mondo. Il test confonde la rappresentazione con la realtà: esattamente lo stesso errore che Faraday aveva smascherato nelle sedute spiritiche settant'anni prima.
+
+Questa critica si traduce in una distinzione filosofica fondamentale che attraversa tutto il libro: la differenza tra \textbf{sintassi e semantica}. Le macchine operano sulla sintassi -- collegano simboli, numeri e parole secondo regole statistiche, calcolando quale elemento ha più probabilità di seguire un altro. Non accedono mai alla semantica, cioè al significato, al peso emotivo, all'implicazione etica di ciò che producono. ELIZA non sapeva cosa stesse dicendo; un moderno chatbot non sa cosa stia scrivendo. Questa non è una limitazione tecnica destinata a scomparire con modelli più potenti: è una differenza di natura, e ignorarla -- trattare l'output sintattico di una macchina come se fosse comprensione semantica -- è la radice di tutti gli inganni che Natale documenta. È anche, specularmente, la radice delle WMD di O'Neil: un credit score non ``capisce'' la persona che valuta, ma viene trattato come se lo facesse.
+
+Il \textbf{Premio Loebner}, la competizione annuale tra chatbot ispirata al test di Turing e protrattasi dal 1991 fino al 2019, è la dimostrazione pratica di questa critica. Ogni anno, giudici umani dialogavano con una serie di programmi e con alcuni esseri umani reali, cercando di distinguere i secondi dai primi. I programmi vincitori non erano quelli che capivano di più: erano quelli che avevano imparato a sfruttare le aspettative dei giudici, a fare domande di ritorno per guadagnare tempo, a simulare errori ortografici per sembrare più umani, a usare battute fuori tema per depistare. Brian Christian, che partecipò come interlocutore umano al premio Loebner del 2009 e vinse il titolo di ``umano più umano'' (quello che i giudici riconobbero più facilmente come tale), ha raccontato questa esperienza in un libro che Natale cita come illustrazione perfetta del paradosso: per sembrare umano in un test di Turing bisogna sforzarsi, mentre la macchina vince sembrando umana senza capirlo.
+
+\subsection{Simbiosi: quando l'inganno diventa infrastruttura}
+
+Un momento cruciale nella storia dell'IA è quello che Natale chiama \textbf{simbiosi}: il passaggio dal chatbot come esperimento isolato all'IA come infrastruttura invisibile della vita quotidiana. Licklider aveva già immaginato negli anni sessanta una «simbiosi uomo-computer» in cui macchina e umano avrebbero collaborato in tempo reale; quello che non aveva immaginato è che la macchina sarebbe diventata così integrata da diventare trasparente, invisibile, data per scontata.
+
+Questa invisibilità è, per Natale, la forma più potente di inganno: quando non ci si accorge più che c'è una macchina, non si può nemmeno chiedersi se ciò che produce sia vero o simulato. L'algoritmo di raccomandazione di Netflix, il suggerimento automatico di Gmail, il feed di Instagram -- tutti questi sistemi operano in modo così fluido e continuo che l'utente smette di percepirli come mediatori e li sperimenta direttamente come realtà. La macchina è diventata il territorio, non più la mappa.
+
+\subsection{Il Gatekeeper: le piattaforme come arbitri dell'esperienza}
+
+L'ultima figura chiave del libro è quella del \textbf{Gatekeeper} -- il guardiano. Le grandi piattaforme digitali (Google, Facebook, Amazon) non sono semplici canali neutri attraverso cui le informazioni passano: sono sistemi che selezionano, filtrano, amplificano e sopprimono contenuti in base a criteri algoritmici opachi. Svolgono, di fatto, la funzione che un tempo era dei redattori, dei direttori editoriali, delle istituzioni culturali -- ma senza la visibilità pubblica e la responsabilità che quei ruoli implicavano.
+
+Natale usa questa figura per descrivere un secondo livello di inganno rispetto a quello di ELIZA: non solo la macchina simula comprensione nell'interazione individuale, ma la piattaforma ridisegna l'ambiente informativo collettivo senza che nessuno lo percepisca come una scelta editoriale. Le \emph{bolle di filtraggio} e le \emph{echo chambers} non sono effetti collaterali accidentali: sono il prodotto prevedibile di algoritmi progettati per massimizzare il tempo sullo schermo, che premiano i contenuti emotivamente coinvolgenti -- indignazione, paura, sorpresa -- rispetto a quelli complessi e sfumati. Il Gatekeeper è una macchina ingannevole di secondo ordine: non simula un'intelligenza individuale, ma simula una piazza pubblica neutrale mentre in realtà modella il dibattito.
+
+\subsection{Cosa conclude Natale: riconoscere l'inganno per non subirlo}
+
+La conclusione del libro non è tecnofoba. Natale non chiede di abolire i chatbot o di spegnere gli algoritmi di raccomandazione: chiede di smettere di trattarli come qualcosa di diverso da ciò che sono. Le macchine ingannevoli non sono pericolose perché mentono: sono pericolose quando chi le usa -- individui, istituzioni, giudici, datori di lavoro -- dimentica che stanno operando una simulazione e non una comprensione. Il rimedio non è tecnico ma culturale ed epistemologico: sviluppare una \emph{alfabetizzazione all'inganno algoritmico}, ovvero la capacità di riconoscere quando un sistema sta sfruttando le aspettative cognitive invece di soddisfare un bisogno reale.
+
+Questo richiede trasparenza sulle regole con cui i sistemi operano -- chi ha scritto il codice, con quali dati, con quale obiettivo -- e responsabilità delle istituzioni che li adottano. Nessun sistema può essere dichiarato neutrale: ogni chatbot, ogni motore di raccomandazione, ogni algoritmo di scoring incorpora scelte fatte da persone con interessi precisi. Renderle visibili è il primo passo per non lasciarsi ingannare.
+
+\subsection{Il filo rosso con le lezioni del corso: dove i due libri si incontrano}
+
+I temi di Natale e quelli di O'Neil non si affiancano: si \emph{sovrappongono}, usando gli stessi concetti del corso declinati su piani complementari.
+
+\textbf{Inevitabilismo tecnologico.} La storia lunga dell'effetto ELIZA dimostra che l'impressione di trovarsi di fronte a un sistema ``quasi umano'' è sempre stata costruita deliberatamente, non emersa per necessità tecnica. Natale lo mostra attraverso la storia; O'Neil lo mostra attraverso i dati: «i processi Big Data codificano il passato, non inventano il futuro». Né l'IA che simula comprensione né la WMD che produce punteggi di rischio sono inevitabili: sono scelte di design.
+
+\textbf{Costruttivismo sociale di Searle.} L'``intelligenza'' di ELIZA non è un fatto bruto della realtà: esiste solo perché utenti, aziende e cultura decidono collettivamente di trattarla come tale -- un fatto istituzionale nel senso preciso di Searle. Allo stesso modo, un credit score o un punteggio di recidiva (O'Neil) produce effetti reali solo perché un sistema di regole sociali gli riconosce quel potere. Smontare entrambi significa ricordare che quella convenzione si può cambiare.
+
+\textbf{Retorica che nasconde chi decide.} «L'algoritmo ha calcolato un punteggio di rischio» ha la stessa struttura grammaticale di «la seduta spiritica ha trasmesso un messaggio dall'aldilà»: un soggetto impersonale nasconde gli attori umani che hanno scelto i dati, scritto il codice, fissato le soglie. In entrambi i casi la retorica dell'impersonale serve a spostare la responsabilità dalla persona alla macchina.
+
+\textbf{Bias come scelta politica.} ELIZA rispecchiava le frasi dell'utente senza capirle: il suo «terapista» era il riflesso delle aspettative di chi parlava. Un modello addestrato su dati storici non scopre correlazioni neutrali: amplifica le strutture di potere già presenti in quei dati. Il Gatekeeper di Natale decide quali contenuti amplificare; il modello di O'Neil decide quali proxy usare. In entrambi i casi è una decisione politica presa da pochi ingegneri, presentata come output oggettivo.
+
+\textbf{Tecnofeudalesimo.} Le piattaforme Gatekeeper di Natale -- Google, Facebook, Amazon -- e i broker di e-score di O'Neil non sono mercati neutrali: sono territori privati con regole proprie, in cui poche aziende esercitano una funzione sovrana senza controllo democratico. Il Gatekeeper filtra il dibattito pubblico; il broker di dati filtra l'accesso al credito. La struttura è la stessa.
+
+\textbf{Polanyi e la necessità di regole.} Natale chiede trasparenza e responsabilità istituzionale: rendere visibili le regole degli algoritmi e chi le ha scritte. O'Neil chiede audit algoritmici indipendenti e leggi estese ai nuovi modelli. Le soluzioni convergono perché il problema è lo stesso: un sistema lasciato a sé stesso produce inganno e danno, e serve un quadro normativo esterno per arginarlo.
+
+%=============================================================================
 \section{Collegamenti con il corso di Etica}
 %=============================================================================
 
@@ -151,12 +234,12 @@ Il corso descrive il \emph{tecnofeudalesimo} osservando che Amazon non è più s
 \section{Tabella di sintesi}
 %=============================================================================
 
-\begin{table}[h!]
+\begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{1.35}
 \begin{tabular}{p{6cm}p{8.5cm}}
 \toprule
-\textbf{Concetto del corso di Etica} & \textbf{Come si ritrova in \emph{Weapons of Math Destruction}} \\
+\textbf{Concetto del corso di Etica} & \textbf{Come si ritrova in O'Neil e in Natale} \\
 \midrule
 Inevitabilismo tecnologico come retorica & I modelli ``non possono risolvere i problemi che creano''; nessuna WMD è inevitabile, ognuna è una scelta \\
 Retorica che nasconde l'attore umano & Il linguaggio del ``punteggio di rischio'' nasconde le decisioni umane su dati e proxy \\
@@ -166,9 +249,15 @@ Sfruttamento del lavoro invisibile & Lo scheduling algoritmico di Starbucks trat
 Commons e tragedia dei beni comuni & Le assicurazioni nascono per condividere il rischio collettivamente; il pricing individuale algoritmico smonta questa logica \\
 Polanyi: il mercato necessita di regole & La conclusione del libro chiede istituzioni e leggi capaci di arginare un mercato dei dati lasciato a sé stesso \\
 Tecnofeudalesimo & I broker di e-score costruiscono un sistema privato di regole che agisce come una legge non scritta, senza controllo democratico \\
+\midrule
+Effetto ELIZA e simulazione senza comprensione (Natale) & Le WMD si presentano come sistemi oggettivi ma -- come ELIZA -- producono output che gli utenti interpretano come intelligenza senza che la macchina capisca nulla \\
+Il passato come strumento: l'inganno non è nuovo & Natale usa la storia (sedute spiritiche → ELIZA → chatbot) per smontare l'inevitabilismo; O'Neil usa i casi americani per mostrare che nessuna WMD è inevitabile \\
+Gatekeeper, echo chambers e Gatekeeper come WMD & Le piattaforme Gatekeeper di Natale filtrano il dibattito pubblico; il microtargeting di Cambridge Analytica (O'Neil) usa le stesse bolle per manipolare il voto \\
+Test di Turing e scatola nera: vincere ingannando il giudice & Il test di Turing premia chi simula meglio, non chi capisce; i modelli di recidiva (COMPAS) producono numeri che il giudice non può verificare né contestare \\
+Alfabetizzazione all'inganno come risposta (Natale) vs.\ audit algoritmici (O'Neil) & Natale chiede trasparenza culturale sulle regole dei sistemi; O'Neil chiede audit indipendenti e leggi -- due forme dello stesso rimedio \\
 \bottomrule
 \end{tabular}
-\caption{Sintesi dei collegamenti tra il corso di Etica e \emph{Weapons of Math Destruction}.}
+\caption{Sintesi dei collegamenti tra il corso di Etica, \emph{Weapons of Math Destruction} e il tema delle macchine ingannevoli.}
 \end{table}
 
 %=============================================================================
@@ -187,6 +276,12 @@ Una traccia di domande con cui mettersi alla prova, utile per ripassare prima de
   \item Quali sono i casi in cui, secondo O'Neil, gli stessi strumenti statistici producono effetti positivi invece che dannosi? Cosa cambia, in quei casi, rispetto a una vera WMD?
   \item In che senso l'assicurazione tradizionale può essere vista come una forma di bene comune, e perché il pricing algoritmico individuale ne mina la logica? Collega questo punto al concetto di ``tragedia dei beni comuni'' discusso a lezione.
   \item Usa la riflessione di Karl Polanyi sul mercato lasciato a sé stesso per spiegare perché le proposte regolatorie finali di O'Neil non siano un'eccezione, ma seguano una logica storica già vista con la regolamentazione dei monopoli industriali.
+  \item Cos'è l'effetto ELIZA secondo Natale? Perché si verifica anche in persone che sanno come funziona il programma? Collega questo meccanismo alla fiducia cieca che giudici e datori di lavoro ripongono nei punteggi algoritmici descritti da O'Neil.
+  \item Perché Natale sostiene che nel libro usa il passato come strumento, non il futuro? In che modo la storia delle sedute spiritiche e di ELIZA smonta la retorica dell'inevitabilismo tecnologico che il corso critica attraverso la frase di Larry Page?
+  \item Perché il test di Turing misura la simulazione dell'intelligenza e non l'intelligenza stessa? Come si collega questa critica al problema della scatola nera nei modelli di recidiva (O'Neil), dove il giudice non può verificare né contestare il calcolo?
+  \item Descrivi la figura del Gatekeeper in Natale. Come si collega al capitolo di O'Neil sul microtargeting politico (Cambridge Analytica) e al concetto di tecnofeudalesimo discusso a lezione?
+  \item Quali soluzioni propone Natale per contrastare le macchine ingannevoli? Come si confrontano con le proposte di O'Neil (audit, leggi)? In che senso entrambi richiamano la logica di Polanyi sul mercato che necessita di regole?
+  \item Spiega il concetto di simbiosi in Natale: come la macchina da strumento visibile diventa infrastruttura invisibile. Collega questo punto al modo in cui le WMD di O'Neil diventano standard di fatto -- applicate su scala nazionale senza che nessuno le metta più in discussione.
 \end{enumerate}
 
 Un'ultima nota utile per l'orale: il professore apprezza quando lo studente porta un collegamento autonomo, non discusso esplicitamente a lezione. Usare i casi americani di \emph{Weapons of Math Destruction} -- giustizia penale, credito, lavoro -- per arricchire gli esempi europei e tecnologici discussi in aula è un buon modo per mostrarlo.
