@@ -1,0 +1,93 @@
+\documentclass[a3paper,landscape]{article}
+\usepackage[top=1cm,bottom=1cm,left=1cm,right=1cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{forest}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage{adjustbox}
+
+%% Colors
+\definecolor{rootcol}{HTML}{005F73}
+\definecolor{c1}{HTML}{0077B6}
+\definecolor{c2}{HTML}{E07000}
+\definecolor{c3}{HTML}{AE2012}
+\definecolor{c4}{HTML}{6A0572}
+\definecolor{c5}{HTML}{1B7A3A}
+
+\forestset{
+  branchstyle/.style 2 args={
+    rounded corners=3pt, draw=#1, fill=#1!25, text=#1!70!black,
+    font=\small\bfseries, align=center, inner sep=4pt,
+    edge={draw=#1, thick},
+  },
+  leafstyle/.style 2 args={
+    rounded corners=3pt, draw=#1!60, fill=#1!8, text=black,
+    font=\scriptsize, align=left, inner sep=3pt,
+    edge={draw=#1!60},
+  },
+}
+
+\begin{document}
+\pagestyle{empty}
+
+\begin{adjustbox}{max width=\textwidth, max totalheight=\textheight, center}
+\begin{forest}
+  for tree={
+    grow=east,
+    l sep=7mm,
+    s sep=2mm,
+    edge={thick},
+  },
+  %% ROOT
+  [{Cap.\ 15 --- Rule Learning},
+    rounded corners=4pt, draw=rootcol, fill=rootcol, text=white,
+    font=\normalsize\bfseries, align=center, inner sep=6pt,
+    %% BRANCH 1
+    [{Concetti Base}, branchstyle={c1}{},
+      [{Regola logica: $\oplus\leftarrow f_1\wedge f_2\wedge\cdots\wedge f_L$ ~~(head $\leftarrow$ body)}, leafstyle={c1}{}]
+      [{Letterali = atomi o $\neg$atomi; body = congiunzione di letterali}, leafstyle={c1}{}]
+      [{Regola proposizionale: atomi su attributi fissi. Es: $\mathrm{ripe}\leftarrow(\mathrm{root=curly})\wedge(\mathrm{umbilicus=hollow})$}, leafstyle={c1}{}]
+      [{Regola del primo ordine: variabili, predicati, quantificatori $\forall,\exists$. Es: $\forall X(p(f(X))\leftarrow p(X))$}, leafstyle={c1}{}]
+      [{Rule set: conflitti risolti con voting, ordering, o meta-rule}, leafstyle={c1}{}]
+    ]
+    %% BRANCH 2
+    [{Sequential Covering + Single Rule Learning}, branchstyle={c2}{},
+      [{Sequential Covering (Separate-and-Conquer): impara una regola, rimuovi campioni coperti, ripeti}, leafstyle={c2}{}]
+      [{Single Rule Learning: trovare il corpo ottimale e' un problema di ricerca (rischio esplosione combinatoria)}, leafstyle={c2}{}]
+      [{Top-Down (Specializzazione): parte da ``$\oplus\leftarrow$'' (copre tutto), aggiunge letterali}, leafstyle={c2}{}]
+      [{Bottom-Up (Generalizzazione): parte da un campione specifico, rimuove letterali progressivamente}, leafstyle={c2}{}]
+      [{Valutazione letterale: accuratezza, information gain (ratio), Gini index}, leafstyle={c2}{}]
+      [{Beam Search: evita ottimi locali mantenendo i $b$ migliori candidati a ogni passo}, leafstyle={c2}{}]
+    ]
+    %% BRANCH 3
+    [{Pruning Optimization}, branchstyle={c3}{},
+      [{Pre-pruning --- LRS (Likelihood Ratio Statistics, Clark \& Niblett 1989): ferma l'aggiunta se LRS $<$ soglia}, leafstyle={c3}{}]
+      [{Post-pruning --- REP (Reduced Error Pruning, Brunk \& Pazzani 1991): valuta tutte le potature, $O(m^4)$}, leafstyle={c3}{}]
+      [{IREP (Furnkranz \& Widmer 1994): applica REP subito dopo ogni regola, $O(m\log^2 m)$}, leafstyle={c3}{}]
+      [{IREP* (Cohen 1995): migliora IREP usando accuratezza $=\frac{\hat{m}_++(m_--\hat{m}_-)}{m_++m_-}$}, leafstyle={c3}{}]
+      [{RIPPER (Cohen 1995): 1.~gen.\ con IREP* ~~2.~per ogni regola: sostituzione o specializ.+general.\ ~~3.~confronta e mantieni il migliore ~~4.~ripete}, leafstyle={c3}{}]
+      [{RIPPER allevia il problema dell'ottimo locale del greedy approach}, leafstyle={c3}{}]
+    ]
+    %% BRANCH 4
+    [{First-Order Rule Learning --- FOIL}, branchstyle={c4}{},
+      [{Motivazione: le regole proposizionali non descrivono relazioni tra campioni diversi}, leafstyle={c4}{}]
+      [{Input: dati attribute-value + relational background knowledge}, leafstyle={c4}{}]
+      [{Es: $\forall X\forall Y\,(\mathrm{riper}(X,Y)\leftarrow\mathrm{curlier\_root}(X,Y)\wedge\mathrm{hollower\_umbilicus}(X,Y))$}, leafstyle={c4}{}]
+      [{FOIL (Quinlan 1990): Sequential Covering + Top-down; candidati = tutte le combo predicati $\times$ variabili}, leafstyle={c4}{}]
+      [{FOIL Gain $=\hat{m}_+\!\left(\log_2\frac{\hat{m}_+}{\hat{m}_++\hat{m}_-}-\log_2\frac{m_+}{m_++m_-}\right)$; post-prune the rule set}, leafstyle={c4}{}]
+    ]
+    %% BRANCH 5
+    [{Inductive Logic Programming (ILP)}, branchstyle={c5}{},
+      [{ILP (Muggleton 1991): apprende completamente Horn clauses del primo ordine}, leafstyle={c5}{}]
+      [{Usa Sequential Covering per l'insieme di regole}, leafstyle={c5}{}]
+      [{Strategia Bottom-Up per la singola regola: ricerca locale, no enumerazione di tutti i candidati}, leafstyle={c5}{}]
+      [{LGG --- Least General Generalization (Plotkin 1970): alta copertura con minime modifiche alle regole}, leafstyle={c5}{}]
+      [{$LGG(t,t)=t$ ~~(stessa costante) \quad $LGG(s,t)=V$ ~~(costanti diverse $\Rightarrow$ nuova variabile)}, leafstyle={c5}{}]
+      [{RLGG --- Relative LGG (Plotkin 1971): inizializza con $e\leftarrow K$ dove $K$ = tutto il background knowledge}, leafstyle={c5}{}]
+    ]
+  ]
+\end{forest}
+\end{adjustbox}
+
+\end{document}

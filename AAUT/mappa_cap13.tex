@@ -1,0 +1,102 @@
+\documentclass[a3paper,landscape]{article}
+\usepackage[top=1cm,bottom=1cm,left=1cm,right=1cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{forest}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage{adjustbox}
+
+%% Colors
+\definecolor{rootcol}{HTML}{005F73}
+\definecolor{c1}{HTML}{0077B6}
+\definecolor{c2}{HTML}{E07000}
+\definecolor{c3}{HTML}{AE2012}
+\definecolor{c4}{HTML}{6A0572}
+\definecolor{c5}{HTML}{1B7A3A}
+\definecolor{c6}{HTML}{007F8C}
+
+\forestset{
+  branchstyle/.style 2 args={
+    rounded corners=3pt, draw=#1, fill=#1!25, text=#1!70!black,
+    font=\small\bfseries, align=center, inner sep=4pt,
+    edge={draw=#1, thick},
+  },
+  leafstyle/.style 2 args={
+    rounded corners=3pt, draw=#1!60, fill=#1!8, text=black,
+    font=\scriptsize, align=left, inner sep=3pt,
+    edge={draw=#1!60},
+  },
+}
+
+\begin{document}
+\pagestyle{empty}
+
+\begin{adjustbox}{max width=\textwidth, max totalheight=\textheight, center}
+\begin{forest}
+  for tree={
+    grow=east,
+    l sep=7mm,
+    s sep=2mm,
+    edge={thick},
+  },
+  %% ROOT
+  [{Cap.\ 13 --- Semi-Supervised Learning},
+    rounded corners=4pt, draw=rootcol, fill=rootcol, text=white,
+    font=\normalsize\bfseries, align=center, inner sep=6pt,
+    %% BRANCH 1
+    [{Background \& Assunzioni}, branchstyle={c1}{},
+      [{Problema: pochi labeled $l$, molti unlabeled $u\gg l$}, leafstyle={c1}{}]
+      [{Active Learning: il modello seleziona attivamente quali campioni etichettare}, leafstyle={c1}{}]
+      [{Transductive: predice solo gli unlabeled visti in training}, leafstyle={c1}{}]
+      [{Pure SSL: apprende una funzione generalizzabile a nuovi campioni}, leafstyle={c1}{}]
+      [{Cluster Assumption: stesso cluster $\Rightarrow$ stessa classe}, leafstyle={c1}{}]
+      [{Manifold Assumption: campioni vicini sulla varieta' $\Rightarrow$ output simili}, leafstyle={c1}{}]
+    ]
+    %% BRANCH 2
+    [{Metodi Generativi (GMM)}, branchstyle={c2}{},
+      [{Modello: $p(x)=\sum_i\alpha_i\mathcal{N}(x;\mu_i,\Sigma_i)$, un componente Gaussiano per classe}, leafstyle={c2}{}]
+      [{Algoritmo EM su labeled $+$ unlabeled}, leafstyle={c2}{}]
+      [{E-step: calcola $P(\text{componente}\mid x_j)$ per campioni non etichettati}, leafstyle={c2}{}]
+      [{M-step: aggiorna $\alpha_i,\mu_i,\Sigma_i$ usando tutti i campioni}, leafstyle={c2}{}]
+      [{Pro: semplice, efficace con pochissime etichette}, leafstyle={c2}{}]
+      [{Contro: dipende fortemente dalla correttezza del modello generativo}, leafstyle={c2}{}]
+    ]
+    %% BRANCH 3
+    [{Semi-Supervised SVM (S3VM)}, branchstyle={c3}{},
+      [{Principio: low-density separation --- il confine attraversa zone a bassa densita'}, leafstyle={c3}{}]
+      [{TSVM (Transductive SVM, Joachims 1999): assegna pseudo-label agli unlabeled}, leafstyle={c3}{}]
+      [{Ricerca locale iterativa: scambia etichette di coppie probabilmente errate}, leafstyle={c3}{}]
+      [{Aumenta gradualmente $C_u$ fino a $C_u=C_l$ per bilanciare l'influenza degli unlabeled}, leafstyle={c3}{}]
+      [{Class imbalance: split $C_u$ in $C_u^+$ e $C_u^-$}, leafstyle={c3}{}]
+      [{Varianti efficienti: LDS (gradient descent su graph kernel), meanS3VM}, leafstyle={c3}{}]
+    ]
+    %% BRANCH 4
+    [{Graph-based SSL}, branchstyle={c4}{},
+      [{Grafo $G=(V,E)$: nodi = campioni, archi pesati per similarita'}, leafstyle={c4}{}]
+      [{Affinita': $W_{ij}=\exp(-\|x_i-x_j\|^2/2\sigma^2)$}, leafstyle={c4}{}]
+      [{Label Propagation binaria (Zhu et al.\ 2003): energia $E(f)=\frac{1}{2}\sum_{ij}W_{ij}(f_i-f_j)^2$, sol.\ chiusa}, leafstyle={c4}{}]
+      [{Label Propagation multiclasse (Zhou et al.\ 2004): $F^{(t+1)}=\alpha SF^{(t)}+(1-\alpha)Y$}, leafstyle={c4}{}]
+      [{Converge a $F^*=(1-\alpha)(I-\alpha S)^{-1}Y$, minimizza rischio regolarizzato}, leafstyle={c4}{}]
+      [{Limiti: memoria $O(n^2)$; difficile estendere a nuovi campioni}, leafstyle={c4}{}]
+    ]
+    %% BRANCH 5
+    [{Disagreement-based Methods}, branchstyle={c5}{},
+      [{Co-Training (Blum \& Mitchell 1998): due viste sufficienti e cond.\ indipendenti}, leafstyle={c5}{}]
+      [{view1 $\to$ model1, view2 $\to$ model2; ognuno etichetta i campioni piu' confidenti per l'altro}, leafstyle={c5}{}]
+      [{Teorema: performance boostata arbitrariamente con unlabeled (viste indipendenti)}, leafstyle={c5}{}]
+      [{Varianti single-view: diversi algoritmi, diverso sampling, diversi parametri}, leafstyle={c5}{}]
+      [{Condizione chiave: disaccordo significativo tra i learner (multi-view non necessario)}, leafstyle={c5}{}]
+    ]
+    %% BRANCH 6
+    [{Semi-Supervised Clustering}, branchstyle={c6}{},
+      [{Must-link: due campioni DEVONO stare nello stesso cluster}, leafstyle={c6}{}]
+      [{Cannot-link: due campioni NON devono stare nello stesso cluster}, leafstyle={c6}{}]
+      [{Constrained k-means (Wagstaff 2001): estende k-means rispettando i vincoli; violazione $\to$ cluster secondario}, leafstyle={c6}{}]
+      [{Constrained Seed k-means (Basu 2002): labeled come semi per inizializzare i $k$ centroidi; semi fissi}, leafstyle={c6}{}]
+    ]
+  ]
+\end{forest}
+\end{adjustbox}
+
+\end{document}

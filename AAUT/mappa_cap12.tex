@@ -1,0 +1,95 @@
+\documentclass[a3paper,landscape]{article}
+\usepackage[top=1cm,bottom=1cm,left=1cm,right=1cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{forest}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage{adjustbox}
+
+%% Colors
+\definecolor{rootcol}{HTML}{005F73}
+\definecolor{c1}{HTML}{0077B6}
+\definecolor{c2}{HTML}{E07000}
+\definecolor{c3}{HTML}{AE2012}
+\definecolor{c4}{HTML}{6A0572}
+\definecolor{c5}{HTML}{1B7A3A}
+\definecolor{c6}{HTML}{007F8C}
+
+\forestset{
+  branchstyle/.style 2 args={
+    rounded corners=3pt, draw=#1, fill=#1!25, text=#1!70!black,
+    font=\small\bfseries, align=center, inner sep=4pt,
+    edge={draw=#1, thick},
+  },
+  leafstyle/.style 2 args={
+    rounded corners=3pt, draw=#1!60, fill=#1!8, text=black,
+    font=\scriptsize, align=left, inner sep=3pt,
+    edge={draw=#1!60},
+  },
+}
+
+\begin{document}
+\pagestyle{empty}
+
+\begin{adjustbox}{max width=\textwidth, max totalheight=\textheight, center}
+\begin{forest}
+  for tree={
+    grow=east,
+    l sep=7mm,
+    s sep=2mm,
+    edge={thick},
+  },
+  %% ROOT
+  [{Cap.\ 12 --- Computational Learning Theory},
+    rounded corners=4pt, draw=rootcol, fill=rootcol, text=white,
+    font=\normalsize\bfseries, align=center, inner sep=6pt,
+    %% BRANCH 1
+    [{Concetti Base}, branchstyle={c1}{},
+      [{$E(h)=P(h(x)\neq y)$ ~~errore di generalizzazione}, leafstyle={c1}{}]
+      [{$\hat{E}(h)=\frac{1}{m}\sum_{i=1}^{m}\mathbf{1}[h(x_i)\neq y_i]$ ~~errore empirico}, leafstyle={c1}{}]
+      [{Concept $c$, class $C$, hypothesis space $H$}, leafstyle={c1}{}]
+      [{Separabile: $c\in H$ \quad vs \quad Non-separabile: $c\notin H$}, leafstyle={c1}{}]
+    ]
+    %% BRANCH 2
+    [{PAC Learning}, branchstyle={c2}{},
+      [{PAC Identify: $P(E(h)\leq\varepsilon)\geq 1-\delta$}, leafstyle={c2}{}]
+      [{PAC Learnable: $m\geq\mathrm{poly}(1/\varepsilon,\,1/\delta,\,\mathrm{size}(x),\,\mathrm{size}(c))$}, leafstyle={c2}{}]
+      [{Sample Complexity: numero minimo di campioni per apprendere}, leafstyle={c2}{}]
+    ]
+    %% BRANCH 3
+    [{Spazio di Ipotesi Finito $|H|<\infty$}, branchstyle={c3}{},
+      [{Caso separabile: $m\geq\frac{1}{\varepsilon}\!\left(\ln|H|+\ln\frac{1}{\delta}\right)$ $\Rightarrow$ ogni $H$ finito e' PAC-learnable, conv.\ $O(1/m)$}, leafstyle={c3}{}]
+      [{Caso non-sep.: Hoeffding $\Rightarrow$ Thm 12.1: $|E(h)-\hat{E}(h)|\leq\sqrt{\frac{\ln|H|+\ln(2/\delta)}{2m}}$ ~w.p.\ $\geq 1-\delta$}, leafstyle={c3}{}]
+      [{ERM: $\arg\min_{h\in H}\hat{E}(h)$}, leafstyle={c3}{}]
+      [{Agnostic PAC: $P\!\left(E(h)-\min_{h'\in H}E(h')\leq\varepsilon\right)\geq 1-\delta$}, leafstyle={c3}{}]
+    ]
+    %% BRANCH 4
+    [{VC Dimension}, branchstyle={c4}{},
+      [{Growth fn: $\Pi_H(m)=\max\big|\{(h(x_1),\ldots,h(x_m))\mid h\in H\}\big|$}, leafstyle={c4}{}]
+      [{Shattering: $H$ shatters $D$ sse $\Pi_H(|D|)=2^{|D|}$; \quad $\mathrm{VC}(H)=d$}, leafstyle={c4}{}]
+      [{Esempi: intervalli $[a,b]$ su $\mathbb{R}\to$ VC$=2$; ~sep.\ lineari in $\mathbb{R}^2\to$ VC$=3$}, leafstyle={c4}{}]
+      [{Sauer's Lemma: $\Pi_H(m)\leq\sum_{i=0}^{d}\binom{m}{i}\leq (em/d)^d$}, leafstyle={c4}{}]
+      [{Thm 12.3 (VC bound): conv.\ $O(1/\sqrt{m})$, distribution-free, data-independent}, leafstyle={c4}{}]
+      [{Thm 12.4: VC dim.\ finita $\Rightarrow$ $H$ e' (agnostic) PAC-learnable}, leafstyle={c4}{}]
+    ]
+    %% BRANCH 5
+    [{Rademacher Complexity}, branchstyle={c5}{},
+      [{Motivazione: VC bound troppo lasco (non dipende dalla distribuzione)}, leafstyle={c5}{}]
+      [{$\sigma_i\in\{-1,+1\}$ con prob.\ $0.5$; ~empirical: $\hat{R}_Z(F)=\mathbb{E}_\sigma\!\left[\sup_{f\in F}\frac{1}{m}\sum_i\sigma_i f(z_i)\right]$}, leafstyle={c5}{}]
+      [{Population: $R_m(F)=\mathbb{E}_Z[\hat{R}_Z(F)]$}, leafstyle={c5}{}]
+      [{Thm 12.6 (classif.): $E(h)\leq\hat{E}(h)+R_m(H)+\sqrt{\ln(1/\delta)/2m}$}, leafstyle={c5}{}]
+      [{Thm 12.7: $R_m(H)\leq\sqrt{2\ln\Pi_H(m)/m}$ $\Rightarrow$ VC bound e' un caso spec.\ di Rademacher}, leafstyle={c5}{}]
+    ]
+    %% BRANCH 6
+    [{Stabilita'}, branchstyle={c6}{},
+      [{$D^{\setminus i}=D$ senza il campione $i$; ~$D^i=D$ con $i$ sostituito}, leafstyle={c6}{}]
+      [{\mbox{$\beta$-Uniform Stability}: $|\ell(L_D,z)-\ell(L_{D^{\setminus i}},z)|\leq\beta$ per ogni $z,D,i$}, leafstyle={c6}{}]
+      [{Thm 12.8: $\ell(L,D)\leq\hat{\ell}(L,D)+2\beta+(4m\beta+M)\sqrt{\ln(1/\delta)/2m}$; ~se $\beta=O(1/m)\Rightarrow O(1/\sqrt{m})$}, leafstyle={c6}{}]
+      [{Thm 12.9: ERM uniformente stabile $\Rightarrow$ $H$ e' learnable. Analizza $L_D$ (non tutto $H$)}, leafstyle={c6}{}]
+    ]
+  ]
+\end{forest}
+\end{adjustbox}
+
+\end{document}
