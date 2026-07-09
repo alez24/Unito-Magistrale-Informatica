@@ -5,6 +5,8 @@
 # ============================================================
 
 import re
+import sys
+import io
 import warnings
 import numpy as np
 import pandas as pd
@@ -12,15 +14,30 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+# su Windows la console non e' UTF-8 di default: senza questo i print con simboli non-ASCII crashano
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+import nltk
 from collections import Counter
 from nltk.corpus import stopwords
 from gensim.models import Word2Vec
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 
-warnings.filterwarnings('ignore')  # silenzia i warning non critici di gensim durante l'addestramento
+warnings.filterwarnings('ignore', module=r'gensim.*')  # silenzia i warning non critici di gensim, non i nostri
 
-stop = set(stopwords.words('english'))
+try:
+    stop = set(stopwords.words('english'))
+except LookupError:
+    nltk.download('stopwords')
+    stop = set(stopwords.words('english'))
+
+# le contrazioni perdono l'apostrofo nella pulizia (don't -> dont), quindi
+# non sono coperte dalle stopword NLTK: le aggiungiamo esplicitamente
+stop.update(['dont', 'cant', 'wont', 'aint', 'youre', 'youll', 'youve',
+             'ive', 'ill', 'im', 'id', 'hes', 'shes', 'thats',
+             'were', 'weve', 'theyre', 'lets', 'didnt', 'doesnt',
+             'isnt', 'wasnt', 'couldnt', 'wouldnt', 'theres'])
 
 print("=" * 60)
 print("LAB 8 - Word2Vec su testi musicali")
@@ -40,8 +57,11 @@ print(f"Dataset: {df.shape[0]} canzoni, {df['artist'].nunique()} artisti")
 # ============================================================
 print("\n[STEP 2] Selezione artisti per era...")
 
+# NOTA: 'Led Zeppelin' non e' presente in questo dataset con questo nome
+# esatto (verificato su df['artist'].unique()) ed e' stato sostituito con
+# 'Black Sabbath' per mantenere 12 artisti rappresentativi degli anni 70.
 artisti_70s = [
-    'Led Zeppelin', 'Pink Floyd', 'Queen',
+    'Black Sabbath', 'Pink Floyd', 'Queen',
     'Eagles', 'Fleetwood Mac', 'Bee Gees',
     'David Bowie', 'Elton John', 'ABBA',
     'Doors', 'Rolling Stones', 'Deep Purple'
@@ -62,17 +82,27 @@ print(f"Canzoni anni 70:       {len(df_70s)}")
 print(f"\nArtisti 2000s trovati: {sorted(df_2000s['artist'].unique())}")
 print(f"Canzoni anni 2000:     {len(df_2000s)}")
 
+# controllo esplicito: un nome artista sbagliato/assente nel dataset fa
+# fallire il match silenziosamente (isin() non segnala nulla)
+n_trovati_70s   = df_70s['artist'].nunique()
+n_trovati_2000s = df_2000s['artist'].nunique()
+if n_trovati_70s != len(artisti_70s):
+    mancanti = set(artisti_70s) - set(df_70s['artist'].unique())
+    print(f"ATTENZIONE: attesi {len(artisti_70s)} artisti anni 70, trovati {n_trovati_70s}. Mancanti: {mancanti}")
+if n_trovati_2000s != len(artisti_2000s):
+    mancanti = set(artisti_2000s) - set(df_2000s['artist'].unique())
+    print(f"ATTENZIONE: attesi {len(artisti_2000s)} artisti anni 2000, trovati {n_trovati_2000s}. Mancanti: {mancanti}")
+
 # ============================================================
 # STEP 3: Pulizia testi
 # ============================================================
 print("\n[STEP 3] Pulizia testi...")
 
 def pulisci_testo(testo):
-    """Tokenizza un testo di canzone: rimuove annotazioni tra [], punteggiatura/numeri,
-    stopword e parole troppo corte (poco informative per Word2Vec)."""
+    """Tokenizza un testo di canzone rimuovendo annotazioni, punteggiatura, stopword e parole corte."""
     if not isinstance(testo, str):
         return []
-    testo = re.sub(r'\[.*?\]', '', testo)  # es. [Chorus], [Verse 1]
+    testo = re.sub(r'\[.*?\]', '', testo)
     testo = re.sub(r'[^a-zA-Z\s]', '', testo)
     testo = testo.lower()
     tokens = testo.split()
@@ -82,8 +112,6 @@ def pulisci_testo(testo):
 df_70s['tokens']   = df_70s['text'].apply(pulisci_testo)
 df_2000s['tokens'] = df_2000s['text'].apply(pulisci_testo)
 
-# Scarta le canzoni troppo corte dopo la pulizia: pochi token danno un
-# contesto insufficiente e rischiano di introdurre solo rumore.
 df_70s   = df_70s[df_70s['tokens'].map(len) > 5]
 df_2000s = df_2000s[df_2000s['tokens'].map(len) > 5]
 
@@ -113,20 +141,18 @@ for p, c in freq_2000s.most_common(15):
 # ============================================================
 print("\n[STEP 4] Addestramento Word2Vec...")
 
-# Stessi iperparametri per entrambe le ere, per rendere confrontabili i due
-# spazi vettoriali risultanti (altrimenti le differenze osservate potrebbero
-# derivare dai parametri e non dai testi).
 params = dict(
-    vector_size = 100,  # dimensionalità dei word embedding
-    window      = 5,    # ampiezza del contesto attorno alla parola target
-    min_count   = 3,    # frequenza minima per entrare nel vocabolario (filtra parole rare/rumore)
+    sg          = 1,     # Skip-gram (il default di gensim sarebbe CBOW, sg=0)
+    vector_size = 100,
+    window      = 5,
+    min_count   = 3,
     workers     = 4,
-    epochs      = 20,   # passate complete sul corpus
-    seed        = 42
+    epochs      = 20,
+    seed        = 42     # fissa l'inizializzazione, ma con workers>1 gensim non e'
+                          # bit-esatto tra run diversi (l'ordine di elaborazione dei
+                          # worker varia); per riproducibilita' totale servirebbe workers=1
 )
 
-# Un modello per era: ogni Word2Vec impara embedding solo dal proprio corpus,
-# così i vettori risultanti riflettono l'uso linguistico specifico di quel periodo.
 model_70s   = Word2Vec(sentences=df_70s['tokens'].tolist(),   **params)
 model_2000s = Word2Vec(sentences=df_2000s['tokens'].tolist(), **params)
 
@@ -167,8 +193,6 @@ coppie = [
 print(f"\n{'Coppia':<22} | {'Anni 70':>8} | {'Anni 2000':>10}")
 print("-" * 48)
 
-# similarity() restituisce il coseno tra i due vettori embedding, in [-1, 1]:
-# più è vicino a 1, più i due termini compaiono in contesti simili.
 for w1, w2 in coppie:
     s70   = f"{model_70s.wv.similarity(w1,w2):.4f}" \
             if w1 in model_70s.wv   and w2 in model_70s.wv   else "---"
@@ -192,8 +216,6 @@ print(f"Solo anni 70:   {len(solo_70s)} parole")
 print(f"Solo anni 2000: {len(solo_2000s)} parole")
 print(f"In comune:      {len(comuni)} parole")
 
-# Parole esclusive di un'era, ma abbastanza frequenti da essere davvero
-# caratteristiche (non semplici casi isolati) e non solo rumore.
 interessanti_70s = sorted(
     [p for p in solo_70s   if freq_70s[p]   > 20],
     key=lambda x: -freq_70s[x]
@@ -211,12 +233,9 @@ print(f"  {interessanti_2000s[:20]}")
 # ============================================================
 # STEP 8: Analisi sistematica coppie di parole (deriva semantica)
 # ============================================================
-print("\nAnalisi sistematica coppie...")
+print("\n[STEP 8] Analisi sistematica coppie...")
 
 FREQ_COPPIE = 100
-# Solo parole comuni a entrambe le ere e sufficientemente frequenti in
-# entrambe: garantisce che gli embedding confrontati siano stimati su
-# abbastanza occorrenze da essere affidabili.
 candidati = [
     p for p in (vocab_70s & vocab_2000s)
     if freq_70s[p] >= FREQ_COPPIE and freq_2000s[p] >= FREQ_COPPIE
@@ -224,21 +243,28 @@ candidati = [
 print(f"Parole candidate (freq >= {FREQ_COPPIE} in entrambe): {len(candidati)}")
 print(f"Coppie totali da confrontare: {len(candidati) * (len(candidati)-1) // 2}")
 
+# similarita' vettorizzata: una singola matrice N x N invece di N^2/2 chiamate
+# a .similarity() (rilevante quando i candidati salgono a qualche centinaio)
+def matrice_coseno(model, parole):
+    vettori = np.array([model.wv[p] for p in parole])
+    norme   = vettori / np.linalg.norm(vettori, axis=1, keepdims=True)
+    return norme @ norme.T
+
+sim70  = matrice_coseno(model_70s,   candidati)
+sim2000 = matrice_coseno(model_2000s, candidati)
+
 coppie_sist = []
-# Per ogni coppia calcoliamo il delta di similarità tra le due ere: un delta
-# alto significa che la relazione semantica tra quei due termini è cambiata
-# nel tempo (es. parole diventate più/meno associate).
 for i, w1 in enumerate(candidati):
-    for w2 in candidati[i+1:]:
-        s70   = model_70s.wv.similarity(w1, w2)
-        s2000 = model_2000s.wv.similarity(w1, w2)
-        delta = abs(s70 - s2000)
+    for j in range(i + 1, len(candidati)):
+        w2    = candidati[j]
+        s70   = float(sim70[i, j])
+        s2000 = float(sim2000[i, j])
         coppie_sist.append({
             'w1':        w1,
             'w2':        w2,
             's70':       s70,
             's2000':     s2000,
-            'delta':     delta,
+            'delta':     abs(s70 - s2000),
             'direzione': s2000 - s70,
         })
 
@@ -272,10 +298,10 @@ for r in coppie_sist[-10:][::-1]:
 # ============================================================
 # STEP 9: Analisi sistematica vocabolario comune (deriva di contesto)
 # ============================================================
-print("\n Analisi sistematica parole comuni...")
+print("\n[STEP 9] Analisi sistematica parole comuni...")
 
 FREQ_MINIMA   = 30
-TOP_N_VICINI  = 10  # quanti vicini considerare per confrontare il "contesto" di una parola tra le due ere
+TOP_N_VICINI  = 10
 TOP_RISULTATI = 30
 
 parole_frequenti_comuni = [
@@ -287,9 +313,7 @@ print(f"Parole comuni con freq >= {FREQ_MINIMA} in entrambe le ere: "
       f"{len(parole_frequenti_comuni)}")
 
 risultati = []
-# Il "cambiamento" di una parola è misurato come 1 - overlap tra i suoi
-# top-N vicini nelle due ere: se i vicini più simili sono quasi tutti diversi,
-# la parola ha cambiato contesto d'uso (non solo frequenza).
+# cambiamento = 1 - overlap tra i top-N vicini nelle due ere
 for parola in parole_frequenti_comuni:
     vicini_70s   = set(w for w,_ in model_70s.wv.most_similar(parola,   topn=TOP_N_VICINI))
     vicini_2000s = set(w for w,_ in model_2000s.wv.most_similar(parola, topn=TOP_N_VICINI))
@@ -348,11 +372,10 @@ for r in risultati[-10:][::-1]:
 # ============================================================
 # STEP 10: Clustering K-Means
 # ============================================================
-print("\n Clustering K-Means...")
+print("\n[STEP 10] Clustering K-Means...")
 
 def fai_clustering(model, n_clusters=6, top_words=200):
-    """Raggruppa le top_words parole più frequenti del modello in n_clusters
-    cluster semantici, sulla base dei loro embedding Word2Vec."""
+    """Raggruppa le parole più frequenti in cluster semantici via KMeans sugli embedding."""
     parole  = model.wv.index_to_key[:top_words]
     vettori = np.array([model.wv[w] for w in parole])
     km      = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
@@ -375,7 +398,7 @@ for cid, parole_cl in sorted(cl_2000s.items()):
 # ============================================================
 # STEP 11: Grafici
 # ============================================================
-print("\n Generazione grafici...")
+print("\n[STEP 11] Generazione grafici...")
 
 def top_per_cluster(parole, labels, freq_dict, n=7):
     """Le n parole più frequenti di ciascun cluster, usate per etichettare i punti nel plot t-SNE."""
@@ -392,10 +415,11 @@ fig1.suptitle('Clustering Word2Vec: Anni 70 vs Anni 2000',
               fontsize=16, fontweight='bold')
 
 def tsne_plot_v2(parole, vettori, labels, freq_dict, titolo, ax, n_clusters=6):
-    """Proietta gli embedding a 100 dimensioni in 2D con t-SNE e li colora per cluster,
-    annotando solo le parole più rappresentative per non affollare il grafico."""
-    n_perp = min(30, max(5, len(parole) - 1))  # perplexity t-SNE limitata dal numero di punti disponibili
-    tsne = TSNE(n_components=2, random_state=42, perplexity=n_perp, max_iter=1000)
+    """Proietta gli embedding in 2D con t-SNE, colorati per cluster e annotati solo nei punti chiave."""
+    n_perp = min(30, max(5, len(parole) - 1))  # perplexity limitata dal numero di punti
+    # niente max_iter/n_iter espliciti: il nome del parametro e' cambiato tra
+    # versioni di scikit-learn, il default (1000) e' comunque quello voluto
+    tsne = TSNE(n_components=2, random_state=42, perplexity=n_perp)
     v2d = tsne.fit_transform(vettori)
 
     colors = plt.cm.tab10(np.linspace(0, 0.9, n_clusters))
@@ -427,7 +451,7 @@ def tsne_plot_v2(parole, vettori, labels, freq_dict, titolo, ax, n_clusters=6):
     ax.spines['right'].set_visible(False)
 
 tsne_plot_v2(par_70s, vec_70s, lbl_70s, freq_70s,
-             'Anni 70 — Led Zeppelin, Pink Floyd, Queen, Eagles…', axes1[0])
+             'Anni 70 — Black Sabbath, Pink Floyd, Queen, Eagles…', axes1[0])
 tsne_plot_v2(par_2000s, vec_2000s, lbl_2000s, freq_2000s,
              'Anni 2000 — Eminem, Coldplay, Taylor Swift, Linkin Park…', axes1[1])
 
@@ -453,7 +477,7 @@ def build_sim_matrix(model, words):
 
 mat70  = build_sim_matrix(model_70s, kw)
 mat00  = build_sim_matrix(model_2000s, kw)
-diff_m = mat00 - mat70  # variazione di similarità tra le due ere, cella per cella
+diff_m = mat00 - mat70
 np.fill_diagonal(diff_m, 0)
 
 fig2, axes2 = plt.subplots(1, 3, figsize=(22, 7))
@@ -522,8 +546,7 @@ axes3[0].legend(fontsize=9)
 axes3[0].spines['top'].set_visible(False)
 axes3[0].spines['right'].set_visible(False)
 
-# 3b: scatter s70 vs s2000 per le coppie con delta maggiore (da STEP 8):
-# i punti sopra la diagonale sono coppie diventate più simili nei 2000s.
+# 3b: scatter s70 vs s2000; sopra la diagonale = coppie piu simili nei 2000s
 ax_s   = axes3[1]
 n_plot = min(800, len(coppie_sist))
 s70_v  = [r['s70']   for r in coppie_sist[:n_plot]]
@@ -539,10 +562,13 @@ hi = max(all_vals) + 0.05
 ax_s.plot([lo, hi], [lo, hi], 'k--', alpha=0.4, lw=1.5, label='nessun cambiamento')
 ax_s.fill_between([lo, hi], [lo, hi], [hi, hi], alpha=0.04, color='steelblue')
 ax_s.fill_between([lo, hi], [lo, lo], [lo, hi], alpha=0.04, color='tomato')
-ax_s.text(lo + 0.02, hi - 0.05, 'più vicine\nnei 2000s',
-           fontsize=8, color='steelblue', alpha=0.8)
-ax_s.text(hi - 0.18, lo + 0.02, 'più lontane\nnei 2000s',
-           fontsize=8, color='tomato', alpha=0.8)
+
+# coordinate relative agli assi (0-1), non ai dati: restano nell'angolo giusto
+# qualunque sia il range effettivo di lo/hi
+ax_s.text(0.03, 0.95, 'più vicine\nnei 2000s', transform=ax_s.transAxes,
+           fontsize=8, color='steelblue', alpha=0.8, va='top')
+ax_s.text(0.75, 0.05, 'più lontane\nnei 2000s', transform=ax_s.transAxes,
+           fontsize=8, color='tomato', alpha=0.8, va='bottom')
 
 for r in coppie_sist[:8]:
     ax_s.annotate(f"{r['w1']}–{r['w2']}", (r['s70'], r['s2000']),
@@ -570,7 +596,7 @@ plt.close()
 # ============================================================
 # STEP 12: Riepilogo
 # ============================================================
-print("\n[STEP 10] Riepilogo finale...")
+print("\n[STEP 12] Riepilogo finale...")
 
 print("\n=== PAROLE PIU' VICINE A 'love' ===")
 if 'love' in model_70s.wv:

@@ -33,9 +33,7 @@ print("Import completati!")
 # ============================================================
 # STEP 1: Carica i dati
 # ============================================================
-# Due domini di confronto: linguaggio social (breve, informale) vs letterario
-# (lungo, formale) — twitter_samples restituisce già liste di stringhe,
-# gutenberg.raw invece l'intero libro come unica stringa.
+# due domini a confronto: social (breve/informale) vs letterario (lungo/formale)
 tweets_pos = twitter_samples.strings('positive_tweets.json')
 tweets_neg = twitter_samples.strings('negative_tweets.json')
 tweets_raw = tweets_pos + tweets_neg
@@ -50,8 +48,7 @@ print(f"Esempio negativo: {tweets_neg[0]}")
 # STEP 2: Pulizia
 # ============================================================
 def pulisci_tweet(testo):
-    """Rimuove URL, menzioni e hashtag: elementi tipici dei social che
-    altrimenti distorcerebbero le frequenze degli n-grammi."""
+    """Rimuove URL, menzioni e hashtag, che distorcerebbero le frequenze degli n-grammi."""
     testo = re.sub(r'http\S+', '', testo)
     testo = re.sub(r'@\w+', '', testo)
     testo = re.sub(r'#', '', testo)
@@ -96,8 +93,7 @@ stop = set(stopwords.words('english'))
 tokens_tweet_filtrati = [t for t in tokens_tweet if t not in stop]
 tokens_lett_filtrati  = [t for t in tokens_lett  if t not in stop]
 
-# Bigrammi senza stopword: più informativi per capire i temi ricorrenti,
-# perché coppie come "of the" non nascondono i pattern semantici rilevanti.
+# senza stopword: piu informativi sui temi ricorrenti
 bi_tweet_filtrati = Counter(ngrams(tokens_tweet_filtrati, 2))
 bi_lett_filtrati  = Counter(ngrams(tokens_lett_filtrati,  2))
 
@@ -112,8 +108,7 @@ for coppia, count in bi_lett_filtrati.most_common(10):
 # ============================================================
 # STEP 5: Analisi N-gram
 # ============================================================
-# Stessa estrazione ma sul testo integrale (stopword incluse): utile per
-# confrontare direttamente lo stile sintattico dei due domini.
+# stessa estrazione sul testo integrale, per confrontare lo stile sintattico
 bi_tweet  = Counter(ngrams(tokens_tweet, 2))
 bi_lett   = Counter(ngrams(tokens_lett,  2))
 tri_tweet = Counter(ngrams(tokens_tweet, 3))
@@ -141,8 +136,7 @@ for t, c in tri_lett.most_common(10):
 print("\n=== ADDESTRAMENTO MODELLI ===")
 n = 2  # ordine del modello: n=2 -> bigrammi, P(parola | 1 parola di contesto)
 
-# padded_everygram_pipeline aggiunge i marcatori <s>/</s> e genera tutti gli
-# n-grammi fino a n necessari per l'addestramento, insieme al vocabolario.
+# aggiunge i marcatori <s>/</s> e genera gli n-grammi per l'addestramento
 train_tw_mle, vocab_tw_mle = padded_everygram_pipeline(n, [tokens_tweet])
 train_lt_mle, vocab_lt_mle = padded_everygram_pipeline(n, [tokens_lett])
 modello_tweet = MLE(n)
@@ -150,8 +144,7 @@ modello_tweet.fit(train_tw_mle, vocab_tw_mle)
 modello_lett = MLE(n)
 modello_lett.fit(train_lt_mle, vocab_lt_mle)
 
-# NOTA: la pipeline va rigenerata per Laplace perché è basata su generatori
-# Python, che si esauriscono dopo il primo utilizzo (MLE li ha già consumati).
+# rigenerata per Laplace: i generatori Python si esauriscono dopo il primo uso
 train_tw_lp, vocab_tw_lp = padded_everygram_pipeline(n, [tokens_tweet])
 train_lt_lp, vocab_lt_lp = padded_everygram_pipeline(n, [tokens_lett])
 
@@ -163,8 +156,7 @@ modello_lett_lp.fit(train_lt_lp, vocab_lt_lp)
 print(f"Vocabolario Twitter:    {len(modello_tweet.vocab)} parole")  # include i token di padding
 print(f"Vocabolario Letterario: {len(modello_lett.vocab)} parole")
 
-# .score(parola, [contesto]) restituisce la probabilità condizionale empirica
-# P(parola | contesto), stimata direttamente dalle frequenze osservate (MLE).
+# .score(parola, [contesto]) = P(parola | contesto), stimata dalle frequenze osservate
 print("\n--- PROBABILITA' CONDIZIONALI (MLE) ---")
 print("\nModello TWITTER:")
 print(f"  P('love'  | 'i')    = {modello_tweet.score('love',  ['i']):.4f}")
@@ -183,11 +175,7 @@ print(f"  P('wait'  | 'cant') = {modello_lett.score('wait',  ['cant']):.4f}")
 print("\n=== GENERAZIONE TESTO (MLE) ===")
 
 def genera_testo(modello, n_parole=30):
-    """
-    Campiona autoregressivamente n_parole token dal modello (random_seed fisso
-    per riproducibilità) e ripulisce l'output dagli artefatti tipici dei
-    bigrammi: marcatori di padding e lettere isolate diverse da "i"/"a".
-    """
+    """Campiona n_parole token dal modello e rimuove gli artefatti tipici dei bigrammi (padding, lettere isolate)."""
     testo_raw = modello.generate(n_parole, random_seed=42)
 
     testo_filtrato = []
@@ -206,8 +194,7 @@ print(f"  {genera_testo(modello_tweet, 40)}")
 print("\nStile LETTERARIO:")
 print(f"  {genera_testo(modello_lett, 40)}")
 
-# Seed diversi -> il modello imbocca strade probabilistiche diverse fin dalla
-# prima parola: utile per vedere più "campioni" dello stesso stile.
+# seed diversi = campioni diversi dello stesso stile
 print("\nConfronto generazione per dominio:")
 for seed in [42, 99, 7, 123]:
     tw_raw  = modello_tweet.generate(15, random_seed=seed)
@@ -244,14 +231,11 @@ totale   = 0
 
 for nome, frase in frasi_test.items():
     tokens_frase = word_tokenize(frase)
-    # .perplexity() misura quanto un modello "fatica" a spiegare la sequenza:
-    # più bassa = frase più prevedibile per quel dominio.
+    # perplexity bassa = frase piu prevedibile per quel dominio
     pp_tw   = modello_tweet_lp.perplexity(tokens_frase)
     pp_lett = modello_lett_lp.perplexity(tokens_frase)
 
-    # Normalizziamo per la dimensione del vocabolario: un modello con vocabolario
-    # più grande tende ad avere perplexity più alta a prescindere dalla qualità,
-    # quindi il confronto diretto tra i due domini sarebbe sbilanciato.
+    # normalizzata per vocabolario, per non sbilanciare il confronto fra domini
     pp_tw_n   = pp_tw   / len(modello_tweet_lp.vocab)
     pp_lett_n = pp_lett / len(modello_lett_lp.vocab)
 
@@ -273,15 +257,11 @@ print("\n=== CLASSIFICATORE CON LOG-LIKELIHOOD ===")
 print("Log-likelihood: più alta = il modello conosce meglio questo testo\n")
 
 def log_likelihood(modello, tokens):
-    """
-    Log-probabilità totale della sequenza secondo il modello (somma dei
-    log invece del prodotto delle probabilità, per evitare underflow numerico).
-    Più alta (meno negativa) = il modello spiega meglio il testo.
-    Richiede un modello con smoothing (Laplace) per non annullarsi su bigrammi mai visti.
-    """
+    """Log-probabilità della sequenza (somma dei log, evita underflow): più alta = modello migliore.
+    Richiede un modello con smoothing (Laplace) per non annullarsi su bigrammi mai visti."""
     score = 0.0
 
-    # Catena di Markov di ordine 1: ogni parola dipende solo dalla precedente.
+    # catena di Markov di ordine 1: ogni parola dipende solo dalla precedente
     for i in range(1, len(tokens)):
         contesto = [tokens[i-1]]
         parola   = tokens[i]
@@ -289,8 +269,7 @@ def log_likelihood(modello, tokens):
         if prob > 0:
             score += math.log(prob)
         else:
-            # Backoff manuale: bigramma mai visto in training -> probabilità
-            # fittizia piccolissima, che penalizza fortemente lo score senza farlo fallire.
+            # backoff manuale: bigramma mai visto -> probabilità fittizia piccola
             score += math.log(1e-10)
     return score
 
@@ -334,8 +313,7 @@ print(f"Parola mai vista: '{parola_rara}'")
 print(f"  MLE     P = {modello_tweet.score(parola_rara, ['i']):.6f}")   # 0 esatto: MLE non generalizza oltre i dati osservati
 print(f"  Laplace P = {modello_tweet_lp.score(parola_rara, ['i']):.6f}")  # > 0 grazie allo smoothing
 
-# Con MLE, una perplexity su frase con parola ignota implica una divisione
-# per zero (probabilità nulla in un punto della catena) -> eccezione.
+# MLE: parola ignota -> probabilità zero -> eccezione in perplexity
 frase_rara = word_tokenize("i xyzword lol")
 try:
     pp_mle = modello_tweet.perplexity(frase_rara)
@@ -354,9 +332,7 @@ print("\n=== CONFRONTO n=1, n=2, n=3 ===")
 frase_tw = word_tokenize("i love you so much thank you")   # tipica frase Twitter
 frase_lt = word_tokenize("she had been very well disposed")  # tipica frase letteraria
 
-# All'aumentare dell'ordine n il modello (addestrato solo su Twitter) diventa
-# via via più specifico: la perplexity sulla frase letteraria dovrebbe salire
-# più rapidamente di quella sulla frase Twitter.
+# n crescente = modello piu specifico: la PP letteraria cresce piu in fretta di quella Twitter
 for n_test in [1, 2, 3]:
     tr_tmp, voc_tmp = padded_everygram_pipeline(n_test, [tokens_tweet])
     mod_tmp = Laplace(n_test)  # Laplace necessario: la frase letteraria contiene n-grammi mai visti in questo training
@@ -374,8 +350,7 @@ for n_test in [1, 2, 3]:
 # ============================================================
 print("\n=== ANALISI LINGUISTICA ===")
 
-# Type-Token Ratio: parole uniche (types) / parole totali (tokens).
-# Un TTR più alto indica un vocabolario più vario rispetto alla lunghezza del testo.
+# TTR = parole uniche / parole totali: più alto = vocabolario più vario
 ttr_tweet = len(vocab_tweet_set) / len(tokens_tweet)
 ttr_lett  = len(vocab_lett_set)  / len(tokens_lett)
 
@@ -385,8 +360,7 @@ print(f"  Letterario: {ttr_lett:.4f}")
 if ttr_tweet > ttr_lett:
     print("  → Twitter ha vocabolario più vario (slang, abbreviazioni)")
 
-# Lunghezza media dell'unità testuale: tweet interi vs singole frasi del romanzo
-# (segmentate con sent_tokenize sulla punteggiatura forte).
+# lunghezza media: tweet interi vs frasi del romanzo (sent_tokenize)
 lung_tw  = [len(word_tokenize(t)) for t in tweets_raw]
 frasi_lt = sent_tokenize(testo_letterario_raw)
 lung_lt  = [len(word_tokenize(f)) for f in frasi_lt]

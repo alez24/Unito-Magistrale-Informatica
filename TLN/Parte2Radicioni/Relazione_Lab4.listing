@@ -1,0 +1,6 @@
+lung_tw  = [len(word_tokenize(t)) for t in tweets_raw]
+frasi_lt = sent_tokenize(testo_letterario_raw)
+lung_lt  = [len(word_tokenize(f)) for f in frasi_lt]
+
+media_tw = sum(lung_tw) / len(lung_tw)
+media_lt = sum(lung_lt) / len(lung_lt)

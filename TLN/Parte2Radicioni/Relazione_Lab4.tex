@@ -572,4 +572,18 @@ Il laboratorio ha dimostrato come i modelli linguistici basati su N-grammi siano
 
 Il classificatore basato sulla log-likelihood si è rivelato più robusto della perplexity per la classificazione di dominio, grazie alla sua indipendenza dalla dimensione del vocabolario. Le tecniche di smoothing (in particolare Laplace) sono essenziali per rendere i modelli applicabili a testi reali che contengono inevitabilmente parole fuori vocabolario.
 
+% ============================================================
+\section{Dichiarazione sui Contributi di IA}
+% ============================================================
+
+Per questo laboratorio ci siamo appoggiati anche a uno strumento di intelligenza artificiale generativa (Claude, Anthropic), usato come supporto puntuale durante lo sviluppo e non come autore del lavoro. Qualche esempio concreto di come lo abbiamo usato:
+
+\begin{itemize}
+  \item \textbf{Snellimento dei commenti nel codice}: molti commenti erano troppo lunghi o ripetevano quanto già scritto nel testo; li abbiamo resi più diretti (es.\ perché serve addestrare un modello Laplace separato da MLE, o cosa misura esattamente la perplexity normalizzata per vocabolario).
+  \item \textbf{Confronto sulle scelte di analisi}: discussione sul perché la perplexity normalizzata sia meno stabile della log-likelihood come classificatore di dominio, cosa che ci ha portato ad approfondire quest'ultima nella Sezione~8.
+  \item \textbf{Verifica di piccoli dettagli di correttezza}: rilettura del codice per controllare che pipeline di preprocessing, addestramento e valutazione fossero coerenti tra i due domini (Twitter e letterario).
+\end{itemize}
+
+L'impostazione del lavoro, le scelte metodologiche, l'interpretazione critica dei risultati e la stesura della relazione restano nostre.
+
 \end{document}

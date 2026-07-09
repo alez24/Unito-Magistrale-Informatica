@@ -1,0 +1,25 @@
+def tsne_plot(parole, vettori, labels, titolo, ax, n_clusters=6):
+    # niente max_iter/n_iter esplicito: il nome cambia tra versioni di
+    # scikit-learn, il default (1000) e' comunque quello voluto
+    tsne = TSNE(n_components=2, random_state=42, perplexity=30)
+    v2d  = tsne.fit_transform(vettori)  # 100D -> 2D
+
+    colori    = plt.cm.Set1(np.linspace(0, 1, n_clusters))
+    highlight = {
+        'love', 'night', 'heart', 'baby', 'time',
+        'world', 'life', 'feel', 'fire', 'rain',
+        'sun', 'soul', 'free', 'dark', 'light', 'god'
+    }
+
+    for cid in range(n_clusters):
+        mask = labels == cid
+        ax.scatter(v2d[mask, 0], v2d[mask, 1],
+                   c=[colori[cid]], label=f'Cluster {cid}',
+                   alpha=0.7, s=60)
+
+    # annota le parole semanticamente rilevanti
+    for i, p in enumerate(parole):
+        if p in highlight:
+            ax.annotate(p, (v2d[i, 0], v2d[i, 1]),
+                        fontsize=9, fontweight='bold',
+                        xytext=(5, 5), textcoords='offset points')
