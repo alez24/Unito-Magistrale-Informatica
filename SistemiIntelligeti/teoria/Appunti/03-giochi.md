@@ -5,6 +5,7 @@
 Marvin Minsky (1968) osservava che *"i giochi non vengono scelti perché sono chiari e semplici, ma perché ci danno la massima complessità con le minime strutture iniziali"*. I giochi sono quindi un banco di prova ideale per l'AI: regole semplici e stato ben definito, ma spazio di ricerca enorme e presenza di un **avversario** che rende il problema strutturalmente diverso dalla ricerca "in solitaria" vista nei moduli precedenti.
 
 Il tema dei giochi attraversa più discipline (pungolo scientifico):
+
 - **Matematica**: teoria dei grafi, complessità computazionale
 - **Computer Science**: AI, database, calcolo parallelo
 - **Economia**: teoria dei giochi, economia cognitiva/sperimentale
@@ -19,10 +20,12 @@ Un **ambiente multi-agente** è competitivo quando gli obiettivi degli agenti so
 I giochi si classificano lungo due assi indipendenti:
 
 **Condizioni di scelta (informazione)**
+
 - **Informazione perfetta/completa**: lo stato del gioco è totalmente esplicito e visibile a tutti i giocatori (es. scacchi, dama, Otello, Forza4, tris)
 - **Informazione imperfetta**: lo stato è solo parzialmente noto ad ogni giocatore (es. Mastermind, Scarabeo, Bridge, Poker e in genere i giochi di carte, dove le carte avversarie sono nascoste)
 
 **Effetti della scelta (determinismo)**
+
 - **Deterministici**: lo stato successivo è determinato unicamente dalle azioni degli agenti
 - **Stocastici**: lo stato successivo dipende anche da fattori esterni casuali (es. lancio di dadi in Backgammon e Monopoli, pescate a caso in Risiko)
 
@@ -42,6 +45,7 @@ Esempio intuitivo: la torta da dividere. Se le fette sono irregolari, la parte i
 ### Perché il tris è un caso interessante da studiare
 
 Osservando lo sviluppo di una partita a tris si notano fenomeni chiave:
+
 - Ogni giocatore, quando è il suo turno, sceglie tra più mosse possibili (branching)
 - **L'ambiente è multi-agente**: l'evoluzione dello stato è solo *parzialmente controllabile* dal singolo giocatore, perché l'altro giocatore muove alternandosi
 - Una mossa che apre a una vittoria "a tre passi" può essere più rischiosa di una vittoria immediata, perché nel frattempo l'avversario ha la possibilità di reagire e ribaltare la situazione
@@ -76,6 +80,7 @@ Perché serve una *strategia* e non un semplice piano: poiché non si sa in anti
 ### Albero di gioco: definizione
 
 L'**albero di gioco** è la struttura che rappresenta tutte le evoluzioni possibili della partita a partire dallo stato iniziale:
+
 - la **radice** è lo stato iniziale (turno di MAX)
 - ogni **nodo interno** rappresenta uno stato di gioco, etichettato come nodo MAX o nodo MIN a seconda di chi deve muovere
 - gli **archi** rappresentano le mosse legali
@@ -86,6 +91,7 @@ L'**albero di gioco** è la struttura che rappresenta tutte le evoluzioni possib
 ### Idea e strategia ottima
 
 La **strategia ottima** per un agente è la sequenza di mosse (in realtà, la funzione che mappa ogni stato raggiungibile nella mossa migliore) che, assumendo un avversario perfetto, massimizza l'utilità garantita. Poiché l'agente non sa come muoverà l'altro, può solo *"immedesimarsi"* nell'avversario e ragionare ipoteticamente: costruisce mentalmente l'intero albero di gioco, assumendo che:
+
 - nei nodi in cui muove **MAX**, verrà scelta la mossa che **massimizza** il valore per MAX
 - nei nodi in cui muove **MIN** (l'avversario, infallibile), verrà scelta la mossa che **minimizza** il valore per MAX (cioè quella più svantaggiosa possibile per MAX)
 
@@ -97,7 +103,7 @@ Minimax(n)  =   ⎨ max_{s ∈ Succ(n)} Minimax(s)      se n è un nodo MAX
                 ⎩ min_{s ∈ Succ(n)} Minimax(s)      se n è un nodo MIN
 ```
 
-Il valore minimax è quindi calcolato **ricorsivamente per ogni nodo** dell'albero, dal basso (foglie) verso l'alto (radice), e permette all'agente di scegliere la mossa da eseguire alla radice (si sceglie il figlio con il valore minimax più alto, se si è in un nodo MAX).
+Il valore minimax è quindi calcolato ***ricorsivamente per ogni nodo*** dell'albero, dal basso (foglie) verso l'alto (radice), e permette all'agente di scegliere la mossa da eseguire alla radice (si sceglie il figlio con il valore minimax più alto, se si è in un nodo MAX).
 
 Da qui il nome "minimax": **ogni giocatore, minimizzando il guadagno massimo dell'altro, minimizza automaticamente la propria perdita** — grazie alla proprietà di somma zero (utilità di uno = meno utilità dell'altro), tenere traccia di un solo valore per nodo è sufficiente.
 
@@ -137,6 +143,7 @@ Consideriamo un piccolo albero di gioco a 4 livelli (2 turni completi, 4 ply: MA
 ```
 
 Valutazione bottom-up:
+
 1. **Foglie**: valore = utilità diretta (3, 12, 8, 2, 4, 6, 14, 5, 2)
 2. **Nodo MIN(A)**, figlio della radice: MIN sceglie la mossa peggiore per MAX tra {3, 12, 8} → `min(3,12,8) = 3`
 3. **Nodo MIN(B)**: `min(2,4,6) = 2`
@@ -207,6 +214,7 @@ Regret = Best payoff (nello scenario) − Real payoff (della scelta fatta)
 ```
 
 Passo 1 — calcolo dei regret per ciascuno scenario (colonna):
+
 - Scenario "sale": best payoff = 70 (fondo2). Regret: fondo1 = 70-40 = 30; fondo2 = 70-70 = 0; azioni = 70-55 = 15
 - Analogamente si calcolano i regret per "stabile" e "scende"
 
@@ -228,7 +236,7 @@ Passo 3 — per ciascuna alternativa si prende il **regret massimo** (il caso pe
 
 ### Collegamento con i giochi con avversario
 
-Nei giochi, la "dinamica esterna non controllabile" è costituita proprio dalle **mosse dell'avversario**: non sappiamo quale sceglierà, dobbiamo basarci solo sullo stato corrente e sulle mosse disponibili. I giocatori razionali sono **pessimisti/conservativi** per definizione (ipotesi di avversario infallibile): per questo l'algoritmo Minimax è concettualmente lo stesso approccio **maximin** applicato ricorsivamente lungo l'albero di gioco, turno dopo turno.
+Nei giochi, la "dinamica esterna non controllabile" è costituita proprio dalle **mosse dell'avversario**: non sappiamo quale sceglierà, dobbiamo basarci solo sullo stato corrente e sulle mosse disponibili. I giocatori razionali sono **pessimisti/conservativi** per definizione (ipotesi di avversario infallibile): per questo l'algoritmo Minimax è concettualmente lo stesso approccio ***maximin*** applicato ricorsivamente lungo l'albero di gioco, turno dopo turno.
 
 ---
 
@@ -303,15 +311,16 @@ Nell'esempio completo delle slide (20 nodi totali), alfa-beta esamina solo **11 
 
 ### Equivalenza con Minimax e guadagno in complessità
 
-Alpha-beta pruning e Minimax sono **equivalenti** nel senso che:
+Alpha-beta pruning e Minimax sono ***equivalenti*** nel senso che:
+
 - trovano entrambi la **stessa mossa ottima** per il nodo radice
 - attribuiscono al nodo radice la **stessa valutazione**
 
-Alfa-beta raggiunge lo stesso risultato **espandendo molti meno nodi**. Nel caso migliore, la complessità temporale passa da **O(b^m)** a **O(b^(m/2))**. Esempio intuitivo dalle slide: con b=2, m=8, si passa da 2^8=256 nodi a 2^4=16 nodi espansi — un risparmio enorme che, applicato ricorsivamente, permette di raddoppiare la profondità di ricerca esplorabile nello stesso tempo rispetto a Minimax puro.
+Alfa-beta raggiunge lo stesso risultato **espandendo molti meno nodi**. Nel caso migliore, la complessità temporale passa da ***O(b^m)*** a ***O(b^(m/2))***. Esempio intuitivo dalle slide: con b=2, m=8, si passa da 2^8=256 nodi a 2^4=16 nodi espansi — un risparmio enorme che, applicato ricorsivamente, permette di raddoppiare la profondità di ricerca esplorabile nello stesso tempo rispetto a Minimax puro.
 
 ### Importanza dell'ordinamento delle mosse
 
-L'efficacia della potatura **dipende fortemente dall'ordine** in cui i successori di ciascun nodo vengono considerati:
+L'efficacia della potatura ***dipende fortemente dall'ordine*** in cui i successori di ciascun nodo vengono considerati:
 
 - Se il successore più promettente (**killer move**) viene esaminato **per ultimo**, non è possibile evitare di esplorare i sottoalberi dei suoi fratelli, e il guadagno di alfa-beta si riduce drasticamente
 - La complessità O(b^(m/2)) si ottiene **solo** quando si riesce a espandere per primi i figli più promettenti (ordinamento ottimale dei successori): in questo caso il branching factor "effettivo" diventa circa la **radice quadrata** del branching factor originale (esempio dagli scacchi: b=35 diventa ≈6 con buon ordinamento e alfa-beta)
@@ -323,6 +332,7 @@ L'efficacia della potatura **dipende fortemente dall'ordine** in cui i successor
 ### Come trovare le killer moves
 
 Le slide propongono tre tecniche per stimare in anticipo quali mosse esplorare per prime:
+
 1. **Apprendimento**: il sistema "ricorda" le esperienze passate e le usa per stimare la mossa più promettente (efficace, ma richiede tempo per imparare)
 2. **Combinazione con iterative deepening**: le informazioni ottenute alle iterazioni più superficiali (profondità minori) vengono usate per ordinare le mosse alle iterazioni più profonde successive
 3. **Tabelle di trasposizione**: spesso usate insieme ad alfa-beta + iterative deepening
@@ -364,6 +374,7 @@ if [TEST-TAGLIO(stato, profondità)] then return eval(stato)
 al posto di `if TEST-TERMINALE(stato) then return Utilità(stato)`.
 
 Possibili strategie per decidere **quando tagliare**:
+
 1. **Profondità massima predefinita**: si taglia sempre a una profondità fissata a priori
 2. **Iterative deepening**: quando è il proprio turno, si usa tutto il tempo disponibile per cercare la mossa migliore con approfondimenti crescenti (si esegue la ricerca a profondità 1, poi 2, poi 3...); allo scadere del tempo disponibile si restituisce la miglior mossa trovata fino a quel momento
 
@@ -373,7 +384,7 @@ I tagli artificiali introducono un rischio noto come **problema dell'orizzonte**
 
 ### Quiescenza
 
-Concetto proposto da Berliner (1973) per mitigare il problema dell'orizzonte: la decisione di terminare o continuare la ricerca in un nodo deve dipendere dalla **quiescenza** della funzione di valutazione in quel nodo, cioè dalla stabilità/permanenza nel tempo del segno (positivo o negativo) della valutazione.
+Concetto proposto da Berliner (1973) per mitigare il problema dell'orizzonte: la decisione di terminare o continuare la ricerca in un nodo deve dipendere dalla ***quiescenza*** della funzione di valutazione in quel nodo, cioè dalla stabilità/permanenza nel tempo del segno (positivo o negativo) della valutazione.
 
 - Nodi la cui valutazione è **quiescente** (stabile) possono essere tagliati in sicurezza
 - Nodi **non quiescenti** (valutazione instabile, suscettibile di grandi variazioni imminenti) richiedono **ulteriore esplorazione** dei sottoalberi che li hanno come radice, prima di potersi fidare della stima

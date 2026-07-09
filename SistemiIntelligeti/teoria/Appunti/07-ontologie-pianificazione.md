@@ -16,7 +16,7 @@ Il mattone concettuale è la **relazione di sottoclasse** (relazione **Is-a**): 
 Member(X, Pallone) ⇒ Sferico(X)
 ```
 
-Grazie alla relazione di sottoclasse, le istanze **ereditano** le proprietà delle sovraclassi: non serve ripetere `Member(X, PalloneCalcio) ⇒ Sferico(X)`, perché vale già per **ereditarietà**. Questo è il vero valore aggiunto di una tassonomia rispetto a un semplice elenco di fatti: evita ridondanza e permette inferenza automatica di proprietà non esplicitate.
+Grazie alla relazione di sottoclasse, le istanze ***ereditano*** le proprietà delle sovraclassi: non serve ripetere `Member(X, PalloneCalcio) ⇒ Sferico(X)`, perché vale già per **ereditarietà**. Questo è il vero valore aggiunto di una tassonomia rispetto a un semplice elenco di fatti: evita ridondanza e permette inferenza automatica di proprietà non esplicitate.
 
 Esempio analogo dalle slide: la tassonomia delle conifere, dove `Pinophyta ≡ Conifera` è la classe radice e si scompone in famiglie (Pinaceae, Araucariaceae, ..., Taxaceae, Cycadophyta).
 
@@ -26,8 +26,10 @@ Quando si scompone una categoria C in sottocategorie, non basta l'intuizione che
 
 - **Disjoint(S)**: le categorie in S non hanno istanze in comune
   `∀Xi,Xj ∈ S, Xi ≠ Xj ⇒ Intersection(Xi, Xj) = {}`
+
 - **ExhaustiveDec(S, C)**: ogni istanza di C appartiene ad almeno una delle categorie di S (decomposizione esaustiva)
   `∀I (Member(I, C) ⇔ ∃Xi Is-a(Xi, C) ∧ Member(I, Xi))`
+
 - **Partition(S, C)**: S è sia disgiunto sia esaustivo rispetto a C
   `Partition(S, C) ⇔ Disjoint(S) ∧ ExhaustiveDec(S, C)`
 
@@ -72,7 +74,7 @@ Questa distinzione è cruciale perché separa lo **schema concettuale** (cosa pu
 
 Una tassonomia, essendo un **albero** (ogni concetto ha un'unica super-classe diretta lungo la gerarchia Is-a), è un caso *particolare* e più limitato di struttura. Una base di conoscenza descrittiva può però assumere una forma più generale, in cui i concetti e le relazioni fra essi formano un **grafo** invece che un albero: questo insieme più generale di concetti e relazioni si chiama **ontologia** (o **rete semantica**).
 
-> **Tassonomia vs Ontologia**: la tassonomia cattura *solo* le relazioni gerarchiche Is-a (e quindi ha una struttura ad albero); un'ontologia è più espressiva e può includere anche relazioni Part-of, relazioni di dominio specifiche (es. `haMoglie`, `ospitatoDa`), e in generale una rete arbitraria di concetti collegati da relazioni diverse (struttura a grafo). **Le tassonomie sono quindi un caso speciale di ontologia.**
+> **Tassonomia vs Ontologia**: la tassonomia cattura *solo* le relazioni gerarchiche Is-a (e quindi ha una struttura ad albero); un'ontologia è più espressiva e può includere anche relazioni Part-of, relazioni di dominio specifiche (es. `haMoglie`, `ospitatoDa`), e in generale una rete arbitraria di concetti collegati da relazioni diverse (struttura a grafo). ***Le tassonomie sono quindi un caso speciale di ontologia.***
 
 I sistemi che usano ontologie seguono tipicamente lo schema: la **realtà/dati** viene astratta nell'**ontologia**, un **motore inferenziale** lavora sui fatti rappresentati e permette di **interrogare** il sistema e ottenere risposte.
 
@@ -162,6 +164,7 @@ Quando esistono più ontologie (magari sviluppate indipendentemente) che descriv
 - **Extension**: O1 **estende** O2 quando tutti i simboli definiti in O2 sono preservati in O1 insieme a proprietà e relazioni, ma **non vale il viceversa** (O1 è O2 + qualcosa in più).
 - **Weakly-Translatable**: data una ontologia sorgente Osource e una destinazione Odest, è possibile tradurre espressioni di Osource in espressioni di Odest, ma **con perdita di informazione**.
   *Esempio*: Osource ha `Fruit → {Agrume → {Citron, Orange, Pamplemousse}, Pomme, Poire}`; Odest ha solo `Fruit → {Apple, Lemon, Orange}`. Il mapping `Pomme→Apple, Citron→Lemon, Orange→Orange, Fruit→Fruit` funziona ma si perde l'informazione su Poire, Pamplemousse e sulla sotto-categorizzazione di Agrume.
+
 - **Strongly-Translatable**: Osource è fortemente traducibile in Odest quando (a) il vocabolario è **totalmente mappabile**, (b) l'assiomatizzazione di Osource **vale** in Odest, (c) **non c'è perdita di informazione**, (d) **non si introducono inconsistenze**. È una traduzione "fedele", anche se Odest può comunque contenere concetti (es. Pamplemousse) che non hanno corrispondente in Osource — la condizione riguarda la direzione Osource→Odest, non il viceversa.
 - **Approx-Translatable**: Osource è Weakly-Translatable in Odest **e** possono essere introdotte **inconsistenze**. Accade tipicamente quando concetti che dovrebbero corrispondere sono solo *affini*, non identici. Esempio dato: il coriandolo, a seconda della tradizione culinaria, è visto come affine al prezzemolo (si usano le foglie) o al pepe (si usano i semi) — è la stessa pianta ma con proprietà ontologiche differenti a seconda del riferimento.
 
@@ -236,7 +239,7 @@ Da stato iniziale + assiomi di applicabilità + assiomi di effetto (la "KB") si 
 
 ### 4. Il Frame Problem
 
-> **Frame problem (problema della cornice)**: le azioni hanno tipicamente un impatto **limitato** sul mondo — come rappresentare tutto ciò che **non** viene modificato da un'azione?
+> ***Frame problem (problema della cornice)***: le azioni hanno tipicamente un impatto **limitato** sul mondo — come rappresentare tutto ciò che **non** viene modificato da un'azione?
 
 Il problema è che dalla sola conoscenza di stato iniziale + assiomi di applicabilità/effetto **non si può derivare** ciò che rimane invariato: si può ragionare su cosa è cambiato, ma nulla dice esplicitamente al sistema che il resto è rimasto com'era. Esempio: dopo `Move(A,B,D)`, sapevamo `On(B,C,s)` nello stato iniziale, ma nulla garantisce che il sistema possa inferire `On(B,C,s')` nello stato risultante s', a meno di dirglielo esplicitamente.
 
@@ -265,7 +268,7 @@ L'idea è risolvere prima un sottogoal, poi l'altro, in sequenza.
 
 ### 6. L'anomalia di Sussman: quando i sottogoal interagiscono
 
-> **Non sempre il perseguimento dei sottoobiettivi è sequenzializzabile in modo indipendente.** Questo è il fenomeno noto come **anomalia di Sussman**, un classico esempio di *interazione fra sotto-obiettivi* nella pianificazione.
+> ***Non sempre il perseguimento dei sottoobiettivi è sequenzializzabile in modo indipendente.*** Questo è il fenomeno noto come **anomalia di Sussman**, un classico esempio di *interazione fra sotto-obiettivi* nella pianificazione.
 
 Stato iniziale: C sul tavolo da solo, A sopra B (pila A/B) sul tavolo. Goal: pila A su B su C.
 
@@ -276,7 +279,7 @@ Il problema è che i due sottogoal ("A su B" e "B su C") sono **in conflitto** s
 
 In entrambi i casi, risolvere un sottogoal **"disfa"** (annulla) i progressi fatti per l'altro: la scomposizione **sequenziale e indipendente** in sottogoal non funziona qui, perché i sottogoal **non sono indipendenti** — ci sono interazioni fra loro (l'ordine di esecuzione conta, e un ordine "ingenuo" porta a lavoro ripetuto o a cicli).
 
-**Soluzione — interleaving dei passi**: la soluzione efficiente richiede di **intercalare** (fare interleaving) i passi provenienti dai due sottopiani, invece di completare un sottogoal per intero prima di iniziare l'altro. Sequenza corretta (una delle possibili):
+**Soluzione — interleaving dei passi**: la soluzione efficiente richiede di ***intercalare*** (fare interleaving) i passi provenienti dai due sottopiani, invece di completare un sottogoal per intero prima di iniziare l'altro. Sequenza corretta (una delle possibili):
 
 1. Sposto C dal tavolo... (passo verso "B su C", cioè libero/posiziono C)
 2. Sposto A da sopra B (passo di preparazione)
@@ -288,7 +291,7 @@ In sintesi: si esegue prima l'azione che porta B su C (dopo aver tolto A da B), 
 ### 7. Limiti pratici del Situation Calculus
 
 - Il Situation Calculus ha permesso di usare la **logica del primo ordine (FOL)** per formalizzare rigorosamente il problema della pianificazione, ed è stato storicamente **fondamentale** per definirne le basi teoriche.
-- Nella **pratica**, però, **non è molto usato**, perché **non esistono euristiche efficienti** che guidino efficacemente la ricerca della soluzione nello spazio (molto grande) delle sequenze di azioni possibili. I planner moderni usano rappresentazioni più specializzate (es. PDDL con algoritmi dedicati, planning graph, euristiche ad hoc) proprio per rendere la ricerca trattabile.
+- Nella **pratica**, però, **non è molto usato**, perché ***non esistono euristiche efficienti*** che guidino efficacemente la ricerca della soluzione nello spazio (molto grande) delle sequenze di azioni possibili. I planner moderni usano rappresentazioni più specializzate (es. PDDL con algoritmi dedicati, planning graph, euristiche ad hoc) proprio per rendere la ricerca trattabile.
 - La pianificazione (planning) come argomento a sé stante viene approfondita nel corso magistrale **"IA e Laboratorio"** della laurea in Intelligenza Artificiale e Sistemi Informatici — qui è trattata solo nei suoi fondamenti concettuali e logici.
 
 > ❓ **Domanda d'esame:** Cos'è l'anomalia di Sussman e cosa dimostra?

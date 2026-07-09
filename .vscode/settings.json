@@ -19,5 +19,6 @@
             "tools": ["tectonic"]
         }
     ],
-    "latex-workshop.latex.recipe.default": "tectonic"
+    "latex-workshop.latex.recipe.default": "tectonic",
+    "latex-workshop.latex.clean.method": "glob"
 }

@@ -6,11 +6,12 @@
 
 ### Le classi non sono "naturali"
 
-Un punto concettuale che l'insegnamento sottolinea fin da subito: **le classi non esistono in natura**. Non sono insite negli esempi, non sono raggruppamenti naturali inequivocabili: sono **definite a tavolino** da chi costruisce il sistema, in funzione dello scopo per cui si vuole costruire il predittore. Lo stesso insieme di oggetti (es. dei fiori) può essere raggruppato per colore, per forma, per "vero/finto" — dipende da cosa interessa a chi progetta il classificatore. Questo è un'osservazione importante perché ricorda che **il sistema non ha altra conoscenza oltre ai dati** e impara esattamente quello che c'è nei dati per come sono etichettati, non quello che il progettista *pensa* di aver messo nei dati.
+Un punto concettuale che l'insegnamento sottolinea fin da subito: ***le classi non esistono in natura***. Non sono insite negli esempi, non sono raggruppamenti naturali inequivocabili: sono **definite a tavolino** da chi costruisce il sistema, in funzione dello scopo per cui si vuole costruire il predittore. Lo stesso insieme di oggetti (es. dei fiori) può essere raggruppato per colore, per forma, per "vero/finto" — dipende da cosa interessa a chi progetta il classificatore. Questo è un'osservazione importante perché ricorda che **il sistema non ha altra conoscenza oltre ai dati** e impara esattamente quello che c'è nei dati per come sono etichettati, non quello che il progettista *pensa* di aver messo nei dati.
 
 ### Definizione del problema
 
 Dati:
+
 - **Esempi** (istanze/record): gli oggetti da classificare (es. fiori, animali)
 - **Categorie o classi**: le etichette di appartenenza (es. mammifero/rettile/pesce)
 
@@ -19,6 +20,7 @@ Obiettivo: costruire una **rappresentazione astratta (modello)** che permetta di
 Si parla di **apprendimento supervisionato** quando gli esempi da cui si astraggono le definizioni delle classi hanno già associata la classe corretta (l'etichetta).
 
 Il problema si scompone in tre sotto-problemi:
+
 1. **Rappresentazione dei dati**
 2. **Analisi dei dati e costruzione delle definizioni** (il modello)
 3. **Utilizzo della conoscenza acquisita**
@@ -76,6 +78,7 @@ Esempio classico: è più grave dire a un malato che è sano (falso negativo, co
 ### Insidie pratiche nella costruzione del classificatore
 
 Alcuni errori tipici nella raccolta/uso dei dati (esempio guida: riconoscere "frutta" da altre cose usando solo foto di mele → il modello impara a riconoscere solo mele, non la frutta in generale). Cause tipiche:
+
 - **Dati difficili da reperire** → si usano dataset di comodo, non rappresentativi
 - **Fretta / risorse limitate** disponibili (es. usare solo un archivio fotografico locale)
 - **Bias mentale** di chi costruisce il dataset (se vivo circondato da meleti, non mi viene naturale includere uva o ciliegie)
@@ -86,6 +89,7 @@ Applicazioni ad alto impatto in cui questi errori sono particolarmente rischiosi
 ### Rote learning (apprendimento meccanico) — un "non-modello"
 
 Prima di introdurre gli alberi di decisione, le slide presentano il *rote learning* come caso limite/degenere di apprendimento:
+
 - **Strategia**: memorizzare semplicemente tutte le istanze del training set. Non esiste un vero modello: il sistema "ricorda" i casi ma non generalizza.
 - **Uso**: data una nuova istanza, cerca un'istanza identica in memoria; se la trova, restituisce la classe corrispondente.
 - Se non trova un'istanza identica, cerca istanze **simili** (misura di distanza = misura di similitudine, "vicino = simile"):
@@ -135,6 +139,7 @@ Le slide citano diversi algoritmi: **Algoritmo di Hunt** (lo schema ricorsivo di
 L'albero viene costruito **ricorsivamente**, suddividendo il learning set in sottoinsiemi via via più "puri" (cioè sempre più concentrati su una singola classe).
 
 Notazione:
+
 - `Dt` = sottoinsieme del learning set associato al nodo `t`
 - `y = {y1, y2, ..., yc}` = insieme delle etichette di classe possibili
 
@@ -144,6 +149,7 @@ Notazione:
 2. **Passo ricorsivo**: altrimenti, si sceglie un attributo tra quelli descrittivi e si produce un **nodo figlio per ogni possibile valore** dell'attributo. A ciascun nodo figlio si associano le istanze del padre per le quali l'attributo assume il valore corrispondente. Si richiama la procedura ricorsivamente su ciascun figlio.
 
 **Note importanti sull'algoritmo:**
+
 - *Nota 1*: se una combinazione di valori non è rappresentata da nessuna istanza del training set, a quel ramo/nodo si associa una **classe di default** (se prevista).
 - *Nota 2*: se tutte le istanze associate a un nodo hanno **tuple identiche** (stessi valori di attributi) ma classi diverse (situazione di **non-determinismo** nei dati), il nodo non può essere ulteriormente scisso: diventa una foglia, etichettata con la classe più rappresentata (maggioranza).
 - *Nota 3*: resta da definire **quando fermarsi** nella costruzione dell'albero (criteri di arresto).
@@ -152,6 +158,7 @@ Notazione:
 ### Strategia greedy e problemi aperti
 
 La costruzione dell'albero segue una **strategia greedy**: ad ogni passo si seleziona l'attributo di split che massimizza (localmente) una misura di riferimento, senza backtracking. I problemi da risolvere sono:
+
 1. Come specificare la condizione di test sui diversi tipi di attributo (binari, nominali, ordinali, continui)?
 2. Come determinare quale sia lo split migliore?
 3. Quando fermarsi nella costruzione dell'albero?
@@ -171,7 +178,7 @@ La costruzione dell'albero segue una **strategia greedy**: ad ogni passo si sele
 
 Non tutti gli ordini di split sono equivalenti: la scelta dell'attributo (e dell'ordine degli split) incide sulla dimensione e la qualità dell'albero risultante.
 
-**Criterio generale (Rasoio di Occam):** a parità di prestazioni (stessa accuratezza/error rate), si preferiscono alberi più compatti, cioè che richiedono un numero minore di test. A parità di assunzioni, la spiegazione più semplice è da preferire.
+***Criterio generale (Rasoio di Occam):*** a parità di prestazioni (stessa accuratezza/error rate), si preferiscono alberi più compatti, cioè che richiedono un numero minore di test. A parità di assunzioni, la spiegazione più semplice è da preferire.
 
 **Idea intuitiva**: sono preferiti gli split che producono nodi figli con **minore confusione**, cioè con **grado di purezza maggiore** (più le istanze di un nodo appartengono alla stessa classe, meno "confuso" è il nodo, più è facile prevedere correttamente la classe di un elemento estratto a caso da quel nodo).
 
@@ -184,6 +191,7 @@ $$\text{Entropia}(t) = -\sum_{i=0}^{c-1} p(i|t) \cdot \log_2 p(i|t)$$
 (con la convenzione `0·log2(0) = 0`).
 
 Proprietà (caso a 2 classi):
+
 - Distribuzioni (0,1) o (1,0): **purezza massima**, nessuna confusione → Entropia = `-0·log2(0) - 1·log2(1) = 0` (valore minimo).
 - Distribuzione (0.5, 0.5): **massima confusione** → Entropia = `-0.5·log2(0.5) - 0.5·log2(0.5) = 1` (valore massimo per 2 classi).
 
@@ -204,6 +212,7 @@ Per confrontare split alternativi si calcola quanto uno split riduce l'impurità
 $$\text{guadagno} = I(\text{parent}) - \sum_{j=1}^{k} \frac{N(v_j)}{N} \cdot I(v_j)$$
 
 dove:
+
 - `I(parent)` = impurità del nodo genitore
 - `k` = numero di nodi figli prodotti dallo split
 - `N` = numero di record nel nodo genitore
@@ -218,7 +227,7 @@ Quando la misura di impurità usata è l'entropia, il guadagno prende il nome di
 
 $$\text{gain} = \text{entropia(parent)} - \sum_{j=1}^{k} \frac{N(v_j)}{N} \cdot \text{entropia}(v_j)$$
 
-**Attenzione — limite dell'information gain (e di Gini)**: queste misure tendono a **favorire attributi con molti valori diversi** rispetto ad attributi con pochi valori. Caso estremo: un identificatore univoco (es. numero di matricola) annulla completamente l'entropia dei figli (ogni figlio conterrebbe una sola istanza, quindi puro), dando un information gain massimo — ma **non è affatto un attributo significativo** per generalizzare, anzi porta a overfitting totale. Una possibile soluzione è restringersi a **split binari**.
+**Attenzione — limite dell'information gain (e di Gini)**: queste misure tendono a ***favorire attributi con molti valori diversi*** rispetto ad attributi con pochi valori. Caso estremo: un identificatore univoco (es. numero di matricola) annulla completamente l'entropia dei figli (ogni figlio conterrebbe una sola istanza, quindi puro), dando un information gain massimo — ma **non è affatto un attributo significativo** per generalizzare, anzi porta a overfitting totale. Una possibile soluzione è restringersi a **split binari**.
 
 > ❓ **Domanda d'esame:** perché un identificatore univoco (es. matricola) non va mai scelto come attributo di split, nonostante massimizzi l'information gain?
 > **Risposta:** perché produce tanti nodi figli quante sono le istanze, ciascuno con una sola istanza e quindi entropia zero (purezza massima) — l'information gain risulta massimo. Ma un simile split non generalizza affatto: il "modello" ottenuto equivale a un dizionario che memorizza ogni singola istanza (overfitting estremo), incapace di classificare correttamente istanze nuove mai viste, che quasi certamente avranno un valore di matricola non presente nel training set. Questo mostra il limite intrinseco di entropia/Gini, che favoriscono attributi con molti valori distinti indipendentemente dalla loro reale capacità discriminante/generalizzante.
@@ -251,6 +260,7 @@ $$Y = f(\text{net})$$
 - `f`: funzione di attivazione
 
 **Funzioni di attivazione:**
+
 - **Funzione gradino (step)**: la funzione originariamente usata da Rosenblatt; produce valori discreti per `Y` (0 oppure 1). Non è derivabile, il che la rende poco adatta a tecniche di apprendimento basate sul gradiente.
 - **Funzione sigmoide**:
   $$Y = f(\text{net}) = \frac{1}{1 + e^{-\alpha(\text{net} - \theta)}}$$
@@ -274,7 +284,7 @@ Per un perceptron con 2 input, l'iperpiano è la retta `x1 = -(w2/w1)·x2`; il n
 ### Caratteristiche del perceptron
 
 - Adatto a compiti di tipo numerico
-- Risolve solo problemi **linearmente separabili**
+- Risolve solo problemi ***linearmente separabili***
 - La conoscenza è data dai pesi, che sono persistenti
 - Apprendimento **da esempi, supervisionato**
 - "Imparare" = individuare la posizione corretta dell'iperpiano nello spazio degli input
@@ -315,6 +325,7 @@ Interpretando le coppie (A1, A2) come coordinate di punti nel piano e l'output X
 Una **rete neurale** è un **approssimatore universale di funzioni**, di natura distribuita, costituita da un insieme di neuroni collegati fra loro secondo una **topologia** (che dipende dal modello di rete). I neuroni possono implementare funzioni diverse e possono essere realizzati in software o hardware.
 
 Esempi di topologia:
+
 - **A strati (layered)**: i neuroni sono organizzati in livelli successivi (input, hidden, output).
 - **A vicinato**: connessioni basate su prossimità/adiacenza fra neuroni, senza una stratificazione rigida.
 
@@ -345,6 +356,7 @@ Il modo di codificare le classi nel livello di output dipende dal numero di clas
 ### Cosa imparano i diversi hidden layer
 
 Con più livelli hidden, si osserva empiricamente una sorta di **gerarchia di astrazione**:
+
 - il **primo layer** traccia dei confini (separazioni lineari elementari, come un singolo perceptron);
 - il **secondo layer** combina questi confini per costruire delle **forme**;
 - il **terzo layer** combina le forme per creare **forme arbitrariamente complesse**.
@@ -353,7 +365,7 @@ Questo spiega intuitivamente perché aggiungere strati hidden aumenti la capacit
 
 ### Potere espressivo dell'MLP
 
-Gli **MLP a 3 livelli** i cui neuroni usano come funzione di attivazione la sigmoide sono **approssimatori universali di funzioni**, a patto di poter utilizzare un numero di neuroni hidden sufficientemente grande (senza limiti a priori).
+Gli **MLP a 3 livelli** i cui neuroni usano come funzione di attivazione la sigmoide sono ***approssimatori universali di funzioni***, a patto di poter utilizzare un numero di neuroni hidden sufficientemente grande (senza limiti a priori).
 
 La conoscenza appresa dalla rete è memorizzata nella **matrice dei pesi** che definisce la forza di tutte le connessioni.
 
@@ -384,7 +396,7 @@ dove `p` = numero di neuroni di output, `t_i` = valore desiderato (target) del n
 
 #### Il problema della distribuzione del credito/biasimo (credit assignment)
 
-L'errore è calcolabile direttamente solo per i neuroni del **livello di output** (per i quali si conosce il target `t`). Ma come si distribuisce il "biasimo" per l'errore fra i pesi di tutti gli strati precedenti (hidden)? Questo è il problema centrale risolto dall'algoritmo di **backpropagation**.
+L'errore è calcolabile direttamente solo per i neuroni del **livello di output** (per i quali si conosce il target `t`). Ma come si distribuisce il "biasimo" per l'errore fra i pesi di tutti gli strati precedenti (hidden)? Questo è il problema centrale risolto dall'algoritmo di ***backpropagation***.
 
 **Delta rule generalizzata per i neuroni di output:**
 
@@ -421,4 +433,4 @@ Somma dei quadrati degli errori (differenza fra output ottenuto `y_o` e output d
 - **Classificazione**: le classi non sono naturali ma definite dal progettista; si apprende un modello dal *training set* (induzione) e lo si valuta sul *test set* (deduzione), tramite matrice di confusione, accuratezza (`(f11+f22)/tot`), error rate, ed eventualmente matrice dei costi quando gli errori hanno peso diverso. Attenzione a dataset sbilanciati: un'accuratezza alta non implica un buon modello.
 - **Alberi di decisione**: nodi interni = test su attributi, foglie = decisioni/classi. Si costruiscono ricorsivamente con l'**algoritmo di Hunt**: se il nodo è puro diventa foglia, altrimenti si sceglie un attributo di split e si ricorre sui figli. La scelta dell'attributo migliore è **greedy** e si basa su misure di impurità — **entropia** (`-Σ p_i log2 p_i`), **Gini**, **errore di classificazione** — combinate nella formula del **guadagno** (impurità del padre meno media pesata delle impurità dei figli); con l'entropia si parla di **information gain**. Attenzione al bias verso attributi con molti valori (es. identificatori univoci) — un limite noto di entropia e Gini. Split diversi a seconda del tipo di attributo (binario, nominale, ordinale, continuo). Principio guida: Rasoio di Occam, preferire alberi compatti.
 - **Reti neurali / perceptron**: ispirate (in modo non fedele) al neurone biologico. Il perceptron calcola `net = Σ wi·Xi` e applica una funzione di attivazione (gradino, poi sostituita dalla **sigmoide**, derivabile) per produrre `Y = f(net)`. Geometricamente codifica un **iperpiano** (test lineare) nello spazio degli input: risolve solo problemi **linearmente separabili** (limite dimostrato con lo **XOR**). Apprende per correzione dell'errore `(d-o)` con un fattore di scalamento `η`; converge solo se il problema è linearmente separabile (Novikoff).
-- **MLP**: rete feed-forward a strati (input, uno o più hidden, output), tipicamente fully-connected, con hidden layer che usano la sigmoide. Con almeno 3 livelli e neuroni sigmoide a sufficienza è un **approssimatore universale di funzioni**. La codifica delle classi in output usa 1 neurone per problemi a 1-2 classi, e tipicamente **un neurone per classe (one-hot)** per problemi multiclasse. L'apprendimento avviene per **backpropagation**: passata forward per calcolare l'output, passata backward per propagare l'errore e aggiornare i pesi via **discesa del gradiente**, minimizzando l'errore globale `E = ½ Σ(ti - yi)²`; la *delta rule* per l'output usa `δj = yj(1-yj)(tj-yj)`, quella per gli hidden propaga i `δ` dei neuroni successivi pesati sulle connessioni. Le reti neurali risolvono anche problemi di **regressione** (funzione continua), valutati con l'**MSE** anziché con le metriche di classificazione.
+- **MLP**: rete feed-forward a strati (input, uno o più hidden, output), tipicamente fully-connected, con hidden layer che usano la sigmoide. Con almeno 3 livelli e neuroni sigmoide a sufficienza è un **approssimatore universale di funzioni**. La codifica delle classi in output usa 1 neurone per problemi a 1-2 classi, e tipicamente **un neurone per classe (one-hot)** per problemi multiclasse. L'apprendimento avviene per **backpropagation**: passata forward per calcolare l'output, passata backward per propagare l'errore e aggiornare i pesi via **discesa del gradiente**, minimizzando l'errore globale `E = (1/2) Σ(ti - yi)²`; la *delta rule* per l'output usa `δj = yj(1-yj)(tj-yj)`, quella per gli hidden propaga i `δ` dei neuroni successivi pesati sulle connessioni. Le reti neurali risolvono anche problemi di **regressione** (funzione continua), valutati con l'**MSE** anziché con le metriche di classificazione.

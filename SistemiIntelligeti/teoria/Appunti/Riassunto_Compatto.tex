@@ -1,0 +1,316 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\geometry{a4paper,margin=2.2cm}
+\usepackage{enumitem}
+\setlist{itemsep=1pt,topsep=3pt,parsep=0pt}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{hyperref}
+
+\definecolor{headblue}{RGB}{31,73,125}
+
+\titleformat{\section}{\normalfont\Large\bfseries\color{headblue}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries\color{headblue}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{0.6em}{}
+
+\hypersetup{colorlinks=true,linkcolor=headblue,urlcolor=headblue}
+
+\newcommand{\attn}[1]{\textbf{Attenzione:} #1}
+
+\title{\vspace{-1.2cm}{\large Sistemi Intelligenti --- Riassunto Compatto}\\[0.2cm]
+  \rule{\linewidth}{1pt}}
+\author{Corso di Sistemi Intelligenti, Cristina Baroglio --- Università di Torino}
+\date{Moduli 1--8}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+\tableofcontents
+
+%============================================================
+\section{Introduzione all'IA e Agenti Intelligenti}
+%============================================================
+
+\subsection{Cos'è l'IA}
+
+\textbf{IA}: intelligenza (facoltà di pensare, adattarsi, imparare) ottenuta artificialmente. \textbf{Automazione $\neq$ intelligenza}: eseguire istruzioni fisse non basta, serve adattarsi a situazioni nuove.
+
+\begin{itemize}
+  \item \textbf{Test di Turing} (1950): un umano dialoga alla cieca con umano+macchina; se non distingue chi è chi, la macchina ``passa''. Critica: stesso output non implica stessa comprensione (es. chi risponde ``Piemonte'' sapendo geografia vs.\ tirando a caso).
+  \item \textbf{Stanza Cinese} (Searle, 1980): manipolare simboli sintatticamente (manuale di regole) non implica comprensione semantica --- critica alla Strong AI.
+  \item \textbf{Strong AI} (riprodurre davvero il pensiero umano) vs \textbf{Weak AI} (task-oriented, basta \emph{comportamento razionale}: approccio del corso, R\&N).
+\end{itemize}
+
+\textbf{Agente} = sistema che percepisce l'ambiente (sensori) e agisce su di esso (attuatori); agente+ambiente = binomio inscindibile. \textbf{Sequenza percettiva} = storia di tutte le percezioni ricevute.
+
+\textbf{Razionalità}: un agente razionale sceglie, per ogni sequenza percettiva, l'azione che massimizza la prestazione \emph{attesa} (non quella reale/onnisciente) data la sua conoscenza. Dipende da: azioni disponibili, misura di prestazione, conoscenza dell'ambiente, sequenza percettiva. Razionale $\neq$ di successo, $\neq$ onnisciente. La percezione stessa può essere un'azione (es.\ guardare prima di attraversare).
+
+\textbf{PEAS}: Performance measure, Environment, Actuators, Sensors --- si specifica sempre progettando un agente.
+
+\subsubsection*{Proprietà dell'ambiente}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Asse} & \textbf{Facile} & \textbf{Difficile} \\
+\midrule
+Osservabilità & completa & parziale \\
+Determinismo & deterministico & stocastico (strategico se dipende da altri agenti) \\
+Episodicità & episodico & sequenziale \\
+Dinamicità & statico & dinamico \\
+Discretezza & discreto & continuo \\
+N.\ agenti & singolo & multiagente \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Parziale osservabilità spesso \emph{appare} come stocasticità. Caso più difficile: parzialmente osservabile, stocastico, sequenziale, dinamico, continuo, multiagente.
+
+\textbf{Agente = architettura + programma}. Funzione agente (ideale, storia intera $\to$ azione) vs programma agente (percezione corrente + stato interno $\to$ azione).
+
+\subsubsection*{Tipologie di agente (sofisticazione crescente)}
+
+\begin{enumerate}
+  \item \textbf{Reattivo semplice}: regole condizione-azione sulla sola percezione corrente; funziona solo se ambiente completamente osservabile; rischio loop infiniti (serve randomizzazione).
+  \item \textbf{Reattivo basato su modello}: mantiene stato interno + modello di come evolve il mondo $\to$ gestisce osservabilità parziale.
+  \item \textbf{Basato su obiettivi}: sceglie azioni per raggiungere un goal (ragionamento ipotetico/pianificazione); basta cambiare il goal per cambiare comportamento.
+  \item \textbf{Basato sull'utilità}: funzione di utilità per scegliere la \emph{migliore} fra più soluzioni (non solo una qualsiasi).
+  \item \textbf{Che apprende}: aggiunge Critico (valuta prestazione) + Modulo di apprendimento + Generatore di problemi (azioni esplorative).
+\end{enumerate}
+
+\textbf{Paradigma dichiarativo vs procedurale}: dichiarativo separa \emph{cosa} (KB) da \emph{come} (motore generale di inferenza/ricerca), riusabile su problemi diversi --- vs imperativo (sequenza di passi ad hoc). Esempio guida: \textbf{mondo dei blocchi} --- l'agente non esegue un piano scritto dal programmatore, lo \emph{costruisce} lui stesso cercando nello spazio degli stati.
+
+%============================================================
+\section{Ricerca nello spazio degli stati}
+%============================================================
+
+\textbf{Problema di ricerca} = 4-tupla: stato iniziale, funzione successore (azioni+transizioni), test obiettivo, costo del cammino. \textbf{Spazio degli stati} (astratto) $\neq$ \textbf{albero/grafo di ricerca} (struttura dati costruita dall'algoritmo: nodi con genitore, azione, profondità, costo).
+
+Frontiera: nodi generati non ancora espansi. Criteri di valutazione: \textbf{completezza} (trova sempre soluzione se esiste), \textbf{ottimalità} (trova la soluzione a costo minimo), \textbf{complessità temporale/spaziale} (in nodi generati/mantenuti, $O$-grande). Parametri: $b$ branching factor, $d$ profondità soluzione più superficiale, $m$ profondità massima.
+
+\subsection{Ricerca non informata (blind)}
+
+\begin{center}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Strategia} & \textbf{Frontiera} & \textbf{Completa} & \textbf{Ottima} & \textbf{Tempo} & \textbf{Spazio} \\
+\midrule
+Ampiezza (BFS) & FIFO & Sì ($b$ finito) & Sì (costi unif.) & $O(b^{d+1})$ & $O(b^{d+1})$ \\
+Costo uniforme & priorità su $g(n)$ & Sì ($c>0$) & Sì ($c>0$) & $O(b^{1+\lfloor C^*/\varepsilon \rfloor})$ & idem \\
+Profondità (DFS) & LIFO/stack & No$^\dagger$ & No & $O(b^m)$ & $O(bm)$ [$O(m)$ backtr.] \\
+Prof.\ limitata ($l$) & stack+limite & No se $l<d$ & No & $O(b^l)$ & $O(bl)$ \\
+Iterative deepening & stack ricostr.\ & Sì & Sì & $O(b^d)$ & $O(bd)$ \\
+Bidirezionale & doppia frontiera & Sì & Sì (costi unif.) & $O(b^{d/2})$ & $O(b^{d/2})$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\footnotesize{$^\dagger$ completa solo se tutti i cammini sono finiti.}\normalsize
+
+\textbf{IDDFS è generalmente la scelta migliore} quando $d$ non è nota: combina completezza/ottimalità di BFS con spazio $O(bd)$ come DFS. Marcare nodi visitati (albero$\to$grafo) evita di riesplorare stati ripetuti.
+
+\subsection{Ricerca informata (euristica)}
+
+$f(n)$ = funzione di valutazione; $h(n)$ stima il costo residuo a un goal.
+
+\begin{itemize}
+  \item \textbf{Greedy}: $f(n)=h(n)$. Veloce ma non completa/ottima (eredita difetti DFS, l'euristica può ingannare).
+  \item \textbf{A*}: $f(n)=g(n)+h(n)$ --- $g$ guarda indietro (esatto), $h$ guarda avanti (stima). \textbf{Ottimo se $h$ è ammissibile} ($h(n)\le h^*(n)$, mai sovrastima) su alberi; su \textbf{grafi} serve \textbf{consistenza/monotonicità}: $h(n) \le c(n,a,n')+h(n')$ (garantisce $f$ non decrescente lungo il cammino). Ogni euristica monotona è ammissibile, non viceversa. A* è \textbf{ottimamente efficiente} (nessun altro algoritmo con la stessa euristica espande meno nodi) ma mantiene tutti i nodi in memoria (come BFS).
+  \item \textbf{IDA*, RBFS}: riducono la memoria a $O(bd)$ (lineare) usando un upper bound dinamico, a costo di lavoro ripetuto.
+\end{itemize}
+
+\textbf{Effective branching factor} $b^*$: $N+1 = 1+b^*+\dots+(b^*)^d$ --- più vicino a 1, migliore/più informativa l'euristica.
+
+\textbf{Dominanza}: se $h_2(n)\ge h_1(n)\ \forall n$ (entrambe ammissibili), $h_2$ domina $h_1$ $\Rightarrow$ A* con $h_2$ espande un sottoinsieme dei nodi espansi con $h_1$.
+
+\textbf{Problemi rilassati}: rimuovendo vincoli si ottiene un supergrafo; il costo della soluzione ottima nel problema rilassato è sempre un'euristica ammissibile. Esempio 8-puzzle: $h_1$=tessere fuori posto, $h_2$=distanza di Manhattan ($h_2$ domina $h_1$). Più euristiche ammissibili non comparabili $\to$ $h(n)=\max\{h_1(n),\dots,h_k(n)\}$ è ammissibile e dominante su tutte.
+
+%============================================================
+\section{Ricerca con avversario (giochi)}
+%============================================================
+
+Ambiente \textbf{multi-agente competitivo}: obiettivi in conflitto. Giochi a \textbf{informazione completa/perfetta} (stato visibile a tutti, es.\ scacchi) vs \textbf{imperfetta} (es.\ poker); \textbf{deterministici} vs \textbf{stocastici} (dadi). Il modulo tratta giochi deterministici, 2 giocatori, \textbf{somma zero} ($u(A)=-u(B)$, un solo valore per nodo basta).
+
+\textbf{Albero di gioco}: radice=stato iniziale, nodi MAX/MIN alternati, foglie=utilità terminale. \textbf{Ipotesi di pessimismo}: l'avversario (MIN) è infallibile e ottimale.
+
+\textbf{Minimax}: valore ricorsivo bottom-up
+\[
+\text{Minimax}(n) =
+\begin{cases}
+\text{Utilità}(n) & n \text{ terminale}\\
+\max_{s \in \text{Succ}(n)} \text{Minimax}(s) & n \text{ nodo MAX}\\
+\min_{s \in \text{Succ}(n)} \text{Minimax}(s) & n \text{ nodo MIN}
+\end{cases}
+\]
+Tempo $O(b^m)$, spazio $O(bm)$. \textbf{Completo e ottimo} (se entrambi giocano ottimo). Generalizza a $n$ giocatori con vettori di utilità (possibili alleanze).
+
+\textbf{Teoria delle decisioni}: maximax (ottimistico, max dei max), \textbf{maximin} (pessimistico/conservativo --- logica di Minimax), minimax regret (minimizza il rimpianto massimo = best payoff scenario $-$ payoff reale).
+
+\textbf{Potatura alfa-beta}: $\alpha$ = miglior garanzia per MAX (lower bound, aggiornato nei nodi MAX), $\beta$ = miglior garanzia per MIN (upper bound, nodi MIN). Si pota quando $\beta \le \alpha$. Stesso risultato di Minimax, ma nel caso migliore $O(b^{m/2})$ (dimezza l'esponente). Dipende \textbf{criticamente dall'ordinamento delle mosse} (killer move per primo): caso medio $O(b^{3m/4})$, caso peggiore = Minimax puro. \textbf{Trasposizioni}: stati raggiunti da ordini di mosse diversi $\to$ hash table per non riesplorarli.
+
+\textbf{Real-time/cutoff}: si taglia a profondità limitata con \textbf{funzione di valutazione euristica} (combinazione lineare pesata di feature: $\text{eval}(s)=\sum_i w_i f_i(s)$). Rischio: \textbf{problema dell'orizzonte} (l'algoritmo non vede un ribaltamento imminente) $\to$ mitigato dalla \textbf{quiescenza} (Berliner): tagliare solo dove la valutazione è stabile.
+
+Storici: \textbf{DeepBlue} (scacchi, iterative deepening + alfa-beta + tabelle trasposizione, 200M pos/sec, batté Kasparov 1996), \textbf{AlphaGo} (Go, 2015, reti neurali + ricerca ad albero + self-play).
+
+%============================================================
+\section{Constraint Satisfaction Problems (CSP)}
+%============================================================
+
+Definizione: variabili $X_1,\dots,X_n$, domini $D_1,\dots,D_n$, vincoli $C_1,\dots,C_m$. Assegnamento \textbf{completo} (tutte le var.) e \textbf{consistente} (nessun vincolo violato) = \textbf{soluzione}. Vincoli: unari, binari (grafo di vincoli), n-ari (ipergrafo, es.\ Alldifferent, criptoaritmetica). Vincoli rigidi vs criteri di preferenza (soft).
+
+\textbf{Come problema di ricerca}: stato iniziale = $\{\}$, successore = assegna una variabile, goal = assegnamento completo. \textbf{Commutatività}: l'ordine di assegnamento non conta $\to$ si fissa sempre prima la variabile poi il valore, riducendo il branching da $n\cdot d$ a $d$ per livello (foglie: $d^n$ invece di $n!\cdot d^n$).
+
+\textbf{Generate-and-test}: impraticabile (esplosione combinatoria). \textbf{Backtracking} (DFS + potatura sui vincoli): soffre di \textbf{thrashing} se non guidato da euristiche/inferenza.
+
+\textbf{Euristiche variabile}: \textbf{MRV} (Minimum Remaining Values / fail-first: scegli la variabile più vincolata, per fallire il prima possibile) + \textbf{degree heuristic} (tie-break: più vincoli con variabili non assegnate).
+\textbf{Euristica valore}: \textbf{LCV} (Least Constraining Value: scegli il valore che lascia più opzioni ai vicini). \emph{Non contraddittorio}: variabile = ``rischia di fallire subito'', valore = ``minimizza il rischio una volta lì''.
+
+\textbf{Consistenza locale} (crescente forza/costo): \textbf{Forward checking} (propaga solo ai vicini diretti della variabile appena assegnata, si abbina a MRV) $\to$ \textbf{Node consistency} (vincoli unari) $\to$ \textbf{Arc consistency/AC-3} (Mackworth 1977: propaga su tutto il grafo tramite coda di archi, \texttt{REVISE} elimina valori senza supporto, $O(n^2d^3)$; \textbf{incompleta}: arc-consistent non implica soluzione, es.\ triangolo a 2 colori) $\to$ \textbf{Path consistency/PC-2} (triplette di variabili, più forte). \textbf{$k$-consistency}: fortemente $n$-consistent $\to$ risolvibile senza backtracking, ma verificarlo è esponenziale.
+
+\textbf{Backtracking cronologico} torna sempre alla variabile precedente, anche se non causa del conflitto. \textbf{Backjumping}: usa il \textbf{conflict set} per saltare alla vera responsabile (se combinato con FC arricchito, è ridondante). \textbf{Conflict-directed backjumping}: aggiorna dinamicamente i conflict set, gestisce gli \textbf{assegnamenti NOGOOD} (assegnamenti parziali mai estendibili a soluzione, scoperti solo esplorando) --- è una forma di apprendimento.
+
+Vincoli globali: \textbf{Alldifferent} (pigeonhole: se $<n$ valori disponibili, fallimento immediato), \textbf{Atmost}$(N,\dots)$ (vincoli di risorse). Applicazioni: scheduling, routing, timetabling, Sudoku (tutto Alldifferent).
+
+%============================================================
+\section{Logica proposizionale e rappresentazione della conoscenza}
+%============================================================
+
+\textbf{Agente basato su conoscenza}: KB + \textbf{tell} (asserisci) + \textbf{ask} (interroga); ogni risposta ad ask deve essere conseguenza logica delle tell fatte. Dato (grezzo) $\to$ informazione (significato) $\to$ conoscenza (relazioni fra informazioni).
+
+\textbf{Modello} $m$: mondo possibile che fissa il valore di verità delle formule. $M(\alpha)$ = insieme dei modelli di $\alpha$.
+\textbf{Conseguenza logica} $A \models B$: $B$ vera in \emph{tutti} i modelli in cui $A$ è vera $\iff M(A)\subseteq M(B)$. \textbf{Equivalenza} $A \equiv B$: $M(A)=M(B)$.
+\textbf{Validità/tautologia}: vera in ogni modello. \textbf{Insoddisfacibilità}: falsa in ogni modello. \textbf{Soddisfacibilità}: vera in almeno un modello (P valida $\iff \neg P$ insoddisfacibile).
+
+\textbf{Inferenza}: processo \textbf{sintattico}. $KB \vdash_i A$: $A$ derivabile da KB con l'algoritmo $i$. \textbf{Correttezza} (soundness): $KB \vdash_i A \Rightarrow KB \models A$ (mai sbagliato). \textbf{Completezza}: $KB \models A \Rightarrow KB \vdash_i A$ (non perde nulla). La logica deve sempre essere corretta, non sempre completa.
+
+\textbf{Sintassi}: simboli proposizionali, connettivi $\neg,\wedge,\vee,\Rightarrow,\Leftrightarrow$. $N$ simboli $\to 2^N$ modelli. $P\Rightarrow Q \equiv \neg P \vee Q$: falsa solo se $P$ vera e $Q$ falsa; \textbf{non è causale} (es.\ ``Torino è in Lombardia $\Rightarrow$ Cesare governò Roma'' è VERA perché l'antecedente è falso).
+
+\textbf{Verificare} $KB \models P$: (1) model checking ($2^N$ modelli, costoso) o (2) \textbf{theorem proving}: per \textbf{refutazione}, $KB \models P \iff (KB \wedge \neg P)$ è insoddisfacibile --- si assume $\neg P$, si cerca una contraddizione.
+
+\textbf{CNF} (congiunzione di clausole = disgiunzioni di letterali): elimina $\Leftrightarrow$, elimina $\Rightarrow$, De Morgan (nega verso l'interno), distribuisci $\vee$ su $\wedge$.
+
+\textbf{Risoluzione}: da due clausole con letterali complementari, produce il resolvent (tutti i letterali tranne la coppia complementare, fattorizzato). \textbf{Modus ponens è un caso particolare} di risoluzione. Algoritmo \texttt{CP-RISOLUZIONE}: CNF$(KB\wedge\neg\text{query})$, risolvi iterativamente tutte le coppie finché non trovi la \textbf{clausola vuota} ($\to$true, $KB\models$query) o punto fisso ($\to$false). Corretta e completa.
+
+\textbf{Clausole di Horn}: al più un letterale positivo (esattamente uno = clausola definita); catturano implicazioni con antecedente congiuntivo. Permettono inferenza in \textbf{tempo lineare} (base di Prolog).
+\begin{itemize}
+  \item \textbf{Forward chaining}: parte dai fatti, applica modus ponens finché non deriva la query; \textbf{data-driven}, completo, lineare, ma può fare inferenze inutili.
+  \item \textbf{Backward chaining}: parte dal goal, cerca regole che lo concludono, dimostra ricorsivamente le premesse; \textbf{goal-driven}, più efficiente/focalizzato, usato in Prolog.
+\end{itemize}
+
+%============================================================
+\section{Logica del primo ordine (FOL)}
+%============================================================
+
+Limiti della proposizionale: non compatta (una regola per ogni individuo), non esprime relazioni fra oggetti. FOL: il mondo ha \textbf{oggetti} in \textbf{relazione}.
+
+\textbf{Sintassi}: costanti (oggetti), predicati (proprietà/relazioni $\to$ vero/falso), funzioni ($\to$ un oggetto, non lo ``costruiscono'', lo riferiscono), variabili, quantificatori $\forall\exists$, uguaglianza $=$.
+
+\textbf{Modello FOL} $M=(D,I)$: $D$=dominio, $I$=interpretazione (costanti$\to$oggetti, predicati$\to$relazioni, funzioni$\to$relazioni funzionali). Il valore di verità \textbf{dipende sempre dal modello}. FOL può avere \textbf{infiniti modelli} (dominio illimitato) $\to$ niente enumerazione come in proposizionale.
+
+\textbf{Quantificatori}:
+\begin{itemize}
+  \item $\forall x\, F$: vera se $F$ vera per ogni $x$. \textbf{Regola pratica: $\forall$ va con $\Rightarrow$} (per restringere a una sottoclasse: $\forall x\, \text{Partecipa}(x,C)\Rightarrow\text{Intelligente}(x)$).
+  \item $\exists x\, F$: vera se $F$ vera per almeno un $x$. \textbf{Regola pratica: $\exists$ va con $\wedge$} ($\exists x\, \text{Partecipa}(x,C)\wedge\text{Intelligente}(x)$). Usare $\forall$ con $\wedge$, o $\exists$ con $\Rightarrow$, produce quasi sempre formule sbagliate/banali ($\exists$ con $\Rightarrow$ è vera anche solo per un oggetto qualunque non nella sottoclasse).
+  \item \textbf{Quantificatori diversi non commutano}: $\forall x\exists y\, \text{Ama}(x,y)$ (ognuno ama qualcuno, anche diverso) $\neq \exists y\forall x\, \text{Ama}(x,y)$ (esiste un unico $y$ amato da tutti). Stesso tipo invece commuta liberamente.
+  \item De Morgan generalizzato: $\forall x \neg F \equiv \neg\exists x\, F$, $\exists x \neg F \equiv \neg\forall x\, F$.
+\end{itemize}
+
+\textbf{Uguaglianza}: serve per dire ``oggetti diversi'' ($\neg(y=z)$), altrimenti FOL standard \textbf{non assume unicità dei nomi}. \textbf{Database semantics} (Prolog): Unique Names + Closed World + Domain Closure --- molto più intuitiva ma va tenuta distinta dalla semantica standard FOL (R\&N).
+
+\textbf{Inferenza}: (1) \textbf{proposizionalizzazione} (UI: istanzia $\forall$ con qualsiasi termine ground, KB equivalente; EI: istanzia $\exists$ con una \textbf{costante nuova di Skolem}, una sola volta, equivalenza solo inferenziale) --- completa per il \textbf{teorema di Herbrand}, ma \textbf{FOL è semidecidibile} (si conferma il sì, non sempre il no) ed è inefficiente (genera istanze inutili). (2) \textbf{Lifting} (più efficiente, in pratica usato sempre):
+
+\textbf{Modus Ponens Generalizzato (MPG)}: da $p_1',\dots,p_n'$ e $(p_1\wedge\dots\wedge p_n\Rightarrow q)$, se esiste $\theta$ con $p_i'\theta=p_i\theta\ \forall i$, si conclude $q\theta$. Richiede antecedente = congiunzione di letterali positivi.
+
+\textbf{Unificazione} $\text{UNIFY}(F_1,F_2)=\theta$ tale che $F_1\theta=F_2\theta$ (idealmente il \textbf{Most General Unifier}). Può fallire per conflitto di variabile $\to$ \textbf{standardizzazione separata} (rinomina variabili fra formule diverse).
+
+\textbf{Clausole di Horn FOL} (no funzioni = \textbf{DATALOG}): forward chaining (aggiunge fatto solo se non è \textbf{rinomina} di uno esistente; corretto, completo e termina su DATALOG, può non terminare con funzioni) e backward chaining (goal in stack, unifica con teste di clausole, corretto ma incompleto/depth-first, rischio loop).
+
+\textbf{Risoluzione in FOL} (binary resolution + fattorizzazione, con unificazione): \textbf{refutation-complete}. Serve tradurre in \textbf{CNF}: elimina $\Leftrightarrow$/$\Rightarrow$ $\to$ sposta negazioni dentro $\to$ standardizza variabili $\to$ \textbf{skolemizza} $\to$ elimina $\forall$ residui $\to$ distribuisci $\vee$ su $\wedge$.
+
+\textbf{Skolemizzazione}: ogni $\exists y$ diventa una \textbf{funzione di Skolem} i cui argomenti sono tutte le variabili \textbf{universali nel cui scope} ricade (es.\ $\forall x\exists y\, F \to F[y/S(x)]$); se non c'è nessun $\forall$ esterno, diventa una \textbf{costante di Skolem} (=EI). Errore classico: skolemizzare con una costante fissa sotto un $\forall$ implica erroneamente che \emph{tutti} condividano lo stesso valore.
+
+%============================================================
+\section{Ontologie e Pianificazione}
+%============================================================
+
+\subsection{Tassonomie/Ontologie}
+
+\textbf{Tassonomia} = gerarchia (albero) di concetti via relazione \textbf{Is-a} (sottoclasse): le istanze ereditano le proprietà della superclasse (evita ridondanza). $\text{Disjoint}(S)$, $\text{ExhaustiveDec}(S,C)$, $\text{Partition}(S,C)=\text{Disjoint}\wedge\text{Exhaustive}$. \textbf{Part-of} (transitiva) descrive composizione strutturale; \textbf{Bunch-of} per aggregati senza relazioni interne.
+
+\textbf{T-box} (schema/definizioni generali, intensionale) vs \textbf{A-box} (fatti su istanze, estensionale). Problemi: \textbf{eccezioni} alla norma (proprietà ereditate cancellabili in sottoclassi), \textbf{polisemia} (stessa parola, alberi tassonomici diversi --- es.\ ``cane'').
+
+\textbf{Ontologia} generalizza la tassonomia: da albero (solo Is-a) a \textbf{grafo} (relazioni arbitrarie). Ogni tassonomia è un'ontologia, non viceversa.
+
+\textbf{Semantic Web (W3C)}: \textbf{RDF} (triple soggetto-predicato-oggetto, IRI = identificatori univoci, grafo RDF), RDFS (tassonomie su RDF), \textbf{OWL 2} (classi/proprietà/individui; SubClassOf, EquivalentClasses, DisjointClasses, ObjectSomeValuesFrom/AllValuesFrom; \textbf{open world assumption}, a differenza dei DB che sono closed-world), SPARQL (query), FOAF (ontologia sociale).
+
+\textbf{Relazioni fra ontologie}: Identical, Equivalent (stesso contenuto, linguaggio diverso), Extension (una include l'altra), Weakly-Translatable (con perdita), Strongly-Translatable (fedele, senza perdita/inconsistenze), Approx-Translatable (con perdita e possibili inconsistenze).
+
+Is-a/Part-of sono \textbf{statiche}: non bastano a rappresentare \textbf{azioni} $\to$ serve la pianificazione.
+
+\subsection{Pianificazione}
+
+\textbf{Pianificare} = costruire una sequenza di azioni da stato iniziale a goal. \textbf{PDDL} = standard per descriverla. Stato = congiunzione di atomi ground.
+
+\textbf{Situation Calculus} (fondamento logico in FOL): \textbf{Azione} = funzione (non predicato) che restituisce un oggetto; \textbf{Situazione} = stato risultante da una sequenza di azioni; \textbf{Fluente} = proprietà che cambia con le azioni (ha sempre la situazione come parametro). $\text{Do}(\text{Azioni},S)$ = situazione raggiunta. Due situazioni sono identiche solo se stessa storia (stato iniziale + sequenza azioni).
+\begin{itemize}
+  \item \textbf{Assioma di applicabilità}: azione applicabile $\iff$ precondizioni vere.
+  \item \textbf{Assioma di effetto}: azione applicabile $\Rightarrow$ effetti veri nella situazione risultante.
+\end{itemize}
+
+\textbf{Frame problem}: come rappresentare \textbf{ciò che un'azione NON modifica}? Non derivabile dai soli assiomi di effetto. Soluzioni: (1) enumerare esplicitamente un assioma di frame per ogni coppia azione$\times$fluente non toccato (esplode combinatoriamente); (2) \textbf{assioma di stato successore} unico per fluente (fluente vero dopo $\iff$ l'azione lo rende vero, oppure era vero e l'azione non l'ha reso falso) --- soluzione compatta standard.
+
+\textbf{Scomposizione in sottogoal}: approccio base, ma i sottogoal possono \textbf{interagire}. \textbf{Anomalia di Sussman} (mondo dei blocchi: A su B, C isolato; goal A-B-C): risolvere un sottogoal (B su C) disfa i progressi dell'altro (A su B) e viceversa $\to$ serve \textbf{interleaving} dei passi dei due (sotto)piani, non esecuzione sequenziale a blocchi.
+
+Situation Calculus storicamente fondamentale ma \textbf{poco usato in pratica} (mancano euristiche efficienti) --- planner reali usano PDDL/planning graph/euristiche dedicate.
+
+%============================================================
+\section{Machine Learning}
+%============================================================
+
+\subsection{Classificazione}
+
+Le \textbf{classi non esistono in natura}: sono definite dal progettista in base allo scopo; il sistema impara solo dai dati come sono etichettati.
+
+\textbf{Apprendimento supervisionato}: training set (istanze $(x,y)$, $x$=attributi, $y$=classe) $\to$ \textbf{induzione} $\to$ modello classe$=f($descrizione$)$ $\to$ \textbf{deduzione} su nuove istanze; test set per \textbf{valutazione}.
+
+\textbf{Matrice di confusione} (2 classi): Accuratezza $=(f_{11}+f_{22})/\text{tot}$, Error rate $=(f_{12}+f_{21})/\text{tot}$. \textbf{Matrice dei costi}: pesa diversamente i tipi di errore (es.\ falso negativo su malattia più grave di falso positivo). \attn{accuratezza alta su dataset \textbf{sbilanciato} non implica buon modello (classificatore banale ``sempre classe maggioritaria'' ottiene accuratezza alta senza aver imparato nulla).}
+
+Insidie pratiche: dataset non rappresentativo (bias di chi lo raccoglie), l'algoritmo non ha conoscenza di base umana (impara solo ciò che vede). Rischi etici in applicazioni ad alto impatto (riconoscimento facciale, mutui, guida autonoma) --- \textbf{problem of the many hands} (responsabilità distribuita).
+
+\textbf{Rote learning}: memorizza tutto, non generalizza; nuova istanza $\to$ cerca identica o simile (distanza), vota a maggioranza o pesata (pesi non persistenti, a differenza delle NN).
+
+\subsection{Alberi di decisione}
+
+Nodi interni = test su attributo; foglie = classe. \textbf{Algoritmo di Hunt} (ricorsivo): se $D_t$ tutto della stessa classe $\to$ foglia; altrimenti scegli attributo di split, un figlio per valore, ricorri. Se istanze identiche ma classi diverse $\to$ foglia con classe di maggioranza. Strategia \textbf{greedy} (nessun backtracking).
+
+Split per tipo di attributo: binario (2 figli), nominale (multivalore o binario raggruppato), ordinale (raggruppamento deve rispettare l'ordine), continuo (soglia $A\le v$, o discretizzazione multi-soglia).
+
+\textbf{Misure di impurità}: \textbf{Entropia} $= -\sum_i p(i|t)\log_2 p(i|t)$ (0=puro, max=equidistribuzione); \textbf{Gini} $=1-\sum_i p(i|t)^2$; errore di classificazione. \textbf{Guadagno} = impurità(padre) $-$ media pesata impurità(figli); con entropia si chiama \textbf{information gain}. \attn{information gain/Gini \textbf{favoriscono attributi con molti valori} (es.\ un ID univoco dà gain massimo ma è overfitting puro, zero generalizzazione) --- mitigabile con split binari.} \textbf{Rasoio di Occam}: a parità di prestazioni, preferire alberi più compatti.
+
+\subsection{Reti neurali}
+
+\textbf{Perceptron} (Rosenblatt): $\text{net}=\sum_i w_i X_i$, $Y=f(\text{net})$. Attivazione: gradino (non derivabile) o \textbf{sigmoide} (derivabile, necessaria per il gradiente). Geometricamente codifica un \textbf{iperpiano} nello spazio degli input: risolve solo problemi \textbf{linearmente separabili} (limite dimostrato con \textbf{XOR}). Apprendimento:
+\[
+w_j \leftarrow w_j + \eta\,(d-o)\,x_j
+\]
+(regola di correzione dell'errore); \textbf{Teorema di Novikoff}: converge solo se linearmente separabile. Epoca = intero learning set elaborato una volta.
+
+\textbf{MLP} (Multi-Layer Perceptron): feed-forward, a strati (input=identità, hidden=sigmoide, output), fully-connected. Con $\ge 3$ livelli e sigmoide, \textbf{approssimatore universale di funzioni}. Output: 1 neurone per 1-2 classi; \textbf{one-hot} (un neurone per classe) per multiclasse, preferito alla codifica binaria compatta perché più robusto/interpretabile.
+
+\textbf{Backpropagation}: forward (calcola output) + backward (propaga l'errore, aggiorna pesi). \textbf{Discesa del gradiente}:
+\[
+\Delta w_{ji} = -\eta\,\frac{\partial E}{\partial w_{ji}}, \qquad E=\frac12\sum_i (t_i-y_i)^2.
+\]
+\textbf{Delta rule} output: $\delta_j=y_j(1-y_j)(t_j-y_j)$; hidden: $\delta_k=y_k(1-y_k)\sum_{j} \delta_j w_{kj}$ (propaga all'indietro i $\delta$ pesati --- da qui ``backpropagation'', risolve il \textbf{credit assignment problem}).
+
+\textbf{Regressione}: NN può approssimare funzioni continue (non solo classificare); errore valutato con \textbf{MSE} $=\frac{1}{n}\sum_i (y_o-y_d)^2$ invece di accuratezza/matrice di confusione.
+
+\end{document}

@@ -1,0 +1,125 @@
+% ===================== Font setup =====================
+\usepackage{fontspec}
+\setmainfont{Cambria}
+\setmonofont{Consolas}[Scale=0.88]
+\newfontfamily\symbolfont{Cambria Math}
+\newfontfamily\symbolfontB{Segoe UI Symbol}
+
+% ===================== Unicode symbol mapping =====================
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{newunicodechar}
+\newunicodechar{→}{{\symbolfont\ensuremath{\rightarrow}}}
+\newunicodechar{←}{{\symbolfont\ensuremath{\leftarrow}}}
+\newunicodechar{↑}{{\symbolfont\ensuremath{\uparrow}}}
+\newunicodechar{↔}{{\symbolfont\ensuremath{\leftrightarrow}}}
+\newunicodechar{∨}{{\symbolfont\ensuremath{\lor}}}
+\newunicodechar{∧}{{\symbolfont\ensuremath{\land}}}
+\newunicodechar{¬}{{\symbolfont\ensuremath{\neg}}}
+\newunicodechar{⇒}{{\symbolfont\ensuremath{\Rightarrow}}}
+\newunicodechar{⇐}{{\symbolfont\ensuremath{\Leftarrow}}}
+\newunicodechar{⇔}{{\symbolfont\ensuremath{\Leftrightarrow}}}
+\newunicodechar{⟹}{{\symbolfont\ensuremath{\Longrightarrow}}}
+\newunicodechar{α}{{\symbolfont\ensuremath{\alpha}}}
+\newunicodechar{β}{{\symbolfont\ensuremath{\beta}}}
+\newunicodechar{γ}{{\symbolfont\ensuremath{\gamma}}}
+\newunicodechar{δ}{{\symbolfont\ensuremath{\delta}}}
+\newunicodechar{ε}{{\symbolfont\ensuremath{\varepsilon}}}
+\newunicodechar{η}{{\symbolfont\ensuremath{\eta}}}
+\newunicodechar{θ}{{\symbolfont\ensuremath{\theta}}}
+\newunicodechar{Σ}{{\symbolfont\ensuremath{\Sigma}}}
+\newunicodechar{∀}{{\symbolfont\ensuremath{\forall}}}
+\newunicodechar{∃}{{\symbolfont\ensuremath{\exists}}}
+\newunicodechar{≡}{{\symbolfont\ensuremath{\equiv}}}
+\newunicodechar{≠}{{\symbolfont\ensuremath{\neq}}}
+\newunicodechar{≤}{{\symbolfont\ensuremath{\leq}}}
+\newunicodechar{≥}{{\symbolfont\ensuremath{\geq}}}
+\newunicodechar{≈}{{\symbolfont\ensuremath{\approx}}}
+\newunicodechar{⊨}{{\symbolfont\ensuremath{\models}}}
+\newunicodechar{⊭}{{\symbolfont\ensuremath{\nvDash}}}
+\newunicodechar{⊢}{{\symbolfont\ensuremath{\vdash}}}
+\newunicodechar{⊆}{{\symbolfont\ensuremath{\subseteq}}}
+\newunicodechar{∈}{{\symbolfont\ensuremath{\in}}}
+\newunicodechar{∪}{{\symbolfont\ensuremath{\cup}}}
+\newunicodechar{∩}{{\symbolfont\ensuremath{\cap}}}
+\newunicodechar{∞}{{\symbolfont\ensuremath{\infty}}}
+\newunicodechar{×}{{\symbolfont\ensuremath{\times}}}
+\newunicodechar{·}{{\symbolfont\ensuremath{\cdot}}}
+\newunicodechar{−}{{\symbolfont\ensuremath{-}}}
+\newunicodechar{±}{{\symbolfont\ensuremath{\pm}}}
+\newunicodechar{∂}{{\symbolfont\ensuremath{\partial}}}
+\newunicodechar{∇}{{\symbolfont\ensuremath{\nabla}}}
+\newunicodechar{√}{{\symbolfont\ensuremath{\surd}}}
+\newunicodechar{∎}{{\symbolfont\ensuremath{\blacksquare}}}
+\newunicodechar{⌊}{{\symbolfont\ensuremath{\lfloor}}}
+\newunicodechar{⌋}{{\symbolfont\ensuremath{\rfloor}}}
+\newunicodechar{⌈}{{\symbolfont\ensuremath{\lceil}}}
+\newunicodechar{⌉}{{\symbolfont\ensuremath{\rceil}}}
+\newunicodechar{⟨}{{\symbolfont\ensuremath{\langle}}}
+\newunicodechar{⟩}{{\symbolfont\ensuremath{\rangle}}}
+\newunicodechar{ø}{{\symbolfont\ensuremath{\emptyset}}}
+\newunicodechar{²}{\textsuperscript{2}}
+\newunicodechar{³}{\textsuperscript{3}}
+\newunicodechar{ᵈ}{\textsuperscript{d}}
+\newunicodechar{ᴺ}{\textsuperscript{N}}
+\newunicodechar{ᵢ}{{\symbolfont\ensuremath{_i}}}
+\newunicodechar{ⱼ}{{\symbolfont\ensuremath{_j}}}
+\newunicodechar{ₖ}{{\symbolfont\ensuremath{_k}}}
+\newunicodechar{₀}{{\symbolfont\ensuremath{_0}}}
+\newunicodechar{₁}{{\symbolfont\ensuremath{_1}}}
+\newunicodechar{₂}{{\symbolfont\ensuremath{_2}}}
+\newunicodechar{❓}{?}
+\newunicodechar{─}{\rule[0.5ex]{0.9em}{0.5pt}}
+\newunicodechar{┌}{+}
+\newunicodechar{┼}{+}
+\newunicodechar{┐}{+}
+\newunicodechar{├}{+}
+\newunicodechar{└}{+}
+\newunicodechar{⎧}{\{}
+\newunicodechar{⎨}{\{}
+\newunicodechar{⎩}{\{}
+
+% ===================== Page layout =====================
+\usepackage{geometry}
+\geometry{a4paper,margin=2.2cm,headsep=8pt}
+\usepackage{xcolor}
+\definecolor{exambg}{RGB}{255,248,225}
+\definecolor{examline}{RGB}{230,180,60}
+\definecolor{headingblue}{RGB}{31,73,125}
+
+% ===================== Headings =====================
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\Huge\bfseries\color{headingblue}}{\chaptertitlename\ \thechapter}{10pt}{\Huge}
+\titleformat{\section}{\normalfont\Large\bfseries\color{headingblue}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries\color{headingblue}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{0.6em}{}
+
+% ===================== Exam-question callout (blockquotes) =====================
+\usepackage{mdframed}
+\surroundwithmdframed[
+  backgroundcolor=exambg,
+  linecolor=examline,
+  linewidth=1.2pt,
+  leftmargin=0pt, rightmargin=0pt,
+  innertopmargin=6pt, innerbottommargin=6pt,
+  innerleftmargin=8pt, innerrightmargin=8pt,
+  skipabove=10pt, skipbelow=10pt,
+  nobreak=true
+]{quote}
+
+% ===================== Misc =====================
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\setlist{itemsep=2pt, topsep=4pt, parsep=0pt}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=headingblue, urlcolor=headingblue, citecolor=headingblue,
+  pdftitle={Sistemi Intelligenti -- Appunti di Teoria (Moduli 1-8)}, pdfauthor={}}
+\usepackage[italian]{babel}
+\setlength{\emergencystretch}{2em}
+\clubpenalty=10000
+\widowpenalty=10000
+
+% page break before every chapter is default with \chapter in report class

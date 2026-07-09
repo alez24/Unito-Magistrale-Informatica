@@ -37,6 +37,7 @@ Agente ha: KB
 Tempo = 0
 
 function KB-Agent(percezione) returns azione:
+
   1. tell(KB, costruisci-formulaP(percezione, tempo))
   2. azione ← ask(KB, costruisci-interrogazioneA(tempo))
   3. tell(KB, costruisci-formulaA(azione, tempo))
@@ -121,7 +122,7 @@ Relazione importante: **P è valida se e solo se ¬P è insoddisfacibile** (e vi
 
 ### Inferenza
 
-**Inferenza** (dal latino *in ferre*, "portare dentro"): processo con cui, da una proposizione accettata come vera, si passa a una seconda proposizione la cui verità è derivata dalla prima. Punto essenziale: **l'inferenza è sintattica**, lavora sulla struttura delle formule secondo le regole del linguaggio, non sul loro "significato".
+**Inferenza** (dal latino *in ferre*, "portare dentro"): processo con cui, da una proposizione accettata come vera, si passa a una seconda proposizione la cui verità è derivata dalla prima. Punto essenziale: ***l'inferenza è sintattica***, lavora sulla struttura delle formule secondo le regole del linguaggio, non sul loro "significato".
 
 Esempio: da "tutti gli uomini sono mortali" e "Socrate è un uomo" si inferisce "Socrate è mortale", applicando lo schema generale `uomo(X) ⇒ mortale(X), uomo(X) ⊢ mortale(X)`.
 
@@ -154,10 +155,12 @@ Il **grounding** cattura il legame fra la rappresentazione simbolica/formale e l
 ### Sintassi
 
 **Formule atomiche:**
+
 - i **simboli proposizionali** rappresentano ciascuno una formula elementare che può essere vera o falsa (per convenzione hanno un nome che inizia con la maiuscola, es. `Piove`);
 - `True` e `False` sono formule atomiche speciali.
 
 **Formule complesse**, costruite componendo formule tramite operatori (connettivi):
+
 - **Negazione** (¬): un **letterale** è una formula atomica, eventualmente negata;
 - **Congiunzione** (∧): le formule combinate sono dette **congiunti**;
 - **Disgiunzione** (∨): le formule combinate sono dette **disgiunti**;
@@ -187,10 +190,12 @@ formulaComplessa  → ¬ formula                    (negazione)
 La semantica definisce le regole per calcolare il valore di verità di ogni formula. Un **modello**, in logica proposizionale, è un **assegnamento di un valore di verità a ciascun simbolo proposizionale**. Con **N simboli proposizionali** ci sono **2ᴺ modelli possibili**. La semantica è definita **ricorsivamente**:
 
 **Formule atomiche:**
+
 - `True` è sempre vera, `False` è sempre falsa in ogni modello;
 - il valore di verità di ogni altro simbolo va specificato esplicitamente dal modello.
 
 **Formule complesse** (P, Q formule qualsiasi):
+
 - `¬Q` è vera **se e solo se** Q è falsa;
 - `Q ∧ P` è vera **se e solo se** sia P sia Q sono vere;
 - `Q ∨ P` è vera **se e solo se** almeno una fra P e Q è vera;
@@ -215,7 +220,8 @@ La semantica definisce le regole per calcolare il valore di verità di ogni form
 
 In sintesi: `P ⇒ Q` serve a catturare le situazioni in cui **ogni volta che è vero l'antecedente, è vero anche il conseguente**; quando l'antecedente è falso, l'implicazione non dice nulla e viene considerata vera per convenzione.
 
-**Attenzione**: l'implicazione logica **non è una relazione causale**. È vera o falsa solo in base ai valori di verità di P e Q, indipendentemente dal legame di significato/causa fra le due proposizioni. Esistono altri tipi di implicazione legati al significato delle parole (non trattati come implicazione logica):
+**Attenzione**: l'implicazione logica ***non è una relazione causale***. È vera o falsa solo in base ai valori di verità di P e Q, indipendentemente dal legame di significato/causa fra le due proposizioni. Esistono altri tipi di implicazione legati al significato delle parole (non trattati come implicazione logica):
+
 - "Fido è un cane ⟹ Fido è un mammifero" (ragionamento **ontologico**);
 - "John ha vinto la partita ⟹ John ha giocato la partita" (ragionamento **temporale**);
 - "John è stato condannato per furto ⟹ il furto è un crimine" (ragionamento **causale**).
@@ -237,12 +243,14 @@ Esistono due approcci:
 Il theorem proving si basa su due risultati fondamentali:
 
 **Teorema di deduzione**: date due formule R e Q, **(R ⊨ Q) se e solo se (R ⇒ Q) è valida** (cioè è una tautologia). Quindi per verificare KB ⊨ P si può:
+
 - dimostrare che `KB ⇒ P` è vera in ogni modello (enumerazione, costoso), oppure
 - dimostrare **per inferenza sintattica** (manipolando la forma delle formule) che `(KB ⇒ P) ≡ True`.
 
 **Dimostrazione per refutazione**: sfruttando che validità e soddisfacibilità sono legate dalla negazione (A è valida sse ¬A è insoddisfacibile), e che `(R ⇒ Q) ≡ (¬R ∨ Q)`, negando si ottiene `¬(¬R ∨ Q) ≡ (R ∧ ¬Q)` (De Morgan). Si arriva quindi al risultato: **date R e Q, (R ⊨ Q) se e solo se (R ∧ ¬Q) è insoddisfacibile**.
 
 Questo corrisponde esattamente a una **dimostrazione per assurdo/contraddizione**: per verificare KB ⊨ P,
+
 1. si assume **per assurdo** ¬P;
 2. si dimostra che `KB ∧ ¬P` è insoddisfacibile, cioè che partendo da `KB ∧ ¬P` si deriva `False` (una contraddizione);
 3. la ricerca della dimostrazione è formalmente analoga a una ricerca in uno spazio degli stati (stato iniziale = background knowledge, azioni = regole di inferenza, goal = stato che contiene la formula da dimostrare — in questo caso `False`).
@@ -272,7 +280,7 @@ Oltre a modus ponens ed eliminazione della congiunzione, altre regole derivano d
 
 ### La regola di risoluzione (Resolution)
 
-La **risoluzione** è una singola regola di inferenza che, combinata con un algoritmo di ricerca completo, produce un algoritmo di inferenza **corretto e completo**: se KB ⊢ P allora KB ⊨ P (correttezza) e se KB ⊨ P allora KB ⊢ P (completezza). Permette di realizzare **dimostrazioni per refutazione** sia in logica proposizionale sia in logica del prim'ordine.
+La **risoluzione** è una singola regola di inferenza che, combinata con un algoritmo di ricerca completo, produce un algoritmo di inferenza ***corretto e completo***: se KB ⊢ P allora KB ⊨ P (correttezza) e se KB ⊨ P allora KB ⊢ P (completezza). Permette di realizzare **dimostrazioni per refutazione** sia in logica proposizionale sia in logica del prim'ordine.
 
 Si applica a **clausole**, cioè disgiunzioni di letterali. Date due clausole che contengono un **letterale complementare** Pᵢ e Qⱼ (uno negazione dell'altro):
 
@@ -390,7 +398,7 @@ In molti contesti pratici la conoscenza si presenta in una forma molto specifica
 
 Le clausole di Horn **catturano implicazioni** in cui l'antecedente è una congiunzione di letterali positivi e il conseguente è un singolo letterale positivo: `¬B ∨ C` equivale a `B ⇒ C`; `¬A ∨ ¬B ∨ C` equivale a `A ∧ B ⇒ C`. Sono la **base della programmazione logica** (es. Prolog).
 
-**Perché sono importanti**: su clausole di Horn si possono applicare meccanismi di inferenza **molto naturali** per il ragionamento umano, e soprattutto permettono di verificare la conseguenza logica in un **tempo lineare** rispetto alla dimensione della KB — mentre la risoluzione generale non ha questa garanzia di efficienza. Questo rende l'inferenza proposizionale su clausole di Horn **computazionalmente economica**.
+**Perché sono importanti**: su clausole di Horn si possono applicare meccanismi di inferenza **molto naturali** per il ragionamento umano, e soprattutto permettono di verificare la conseguenza logica in un ***tempo lineare*** rispetto alla dimensione della KB — mentre la risoluzione generale non ha questa garanzia di efficienza. Questo rende l'inferenza proposizionale su clausole di Horn **computazionalmente economica**.
 
 ### Forward Chaining (concatenazione in avanti)
 
@@ -421,7 +429,7 @@ Nel grafo AND-OR gli archi uniti da un "archetto" rappresentano letterali in AND
 
 - **Complessità lineare**.
 - **Completo**: deriva tutte le formule atomiche dimostrabili a partire dalla KB.
-- **"Inconscio" (data-driven)**: è guidato solo dai dati disponibili, senza usare l'informazione sul goal che si vuole dimostrare — non sa dove sta andando.
+- ***"Inconscio" (data-driven)***: è guidato solo dai dati disponibili, senza usare l'informazione sul goal che si vuole dimostrare — non sa dove sta andando.
 - Adatto a problemi come il **riconoscimento di oggetti** (si parte da osservazioni per arrivare a conclusioni).
 - Svantaggio: può attivare **molte inferenze inutili**, irrilevanti ai fini della query specifica.
 
@@ -432,7 +440,7 @@ Parte dalla formula da dimostrare (il **goal**):
 - se il goal è **già vero** (è un fatto noto), termina restituendo `true`;
 - altrimenti cerca clausole di Horn di cui il goal è la **conclusione**, e cerca ricorsivamente di dimostrarne le **premesse**, usando anche i fatti noti come base.
 
-È quindi un ragionamento **goal-driven** (guidato dagli obiettivi), opposto in direzione al forward chaining.
+È quindi un ragionamento ***goal-driven*** (guidato dagli obiettivi), opposto in direzione al forward chaining.
 
 #### Esempio 1
 

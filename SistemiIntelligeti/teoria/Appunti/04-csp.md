@@ -20,7 +20,7 @@ Un **constraint satisfaction problem (CSP)** è definito da:
 - Un assegnamento è detto:
   - **completo** se assegna un valore a tutte le variabili;
   - **consistente** se non viola alcun vincolo;
-  - **soluzione** se è completo e consistente.
+  - ***soluzione*** se è completo e consistente.
 - Quando esiste una soluzione si dice anche che esiste un "mondo possibile" che soddisfa i vincoli.
 
 ### Esempio guida: colorazione della mappa dell'Australia
@@ -53,6 +53,7 @@ I vincoli binari si rappresentano naturalmente come archi di un **grafo di vinco
 
 ```
    SEND
+
  + MORE
  -------
   MONEY
@@ -85,7 +86,7 @@ Poiché ogni passo valorizza esattamente una variabile precedentemente non asseg
 
 ### Perché l'ordine di assegnamento non conta: commutatività
 
-Un aspetto fondamentale, specifico dei CSP rispetto alla ricerca generica: **uno stato è un assegnamento di valori** {X1=v1, …, Xn=vn}, e l'ordine (il cammino) con cui i valori sono stati assegnati alle variabili è **irrilevante ai fini del risultato**. Assegnare prima X1=v1 e poi X2=v2, oppure prima X2=v2 e poi X1=v1, porta allo stesso stato finale {X1=v1, X2=v2}. Si dice che **i CSP sono commutativi**.
+Un aspetto fondamentale, specifico dei CSP rispetto alla ricerca generica: **uno stato è un assegnamento di valori** {X1=v1, …, Xn=vn}, e l'ordine (il cammino) con cui i valori sono stati assegnati alle variabili è **irrilevante ai fini del risultato**. Assegnare prima X1=v1 e poi X2=v2, oppure prima X2=v2 e poi X1=v1, porta allo stesso stato finale {X1=v1, X2=v2}. Si dice che ***i CSP sono commutativi***.
 
 Questa proprietà è cruciale dal punto di vista pratico: **gli algoritmi possono sempre scegliere prima una variabile e poi un valore per essa**, senza bisogno di considerare tutti gli ordini possibili delle variabili come rami distinti dell'albero di ricerca. Questo riduce drasticamente il fattore di ramificazione effettivo, come mostrato di seguito.
 
@@ -164,7 +165,7 @@ A ogni passo del backtracking va scelta una variabile non assegnata su cui proce
 
 ### Minimum Remaining Values (MRV, o euristica "fail-first")
 
-Sceglie la variabile con **il minor numero di valori legali rimasti** (consistenti con l'assegnamento corrente). L'idea è "fallire il prima possibile", così da scoprire subito i vicoli ciechi invece di scoprirli tardi dopo aver investito lavoro su altre variabili.
+Sceglie la variabile con ***il minor numero di valori legali rimasti*** (consistenti con l'assegnamento corrente). L'idea è "fallire il prima possibile", così da scoprire subito i vicoli ciechi invece di scoprirli tardi dopo aver investito lavoro su altre variabili.
 
 Esempio (Australia): assegnati WA=R e NT=B, restano 5 variabili. SA ha un solo valore possibile (deve essere diversa da rosso e da blu → verde): è la scelta più vincolata, quindi MRV sceglie SA.
 
@@ -178,7 +179,7 @@ Le due euristiche si usano in combinazione: MRV come criterio principale, degree
 
 ## Euristica per la scelta del valore: Least Constraining Value (LCV)
 
-Una volta scelta la variabile, in che ordine provare i suoi valori possibili? L'euristica del **valore meno vincolante** predilige il valore che **lascia più libertà** (più opzioni residue) alle variabili adiacenti nel grafo dei vincoli.
+Una volta scelta la variabile, in che ordine provare i suoi valori possibili? L'euristica del ***valore meno vincolante*** predilige il valore che ***lascia più libertà*** (più opzioni residue) alle variabili adiacenti nel grafo dei vincoli.
 
 Esempio: assegnati WA=R e NT=G, si deve assegnare Q, che può valere B o R. I vicini di Q sono SA (dominio residuo {B}) e NSW (dominio residuo {R,G,B}):
 
@@ -288,7 +289,7 @@ Questo esempio mostra bene il valore pratico di AC-3: scopre l'inconsistenza **p
 - Sia d il numero massimo di valori nel dominio di una variabile.
 - Il tempo nel caso peggiore è **O(n²d³)**.
 - È più costoso del forward checking, ma anche più efficace (elimina più inconsistenze).
-- **AC-3 è incompleto**: esistono assegnamenti globalmente inconsistenti che l'arc consistency da sola non rileva (vedi sotto).
+- ***AC-3 è incompleto***: esistono assegnamenti globalmente inconsistenti che l'arc consistency da sola non rileva (vedi sotto).
 
 ### Incompletezza di AC-3 (arc-consistent ma senza soluzione)
 
@@ -336,7 +337,7 @@ Quando il backtracking standard raggiunge un vicolo cieco, torna indietro **semp
 
 ### Backjumping: backtracking non cronologico
 
-Strategia più intelligente: tornare indietro direttamente a **una variabile che potrebbe risolvere il problema** (nell'esempio: V). Per farlo, ogni variabile mantiene un **conflict set**: l'insieme degli assegnamenti (di altre variabili) che hanno contribuito a creare il conflitto. Nell'esempio, il conflict set di SA è {Q=R, NSW=G, V=B}.
+Strategia più intelligente: tornare indietro direttamente a ***una variabile che potrebbe risolvere il problema*** (nell'esempio: V). Per farlo, ogni variabile mantiene un **conflict set**: l'insieme degli assegnamenti (di altre variabili) che hanno contribuito a creare il conflitto. Nell'esempio, il conflict set di SA è {Q=R, NSW=G, V=B}.
 
 **Definizione formale di conflict set**: sia A un assegnamento parziale consistente, sia X una variabile non ancora assegnata. Se A ∪ {X=vi} risulta inconsistente per **ogni** valore vi del dominio di X, allora A è un conflict set di X.
 

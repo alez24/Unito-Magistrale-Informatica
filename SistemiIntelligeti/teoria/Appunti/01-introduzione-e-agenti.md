@@ -43,7 +43,7 @@ Il vocabolario definisce l'intelligenza (umana) come il complesso di facoltà ps
 
 **Anni '40 — automazione del calcolo**: il computer esegue una sequenza di istruzioni predefinita, senza operatore umano che intervenga passo-passo. Questo pone subito la domanda: *l'automazione (eseguire automaticamente un programma) equivale a intelligenza?*
 
-Le slide insistono molto su questa domanda mostrando esempi progressivi (una calcolatrice esegue un programma ed è automatica — ma non diremmo che è intelligente) per portare lo studente a capire che **automazione ≠ intelligenza**: eseguire automaticamente istruzioni non basta. Serve qualcos'altro — capacità di adattarsi, di scegliere di fronte a situazioni non previste esplicitamente dal programmatore.
+Le slide insistono molto su questa domanda mostrando esempi progressivi (una calcolatrice esegue un programma ed è automatica — ma non diremmo che è intelligente) per portare lo studente a capire che ***automazione ≠ intelligenza***: eseguire automaticamente istruzioni non basta. Serve qualcos'altro — capacità di adattarsi, di scegliere di fronte a situazioni non previste esplicitamente dal programmatore.
 
 > ❓ **Domanda d'esame: Automazione è intelligenza?**
 > No. Un programma che esegue automaticamente una sequenza di istruzioni predefinite (es. una calcolatrice) è automatico ma non è considerato intelligente: non si adatta, non affronta situazioni nuove, non delibera. L'intelligenza (artificiale) richiede in più la capacità di **adattarsi**, di scegliere l'azione più opportuna in funzione di percezioni e obiettivi, eventualmente anche di **imparare** dall'esperienza. Questo è il punto di svolta che porta dal concetto di "programma automatico" a quello di "agente".
@@ -114,9 +114,10 @@ Un **uomo** che attraversa la strada deve: identificare il passaggio pedonale, r
 
 La domanda diventa: **come si programma un agente artificiale** capace di fare le stesse cose, nello stesso tipo di ambiente? Da qui emergono le prime astrazioni fondamentali del corso: il binomio **⟨agente, ambiente⟩**.
 
-**Definizione di agente**: un agente è un'**astrazione che rappresenta un qualsiasi sistema che percepisce il proprio ambiente tramite dei sensori e agisce su di esso tramite degli attuatori**.
+**Definizione di agente**: un agente è un'***astrazione che rappresenta un qualsiasi sistema che percepisce il proprio ambiente tramite dei sensori e agisce su di esso tramite degli attuatori***.
 
 Punti chiave impliciti in questa definizione:
+
 - Non esistono agenti che non siano **situati in un ambiente**: agente e ambiente sono un **binomio inscindibile**, non ha senso parlare di un agente "nel vuoto".
 - Tra la percezione (input dai sensori) e l'azione (output verso gli attuatori) c'è una **funzione deliberativa** (rappresentata spesso nei diagrammi con un punto interrogativo "?" dentro l'agente) che decide quale azione eseguire sulla base di ciò che è stato percepito. È proprio il "contenuto" di questo punto interrogativo — come viene implementata la deliberazione — a differenziare i vari tipi di agente che vedremo più avanti (agenti reattivi, basati su modello, su obiettivi, sull'utilità, che apprendono).
 
@@ -157,6 +158,7 @@ Due esempi approfonditi dalle slide:
 ### 1.14 Risoluzione automatica di problemi (anticipazione)
 
 Le slide chiudono anticipando i temi successivi del corso: definire cosa sia un problema e una soluzione (distinguendo soluzione da soluzione *ottima*), con tre categorie principali di approcci:
+
 1. ricerca nello spazio degli stati,
 2. ricerca in spazi con avversario (giochi a informazione completa),
 3. risoluzione di problemi mediante soddisfacimento di vincoli (CSP).
@@ -211,12 +213,13 @@ Esempio nel mondo dell'aspirapolvere — una possibile misura di bontà degli st
 #### 2.3.2 Definizione formale di comportamento razionale
 
 Il comportamento razionale di un agente dipende da **quattro fattori**:
+
 1. le **azioni** nelle facoltà dell'agente (il repertorio di azioni disponibili),
 2. la **misura di prestazione** che definisce il criterio di successo,
 3. la **conoscenza dell'ambiente** posseduta dall'agente,
 4. la **sequenza percettiva** fino a quel momento.
 
-**Definizione**: un agente razionale dovrebbe scegliere sempre, per ogni possibile sequenza percettiva, l'azione che **massimizza la misura di prestazione attesa**, date la sequenza percettiva stessa e le informazioni derivabili dalla conoscenza dell'ambiente in possesso dell'agente.
+**Definizione**: un agente razionale dovrebbe scegliere sempre, per ogni possibile sequenza percettiva, l'azione che ***massimizza la misura di prestazione attesa***, date la sequenza percettiva stessa e le informazioni derivabili dalla conoscenza dell'ambiente in possesso dell'agente.
 
 Nota il termine "attesa": la razionalità si valuta rispetto a ciò che l'agente può ragionevolmente prevedere dato ciò che sa, **non** rispetto all'esito effettivo (che dipende anche da fattori che l'agente non poteva conoscere).
 
@@ -229,7 +232,7 @@ Nota il termine "attesa": la razionalità si valuta rispetto a ciò che l'agente
 
 **Esempio (torta di compleanno)**: voglio che al compleanno di mio figlio ci sia la torta più bella e meno costosa. Conosco le offerte dei pasticceri della zona, i gusti di mio figlio, ho abbastanza denaro e so fare acquisti: sulla base di tutto ciò, scelgo la torta migliore che conosco. Due cose però potevano sfuggirmi: (a) la nonna, a mia insaputa, porta in regalo una torta identica (informazione che non potevo conoscere), e (b) esiste una nuova pasticceria con un'offerta migliore di cui non ero a conoscenza. In entrambi i casi il mio comportamento **resta razionale**, anche se il risultato non è quello ottimale in assoluto: la mia sequenza percettiva non includeva quelle informazioni, quindi non potevo tenerne conto. Un agente **onnisciente/chiaroveggente**, che sapesse tutto in anticipo, avrebbe invece ottenuto il risultato migliore in assoluto (es. non comprare nessuna torta sapendo che arriva quella della nonna).
 
-Punto fondamentale: **razionale non significa "di successo" né "onnisciente"**. Significa fare la scelta migliore possibile *dato ciò che si sa*.
+Punto fondamentale: ***razionale non significa "di successo" né "onnisciente"***. Significa fare la scelta migliore possibile *dato ciò che si sa*.
 
 **Razionalità e apprendimento**: se un anno dopo, sapendo ormai che la nonna tende a fare la torta perfetta per il compleanno, io comprassi comunque la torta senza prima verificare, il mio comportamento **non sarebbe più razionale**, perché ora quella conoscenza fa parte della mia sequenza percettiva/esperienza pregressa. Questo mostra che **un agente razionale è tanto più efficace quanto più ha capacità di imparare dall'esperienza** e di modificare il proprio comportamento futuro di conseguenza.
 
@@ -244,7 +247,8 @@ Punto fondamentale: **razionale non significa "di successo" né "onnisciente"**.
 
 **Task environment**: il contesto in cui l'agente è inserito. Può essere **fisico** (reale o simulato, tipico per agenti robotici) oppure, ad esempio, **sociale**, comprendendo le relazioni con altri agenti (tipico per agenti software).
 
-**PEAS** è l'acronimo che identifica i quattro elementi che definiscono formalmente un task environment, e va sempre specificato quando si progetta un agente:
+***PEAS*** è l'acronimo che identifica i quattro elementi che definiscono formalmente un task environment, e va sempre specificato quando si progetta un agente:
+
 - **P**erformance measure — la misura di prestazione rispetto a cui valutare il successo dell'agente,
 - **E**nvironment — l'ambiente in cui l'agente opera,
 - **A**ctuators — gli attuatori a disposizione dell'agente per agire,
@@ -304,6 +308,7 @@ Da notare: sia il termostato sia il Roomba hanno un "comportamento predefinito" 
 - **Programma**: la funzione che mette in relazione le percezioni con le azioni.
 
 Distinzione importante tra due nozioni spesso confuse:
+
 - **Funzione agente**: un'astrazione matematica che ha come input **l'intera sequenza percettiva** (la storia completa delle percezioni) e restituisce un'azione. È una descrizione ideale, esaustiva, di come l'agente *dovrebbe* comportarsi per ogni possibile storia di percezioni.
 - **Programma agente**: l'implementazione concreta, che tipicamente ha come input solo la **percezione corrente** (eventualmente insieme a uno stato interno che riassume la storia passata, per non dover ricordare l'intera sequenza percettiva esplicitamente).
 
@@ -338,6 +343,7 @@ Agente-reattivo-semplice(percezione) return azione
 La percezione viene interpretata per identificare uno stato; lo stato individua la regola applicabile; la regola determina l'azione da eseguire. L'insieme delle regole definisce interamente il comportamento dell'agente.
 
 **Limiti degli agenti reattivi semplici:**
+
 - Funzionano correttamente solo in ambienti **completamente osservabili**.
 - Esempio: se l'aspirapolvere non ha un sensore di posizione, e la cella corrente è pulita, non sa in che direzione muoversi per essere efficace (non sa dove si trova nel mondo). Questo può generare **loop infiniti** (es. [pulito] → destra → [pulito] → destra → ...) perché l'agente ripete sempre la stessa scelta in presenza della stessa percezione. Per rompere questi loop occorre introdurre comportamenti **casuali (random)**.
 - L'azione deve essere determinabile dalla sola percezione corrente: se, ad esempio, l'aspirapolvere potesse leggere un solo sensore alla volta (o sporco/pulito, o posizione, ma non entrambi insieme), non saprebbe come comportarsi in modo affidabile.
@@ -364,7 +370,7 @@ L'agente sceglie l'azione da eseguire in base ai propri **obiettivi**: l'azione 
 
 Meccanismo tipico: il **ragionamento ipotetico** — l'agente "simula" mentalmente l'effetto delle azioni possibili per valutare se e quanto lo avvicinano all'obiettivo, prima di eseguirle realmente.
 
-**Vantaggio chiave**: separando esplicitamente l'obiettivo dal meccanismo di ragionamento, basta **cambiare l'obiettivo** per ottenere comportamenti completamente diversi dallo stesso agente, senza riscrivere le regole di comportamento (a differenza dell'agente reattivo, dove il comportamento è "cablato" nelle regole condizione-azione).
+**Vantaggio chiave**: separando esplicitamente l'obiettivo dal meccanismo di ragionamento, basta ***cambiare l'obiettivo*** per ottenere comportamenti completamente diversi dallo stesso agente, senza riscrivere le regole di comportamento (a differenza dell'agente reattivo, dove il comportamento è "cablato" nelle regole condizione-azione).
 
 #### 2.7.4 Agenti basati sull'utilità (utility-driven)
 
@@ -373,6 +379,7 @@ Alla nozione di obiettivo (raggiunto/non raggiunto, binario) si aggiunge una **m
 **Esempio**: per raggiungere una località possono esserci più percorsi alternativi (strade sterrate, percorso cittadino, strada veloce a pagamento). Il problema non è solo *trovare una soluzione* (un qualunque percorso che arrivi a destinazione) ma trovarne una che **massimizzi la soddisfazione** ("ci rende felici") secondo criteri come rapidità, costo, comodità.
 
 **Distinzione obiettivo/utilità:**
+
 - **Obiettivo (goal)**: uno stato particolare che si vuole raggiungere, tipicamente descritto in termini di proprietà da soddisfare (es. "essere arrivato a destinazione").
 - **Utilità**: una funzione che, dato uno stato (o una sequenza di stati), restituisce una misura numerica di bontà.
 - L'agente ha quindi un **duplice problema**: (1) raggiungere l'obiettivo, e (2) farlo massimizzando l'utilità. Da qui la distinzione tra **soluzioni** (qualunque sequenza di azioni che raggiunge il goal) e **buone soluzioni** (quelle che, tra le soluzioni possibili, massimizzano l'utilità).
@@ -380,6 +387,7 @@ Alla nozione di obiettivo (raggiunto/non raggiunto, binario) si aggiunge una **m
 #### 2.7.5 Agenti che apprendono
 
 Aggiungono all'agente "classico" (che percepisce, decide, agisce) un ulteriore componente dedicato all'**apprendimento**, composto da tre elementi:
+
 1. **Critico**: valuta il livello di prestazione dell'agente e decide se e quando attivare l'apprendimento (confrontando il comportamento con uno standard esterno di prestazione).
 2. **Modulo di apprendimento**: modifica effettivamente la conoscenza/il comportamento dell'agente sulla base del feedback del critico.
 3. **Generatore di problemi**: suggerisce/causa l'esecuzione di **azioni esplorative**, il cui scopo è esporre l'agente a nuove esperienze (anche non immediatamente ottimali) da cui poter imparare qualcosa di utile per il futuro.
@@ -405,11 +413,13 @@ Le slide precisano che non si fanno assunzioni su **quali segnali o tecniche spe
 Le slide confrontano due modi opposti di strutturare il software, per far capire perché il software di IA richiede spesso un cambio di paradigma rispetto alla programmazione tradizionale.
 
 **Approccio tradizionale — paradigma imperativo / a oggetti (non-AI software):**
+
 - Risolve **un singolo compito specifico**.
 - È tipicamente strutturato come una **sequenza di passi** che descrivono esplicitamente **come (how)** ottenere il risultato.
 - Esempio dalle slide: una funzione C che inserisce un elemento in una lista ordinata (`ins_ord`), scritta come una sequenza esplicita di operazioni sui puntatori — il programmatore ha già codificato *passo passo* l'algoritmo che produce il risultato.
 
 **Approccio dichiarativo (AI software):**
+
 - Separa una **descrizione dichiarativa** del problema (**cosa (what)** si vuole/si sa) da un **programma generale** (motore di inferenza/ricerca) che sa elaborare tale descrizione.
 - Lo **stesso programma generale** può essere applicato a **descrizioni diverse** per risolvere **problemi diversi**, senza essere riscritto.
 - Architettura tipica: una **base di conoscenza (Knowledge Base)** contiene la rappresentazione dichiarativa di un corpo di conoscenze applicabile a molteplici situazioni; le **percezioni** vengono via via integrate in questa conoscenza; un **modulo deliberativo** generale interroga (query) la base di conoscenza per decidere l'azione.
@@ -423,6 +433,7 @@ Il **mondo dei blocchi** è un classico problema giocattolo (*toy problem*) dell
 **Setup**: alcuni blocchi (etichettati A, B, C, D, E, F, G nelle slide) sono disposti impilati su un piano diviso in postazioni (1, 2, 3, 4). L'agente percepisce la configurazione (stato) **iniziale** dei blocchi.
 
 **Passaggi concettuali:**
+
 1. **Percezione**: l'agente percepisce la situazione iniziale. Di per sé, in questo momento, **non fa nulla**: la sola percezione non genera azione.
 2. **Definizione del goal**: per agire, occorre prima descrivere un **obiettivo** (goal), cioè uno stato di cose che si vuole rendere vero (es. una certa configurazione finale desiderata dei blocchi, diversa da quella iniziale).
 3. **Costruzione del piano**: l'agente deve costruire autonomamente la sequenza di passi/azioni (a₁, a₂, ..., aₖ) che porta dallo stato iniziale (I) allo stato goal (G): `I → a₁ → a₂ → ... → aₖ → G`.
@@ -451,6 +462,7 @@ Questo esempio mostra la distanza enorme tra un toy problem come il mondo dei bl
 - **Autonomia**: un agente artificiale autonomo riceve **compiti ad alto livello** (goal), e l'utente/operatore demanda all'agente stesso il compito di trovare **come** risolverli concretamente — non gli vengono più specificati i singoli passi.
 
 **Agente autonomo — caratteristiche:**
+
 - In quanto agente, possiede capacità di azione.
 - Essendo *autonomo*, in particolare:
   - riceve solo compiti ad alto livello (non istruzioni passo-passo),
@@ -488,6 +500,7 @@ Ciò che cambia drasticamente tra i tre casi non è la struttura del ciclo, ma l
 ### 3.6 Ragionare basta?
 
 **No.** Il ragionamento da solo non è sufficiente per un agente reale, perché tipicamente si opera:
+
 - in presenza di **incertezza**,
 - in un mondo **non completamente conosciuto**,
 - in presenza di **altri agenti** (persone o altri robot), i cui comportamenti non sono del tutto prevedibili o controllabili.

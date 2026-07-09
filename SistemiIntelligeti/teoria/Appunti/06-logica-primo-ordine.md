@@ -95,7 +95,7 @@ Come nella proposizionale, `M` è un modello di `α` se `α` è vera in `M`.
 - Anche cambiare l'interpretazione dei **predicati** (es. `Fratello` come "fratellanza fra monaci" invece che "fratellanza di sangue") cambia il valore di verità.
 - Se cambio il **dominio del discorso** stesso, devo necessariamente ridefinire l'interpretazione, e la verità delle formule può cambiare di conseguenza.
 
-In breve: **una formula FOL non ha un valore di verità assoluto**, lo ha solo relativamente a un modello `(D, I)` fissato. Questo è coerente con l'idea (già vista in proposizionale) che la verità è definita rispetto a un'interpretazione.
+In breve: ***una formula FOL non ha un valore di verità assoluto***, lo ha solo relativamente a un modello `(D, I)` fissato. Questo è coerente con l'idea (già vista in proposizionale) che la verità è definita rispetto a un'interpretazione.
 
 ### Soddisfacibilità, validità, insoddisfacibilità (richiamo)
 
@@ -124,6 +124,7 @@ termine → funzione(termine, …) | costante | variabile
 **Termine ground**: un termine che non contiene variabili (es. `GambaSinistra(John)`, `Richard`, `Corona`).
 
 **Interpretazione di un termine** (processo ricorsivo):
+
 - se è una costante, l'identificazione con l'oggetto del dominio è immediata;
 - se è `f(t1, …, tk)`, prima si interpretano ricorsivamente `t1, …, tk` ottenendo gli oggetti `O1, …, Ok`, poi si applica la funzione `F` (l'interpretazione di `f`) a questi oggetti, ottenendo l'oggetto risultato `O`.
 
@@ -208,7 +209,7 @@ Questo è uno dei punti in cui si commettono più errori. Le slide lo mostrano e
 > 1. `∃x Partecipa(x,SISINT) ⇒ Intelligente(x)` è equivalente (per la legge `A⇒B ≡ ¬A∨B`) a `∃x ¬Partecipa(x,SISINT) ∨ Intelligente(x)`: basta che esista **un solo oggetto qualsiasi** che *non* partecipa al corso (es. una sedia) per rendere vera la formula, indipendentemente da chi sia intelligente! Questa formula quindi **non cattura l'intento** di "esiste qualcuno intelligente fra i partecipanti".
 > 2. `∃x Partecipa(x,SISINT) ∧ Intelligente(x)` invece dice correttamente "esiste (almeno) un partecipante a SISINT che è intelligente" — questa è la traduzione corretta dell'intento.
 >
-> **Conclusione pratica**: quando si traduce dal linguaggio naturale, usare **`∀ ... ⇒ ...`** per affermazioni universali su una sottoclasse, e **`∃ ... ∧ ...`** per affermazioni esistenziali su una sottoclasse. Usare `∀` con `∧` o `∃` con `⇒` produce quasi sempre formule sbagliate o triviali.
+> **Conclusione pratica**: quando si traduce dal linguaggio naturale, usare ***`∀ ... ⇒ ...`*** per affermazioni universali su una sottoclasse, e ***`∃ ... ∧ ...`*** per affermazioni esistenziali su una sottoclasse. Usare `∀` con `∧` o `∃` con `⇒` produce quasi sempre formule sbagliate o triviali.
 
 ### Quantificatori annidati: l'ordine conta
 
@@ -309,6 +310,7 @@ Da una formula universalmente quantificata si può inferire qualunque istanza ot
 dove `k` deve essere una **costante nuova** (non ancora usata nella KB). Esempio: da `∃x Corona(x) ∧ SullaTesta(x,John)` si inferisce `Corona(C1) ∧ SullaTesta(C1,John)`, con `C1` costante nuova generata appositamente — questo processo di generare un nome nuovo si chiama **skolemizzazione** (le costanti così introdotte sono dette **costanti di Skolem**).
 
 **Differenza fondamentale fra UI ed EI**:
+
 - **UI**: produce tutte le istanze possibili; la nuova KB è **logicamente equivalente** a quella originaria.
 - **EI**: si applica **una sola volta** per ciascuna formula esistenziale e poi la formula quantificata viene scartata; la nuova KB **non** è logicamente equivalente all'originaria, ma è **soddisfacibile se e solo se** lo era la KB originaria (equivalenza *inferenziale*, non logica).
 
@@ -319,9 +321,10 @@ Se il vocabolario contiene funzioni, esse possono essere annidate ricorsivamente
 **Teorema di Herbrand**: se una formula è conseguenza logica della KB FOL originaria, allora esiste una dimostrazione **finita** della sua verità a partire dalla KB proposizionalizzata. I termini vengono costruiti "in ampiezza" (breadth-first): prima le sole costanti, poi i termini con una sola applicazione di funzione, poi quelli con due applicazioni, ecc.
 
 **Conseguenza — semidecidibilità di FOL**:
+
 - **Completezza**: se una formula consegue dalla KB, la si troverà (dimostrazione finita, per Herbrand).
 - Ma se la conseguenza **non** vale, la ricerca (a causa delle funzioni ricorsive) può proseguire **all'infinito** senza mai terminare.
-- Quindi: non esiste un algoritmo generale in grado di dimostrare che una conseguenza *non* vale in FOL. FOL è **semidecidibile** (si può confermare il "sì" ma non sempre il "no").
+- Quindi: non esiste un algoritmo generale in grado di dimostrare che una conseguenza *non* vale in FOL. FOL è ***semidecidibile*** (si può confermare il "sì" ma non sempre il "no").
 
 ### Inefficienza della proposizionalizzazione
 
@@ -366,7 +369,7 @@ Le clausole guidano quindi la **ricerca della sostituzione** giusta, e permetton
 
 ### Lifting
 
-Il modus ponens proposizionale non pone restrizioni sulla forma della formula antecedente. Il **Modus Ponens Generalizzato** invece richiede che l'antecedente sia una **congiunzione di letterali positivi**, e generalizza la regola:
+Il modus ponens proposizionale non pone restrizioni sulla forma della formula antecedente. Il ***Modus Ponens Generalizzato*** invece richiede che l'antecedente sia una ***congiunzione di letterali positivi***, e generalizza la regola:
 
 - consentendo un numero arbitrario di premesse atomiche (non solo due, come nel modus ponens classico);
 - operando su formule con **variabili**, tramite unificazione.
@@ -412,6 +415,7 @@ Non tutte le KB sono traducibili in clausole di Horn, ma molte lo sono — e a q
 Enunciato: *"La legge dice che è un reato per un negozio vendere alcolici a un minorenne. Marco, minorenne, possiede della birra. Tale birra gli è stata venduta dal minimarket Sotto Casa."* Obiettivo: dimostrare che Sotto Casa è reo.
 
 Vocabolario:
+
 - Costanti: `Marco`, `SottoCasa`
 - Predicati: `Vende` (ternario), `Negozio`, `Supermarket`, `Birra`, `Alcolico`, `Minorenne`, `Possiede`, `Reo`
 - Funzioni: nessuna
@@ -471,6 +475,7 @@ Reo(SottoCasa)
 Punto chiave: **non si propagano solo valori di verità** (come in proposizionale) ma anche **le sostituzioni**, che fanno da collante fra le diverse applicazioni successive di MPG lungo il grafo di inferenza.
 
 **Proprietà**:
+
 - **Correttezza**: garantita, perché si basa sulla regola di inferenza corretta (MPG, *Generalized Modus Ponens*).
 - **Completezza**: se la KB è DATALOG (Horn, senza funzioni), l'algoritmo è completo e **termina**. Se la KB contiene funzioni, per il teorema di Herbrand l'algoritmo può **non terminare** se la risposta cercata non è implicata dalla KB.
 
@@ -485,6 +490,7 @@ Come nel caso proposizionale, il ragionamento è **guidato dall'obiettivo** (goa
 3. Quando lo stack è vuoto: **successo**. Se non si possono applicare altre inferenze: **fallimento**.
 
 **Esempio (KB Sotto Casa), traccia sintetica**:
+
 - Stack iniziale: `Reo(SottoCasa)`.
 - Unifica con la testa di `C1` (`θ1={x/SottoCasa}`) ⟹ Stack: `Negozio(SottoCasa), Vende(SottoCasa,y,z), Alcolico(y), Minorenne(z)`.
 - `Negozio(SottoCasa)` unifica con la testa di una clausola tipo `Supermarket(x) ⇒ Negozio(x)`, che a sua volta si risolve con il fatto `Supermarket(SottoCasa)` (analogo a `C6`/`C7`).
@@ -500,6 +506,7 @@ SUBST(COMPOSE(θ1,θ2), F) = SUBST(θ2, SUBST(θ1, F))
 cioè applicare la sostituzione composta equivale ad applicare prima `θ1` e poi `θ2` in sequenza. È necessario concatenare correttamente le sostituzioni via via trovate lungo la catena di risoluzione degli obiettivi per ottenere l'inferenza corretta finale.
 
 **Valutazione di BC**:
+
 - **Corretto**.
 - **Incompleto**, perché implementa una strategia depth-first: può incorrere in **loop infiniti** e generare stati ripetuti.
 - Come nel caso proposizionale, è generalmente **più efficiente** del forward chaining (perché esplora solo ciò che serve a dimostrare l'obiettivo, non tutte le conseguenze possibili della KB).
@@ -554,7 +561,7 @@ che significa "**tutti** amano uno **stesso specifico** animale `A`" e "sono ama
 
 ### Procedura (regola generale)
 
-Si sostituisce ogni variabile quantificata esistenzialmente con una **funzione di Skolem** i cui argomenti sono **tutte le variabili universalmente quantificate nel cui scope ricade** l'esistenziale:
+Si sostituisce ogni variabile quantificata esistenzialmente con una ***funzione di Skolem*** i cui argomenti sono **tutte le variabili universalmente quantificate nel cui scope ricade** l'esistenziale:
 
 ```
 ∀x1,x2,... [∃y P(y,x1,...) … ∃z Q(z,x1,...)]
@@ -631,6 +638,7 @@ dove `θ` è una sostituzione tale che, per una coppia di indici `i,j`, `θ` **u
 **Esempio**: `Re(John)` e `¬Re(x)` sono "opposte"; la sostituzione `θ={x/John}` rende `Re(John)θ ≡ ¬¬Re(x)θ`, quindi le due clausole risolvono fra loro eliminando questi due letterali.
 
 Osservazioni tecniche:
+
 - Le due clausole da risolvere **non devono condividere variabili** (da qui la necessità della standardizzazione separata, come nell'unificazione).
 - Va fatto anche il lifting della **fattorizzazione**: due letterali di una stessa clausola si riducono a uno solo non se sono sintatticamente uguali, ma se sono **unificabili** — e l'unificatore trovato va applicato all'**intera clausola**.
 - **Binary resolution + fattorizzazione** insieme costituiscono una regola di inferenza **completa**.
@@ -693,7 +701,7 @@ G)  ¬Uccide(Curiosity,Tuna)
 
 La risoluzione **non** è in grado di generare (enumerare) *tutte* le conseguenze logiche di una KB, ma è **refutation-complete**:
 
-- Se una KB è **insoddisfacibile**, la risoluzione sarà sempre in grado di derivare, in un numero finito di passi, la clausola vuota (contraddizione).
+- Se una KB è **insoddisfacibile**, la risoluzione sarà ***sempre in grado di derivare, in un numero finito di passi, la clausola vuota (contraddizione)***.
 - Di conseguenza, è in grado di derivare **tutte le risposte** a una query `Q(x)` a partire da una KB, a patto di verificare che `KB ∧ ¬Q(x)` sia insoddisfacibile — è esattamente lo schema della dimostrazione per refutazione già visto in proposizionale, ora esteso a FOL grazie al lifting.
 
 ## Costruire una KB in FOL: ingegneria della conoscenza

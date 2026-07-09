@@ -1,0 +1,221 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage[protrusion=true,expansion=false]{microtype}
+
+\geometry{margin=2.7cm}
+\setlength{\parskip}{0.6em}
+\setlength{\parindent}{0pt}
+
+\newcommand{\regia}[1]{\begin{center}\textit{\footnotesize\textcolor{gray!55!black}{#1}}\end{center}}
+\newcommand{\slide}[1]{\section*{#1}\addcontentsline{toc}{section}{#1}}
+\newcommand{\qa}[2]{\textbf{``#1''} --- #2\par\smallskip}
+
+\hypersetup{colorlinks=true, linkcolor=blue!50!black, urlcolor=blue!50!black,
+pdftitle={L'algoritmo ha sempre ragione. Giusto?}, pdfauthor={}}
+
+\title{\textbf{L'algoritmo ha sempre ragione. Giusto?}\\[0.3em]
+\large Discorso d'esame -- Etica, Società e Privacy\\[0.3em]
+\normalsize Fonti: \emph{Weapons of Math Destruction} (C. O'Neil, 2016) e \emph{Macchine ingannevoli} (S. Natale)\\
+Università di Torino -- Laurea Magistrale in Informatica}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textit{Durata stimata: 9--11 minuti parlando a ritmo normale. Le frasi in corsivo racchiuse tra parentesi quadre sono note di regia (tono, pause): non vanno lette ad alta voce.}
+\end{center}
+
+\tableofcontents
+\newpage
+
+%=============================================================================
+\slide{Slide 1 --- Titolo}
+%=============================================================================
+
+Buongiorno. Il titolo della mia presentazione è una domanda retorica, e la risposta breve è: no, l'algoritmo non ha sempre ragione. Ma la domanda interessante è un'altra: perché ci comportiamo tutti come se l'avesse?
+
+Per rispondere metto insieme due libri che si completano a vicenda. \emph{Weapons of Math Destruction} di Cathy O'Neil, che documenta il danno concreto che gli algoritmi producono --- nel lavoro, nella giustizia, nel credito. E \emph{Macchine ingannevoli} di Simone Natale, che spiega il perché di quel danno: perché ci fidiamo di sistemi che non capiscono nulla di ciò che elaborano.
+
+In una frase: O'Neil ci mostra il crimine, Natale ci spiega perché non vediamo l'arma.
+
+%=============================================================================
+\slide{Slide 2 --- Due libri, una fregatura}
+%=============================================================================
+
+Due parole sugli autori, perché il loro punto di vista conta.
+
+O'Neil non è un'osservatrice esterna: è una matematica con dottorato a Harvard che ha lavorato come \emph{quant} in un hedge fund, e ha visto da dentro come la matematica finanziaria abbia contribuito alla crisi del 2008. Il libro nasce da quella disillusione. La sua frase chiave, che ripete per tutto il libro, è: \textbf{i modelli sono opinioni incorporate nella matematica}. Ogni modello incorpora scelte umane --- cosa misurare, quali proxy usare, cosa ottimizzare --- e poi le presenta come output oggettivo di un calcolo.
+
+Natale invece è uno storico dei media, qui a Torino, e fa una mossa insolita: invece di chiedersi cosa farà l'IA in futuro, si chiede cosa ha fatto in passato. La sua tesi è provocatoria: l'inganno non è un difetto dell'IA che la ricerca cerca di correggere --- è una caratteristica costitutiva, coltivata deliberatamente fin dall'inizio.
+
+La tesi che li unisce, e che è la tesi di questa presentazione: il potere degli algoritmi non sta nel calcolo. Sta nella fiducia che gli regaliamo.
+
+%=============================================================================
+\slide{Slide 3 --- La ricetta del disastro}
+%=============================================================================
+
+Partiamo dalla definizione. O'Neil conia il termine WMD --- \emph{Weapon of Math Destruction}, gioco di parole sulle armi di distruzione di massa --- e un modello diventa una WMD quando ha tre caratteristiche \textbf{insieme}.
+
+Primo, l'\textbf{opacità}: chi viene valutato non sa quali dati entrano nel calcolo, come sono pesati, e spesso non sa nemmeno di essere stato valutato.
+
+Secondo, la \textbf{scala}: non parliamo di un caso isolato ma di uno standard di fatto applicato a milioni di persone --- pensate al ranking universitario di U.S. News o ai punteggi di credito.
+
+Terzo, il \textbf{danno}: conseguenze concrete --- un licenziamento, una pena più lunga, un tasso più alto --- che generano quello che O'Neil chiama \emph{feedback loop} perverso. Ci torno tra un attimo, perché è il concetto tecnico più importante.
+
+Il trucco comune a quasi tutte le WMD sono i \textbf{proxy}: non potendo misurare ciò che conta davvero, il modello misura ciò che c'è. E ciò che c'è --- i dati storici --- è pieno dei pregiudizi di chi li ha prodotti.
+
+%=============================================================================
+\slide{Slide 4 --- Com'è fatto un modello sano}
+%=============================================================================
+
+Prima di vedere i disastri, vale la pena chiedersi: com'è fatto un modello \emph{sano}? O'Neil usa un contro-esempio preciso: la statistica del baseball, quella di \emph{Moneyball}.
+
+Quel modello ha quattro qualità. È \textbf{trasparente}: i dati sono pubblici, chiunque può verificarli. È \textbf{pertinente}: misura direttamente i risultati in campo, non un sostituto indiretto. Ha \textbf{feedback continuo}: si aggiorna a ogni partita, quindi impara dai propri errori invece di autoconfermarsi. E ha \textbf{obiettivi condivisi}: chi costruisce il modello e chi viene misurato vogliono la stessa cosa --- vincere.
+
+Tengo a mente questi quattro criteri, perché il caso che vediamo adesso li fallisce tutti e quattro.
+
+%=============================================================================
+\slide{Slide 5 --- Da 6 a 96}
+%=============================================================================
+
+Questo è il caso che apre il libro. Sarah Wysocki, insegnante di quinta elementare a Washington D.C., viene licenziata nel 2011 nonostante valutazioni eccellenti da colleghi e genitori. Il motivo: un punteggio bassissimo nel sistema IMPACT, un \emph{value-added model} che valuta gli insegnanti sui progressi nei test standardizzati degli studenti. Nessuno --- nemmeno gli amministratori del distretto --- sa spiegarle come quel punteggio sia stato calcolato. La causa probabile, peraltro, è che i test dell'anno precedente fossero stati gonfiati da altri insegnanti, facendo sembrare in calo studenti che partivano da punteggi falsati.
+
+Il numero sulla slide è di un suo collega, Tim Clifford, insegnante a New York: \textbf{6 su 100} un anno, \textbf{96 su 100} l'anno dopo. Stesso insegnante, stesso metodo. Se il punteggio fosse una misura, sarebbe uno strumento rotto --- e infatti non è una misura: è rumore statistico. Il modello fa inferenze su classi di circa venticinque studenti, campioni ridicoli per qualsiasi statistico.
+
+Notate: opaco, su larga scala, dannoso. E nessuna delle quattro qualità del modello sano. È la WMD perfetta.
+
+%=============================================================================
+\slide{Slide 6 --- La profezia che si avvera da sola}
+%=============================================================================
+
+Ed ecco il meccanismo che rende le WMD così pericolose: il \textbf{feedback loop perverso}. Una WMD non descrive la realtà --- la produce. E poi usa il risultato come prova di aver visto giusto.
+
+Seguite il ciclo sulla slide con l'esempio della polizia predittiva. PredPol parte da dati storici già distorti: registra gli arresti, non i reati. Predice che un certo quartiere --- povero, già sorvegliato --- è ``a rischio''. L'azione conseguente: più pattuglie lì. Più pattuglie significa più reati registrati, anche piccole infrazioni che altrove passerebbero inosservate. E quei nuovi arresti diventano i dati che confermano la predizione. Il pregiudizio è diventato un dato, e il giro ricomincia.
+
+Stessa logica nei modelli di recidiva come LSI-R, usati per orientare le sentenze: il questionario chiede del quartiere, degli amici, dei precedenti in famiglia. Sono proxy della classe sociale e della razza, non del comportamento individuale. Chi risulta ``ad alto rischio'' sconta più anni in un ambiente criminogeno ed esce con meno opportunità --- e il modello cita quel risultato come prova della propria accuratezza.
+
+O'Neil aggiunge una nota amara: gli stessi metodi statistici non vengono mai applicati con lo stesso zelo ai reati dei colletti bianchi.
+
+%=============================================================================
+\slide{Slide 7 --- Sei modi per fregarti}
+%=============================================================================
+
+Il libro attraversa sistematicamente sei ambiti --- li scorro rapidamente, e su ciascuno posso approfondire se ci sono domande.
+
+\textbf{Istruzione}: il ranking di U.S. News, nato nel 1983 come classifica giornalistica, è diventato uno standard che gli atenei rincorrono ossessivamente --- ottimizzano il proxy, non la didattica, e le rette esplodono. \textbf{Giustizia}: l'abbiamo appena visto. \textbf{Lavoro}: test di personalità mai validati scientificamente --- il caso di Kyle Behm, escluso ovunque perché un test rivelava indirettamente il suo disturbo bipolare --- e software di turni \emph{just-in-time} che rendono impossibile organizzarsi la vita. \textbf{Credito}: dal FICO, che era regolamentato e relativamente trasparente, si è degenerati negli \emph{e-score} dei data broker, costruiti su proxy come il codice postale e fuori da ogni tutela di legge. \textbf{Assicurazioni}: uno studio citato nel libro mostra che nel calcolo del premio auto il punteggio di credito pesa più della fedina --- un guidatore condannato per guida in stato di ebbrezza ma con buon credito può pagare meno di uno con fedina pulita e credito basso. E il \textbf{voto}: il microtargeting mostra versioni diverse del candidato a segmenti diversi di elettorato, senza che nessuno possa confrontare i messaggi --- perfezionato da Obama nel 2012, portato all'estremo da Cambridge Analytica.
+
+Il filo comune: il danno scorre sempre verso il basso. Chi ha soldi ottiene ancora un essere umano che lo ascolta; chi non li ha ottiene un punteggio.
+
+%=============================================================================
+\slide{Slide 8 --- Transizione}
+%=============================================================================
+
+\regia{[Pausa. Cambio di tono.]}
+
+Fin qui il danno. Ma resta la domanda vera: se questi sistemi sono così opachi e così dannosi, perché li accettiamo? Perché ci caschiamo \emph{sempre}?
+
+Qui entra Natale, e la sua risposta non è psicologica ma storica. Il suo metodo lo dichiara in apertura: ``in questo libro lo strumento non è il futuro, ma il passato''.
+
+%=============================================================================
+\slide{Slide 9 --- Parlavo con un tavolino}
+%=============================================================================
+
+E il passato comincia, sorprendentemente, non con un computer ma con un tavolino.
+
+\textbf{1853}: le sedute spiritiche sono un fenomeno di massa. Il fisico Michael Faraday dimostra sperimentalmente che i movimenti del tavolo sono prodotti, inconsciamente, dalle mani stesse dei partecipanti --- l'effetto ideomotorio. E qui il punto cruciale: la gente continua a crederci lo stesso. Smascherare l'inganno non lo spegne, perché i partecipanti non erano creduloni: vivevano in una cultura che aveva già costruito l'idea che quei fenomeni fossero possibili.
+
+\textbf{1963}: Joseph Weizenbaum al MIT crea ELIZA, un programma che simula uno psicoterapeuta con puro \emph{pattern matching} --- rispecchia le tue frasi come domande. Zero comprensione. Eppure la sua segretaria, che sapeva perfettamente come funzionava, gli chiede di uscire dalla stanza per parlare col programma in privato. Weizenbaum ne resta così sconvolto che scriverà un libro per mettere in guardia dall'antropomorfizzazione delle macchine. Da qui il nome: \textbf{effetto ELIZA} --- attribuire comprensione ed empatia a un sistema che non ne ha, anche conoscendone il funzionamento. Non è ingenuità: è un tratto cognitivo profondo, la stessa capacità di leggere intenzioni negli altri che ci ha fatto sopravvivere come specie sociale.
+
+\textbf{1991}: nasce il premio Loebner, la gara tra chatbot ispirata al test di Turing. E cosa vince? Non chi capisce di più: chi recita meglio --- chi simula errori di battitura, chi fa domande di ritorno per guadagnare tempo.
+
+E \textbf{oggi}: Alexa, Siri, ChatGPT. Stesso trucco, voce migliore. Con una differenza che cambia tutto: ora l'output di questi sistemi decide cose vere.
+
+%=============================================================================
+\slide{Slide 10 --- Sintassi senza semantica}
+%=============================================================================
+
+Questa è la slide più filosofica, ed è il punto dove i due libri si saldano.
+
+Le macchine operano sulla \textbf{sintassi}: collegano simboli secondo regole statistiche, calcolano quale parola ha più probabilità di seguire l'altra. Non accedono mai alla \textbf{semantica} --- al significato, al peso emotivo, all'implicazione etica di ciò che producono. È l'argomento dei ``pappagalli stocastici'' visto a lezione: i pappagalli parlano, ma non pensiamo che ci capiscano. Con i modelli linguistici, invece, continuiamo a crederlo.
+
+Il test di Turing ha una parte di responsabilità in questo. Natale lo rilegge criticamente: il test non misura l'intelligenza, misura la capacità di \emph{simularla} in una conversazione. È un test teatrale --- vince chi inganna il giudice, non chi capisce il mondo. Che è esattamente l'errore che Faraday aveva smascherato nelle sedute spiritiche settant'anni prima: confondere la rappresentazione con la realtà.
+
+E qui il ponte con O'Neil: una WMD è la stessa cosa. Un credit score non capisce la persona che valuta --- ma viene trattato come se lo facesse. Il giudice vede il punteggio di recidiva, non il calcolo: si fida della recita di oggettività. Trattare l'output sintattico come comprensione semantica è la radice di tutti gli inganni di Natale --- e di tutte le armi di O'Neil.
+
+%=============================================================================
+\slide{Slide 11 --- Invisibile, quindi potentissimo}
+%=============================================================================
+
+Natale aggiunge due figure che portano l'inganno dal piano individuale a quello collettivo.
+
+La prima è la \textbf{simbiosi}. Licklider negli anni Sessanta immaginava la collaborazione uomo-macchina in tempo reale; quello che non aveva immaginato è che la macchina sarebbe diventata così integrata da diventare invisibile. Il feed di Instagram, i suggerimenti di Gmail, le raccomandazioni di Netflix: sistemi così fluidi che smettiamo di percepirli come mediatori. La macchina è diventata il territorio, non più la mappa. Ed è la forma più potente di inganno: se non vedi la macchina, non puoi nemmeno chiederti se ciò che produce è vero o simulato.
+
+La seconda è il \textbf{Gatekeeper}. Google, Facebook, Amazon non sono canali neutri: selezionano, filtrano, amplificano --- fanno il lavoro che era dei direttori editoriali, ma senza la visibilità pubblica e la responsabilità di quel ruolo. E le \emph{echo chamber} non sono incidenti di percorso: sono il prodotto prevedibile di algoritmi progettati per massimizzare il tempo sullo schermo, che premiano indignazione, paura e sorpresa. È un inganno di secondo ordine: non simula un'intelligenza individuale, simula una piazza pubblica neutrale mentre in realtà modella il dibattito. Cambridge Analytica non ha inventato nulla: ha solo puntato quella macchina sul voto.
+
+%=============================================================================
+\slide{Slide 12 --- Tutto torna}
+%=============================================================================
+
+Questa tabella riassume dove i due libri incontrano i temi del corso. Non la leggo tutta --- sottolineo tre righe.
+
+L'\textbf{inevitabilismo}: a lezione l'abbiamo visto con la frase di Larry Page del 2001, ``tutta la vostra vita sarà \emph{searchable}'', presentata come legge di natura. O'Neil lo smonta con i dati --- ``i Big Data codificano il passato, non inventano il futuro'' --- e Natale con la storia: se la stessa scena si ripete dal tavolino a ChatGPT, è perché qualcuno sceglie ogni volta di ripeterla.
+
+\textbf{Searle e i fatti istituzionali}: un credit score non è un fatto bruto della natura. Produce effetti reali --- un prestito negato, una pena più lunga --- solo perché un sistema di regole sociali gli attribuisce quel potere. Esattamente come l'``intelligenza'' di ELIZA esiste solo finché decidiamo di trattarla come tale. E ciò che è convenzione si può cambiare.
+
+E \textbf{Polanyi}: il mercato lasciato a sé stesso diventa distruttivo, servono istituzioni che lo arginino. Le soluzioni dei due autori convergono proprio qui --- e le vediamo nell'ultima slide di contenuto.
+
+\regia{[Se c'è tempo, aggiungere: la retorica impersonale --- ``il modello ha calcolato'' ha la stessa struttura grammaticale della ``cimice asiatica che sostituirà la cimice verde'': un soggetto impersonale che nasconde gli attori umani.]}
+
+%=============================================================================
+\slide{Slide 13 --- Disarmare le armi}
+%=============================================================================
+
+Perché nessuno dei due libri finisce nella tecnofobia. O'Neil non condanna la statistica: condanna l'uso.
+
+Le sue proposte: un \textbf{giuramento di Ippocrate} per i data scientist, che li impegni a dichiarare limiti e assunzioni dei modelli. \textbf{Audit algoritmici indipendenti}, che analizzino il modello come una \emph{black box} --- guardando cosa entra e cosa esce --- senza bisogno del codice proprietario. Ed \textbf{estendere ai modelli digitali le tutele} che già esistono per il credito, la salute e la disabilità, oggi facilmente eluse ribattezzando il dato sensibile con un altro nome. Natale converge da un'altra strada: il suo rimedio è culturale --- \textbf{alfabetizzazione all'inganno}, la capacità di riconoscere quando un sistema sta sfruttando le nostre aspettative cognitive.
+
+E la colonna di destra è importante: gli stessi strumenti, con obiettivi diversi, funzionano. Un modello per indirizzare le risorse dei rifugi per senzatetto a New York. Il lavoro di Mira Bernstein per individuare il lavoro forzato nelle catene di fornitura. Un modello in Florida che previene gli abusi sui minori indirizzando sostegno alle famiglie, non punizioni --- zero decessi nella contea dove è stato applicato.
+
+La differenza tra un'arma e uno strumento, quindi, non è tecnica: è l'obiettivo. Equità --- anche quando costa un po' di efficienza.
+
+%=============================================================================
+\slide{Slide 14 --- Conclusione}
+%=============================================================================
+
+Chiudo con la convergenza dei due libri, che è anche il primo messaggio del corso: la tecnologia non è un destino.
+
+Ogni WMD nasce da una decisione umana: qualcuno ha scelto quei dati, quei proxy, quell'obiettivo. Ogni inganno è progettato: la voce rassicurante, l'interfaccia invisibile, il feed che premia l'indignazione. E ciò che è progettato si può riprogettare --- con regole, con trasparenza, con qualcuno che controlli i controllori.
+
+\regia{[Pausa.]}
+
+Domande? Coraggio.
+
+\newpage
+%=============================================================================
+\slide{Appendice --- Risposte pronte alle domande probabili}
+%=============================================================================
+
+\qa{Perché il modello del baseball non è una WMD?}{Trasparenza (dati pubblici), pertinenza (misura i risultati, non proxy), feedback continuo (si aggiorna a ogni partita), obiettivi condivisi. Il value-added non ha nessuna delle quattro.}
+
+\qa{Mi faccia un esempio di feedback loop diverso da PredPol.}{Il rapporto credito-lavoro: un cattivo credit score riduce le possibilità di lavoro, un lavoro peggiore porta in un quartiere più povero e sorvegliato, che peggiora ulteriormente il credito. Le WMD si rincorrono a vicenda: è la spirale delle pagine finali del libro.}
+
+\qa{Cosa c'entra Searle con ELIZA?}{Doppio livello. Fatti istituzionali: l'intelligenza attribuita a ELIZA e il potere di un punteggio esistono solo per convenzione collettiva. E la distinzione sintassi/semantica richiama la stanza cinese: manipolare simboli secondo regole non è comprendere.}
+
+\qa{Il caso di Chicago?}{Robert McDaniel: segnalato dalla polizia sulla base di una lista predittiva non per qualcosa che ha fatto, ma per le persone che conosce nella sua rete sociale.}
+
+\qa{E il caso Starbucks?}{Jannette Navarro, scheduling just-in-time: turni imprevedibili, il ``clopening'' --- chiudere a notte fonda e riaprire poche ore dopo --- che rende impossibile studiare o organizzare la cura dei figli. Nello stesso capitolo: Cataphora, che classificava i dipendenti analizzando le email per decidere chi licenziare.}
+
+\qa{Chi era l'umano più umano?}{Brian Christian, premio Loebner 2009: partecipò come interlocutore umano e vinse il titolo di quello che i giudici riconoscevano più facilmente come umano. Il paradosso: per sembrare umano bisogna sforzarsi, la macchina vince sembrando umana senza capire nulla.}
+
+\qa{Le assicurazioni come bene comune?}{L'assicurazione nasce per condividere collettivamente il costo della sfortuna di pochi. Il pricing algoritmico individuale smonta quella logica pezzo per pezzo: chi è già vulnerabile paga di più, da solo. È la tragedia dei commons in assenza di regole. (Radice storica: Hoffman, 1896, per Prudential --- gli afroamericani dichiarati ``non assicurabili'' con uno studio statisticamente sbagliato ma influente.)}
+
+\qa{Weizenbaum quando ha creato ELIZA?}{Sviluppo a partire dal 1963 al MIT, pubblicazione dell'articolo nel 1966. Il libro critico è \emph{Computer Power and Human Reason}, 1976.}
+
+\end{document}
