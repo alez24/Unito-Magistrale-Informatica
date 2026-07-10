@@ -18,7 +18,7 @@ RESOURCES = {
     "corpora/stopwords": "stopwords",
     "corpora/wordnet": "wordnet",
     "corpora/omw-1.4": "omw-1.4",
-    "taggers/averaged_perceptron_tagger": "averaged_perceptron_tagger",
+    "taggers/averaged_perceptron_tagger_eng": "averaged_perceptron_tagger_eng",
 }
 
 for resource_path, resource_name in RESOURCES.items():

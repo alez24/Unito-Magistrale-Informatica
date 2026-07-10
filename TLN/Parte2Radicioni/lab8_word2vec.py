@@ -217,11 +217,11 @@ print(f"In comune:      {len(comuni)} parole")
 
 interessanti_70s = sorted(
     [p for p in solo_70s   if freq_70s[p]   > 20],
-    key=lambda x: -freq_70s[x]
+    key=lambda x: (-freq_70s[x], x)
 )
 interessanti_2000s = sorted(
     [p for p in solo_2000s if freq_2000s[p] > 20],
-    key=lambda x: -freq_2000s[x]
+    key=lambda x: (-freq_2000s[x], x)
 )
 
 print(f"\nParole caratteristiche anni 70   (freq > 20):")
@@ -235,8 +235,11 @@ print(f"  {interessanti_2000s[:20]}")
 print("\n[STEP 8] Analisi sistematica coppie...")
 
 FREQ_COPPIE = 100
+# sorted(): l'intersezione fra due set ha un ordine di iterazione dipendente da
+# PYTHONHASHSEED (randomizzato ad ogni processo Python); senza un ordine fisso,
+# le liste con parita' esatta di punteggio (vedi STEP 9) sarebbero non riproducibili
 candidati = [
-    p for p in (vocab_70s & vocab_2000s)
+    p for p in sorted(vocab_70s & vocab_2000s)
     if freq_70s[p] >= FREQ_COPPIE and freq_2000s[p] >= FREQ_COPPIE
 ]
 print(f"Parole candidate (freq >= {FREQ_COPPIE} in entrambe): {len(candidati)}")
@@ -267,7 +270,7 @@ for i, w1 in enumerate(candidati):
             'direzione': s2000 - s70,
         })
 
-coppie_sist.sort(key=lambda x: -x['delta'])
+coppie_sist.sort(key=lambda x: (-x['delta'], x['w1'], x['w2']))
 
 sep = "=" * 65
 sep2 = "-" * 65
@@ -304,7 +307,7 @@ TOP_N_VICINI  = 10
 TOP_RISULTATI = 30
 
 parole_frequenti_comuni = [
-    p for p in comuni
+    p for p in sorted(comuni)
     if freq_70s[p] >= FREQ_MINIMA and freq_2000s[p] >= FREQ_MINIMA
 ]
 
@@ -331,7 +334,10 @@ for parola in parole_frequenti_comuni:
         'freq_2000s':   freq_2000s[parola],
     })
 
-risultati.sort(key=lambda x: -x['cambiamento'])
+# tra le parole a pari 'cambiamento' (frequente, dato che overlap e' quantizzato
+# su 11 soli livelli) si preferisce mostrare prima quelle piu' frequenti: la
+# stima di overlap e' piu' affidabile quando il vicinato e' basato su piu' occorrenze
+risultati.sort(key=lambda x: (-x['cambiamento'], -(x['freq_70s'] + x['freq_2000s']), x['parola']))
 
 print(f"\n{'='*70}")
 print(f"TOP {TOP_RISULTATI} PAROLE CHE HANNO CAMBIATO PIU' CONTESTO")
