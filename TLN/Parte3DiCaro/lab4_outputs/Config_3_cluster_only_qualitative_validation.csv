@@ -1,0 +1,298 @@
+config,topic,rank,title,abstract
+Config_3_cluster_only,0,1,"Dialogue State Tracking with Multi-Level Fusion of Predicted Dialogue
+  States and Conversations","  Most recently proposed approaches in dialogue state tracking (DST) leverage
+the context and the last dialogue states to track current dialogue states,
+which are often slot-value pairs. Although the context contains the complete
+dialogue information, the information is usually indirect and even requires
+reasoning to obtain. The information in the lastly predicted dialogue states is
+direct, but when there is a prediction error, the dialogue information from
+this source will be incomplete or erroneous. In this paper, we propose the
+Dialogue State Tracking with Multi-Level Fusion of Predicted Dialogue States
+and Conversations network (FPDSC). This model extracts information of each
+dialogue turn by modeling interactions among each turn utterance, the
+corresponding last dialogue states, and dialogue slots. Then the representation
+of each dialogue turn is aggregated by a hierarchical structure to form the
+passage information, which is utilized in the current turn of DST. Experimental
+results validate the effectiveness of the fusion network with 55.03% and 59.07%
+joint accuracy on MultiWOZ 2.0 and MultiWOZ 2.1 datasets, which reaches the
+state-of-the-art performance. Furthermore, we conduct the deleted-value and
+related-slot experiments on MultiWOZ 2.1 to evaluate our model.
+"
+Config_3_cluster_only,0,2,Task-Optimized Adapters for an End-to-End Task-Oriented Dialogue System,"  Task-Oriented Dialogue (TOD) systems are designed to carry out specific tasks
+by tracking dialogue states and generating appropriate responses to help users
+achieve defined goals. Recently, end-to-end dialogue models pre-trained based
+on large datasets have shown promising performance in the conversational
+system. However, they share the same parameters to train tasks of the dialogue
+system (NLU, DST, NLG), so debugging each task is challenging. Also, they
+require a lot of effort to fine-tune large parameters to create a task-oriented
+chatbot, making it difficult for non-experts to handle. Therefore, we intend to
+train relatively lightweight and fast models compared to PLM. In this paper, we
+propose an End-to-end TOD system with Task-Optimized Adapters which learn
+independently per task, adding only small number of parameters after fixed
+layers of pre-trained network. We also enhance the performance of the DST and
+NLG modules through reinforcement learning, overcoming the learning curve that
+has lacked at the adapter learning and enabling the natural and consistent
+response generation that is appropriate for the goal. Our method is a
+model-agnostic approach and does not require prompt-tuning as only input data
+without a prompt. As results of the experiment, our method shows competitive
+performance on the MultiWOZ benchmark compared to the existing end-to-end
+models. In particular, we attain state-of-the-art performance on the DST task
+of 2.2 dataset.
+"
+Config_3_cluster_only,0,3,"UniConv: A Unified Conversational Neural Architecture for Multi-domain
+  Task-oriented Dialogues","  Building an end-to-end conversational agent for multi-domain task-oriented
+dialogues has been an open challenge for two main reasons. First, tracking
+dialogue states of multiple domains is non-trivial as the dialogue agent must
+obtain complete states from all relevant domains, some of which might have
+shared slots among domains as well as unique slots specifically for one domain
+only. Second, the dialogue agent must also process various types of information
+across domains, including dialogue context, dialogue states, and database, to
+generate natural responses to users. Unlike the existing approaches that are
+often designed to train each module separately, we propose ""UniConv"" -- a novel
+unified neural architecture for end-to-end conversational systems in
+multi-domain task-oriented dialogues, which is designed to jointly train (i) a
+Bi-level State Tracker which tracks dialogue states by learning signals at both
+slot and domain level independently, and (ii) a Joint Dialogue Act and Response
+Generator which incorporates information from various input components and
+models dialogue acts and target responses simultaneously. We conduct
+comprehensive experiments in dialogue state tracking, context-to-text, and
+end-to-end settings on the MultiWOZ2.1 benchmark, achieving superior
+performance over competitive baselines.
+"
+Config_3_cluster_only,1,1,"Knowledge Distillation from BERT Transformer to Speech Transformer for
+  Intent Classification","  End-to-end intent classification using speech has numerous advantages
+compared to the conventional pipeline approach using automatic speech
+recognition (ASR), followed by natural language processing modules. It attempts
+to predict intent from speech without using an intermediate ASR module.
+However, such end-to-end framework suffers from the unavailability of large
+speech resources with higher acoustic variation in spoken language
+understanding. In this work, we exploit the scope of the transformer
+distillation method that is specifically designed for knowledge distillation
+from a transformer based language model to a transformer based speech model. In
+this regard, we leverage the reliable and widely used bidirectional encoder
+representations from transformers (BERT) model as a language model and transfer
+the knowledge to build an acoustic model for intent classification using the
+speech. In particular, a multilevel transformer based teacher-student model is
+designed, and knowledge distillation is performed across attention and hidden
+sub-layers of different transformer layers of the student and teacher models.
+We achieve an intent classification accuracy of 99.10% and 88.79% for Fluent
+speech corpus and ATIS database, respectively. Further, the proposed method
+demonstrates better performance and robustness in acoustically degraded
+condition compared to the baseline method.
+"
+Config_3_cluster_only,1,2,"Speak or Chat with Me: End-to-End Spoken Language Understanding System
+  with Flexible Inputs","  A major focus of recent research in spoken language understanding (SLU) has
+been on the end-to-end approach where a single model can predict intents
+directly from speech inputs without intermediate transcripts. However, this
+approach presents some challenges. First, since speech can be considered as
+personally identifiable information, in some cases only automatic speech
+recognition (ASR) transcripts are accessible. Second, intent-labeled speech
+data is scarce. To address the first challenge, we propose a novel system that
+can predict intents from flexible types of inputs: speech, ASR transcripts, or
+both. We demonstrate strong performance for either modality separately, and
+when both speech and ASR transcripts are available, through system combination,
+we achieve better results than using a single input modality. To address the
+second challenge, we leverage a semantically robust pre-trained BERT model and
+adopt a cross-modal system that co-trains text embeddings and acoustic
+embeddings in a shared latent space. We further enhance this system by
+utilizing an acoustic module pre-trained on LibriSpeech and domain-adapting the
+text module on our target datasets. Our experiments show significant advantages
+for these pre-training and fine-tuning strategies, resulting in a system that
+achieves competitive intent-classification performance on Snips SLU and Fluent
+Speech Commands datasets.
+"
+Config_3_cluster_only,1,3,Exploring Transfer Learning For End-to-End Spoken Language Understanding,"  Voice Assistants such as Alexa, Siri, and Google Assistant typically use a
+two-stage Spoken Language Understanding pipeline; first, an Automatic Speech
+Recognition (ASR) component to process customer speech and generate text
+transcriptions, followed by a Natural Language Understanding (NLU) component to
+map transcriptions to an actionable hypothesis. An end-to-end (E2E) system that
+goes directly from speech to a hypothesis is a more attractive option. These
+systems were shown to be smaller, faster, and better optimized. However, they
+require massive amounts of end-to-end training data and in addition, don't take
+advantage of the already available ASR and NLU training data.
+  In this work, we propose an E2E system that is designed to jointly train on
+multiple speech-to-text tasks, such as ASR (speech-transcription) and SLU
+(speech-hypothesis), and text-to-text tasks, such as NLU (text-hypothesis). We
+call this the Audio-Text All-Task (AT-AT) Model and we show that it beats the
+performance of E2E models trained on individual tasks, especially ones trained
+on limited data. We show this result on an internal music dataset and two
+public datasets, FluentSpeech and SNIPS Audio, where we achieve
+state-of-the-art results. Since our model can process both speech and text
+input sequences and learn to predict a target sequence, it also allows us to do
+zero-shot E2E SLU by training on only text-hypothesis data (without any speech)
+from a new domain. We evaluate this ability of our model on the Facebook TOP
+dataset and set a new benchmark for zeroshot E2E performance. We will soon
+release the audio data collected for the TOP dataset for future research.
+"
+Config_3_cluster_only,2,1,"Towards one-shot learning for rare-word translation with external
+  experts","  Neural machine translation (NMT) has significantly improved the quality of
+automatic translation models. One of the main challenges in current systems is
+the translation of rare words. We present a generic approach to address this
+weakness by having external models annotate the training data as Experts, and
+control the model-expert interaction with a pointer network and reinforcement
+learning. Our experiments using phrase-based models to simulate Experts to
+complement neural machine translation models show that the model can be trained
+to copy the annotations into the output consistently. We demonstrate the
+benefit of our proposed framework in outof-domain translation scenarios with
+only lexical resources, improving more than 1.0 BLEU point in both translation
+directions English to Spanish and German to English
+"
+Config_3_cluster_only,2,2,Neural Machine Translation by Jointly Learning to Align and Translate,"  Neural machine translation is a recently proposed approach to machine
+translation. Unlike the traditional statistical machine translation, the neural
+machine translation aims at building a single neural network that can be
+jointly tuned to maximize the translation performance. The models proposed
+recently for neural machine translation often belong to a family of
+encoder-decoders and consists of an encoder that encodes a source sentence into
+a fixed-length vector from which a decoder generates a translation. In this
+paper, we conjecture that the use of a fixed-length vector is a bottleneck in
+improving the performance of this basic encoder-decoder architecture, and
+propose to extend this by allowing a model to automatically (soft-)search for
+parts of a source sentence that are relevant to predicting a target word,
+without having to form these parts as a hard segment explicitly. With this new
+approach, we achieve a translation performance comparable to the existing
+state-of-the-art phrase-based system on the task of English-to-French
+translation. Furthermore, qualitative analysis reveals that the
+(soft-)alignments found by the model agree well with our intuition.
+"
+Config_3_cluster_only,2,3,Multilingual Neural Machine Translation for Zero-Resource Languages,"  In recent years, Neural Machine Translation (NMT) has been shown to be more
+effective than phrase-based statistical methods, thus quickly becoming the
+state of the art in machine translation (MT). However, NMT systems are limited
+in translating low-resourced languages, due to the significant amount of
+parallel data that is required to learn useful mappings between languages. In
+this work, we show how the so-called multilingual NMT can help to tackle the
+challenges associated with low-resourced language translation. The underlying
+principle of multilingual NMT is to force the creation of hidden
+representations of words in a shared semantic space across multiple languages,
+thus enabling a positive parameter transfer across languages. Along this
+direction, we present multilingual translation experiments with three languages
+(English, Italian, Romanian) covering six translation directions, utilizing
+both recurrent neural networks and transformer (or self-attentive) neural
+networks. We then focus on the zero-shot translation problem, that is how to
+leverage multi-lingual data in order to learn translation directions that are
+not covered by the available training material. To this aim, we introduce our
+recently proposed iterative self-training method, which incrementally improves
+a multilingual NMT on a zero-shot direction by just relying on monolingual
+data. Our results on TED talks data show that multilingual NMT outperforms
+conventional bilingual NMT, that the transformer NMT outperforms recurrent NMT,
+and that zero-shot NMT outperforms conventional pivoting methods and even
+matches the performance of a fully-trained bilingual system.
+"
+Config_3_cluster_only,3,1,Medical Code Assignment with Gated Convolution and Note-Code Interaction,"  Medical code assignment from clinical text is a fundamental task in clinical
+information system management. As medical notes are typically lengthy and the
+medical coding system's code space is large, this task is a long-standing
+challenge. Recent work applies deep neural network models to encode the medical
+notes and assign medical codes to clinical documents. However, these methods
+are still ineffective as they do not fully encode and capture the lengthy and
+rich semantic information of medical notes nor explicitly exploit the
+interactions between the notes and codes. We propose a novel method, gated
+convolutional neural networks, and a note-code interaction (GatedCNN-NCI), for
+automatic medical code assignment to overcome these challenges. Our methods
+capture the rich semantic information of the lengthy clinical text for better
+representation by utilizing embedding injection and gated information
+propagation in the medical note encoding module. With a novel note-code
+interaction design and a graph message passing mechanism, we explicitly capture
+the underlying dependency between notes and codes, enabling effective code
+prediction. A weight sharing scheme is further designed to decrease the number
+of trainable parameters. Empirical experiments on real-world clinical datasets
+show that our proposed model outperforms state-of-the-art models in most cases,
+and our model size is on par with light-weighted baselines.
+"
+Config_3_cluster_only,3,2,"KG-MTT-BERT: Knowledge Graph Enhanced BERT for Multi-Type Medical Text
+  Classification","  Medical text learning has recently emerged as a promising area to improve
+healthcare due to the wide adoption of electronic health record (EHR) systems.
+The complexity of the medical text such as diverse length, mixed text types,
+and full of medical jargon, poses a great challenge for developing effective
+deep learning models. BERT has presented state-of-the-art results in many NLP
+tasks, such as text classification and question answering. However, the
+standalone BERT model cannot deal with the complexity of the medical text,
+especially the lengthy clinical notes. Herein, we develop a new model called
+KG-MTT-BERT (Knowledge Graph Enhanced Multi-Type Text BERT) by extending the
+BERT model for long and multi-type text with the integration of the medical
+knowledge graph. Our model can outperform all baselines and other
+state-of-the-art models in diagnosis-related group (DRG) classification, which
+requires comprehensive medical text for accurate classification. We also
+demonstrated that our model can effectively handle multi-type text and the
+integration of medical knowledge graph can significantly improve the
+performance.
+"
+Config_3_cluster_only,3,3,Enriching Unsupervised User Embedding via Medical Concepts,"  Clinical notes in Electronic Health Records (EHR) present rich documented
+information of patients to inference phenotype for disease diagnosis and study
+patient characteristics for cohort selection. Unsupervised user embedding aims
+to encode patients into fixed-length vectors without human supervisions.
+Medical concepts extracted from the clinical notes contain rich connections
+between patients and their clinical categories. However, existing unsupervised
+approaches of user embeddings from clinical notes do not explicitly incorporate
+medical concepts. In this study, we propose a concept-aware unsupervised user
+embedding that jointly leverages text documents and medical concepts from two
+clinical corpora, MIMIC-III and Diabetes. We evaluate user embeddings on both
+extrinsic and intrinsic tasks, including phenotype classification, in-hospital
+mortality prediction, patient retrieval, and patient relatedness. Experiments
+on the two clinical corpora show our approach exceeds unsupervised baselines,
+and incorporating medical concepts can significantly improve the baseline
+performance.
+"
+Config_3_cluster_only,4,1,Ask to Learn: A Study on Curiosity-driven Question Generation,"  We propose a novel text generation task, namely Curiosity-driven Question
+Generation. We start from the observation that the Question Generation task has
+traditionally been considered as the dual problem of Question Answering, hence
+tackling the problem of generating a question given the text that contains its
+answer. Such questions can be used to evaluate machine reading comprehension.
+However, in real life, and especially in conversational settings, humans tend
+to ask questions with the goal of enriching their knowledge and/or clarifying
+aspects of previously gathered information. We refer to these inquisitive
+questions as Curiosity-driven: these questions are generated with the goal of
+obtaining new information (the answer) which is not present in the input text.
+In this work, we experiment on this new task using a conversational Question
+Answering (QA) dataset; further, since the majority of QA dataset are not built
+in a conversational manner, we describe a methodology to derive data for this
+novel task from non-conversational QA data. We investigate several automated
+metrics to measure the different properties of Curious Questions, and
+experiment different approaches on the Curiosity-driven Question Generation
+task, including model pre-training and reinforcement learning. Finally, we
+report a qualitative evaluation of the generated outputs.
+"
+Config_3_cluster_only,4,2,"Asking Questions the Human Way: Scalable Question-Answer Generation from
+  Text Corpus","  The ability to ask questions is important in both human and machine
+intelligence. Learning to ask questions helps knowledge acquisition, improves
+question-answering and machine reading comprehension tasks, and helps a chatbot
+to keep the conversation flowing with a human. Existing question generation
+models are ineffective at generating a large amount of high-quality
+question-answer pairs from unstructured text, since given an answer and an
+input passage, question generation is inherently a one-to-many mapping. In this
+paper, we propose Answer-Clue-Style-aware Question Generation (ACS-QG), which
+aims at automatically generating high-quality and diverse question-answer pairs
+from unlabeled text corpus at scale by imitating the way a human asks
+questions. Our system consists of: i) an information extractor, which samples
+from the text multiple types of assistive information to guide question
+generation; ii) neural question generators, which generate diverse and
+controllable questions, leveraging the extracted assistive information; and
+iii) a neural quality controller, which removes low-quality generated data
+based on text entailment. We compare our question generation models with
+existing approaches and resort to voluntary human evaluation to assess the
+quality of the generated question-answer pairs. The evaluation results suggest
+that our system dramatically outperforms state-of-the-art neural question
+generation models in terms of the generation quality, while being scalable in
+the meantime. With models trained on a relatively smaller amount of data, we
+can generate 2.8 million quality-assured question-answer pairs from a million
+sentences found in Wikipedia.
+"
+Config_3_cluster_only,4,3,"Learning to Answer by Learning to Ask: Getting the Best of GPT-2 and
+  BERT Worlds","  Automatic question generation aims at the generation of questions from a
+context, with the corresponding answers being sub-spans of the given passage.
+Whereas, most of the methods mostly rely on heuristic rules to generate
+questions, more recently also neural network approaches have been proposed. In
+this work, we propose a variant of the self-attention Transformer network
+architectures model to generate meaningful and diverse questions. To this end,
+we propose an easy to use model consisting of the conjunction of the
+Transformer decoder GPT-2 model with Transformer encoder BERT for the
+downstream task for question answering. The model is trained in an end-to-end
+fashion, where the language model is trained to produce a question-answer-aware
+input representation that facilitates to generate an answer focused question.
+Our result of neural question generation from text on the SQuAD 1.1 dataset
+suggests that our method can produce semantically correct and diverse
+questions. Additionally, we assessed the performance of our proposed method for
+the downstream task of question answering. The analysis shows that our proposed
+generation & answering collaboration framework relatively improves both tasks
+and is particularly powerful in the semi-supervised setup. The results further
+suggest a robust and comparably lean pipeline facilitating question generation
+in the small-data regime.
+"

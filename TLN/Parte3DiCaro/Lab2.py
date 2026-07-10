@@ -4,6 +4,7 @@ import string
 
 import numpy as np
 import pandas as pd
+import nltk
 from nltk import pos_tag, word_tokenize
 from nltk.corpus import stopwords, wordnet as wn
 from nltk.stem import WordNetLemmatizer
@@ -27,10 +28,27 @@ OUTPUT_PATH = "risultati_lab2_wordnet_genus.csv"
 SIMILARITY_BACKEND = "sbert" if _HAS_SBERT else "tfidf"
 SBERT_MODEL_NAME = "all-MiniLM-L6-v2"
 
+GENUS_DEPTH = 3           # livelli di iponimi scesi dal genus (1 lascia irraggiungibili molti target)
+MAX_CANDIDATES = 300      # cap: un genus troppo generico (es. "object") farebbe esplodere i candidati
+
 
 # ---------------------------------------------------------------------------
 # 2) NLTK RESOURCES + PREPROCESSING
 # ---------------------------------------------------------------------------
+RESOURCES = {
+	"corpora/stopwords": "stopwords",
+	"corpora/wordnet": "wordnet",
+	"corpora/omw-1.4": "omw-1.4",
+	"taggers/averaged_perceptron_tagger_eng": "averaged_perceptron_tagger_eng",
+	"tokenizers/punkt_tab": "punkt_tab",
+}
+
+for resource_path, resource_name in RESOURCES.items():
+	try:
+		nltk.data.find(resource_path)
+	except LookupError:
+		nltk.download(resource_name)
+
 STOPWORDS = set(stopwords.words("english"))
 LEMMATIZER = WordNetLemmatizer()
 
@@ -93,7 +111,7 @@ def extract_genus(definition):
 # ---------------------------------------------------------------------------
 # 4) WORDNET CANDIDATE RETRIEVAL (GENUS PRINCIPLE)
 # ---------------------------------------------------------------------------
-def get_candidates_from_genus(genus):
+def get_candidates_from_genus(genus, depth=GENUS_DEPTH, max_candidates=MAX_CANDIDATES):
 	if not genus:
 		return []
 
@@ -101,19 +119,29 @@ def get_candidates_from_genus(genus):
 	if not genus_synsets:
 		return []
 
-	candidates = []
-	for syn in genus_synsets:
-		candidates.append(syn)
-		# one-level hyponyms (direct descendants) for constrained search
-		candidates.extend(syn.hyponyms())
-
-	# de-duplicate while preserving order
+	# con un solo livello di iponimi molti target sono strutturalmente irraggiungibili
+	# (es. "teapot" e' tre livelli sotto il genus "container": teapot < pot < vessel < container).
+	# Si scende fino a `depth` livelli, con uscita anticipata al raggiungimento del cap:
+	# un genus troppo generico (es. "object") avrebbe altrimenti una closure enorme.
 	seen = set()
 	unique = []
-	for syn in candidates:
+
+	def add(syn):
 		if syn.name() not in seen:
 			seen.add(syn.name())
 			unique.append(syn)
+
+	for syn in genus_synsets:
+		add(syn)
+		if len(unique) >= max_candidates:
+			break
+		for hypo in syn.closure(lambda s: s.hyponyms(), depth=depth):
+			add(hypo)
+			if len(unique) >= max_candidates:
+				break
+		if len(unique) >= max_candidates:
+			break
+
 	return unique
 
 
@@ -173,18 +201,21 @@ COLUMN_MAP = {
 	"teapot": "(CS) Definizione del concetto CONCRETO e SPECIFICO",
 }
 
-# Gold synsets used only for evaluation.
-TARGET_SYNSET = {
-	"music": "music.n.01",
-	"ethics": "ethic.n.01",
-	"tree": "tree.n.01",
-	"teapot": "teapot.n.01",
+# Gold synsets used only for evaluation. Piu' di un synset accettabile per "ethics":
+# le definizioni dei compagni oscillano tra "principi di giusto/sbagliato di un gruppo"
+# (ethic.n.01) e "studio filosofico dei valori morali" (ethics.n.01/morality.n.01),
+# ed entrambe le letture sono legittime a seconda di come e' stata scritta la definizione.
+TARGET_SYNSETS = {
+	"music": {"music.n.01"},
+	"ethics": {"ethic.n.01", "ethics.n.01", "morality.n.01"},
+	"tree": {"tree.n.01"},
+	"teapot": {"teapot.n.01"},
 }
 
 
 def evaluate_concept(df, concept, column, scorer):
 	rows = []
-	target = TARGET_SYNSET[concept]
+	target = TARGET_SYNSETS[concept]
 
 	definitions = df[column].dropna().tolist()
 	for idx, definition in enumerate(definitions, start=1):
@@ -193,7 +224,11 @@ def evaluate_concept(df, concept, column, scorer):
 		best, score, status = scorer.score(definition, candidates)
 
 		best_name = best.name() if best else None
-		is_correct = (best_name == target)
+		is_correct = best_name in target if best_name else False
+		# diagnostica: il target era anche solo raggiungibile tra i candidati?
+		# separa il fallimento di retrieval (target assente) da quello di ranking
+		# (target presente ma non vincente)
+		target_reachable = any(c.name() in target for c in candidates)
 
 		rows.append(
 			{
@@ -204,7 +239,8 @@ def evaluate_concept(df, concept, column, scorer):
 				"n_candidates": len(candidates),
 				"pred_synset": best_name,
 				"pred_gloss": best.definition() if best else None,
-				"target_synset": target,
+				"target_synset": "/".join(sorted(target)),
+				"target_reachable": bool(target_reachable),
 				"score": round(float(score), 6),
 				"status": status,
 				"is_correct": bool(is_correct),
@@ -222,16 +258,23 @@ def print_summary(results_df):
 
 	# Accuracy includes failures/ties as wrong: no inflated fallback.
 	acc = results_df["is_correct"].mean() if len(results_df) else 0.0
-	print(f"Accuracy globale: {acc:.4f}")
+	# scompone l'errore in due fasi distinte: retrieval (il target non era neanche
+	# tra i candidati) vs ranking (era tra i candidati ma non ha vinto la similarita')
+	coverage = results_df["target_reachable"].mean() if len(results_df) else 0.0
+	reachable_df = results_df[results_df["target_reachable"]]
+	acc_given_reachable = reachable_df["is_correct"].mean() if len(reachable_df) else float("nan")
 
-	by_concept = (
-		results_df.groupby("concept")["is_correct"]
-		.mean()
-		.sort_index()
-	)
-	print("\nAccuracy per concetto:")
-	for concept, val in by_concept.items():
-		print(f"- {concept}: {val:.4f}")
+	print(f"Accuracy globale: {acc:.4f}")
+	print(f"Coverage (target raggiungibile tra i candidati): {coverage:.4f}")
+	print(f"Accuracy condizionata alla raggiungibilita' (solo dove il target era tra i candidati): {acc_given_reachable:.4f}")
+
+	by_concept = results_df.groupby("concept").agg(
+		accuracy=("is_correct", "mean"),
+		coverage=("target_reachable", "mean"),
+	).sort_index()
+	print("\nAccuracy / coverage per concetto:")
+	for concept, row in by_concept.iterrows():
+		print(f"- {concept}: accuracy={row['accuracy']:.4f}  coverage={row['coverage']:.4f}")
 
 	print("\nDistribuzione status:")
 	status_counts = results_df["status"].value_counts(dropna=False)

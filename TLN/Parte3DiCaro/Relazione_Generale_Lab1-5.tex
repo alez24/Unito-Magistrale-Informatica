@@ -160,71 +160,64 @@ Tutti i laboratori condividono inoltre un dataset o una risorsa lessicale di rif
 
 \subsection{Obiettivo e materiale}
 
-L'obiettivo del Lab 1 \`e esplorare la complessit\`a insita nella formulazione di definizioni in linguaggio naturale, per quattro concetti bilanciati lungo due dimensioni (concretezza e specificit\`a):
+L'obiettivo del Lab 1 \`e misurare quanto le definizioni indipendenti raccolte da studenti diversi per uno stesso concetto si sovrappongano, sia lessicalmente sia semanticamente, per quattro concetti bilanciati lungo due dimensioni (concretezza e specificit\`a): \textbf{Tree} (concreto/generico), \textbf{Teapot} (concreto/specifico), \textbf{Music} (astratto/generico), \textbf{Ethics} (astratto/specifico). Il dataset (\texttt{Dataset definizioni-spurio.csv}) contiene 28 definizioni per ciascun concetto, una per ciascuno dei 28 rispondenti del questionario (colonna \texttt{Risposta numero}).
+
+\begin{warnbox}{Un'anomalia scoperta nei dati: colonne astratto/concreto invertite per 5 rispondenti}
+Verificando manualmente le definizioni pi\`u dissimili dalle altre dello stesso concetto, 5 rispondenti su 28 (\texttt{Risposta numero} 7, 14, 20, 22, 23 -- il 17.9\% del campione) risultano avere le colonne \emph{Astratto} e \emph{Concreto} scambiate a coppie: la loro risposta nella colonna ``Music'' \`e in realt\`a la loro definizione di \textit{Tree}, quella nella colonna ``Ethics'' \`e la loro definizione di \textit{Teapot}, e viceversa (es.\ risposta 23: colonna Music $\to$ \textit{``A tree is a woody plant\dots''}; colonna Ethics $\to$ \textit{``A teapot is a container used mainly for infusions\dots''}). Il pattern \`e identico e simmetrico per tutti e 5 i rispondenti, compatibile con un errore di compilazione del modulo (colonne astratto/concreto scambiate) pi\`u che con risposte casuali -- coerente col nome del file (\texttt{definizioni-spurio.csv}). Queste 22 definizioni (5 per ciascuno dei 4 concetti, tranne sovrapposizioni) restano nel dataset per i risultati riportati sotto: non essendo mai lessicalmente o semanticamente vicine alle 23 definizioni genuine dello stesso concetto, il loro effetto \`e di abbassare leggermente le medie Simlex/Simsem per tutti e quattro i concetti in modo pressoch\'e uniforme, senza alterare il confronto relativo tra concetti che \`e l'oggetto di questa sezione.
+\end{warnbox}
+
+\subsection{Metodologia}
+
+Per ciascun concetto si calcolano due metriche medie su tutte le $\binom{28}{2}=378$ coppie di definizioni:
 
 \begin{itemize}[noitemsep]
-  \item \textbf{Tree} (Albero): concreto, generico.
-  \item \textbf{Teapot} (Teiera): concreto, specifico.
-  \item \textbf{Music} (Musica): astratto, generico.
-  \item \textbf{Ethics} (Etica): astratto, specifico.
+  \item \textbf{Simlex (Jaccard)}: indice di Jaccard tra gli insiemi di lemmi (dopo lowercase, rimozione di punteggiatura/stopword, lemmatizzazione POS-aware con \texttt{pos\_tag}+\texttt{WordNetLemmatizer}) -- una misura puramente lessicale.
+  \item \textbf{Simsem (cosine su embedding Sentence-BERT, \texttt{all-MiniLM-L6-v2})}: cosine similarity media tra gli embedding del \emph{testo grezzo} delle definizioni (non lemmatizzato: SBERT \`e addestrato su frasi naturali, e rimuovere stopword/sintassi degrada l'input rispetto a quanto il modello si aspetta) -- una misura semantica, capace in linea di principio di riconoscere definizioni parafrasate con lessico diverso.
 \end{itemize}
 
-\`E stato utilizzato un dataset (\texttt{Dataset definizioni-spurio.csv}) contenente le definizioni in linguaggio naturale raccolte in aula da studenti diversi per ciascuno dei quattro concetti, con il vincolo che ogni definizione fosse comprensibile a un lettore generico.
-
-\subsection{Analisi qualitativa}
-
-Dall'analisi delle definizioni raccolte emergono tre dinamiche linguistiche rilevanti:
-
-\begin{enumerate}[noitemsep]
-  \item \textbf{Scelte lessicali e specificit\`a}: per i concetti concreti il lessico si concentra su componenti fisiche e funzionali (\textit{roots}, \textit{metal container}); per i concetti astratti il vocabolario si sposta sulla sfera cognitiva e sensoriale (\textit{sentiment}, \textit{behavior}, \textit{melodious sounds}).
-  \item \textbf{Difficolt\`a concettuale}: i concetti astratti generano definizioni pi\`u eterogenee e dipendenti dal contesto socio-culturale, mentre per i concetti concreti il referente fisico guida in modo pi\`u uniforme la descrizione.
-  \item \textbf{Strategie definitorie}: lo schema aristotelico \emph{genus-differentia} \`e adottato spontaneamente per i concetti concreti (\textit{Tree} = \textit{kind of plant} [genus] + \textit{composed by a trunk} [differentia]), mentre per i concetti astratti prevalgono parafrasi operative basate sull'effetto prodotto.
-\end{enumerate}
-
-\subsection{Metodologia quantitativa}
-
-Per quantificare la sovrapposizione tra le definizioni di uno stesso concetto sono state applicate due metriche, calcolate a coppie su tutte le definizioni disponibili per ciascun concetto:
-
-\begin{itemize}
-  \item \textbf{Simlex (Jaccard)}: il testo viene normalizzato (minuscolo, rimozione di punteggiatura e stopword, lemmatizzazione) e si calcola l'indice di Jaccard tra gli insiemi di parole di ogni coppia di definizioni.
-  \item \textbf{Simsem (Cosine su TF-IDF)}: le definizioni vengono vettorizzate con TF-IDF e si calcola la cosine similarity media tra tutte le coppie, per catturare la vicinanza concettuale anche in assenza di sovrapposizione lessicale esatta.
-\end{itemize}
-
-\begin{pylisting}[title={Indice di Jaccard tra definizioni normalizzate}]
-def jaccard_similarity(set1, set2):
-    if not set1 or not set2:
-        return 0.0
-    intersection = len(set1.intersection(set2))
-    union = len(set1.union(set2))
-    return intersection / union
-\end{pylisting}
+Esecuzione: $\sim$11 s totali (dominati dal caricamento una tantum del modello SBERT; il calcolo delle similarit\`a su 4$\times$378 coppie \`e sub-secondo).
 
 \subsection{Risultati}
 
 \begin{table}[H]
   \centering
-  \caption{Sovrapposizione lessicale (Simlex) e semantica (Simsem) media, per concetto}
-  \begin{tabular}{lllcc}
+  \caption{Simlex e Simsem medi per concetto (dati reali, esecuzione corrente)}
+  \begin{tabular}{lllccc}
     \toprule
-    \textbf{Concetto} & \textbf{Tipo} & \textbf{Specificit\`a} & \textbf{Simlex (Jaccard)} & \textbf{Simsem (Cosine)} \\
+    \textbf{Concetto} & \textbf{Tipo} & \textbf{Specificit\`a} & \textbf{Simlex} & \textbf{Simsem} & \textbf{$\Delta$(Simsem$-$Simlex)} \\
     \midrule
-    Tree   & Concreto & Generico  & 0.084 & 0.077 \\
-    Teapot & Concreto & Specifico & 0.057 & 0.062 \\
-    Ethics & Astratto & Specifico & 0.034 & 0.041 \\
-    Music  & Astratto & Generico  & 0.034 & 0.036 \\
+    Tree   & Concreto & Generico  & 0.0807 & 0.3518 & 0.2711 \\
+    Teapot & Concreto & Specifico & 0.0672 & 0.3073 & 0.2401 \\
+    Music  & Astratto & Generico  & 0.0492 & 0.3296 & 0.2804 \\
+    Ethics & Astratto & Specifico & 0.0435 & 0.2974 & 0.2539 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{Aggregazione per dimensione (media sulle definizioni dei concetti del gruppo)}
+  \begin{tabular}{llccc}
+    \toprule
+    \textbf{Dimensione} & \textbf{Gruppo} & \textbf{Simlex} & \textbf{Simsem} & \textbf{$\Delta$} \\
+    \midrule
+    Tipo          & Concreto  & 0.0739 & 0.3296 & 0.2556 \\
+    Tipo          & Astratto  & 0.0464 & 0.3135 & 0.2672 \\
+    Specificit\`a & Generico  & 0.0649 & 0.3407 & 0.2758 \\
+    Specificit\`a & Specifico & 0.0554 & 0.3024 & 0.2470 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \subsection{Discussione}
 
-\begin{itemize}
-  \item \textbf{Variabilit\`a lessicale altissima}: i valori di Jaccard sono estremamente bassi per tutti i concetti (massimo 8.4\% per \textit{Tree}), a dimostrazione che parlanti diversi scelgono vocaboli molto diversi anche descrivendo lo stesso referente.
-  \item \textbf{Il coseno TF-IDF compensa parzialmente la variabilit\`a lessicale}: per i concetti astratti (\textit{Ethics}, \textit{Music}) la similarit\`a semantica supera quella lessicale, perch\'e il TF-IDF allinea parzialmente sinonimi e termini affini che il solo confronto insiemistico non cattura.
-  \item \textbf{Concretezza vs astrazione}: emerge un pattern netto -- i concetti concreti ottengono punteggi di similarit\`a sistematicamente superiori. Il referente fisico vincola il lessico condiviso dai parlanti, mentre l'astrazione concettuale amplifica le divergenze interpretative.
-\end{itemize}
+\paragraph{Simlex separa nettamente concreto e astratto, Simsem molto meno.} Il rapporto tra Simlex medio concreto (0.0739) e astratto (0.0464) \`e $1.59\times$: quasi il 60\% di sovrapposizione lessicale in pi\`u per i concetti con referente fisico. Sullo stesso confronto, Simsem concreto (0.3296) supera l'astratto (0.3135) solo dell'5\% relativo. La rappresentazione semantica di SBERT recupera quindi gran parte del gap lessicale tra le due categorie: parlanti diversi scelgono parole molto diverse per descrivere \textit{Music} o \textit{Ethics}, ma quelle parole restano concettualmente vicine nello spazio SBERT molto pi\`u di quanto non lo siano nell'insieme di token grezzi.
 
-Questo ultimo punto -- il ruolo stabilizzante del referente fisico concreto -- ricorrer\`a anche nel Lab 2 (accuratezza di recupero pi\`u alta per concetti concreti) e nel Lab 3 (minore asimmetria cross-linguistica per sostantivi concreti come \textit{mouth} e \textit{table}).
+\paragraph{Il $\Delta$ \`e sistematicamente pi\`u alto per gli astratti.} Il concetto con $\Delta$ massimo \`e \textit{Music} (0.2804), quello con $\Delta$ minimo \`e \textit{Teapot} (0.2401); in aggregato $\Delta_{\text{Astratto}}=0.2672 > \Delta_{\text{Concreto}}=0.2556$ e $\Delta_{\text{Generico}}=0.2758 > \Delta_{\text{Specifico}}=0.2470$. Questo \`e coerente con l'intuizione della Fase 5 del laboratorio: dove il lessico condiviso \`e pi\`u povero (concetti astratti, generici), c'\`e pi\`u ``spazio'' perch\'e la similarit\`a semantica aggiunga segnale rispetto a quella lessicale; dove il referente fisico gi\`a garantisce lessico condiviso (\textit{Teapot} ha il Simlex pi\`u alto tra i quattro), il guadagno marginale di SBERT \`e minore in valore assoluto.
+
+\paragraph{Music sorprende: pi\`u vicino semanticamente di Teapot.} Nonostante \textit{Music} abbia il Simlex pi\`u basso dei quattro (0.0492), il suo Simsem (0.3296) supera quello di \textit{Teapot} (0.3073) -- l'unico caso in cui l'ordinamento concreto/astratto si inverte. Le 23 definizioni genuine di \textit{Music} (al netto delle 5 contaminate, si veda sopra) convergono spesso su una struttura genus-differentia comune (\textit{``art form''}/\textit{``organized sounds''} + riferimento a strumenti/emozioni), che SBERT riconosce come semanticamente coerente pur con lessico superficiale molto vario.
+
+Il ruolo stabilizzante del referente fisico concreto, pur ridimensionato dal passaggio a Simsem, ricompare nel Lab 2 (coverage pi\`u alta per \textit{Teapot} che per \textit{Music}/\textit{Tree}, Sez.~3) e nel Lab 3 (minore asimmetria cross-linguistica per sostantivi concreti come \textit{mouth} e \textit{table}, Sez.~4).
 
 % ============================================================
 \section{Lab 2 -- Valutazione Content-to-Form: Ricerca Onomasiologica con WordNet}
@@ -232,67 +225,56 @@ Questo ultimo punto -- il ruolo stabilizzante del referente fisico concreto -- r
 
 \subsection{Obiettivo}
 
-Il Lab 2 esplora la \textbf{ricerca onomasiologica}: dato un contenuto (una definizione in linguaggio naturale, le stesse raccolte nel Lab 1), si cerca di risalire alla forma lessicale codificata in WordNet, ovvero al synset corretto. Si inverte cos\`i la direzione tipica di un dizionario (forma $\to$ contenuto), chiedendosi: \emph{quanto deve essere ``buona'' una definizione perch\'e permetta il recupero automatico del concetto giusto?}
+Il Lab 2 esplora la \textbf{ricerca onomasiologica}: data una definizione in linguaggio naturale (le stesse 4$\times$28 raccolte nel Lab 1), si cerca di risalire automaticamente al synset WordNet corretto, applicando concretamente il \textbf{principio del genus}: si estrae la testa nominale della definizione (il genus, es.\ \textit{``a \underline{container} used to\dots''}) e si cerca il target solo tra i synset raggiungibili da quel genus in WordNet, non nell'intero vocabolario.
 
 \subsection{Metodo}
 
-Per ciascuno dei quattro concetti (\textit{Music}, \textit{Ethics}, \textit{Tree}, \textit{Teapot}) sono stati selezionati da WordNet 3.1 i 5 synset candidati pi\`u plausibili (incluso il synset target corretto, sensi alternativi e iperonimi). Per ciascuna delle 28 definizioni del dataset si applica la procedura:
-
 \begin{enumerate}[noitemsep]
-  \item Pulizia del testo: minuscolo, rimozione di punteggiatura e stopword.
-  \item Vettorizzazione TF-IDF della definizione e delle 5 glosse candidate.
-  \item Selezione del synset con cosine similarity pi\`u alta rispetto alla definizione.
-  \item Confronto con il synset target per determinare se il recupero \`e corretto.
+  \item \textbf{Estrazione del genus}: regex sul pattern copula (\textit{``is/are a(n) \underline{NOME}''}); se assente, primo sostantivo della definizione via \texttt{pos\_tag}.
+  \item \textbf{Generazione dei candidati}: tutti i synset nominali del genus, pi\`u i loro iponimi fino a profondit\`a 3 (\texttt{Synset.closure(hyponyms, depth=3)}), con un cap di 300 candidati per evitare l'esplosione combinatoria di generi troppo generici (es.\ \textit{object}).
+  \item \textbf{Similarit\`a}: cosine similarity tra l'embedding SBERT (\texttt{all-MiniLM-L6-v2}) della definizione e quello della glossa di ciascun candidato; pareggio esatto o eccezione $\to$ nessuna predizione (contati come errore, nessun fallback che gonfi l'accuratezza).
+  \item \textbf{Diagnostica}: per ogni definizione si registra anche se il synset target fosse \emph{raggiungibile} tra i candidati generati al passo 2, indipendentemente da come poi \`e stato classificato il passo 3 -- questo separa un fallimento di \emph{retrieval} (target mai nei candidati) da uno di \emph{ranking} (target presente, ma non vincente).
 \end{enumerate}
 
-\begin{pylisting}[title={Selezione del synset per cosine similarity TF-IDF}]
-corpus = [defn_clean] + glosses_clean
-tfidf  = TfidfVectorizer()
-mat    = tfidf.fit_transform(corpus)
-sims   = cosine_similarity(mat[0:1], mat[1:])[0]
-best_synset = syn_names[int(np.argmax(sims))]
-correct     = (best_synset == target_syn)
-\end{pylisting}
+Esecuzione: $\sim$32 s per le 112 definizioni (4 concetti $\times$ 28), dominati dal caricamento di SBERT e dalla generazione delle closure WordNet per genus molto generici.
 
 \subsection{Risultati}
 
 \begin{table}[H]
   \centering
-  \caption{Accuratezza e score di similarit\`a per concetto (28 definizioni totali)}
-  \begin{tabular}{llp{2.3cm}lrr}
+  \caption{Accuratezza e coverage per concetto (112 definizioni totali, dati reali)}
+  \begin{tabular}{llccc}
     \toprule
-    \textbf{Concetto} & \textbf{Tipo} & \textbf{Specificit\`a} & \textbf{Sintet target} & \textbf{Corretto} & \textbf{Score medio} \\
+    \textbf{Concetto} & \textbf{Synset target} & \textbf{Coverage} & \textbf{Accuratezza} & \textbf{Acc.\ $|$ coverage} \\
     \midrule
-    Music  & Astratto & Generico  & \texttt{music.n.01}  & 9/28 (32.1\%)  & 0.130 \\
-    Ethics & Astratto & Specifico & \texttt{ethics.n.01} & 12/28 (42.9\%) & 0.152 \\
-    Tree   & Concreto & Generico  & \texttt{tree.n.01}   & 25/28 (89.3\%) & 0.103 \\
-    Teapot & Concreto & Specifico & \texttt{teapot.n.01} & 20/28 (71.4\%) & 0.127 \\
+    Music  & \texttt{music.n.01}                              & 1/28 (3.6\%) & 0/28 (0.0\%) & 0/1 \\
+    Ethics & \texttt{ethic/ethics/morality.n.01}               & 1/28 (3.6\%) & 1/28 (3.6\%) & 1/1 \\
+    Tree   & \texttt{tree.n.01}                                & 2/28 (7.1\%)$^*$ & 0/28 (0.0\%) & 0/2 \\
+    Teapot & \texttt{teapot.n.01}                              & 1/28 (3.6\%) & 1/28 (3.6\%) & 1/1 \\
+    \midrule
+    \textbf{Totale} & -- & \textbf{4/112 (3.57\%)} & \textbf{2/112 (1.79\%)} & \textbf{2/4 (50\%)} \\
     \bottomrule
   \end{tabular}
+  \\[0.3em]
+  {\footnotesize $^*$una delle due righe ``tree raggiungibile'' \`e in realt\`a una definizione di \textit{Tree} finita per errore nella colonna \textit{Music} (si veda il riquadro nel Lab 1); il genus estratto \`e comunque ``tree'', quindi il target \emph{music.n.01} resta correttamente irraggiungibile per quella riga.}
 \end{table}
 
-\begin{table}[H]
-  \centering
-  \caption{Aggregazione per tipo e specificit\`a}
-  \begin{tabular}{llrr}
-    \toprule
-    \textbf{Dimensione} & \textbf{Gruppo} & \textbf{Score medio} & \textbf{Accuratezza} \\
-    \midrule
-    Tipo          & Astratto  & 0.141 & 37.5\% \\
-    Tipo          & Concreto  & 0.115 & 80.4\% \\
-    Specificit\`a & Generico  & 0.116 & 60.7\% \\
-    Specificit\`a & Specifico & 0.140 & 57.1\% \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+Numero medio di candidati generati per definizione: 169.9 (mediana 187); il cap di 300 viene raggiunto in 38/112 casi (33.9\%) -- tipicamente per generi molto generici (\textit{object}, \textit{concept}, \textit{type}). Lo score di similarit\`a medio \`e 0.628 per le predizioni corrette contro 0.452 per quelle sbagliate: la metrica di similarit\`a distingue correttamente casi facili da casi difficili, ma il collo di bottiglia reale \`e a monte, nel passo di generazione dei candidati (coverage 3.57\%), non nel ranking (50\% di accuratezza quando il target \`e effettivamente tra i candidati).
 
 \subsection{Discussione}
 
-\paragraph{Concreto vs astratto.} Il risultato pi\`u significativo \`e la netta differenza di accuratezza tra concetti concreti (80.4\%) e astratti (37.5\%). I concetti concreti hanno propriet\`a fisiche ben definite che si traducono in un vocabolario condiviso e prevedibile tra gli studenti, facilitando il matching con le glosse WordNet; i concetti astratti ammettono invece angolature molto diverse (emotiva, filosofica, strutturale), per cui il TF-IDF non riesce a catturare la somiglianza concettuale quando le parole usate divergono.
+\paragraph{Perch\'e la coverage \`e cos\`i bassa: tre meccanismi concreti, verificabili nei dati.}
+\begin{itemize}
+  \item \textbf{Genus troppo generico}: 27/28 definizioni di \textit{Teapot} usano un genus diverso da ``teapot'' (\textit{container}: 9, \textit{concept}: 2, \textit{tool}: 2, \textit{type}: 2, \textit{object}: 2\dots); \texttt{teapot.n.01} \`e per\`o a 3 salti di iponimia da \texttt{container.n.01} (\textit{container} $\to$ \textit{vessel.n.03} $\to$ \textit{pot.n.01} $\to$ \textit{teapot.n.01}), esattamente al limite della profondit\`a esplorata, e nella pratica i tre passaggi intermedi contengono cos\`i tanti fratelli (altri tipi di vessel/pot) che la ricerca a genus fisso raramente centra il ramo giusto.
+  \item \textbf{Genus polisemico che affoga il target nel cap}: 9/28 definizioni di \textit{Tree} usano il genus ``plant''. \texttt{wn.synsets('plant', pos=NOUN)} restituisce prima il senso industriale (\texttt{plant.n.01}, ``building for industrial labor'', closure di 35 synset) e poi il senso botanico (\texttt{plant.n.02}, che contiene davvero \texttt{tree.n.01} nella sua closure a profondit\`a 3, di 747 synset). Il target \`e per\`o alla posizione $\sim$667 nell'ordine di attraversamento -- ben oltre il cap di 300 -- quindi viene sistematicamente tagliato fuori nonostante sia strutturalmente raggiungibile. \`E un artefatto diretto della combinazione ordine-di-attraversamento + cap, non un limite concettuale del principio del genus.
+  \item \textbf{Genus semanticamente vicino ma tassonomicamente lontano}: 3/28 definizioni di \textit{Ethics} usano il genus ``philosophy''; verificando \texttt{wn.synsets('philosophy')} e le rispettive closure a profondit\`a 3, nessuna contiene \texttt{ethic.n.01}/\texttt{ethics.n.01}/\texttt{morality.n.01} -- la gerarchia degli iponimi di WordNet non colloca l'etica come discendente tassonomico della filosofia entro 3 livelli, anche se concettualmente ``etica'' \`e intuitivamente una branca della filosofia.
+\end{itemize}
 
-\paragraph{L'efficacia dello schema genus-differentia.} Le definizioni che seguono esplicitamente lo schema \emph{genus-differentia} ottengono sistematicamente score pi\`u alti: ad esempio la definizione di \textit{Ethics} con score 0.63 (\textit{``branch of philosophy [genus] that studies human behavior by trying to define what is right and what is wrong [differentia]''}) si allinea quasi letteralmente con la glossa di \texttt{ethics.n.01}.
+\paragraph{Quando il genus \`e giusto, il ranking funziona nella met\`a dei casi.} Nei 4 casi in cui il target \`e comunque raggiungibile, la similarit\`a SBERT lo seleziona correttamente 2 volte su 4: corretto per \textit{Ethics} (genus ``principles'', score 0.617) e \textit{Teapot} (unico caso con genus esatto ``teapot'', un solo candidato possibile); sbagliato per \textit{Music} (genus ``music'' stesso, 278 candidati, ma la definizione viene assegnata a \texttt{monophony.n.01}, score 0.682 contro un punteggio pi\`u basso per \texttt{music.n.01} stesso) e per \textit{Tree} (genus ``tree'', 300 candidati -- il cap \`e raggiunto -- ma il vincitore \`e \texttt{sissoo.n.01}, un iponimo specifico di \textit{tree}, non l'iperonimo generico target).
 
-\paragraph{Limiti del TF-IDF.} Il metodo presenta tre limiti rilevanti: \emph{opacit\`a semantica} (sinonimi come \textit{container} e \textit{vessel} non vengono riconosciuti come simili), \emph{sensibilit\`a alla lunghezza} (definizioni brevi producono vettori sparsi) e \emph{assenza di struttura sintattica} (bag-of-words, mentre lo schema genus-differentia ha una struttura semanticamente significativa). Un approccio con embedding contestuali (es.\ Sentence-BERT) supererebbe il limite della dipendenza lessicale esatta -- esattamente l'approccio poi adottato nei Lab 4 e 5.
+\paragraph{Confronto con l'approccio precedente (glosse pre-selezionate).} Una versione precedente di questo laboratorio confrontava ciascuna definizione con 5 glosse candidate scelte a mano (incluso sempre il target) tramite TF-IDF, ottenendo accuratezze artificialmente alte (32--89\%): con soli 5 candidati pre-filtrati il problema di retrieval \`e gi\`a risolto in partenza, e resta solo il ranking -- il compito diventa incomparabilmente pi\`u facile della vera ricerca onomasiologica non vincolata. L'accuratezza dell'1.79\% ottenuta qui non \`e quindi un peggioramento del metodo, ma la misura \emph{onesta} di un compito molto pi\`u difficile: cercare in tutto WordNet raggiungibile da un genus estratto automaticamente, senza sapere a priori quale sia il synset giusto.
+
+\paragraph{Limiti residui.} Il vincolo di profondit\`a 3 e il cap di 300 sono scelte di trade-off computazionale (esplorati esplicitamente sopra come causa diretta di due dei tre fallimenti di coverage); un cap adattivo (es.\ proporzionale al numero di sensi del genus, o un ordinamento per rilevanza anzich\'e l'ordine restituito da NLTK) probabilmente migliorerebbe la coverage senza dover rinunciare al limite di profondit\`a. Sul piano dei dati, 5/28 definizioni della colonna \textit{Ethics} sono in realt\`a definizioni di \textit{Teapot} (si veda il riquadro nel Lab 1): il loro genus (\textit{container}) \`e quindi correttamente lontanissimo dal target \texttt{ethic.n.01}, ma si tratta di errori strutturalmente non recuperabili indipendentemente dalla qualit\`a del metodo -- escludendole, l'accuratezza per \textit{Ethics} passa da 3.57\% (1/28) a 4.35\% (1/23), una differenza minima che non altera il quadro complessivo.
 
 % ============================================================
 \section{Lab 3 -- Complessit\`a Polisemica Cross-Linguistica}
@@ -300,29 +282,31 @@ correct     = (best_synset == target_syn)
 
 \subsection{Obiettivo}
 
-Il Lab 3 verifica empiricamente la tesi secondo cui \textbf{la polisemia non \`e una propriet\`a universale della parola, ma del modo in cui una lingua organizza il proprio lessico}: la stessa area concettuale pu\`o essere lessicalizzata in modo completamente diverso da una lingua all'altra. Si confronta la complessit\`a polisemica di \textbf{20 lemmi} (8 sostantivi, 6 verbi, 6 aggettivi) tradotti in \textbf{inglese, italiano e spagnolo}, usando l'Open Multilingual WordNet (OMW) tramite NLTK.
+Il Lab 3 verifica empiricamente la tesi secondo cui \textbf{la polisemia non \`e una propriet\`a universale della parola, ma del modo in cui una lingua organizza il proprio lessico}. Si confronta la complessit\`a polisemica di \textbf{20 lemmi} (8 sostantivi, 6 verbi, 6 aggettivi) tradotti in \textbf{inglese, italiano e spagnolo}, usando l'Open Multilingual WordNet (OMW) tramite NLTK, con filtro di categoria grammaticale applicato in ogni query (\texttt{wn.synsets(lemma, pos=POS\_MAP[categoria], lang=...)}) per evitare di confrontare, ad esempio, i sensi verbali+nominali+aggettivali dell'inglese con il solo senso aggettivale disponibile in un'altra lingua.
 
 \subsection{Metodologia}
 
-Per ogni lemma e lingua si recuperano i synset con \texttt{wn.synsets(lemma, lang=...)} e si conta il numero di sensi $N(w)$. Poich\'e OMW non fornisce frequenze d'uso per le lingue non inglesi (a differenza dell'inglese, dove esistono dati SemCor), si assume una \textbf{distribuzione uniforme} sui sensi disponibili, per cui l'entropia di Shannon si riduce a $H(w) = \log_2 N(w)$: una scala pi\`u interpretabile del conteggio grezzo, ma non una misura indipendente da esso -- un limite esplicito del dataset multilingue, discusso criticamente nella relazione originale.
+Per l'inglese l'entropia di Shannon \`e calcolata sulle \textbf{frequenze reali di SemCor} (\texttt{Lemma.count()} di NLTK), sommando i conteggi dei lemmi che matchano la forma target per ciascun synset: $H(w) = -\sum_i p_i \log_2 p_i$ con $p_i$ proporzionale alla frequenza reale d'uso del senso $i$. Per italiano e spagnolo, OMW non fornisce dati di frequenza, quindi si usa un fallback a distribuzione uniforme ($H(w)=\log_2 N(w)$), esplicitamente etichettato nei dati come \texttt{uniform\_fallback} per non confondere le due fonti.
 
-L'\textbf{asimmetria} cross-linguistica di un lemma \`e definita come
-\[
-  \text{asimmetria}(w) = \max(N_{en}, N_{it}, N_{es}) - \min(N_{en}, N_{it}, N_{es}).
-\]
+\begin{pylisting}[title={Entropia reale da conteggi SemCor, solo per l'inglese}]
+def english_sense_counts(lemma_en, synsets):
+    target = lemma_en.lower().replace(" ", "_")
+    return [sum(l.count() for l in syn.lemmas()
+                if l.name().lower() == target) for syn in synsets]
+\end{pylisting}
 
 \subsection{Risultati}
 
 \begin{table}[H]
   \centering
-  \caption{Statistiche aggregate sui 20 lemmi, per lingua}
+  \caption{Statistiche aggregate sui 20 lemmi, per lingua (dati reali, esecuzione corrente)}
   \begin{tabular}{lrrrrr}
     \toprule
-    \textbf{Lingua} & \textbf{Media sensi} & \textbf{Mediana} & \textbf{Max} & \textbf{Media entropia} \\
+    \textbf{Lingua} & \textbf{Media sensi} & \textbf{Mediana} & \textbf{Max} & \textbf{Media entropia} & \textbf{Media top-1} \\
     \midrule
-    Inglese  & 31.70 & 30.5 & 75 & 4.79 bit \\
-    Italiano &  7.95 &  6.5 & 23 & 2.71 bit \\
-    Spagnolo & 13.15 & 12.5 & 32 & 3.45 bit \\
+    Inglese  & 22.95 & 18.0 & 59 & 2.275 bit (SemCor) & 0.483 \\
+    Italiano &  7.15 &  6.0 & 23 & 2.511 bit (uniforme) & 0.221 \\
+    Spagnolo &  9.90 &  7.5 & 32 & 2.990 bit (uniforme) & 0.151 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -335,37 +319,40 @@ L'\textbf{asimmetria} cross-linguistica di un lemma \`e definita come
 
 \begin{table}[H]
   \centering
-  \caption{Top 5 lemmi per asimmetria cross-linguistica (max$-$min sensi)}
-  \begin{tabular}{lrrrr}
+  \caption{Top 10 lemmi per asimmetria cross-linguistica (max$-$min sensi)}
+  \begin{tabular}{lrrrrr}
     \toprule
-    \textbf{Lemma (EN)} & \textbf{Inglese} & \textbf{Italiano} & \textbf{Spagnolo} & \textbf{Asimmetria} \\
+    \textbf{Lemma (EN)} & \textbf{Inglese} & \textbf{Italiano} & \textbf{Spagnolo} & \textbf{Asimmetria} & \textbf{EN/IT} \\
     \midrule
-    break & 75 & 6  & 23 & 69 \\
-    run   & 57 & 5  & 7  & 52 \\
-    light & 47 & 5  & 17 & 42 \\
-    head  & 42 & 9  & 11 & 33 \\
-    open  & 36 & 4  & 24 & 32 \\
+    break & 59 & 6  & 23 & 53 & 9.83$\times$ \\
+    run   & 41 & 5  & 7  & 36 & 8.20$\times$ \\
+    give  & 44 & 15 & 32 & 29 & 2.93$\times$ \\
+    take  & 42 & 23 & 16 & 26 & 1.83$\times$ \\
+    head  & 33 & 9  & 11 & 24 & 3.67$\times$ \\
+    light & 25 & 5  & 4  & 21 & 5.00$\times$ \\
+    line  & 30 & 10 & 16 & 20 & 3.00$\times$ \\
+    open  & 21 & 3  & 5  & 18 & 7.00$\times$ \\
+    turn  & 26 & 9  & 14 & 17 & 2.89$\times$ \\
+    deep  & 15 & 2  & 3  & 13 & 7.50$\times$ \\
     \bottomrule
   \end{tabular}
+  \\[0.3em]
+  {\footnotesize \textit{line}: lo spagnolo passa da 0 a 16 sensi correggendo l'accento del lemma (\textit{linea}\,$\to$\,\textit{l\'inea}, mancante nel dataset iniziale: OMW indicizza i lemmi spagnoli con diacritici, e senza accento la query restituiva zero sensi); l'asimmetria misurata scende di conseguenza da 30 a 20.}
 \end{table}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.95\textwidth]{boxplot_distribuzione.png}
-  \caption{Sinistra: distribuzione del numero di sensi per lingua. Destra: distribuzione per categoria grammaticale.}
-\end{figure}
+I 5 lemmi a minore asimmetria sono tutti sostantivi concreti: \textit{mouth} (8/7/6, asimmetria 2), \textit{table} (6/2/4, asimmetria 4), \textit{foot} (11/6/8, asimmetria 5), \textit{hard} (12/5/8, asimmetria 7), \textit{free} (9/2/4, asimmetria 7).
 
 \subsection{Discussione}
 
-\paragraph{Gerarchia EN $\gg$ ES $>$ IT.} In media l'inglese registra circa 4 volte pi\`u sensi dell'italiano e oltre il doppio dello spagnolo, per lo stesso lemma. Il pattern si mantiene all'interno di ogni categoria grammaticale, ma va interpretato con cautela: Princeton WordNet \`e una risorsa raffinata da oltre 30 anni con granularit\`a dei sensi molto fine, mentre le estensioni OMW per italiano e spagnolo sono mappature pi\`u recenti e meno esaustive. Parte della differenza \`e quindi attribuibile a copertura/granularit\`a delle risorse, non solo a una reale differenza di polisemia.
+\paragraph{L'entropia reale rivela un'ambiguit\`a d'uso molto diversa dal semplice conteggio dei sensi.} Confrontando l'entropia SemCor con $\log_2(N)$ (l'entropia che si otterrebbe assumendo uso uniforme dei sensi) emergono scarti enormi per alcuni lemmi: \textit{head} ha 33 sensi ($\log_2 33=5.04$ bit) ma entropia reale di soli \textbf{1.10 bit}, con l'\textbf{82\%} delle occorrenze in SemCor concentrate su un unico senso dominante; \textit{hand} (14 sensi, $\log_2 14=3.81$ bit) ha entropia reale di \textbf{0.56 bit}, il 93\% delle occorrenze su un solo senso. All'estremo opposto, \textit{take} (42 sensi) ha entropia reale 4.47 bit con top-1 share di appena il 12.6\%, e \textit{break} (59 sensi) 3.98 bit con top-1 share 15.8\%: qui il numero di sensi \emph{riflette} un'ambiguit\`a d'uso genuina. La correlazione tra entropia reale e $\log_2(N)$ sui 20 lemmi inglesi \`e $r=0.76$: alta ma tutt'altro che 1 -- confermando che contare i sensi e misurare l'entropia sono due misure correlate ma non equivalenti, e che l'entropia aggiunge esattamente l'informazione che l'esercizio si proponeva di isolare: quanto un dizionario di sensi formali rispecchia l'uso reale della lingua.
 
-\paragraph{Il caso \textit{bank}: asimmetria strutturale, non solo quantitativa.} In italiano ``banca'' (2 sensi) copre quasi solo l'istituto finanziario (il senso ``riva del fiume'' \`e lessicalizzato come \textit{riva}); in spagnolo ``banco'' (8 sensi) \`e pi\`u carico semanticamente, includendo anche il mobile e il banco di sabbia/pesci -- pi\`u vicino al comportamento inglese. La stessa area concettuale viene quindi ripartita diversamente tra le tre lingue.
+\paragraph{Gerarchia EN $>$ ES $>$ IT, ma ridimensionata dal filtro POS.} Il filtro di categoria grammaticale riduce sensibilmente il divario rispetto a un confronto senza filtro: l'inglese resta il pi\`u granulare (media 22.95 sensi), ma il rapporto con l'italiano scende a $\sim$3.2$\times$ (contro il $\sim$4$\times$ misurato senza filtro POS in una versione precedente dell'analisi). Va comunque attribuita una parte della differenza residua alla maggiore maturit\`a/copertura di Princeton WordNet rispetto alle estensioni OMW per lingue romanze, non solo a una reale differenza di polisemia.
 
-\paragraph{Verbi vs sostantivi concreti.} I lemmi con asimmetria massima sono entrambi verbi (\textit{run}, \textit{break}), che in inglese si estendono a domini semantici eterogenei lessicalizzati in italiano/spagnolo con verbi distinti. All'opposto, sostantivi concreti con referente fisico stabile (\textit{mouth}, \textit{table}) mostrano la minore asimmetria -- lo stesso effetto stabilizzante del referente concreto osservato nei Lab 1--2.
+\paragraph{Verbi vs sostantivi concreti.} I lemmi a maggiore asimmetria sono quasi tutti verbi (\textit{break}, \textit{run}, \textit{give}, \textit{take}, \textit{turn}: 5 dei 10 lemmi in classifica); per categoria grammaticale la media dei sensi inglesi \`e 39.33 per i verbi contro 15.88 per i sostantivi e 16.00 per gli aggettivi -- i verbi inglesi si estendono a domini semantici molto pi\`u eterogenei, lessicalizzati in italiano/spagnolo con verbi distinti. All'opposto, i 5 lemmi a minore asimmetria sono tutti sostantivi/aggettivi con referente fisico o percettivo stabile (\textit{mouth}, \textit{table}, \textit{foot}), lo stesso effetto stabilizzante osservato nei Lab 1--2.
 
-\paragraph{Implicazioni per l'NLP multilingue.} Un sistema di machine translation o cross-lingual transfer che assuma una corrispondenza 1:1 tra i sensi di un lemma inglese e del suo corrispettivo italiano/spagnolo commetterebbe un errore sistematico, specialmente per verbi ad alta polisemia.
+\paragraph{Il caso \textit{bank}: l'entropia reale conferma l'asimmetria strutturale.} L'inglese \textit{bank} (10 sensi, entropia reale 1.32 bit, top-1 52\%) \`e dominato in uso da un solo senso (verosimilmente l'istituto finanziario); l'italiano ``banca'' (2 sensi, entropia 1.00 bit) copre quasi solo quello stesso senso; lo spagnolo ``banco'' (8 sensi, entropia uniforme 3.00 bit) \`e semanticamente pi\`u carico, includendo anche il mobile e il banco di sabbia/pesci. La stessa area concettuale \`e quindi ripartita diversamente tra le tre lingue, non solo con densit\`a diversa.
 
-Il limite principale \`e l'assunzione di distribuzione uniforme dei sensi, dovuta all'assenza di dati di frequenza d'uso in OMW per le lingue romanze.
+\paragraph{Limiti.} Zero lemmi con copertura OMW nulla dopo la correzione dell'accento su \textit{l\'inea} (verificato esplicitamente ad ogni esecuzione, si veda il riquadro nel Lab 1 per un caso analogo di errore nei dati grezzi). Resta il limite strutturale dell'assunzione uniforme per italiano/spagnolo, e il fatto che gli allineamenti lessicali cross-linguistici (es.\ \textit{table}$\to$\textit{mesa}, non \textit{tabla}) sono stati fissati manualmente: parte dell'asimmetria residua pu\`o riflettere un disallineamento traduttivo pi\`u che una reale differenza di polisemia.
 
 % ============================================================
 \section{Lab 4 -- Topic Modeling con BERTopic}
@@ -388,38 +375,44 @@ Costruire una pipeline completa di \textbf{topic modeling non supervisionato} su
 
 \subsection{Configurazioni testate}
 
+Le tre configurazioni sono costruite per isolare un solo fattore alla volta rispetto alla baseline, cos\`i che ogni confronto a coppie risponda a una domanda precisa (\textit{quanto conta il modello di embedding?}, \textit{quanto contano i parametri di clustering?}), invece di cambiare pi\`u parametri contemporaneamente:
+
 \begin{table}[H]
   \centering
   \small
-  \caption{Le tre configurazioni confrontate}
+  \caption{Le tre configurazioni confrontate -- un solo fattore cambia per riga}
   \begin{tabular}{p{2.6cm}p{3.1cm}p{4.3cm}p{3.6cm}}
     \toprule
     \textbf{Config} & \textbf{Embedding} & \textbf{UMAP} & \textbf{HDBSCAN} \\
     \midrule
-    1 -- Baseline       & \texttt{gte-small} (384d)     & n\_comp=5, n\_neigh=15   & min\_cluster=50 \\
-    2 -- MiniLM fine    & \texttt{all-MiniLM-} \texttt{L6-v2}     & n\_comp=10, n\_neigh=10  & min\_cluster=30 \\
-    3 -- MiniLM coarse  & \texttt{all-MiniLM-} \texttt{L6-v2}     & n\_comp=5, n\_neigh=30   & min\_cluster=150 \\
+    1 -- Baseline        & \texttt{gte-small} (384d)          & n\_comp=5, n\_neigh=15  & min\_cluster=50 \\
+    2 -- solo modello     & \texttt{all-MiniLM-L6-v2} (384d)   & \textit{invariato}      & \textit{invariato} \\
+    3 -- solo clustering  & \textit{invariato (MiniLM)}        & n\_comp=10, n\_neigh=30 & min\_cluster=150 \\
     \bottomrule
   \end{tabular}
 \end{table}
+
+Gli embedding sono cachati per modello (\texttt{emb\_cache}): la Config 3 riusa gli embedding MiniLM gi\`a calcolati per la Config 2 invece di ricalcolarli, e UMAP/HDBSCAN vengono fittati una sola volta ciascuno, direttamente dentro \texttt{BERTopic.fit\_transform} (nessun fit standalone duplicato).
 
 \subsection{Risultati}
 
+Esecuzione su CPU (nessuna GPU disponibile), 44\,949 abstract:
+
 \begin{table}[H]
   \centering
-  \caption{Confronto quantitativo tra le tre configurazioni}
-  \begin{tabular}{lrrrl}
+  \caption{Confronto quantitativo tra le tre configurazioni (dati reali, esecuzione corrente)}
+  \begin{tabular}{lrrrr}
     \toprule
     \textbf{Configurazione} & \textbf{\#Topic} & \textbf{Outlier} & \textbf{Outlier\%} & \textbf{Tempo totale} \\
     \midrule
-    1 -- Baseline      & 151 & 14.357 & 31.9\% & $\approx$ 3h 47m \\
-    2 -- MiniLM fine   & 171 & 12.747 & 28.4\% & $\approx$ 17m 30s \\
-    3 -- MiniLM coarse &  49 & 14.899 & 33.1\% & $\approx$ 11m \\
+    1 -- Baseline (gte-small)          & 151 & 14\,357 & 31.9\% & 7\,417 s ($\approx$2h 03m) \\
+    2 -- solo modello (MiniLM)         & 116 & 12\,375 & 27.5\% & 513 s ($\approx$8m 33s) \\
+    3 -- solo clustering (MiniLM)      &  46 & 15\,036 & 33.5\% & 35 s \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\begin{exbox}{Esempio -- Config 1 (Baseline), top-5 topic per numero documenti}
+\begin{exbox}{Config 1 (Baseline, gte-small) -- top-5 topic per numero documenti}
 \begin{verbatim}
 0  2235  speech, asr, recognition, end, acoustic
 1  2166  question, qa, questions, answer, answering
@@ -429,13 +422,26 @@ Costruire una pipeline completa di \textbf{topic modeling non supervisionato} su
 \end{verbatim}
 \end{exbox}
 
+\begin{exbox}{Config 3 (solo clustering pi\`u grossolano) -- top-5 topic, con contaminazione da stopword}
+\begin{verbatim}
+0  2689  dialogue, the, dialog, to
+1  2411  speech, asr, recognition, the
+3  1675  medical, clinical, and, the
+6  1293  transformer, attention, the, models
+\end{verbatim}
+\end{exbox}
+
+Validazione qualitativa (top-5 topic $\times$ 3 documenti rappresentativi, titolo+abstract): per la Config 1, il documento pi\`u rappresentativo del topic 0 (\textit{speech, asr, recognition\dots}) \`e \textit{``End-to-end model for named entity recognition from speech without paired training data''}, coerente con le parole del topic.
+
 \subsection{Discussione}
 
-\paragraph{Config 1 vs Config 2: granularit\`a e qualit\`a.} Entrambe producono topic semanticamente coerenti e privi di stopword. La Config 2 produce 20 topic in pi\`u (171 vs 151) e meno outlier (28.4\% vs 31.9\%): \texttt{min\_cluster\_size=30} pi\`u basso consente cluster pi\`u piccoli e numerosi, mentre \texttt{n\_components=10} preserva pi\`u struttura semantica locale. Computazionalmente la differenza \`e enorme: la Config 1 richiede $\approx$3h47m (13.484s solo per gli embedding con \texttt{gte-small} su CPU), la Config 2 meno di 18 minuti -- a parit\`a (o superiorit\`a) di qualit\`a, \texttt{all-MiniLM-L6-v2} \`e la scelta pi\`u efficiente per dataset di questa dimensione senza GPU.
+\paragraph{Config 1 $\to$ 2: effetto isolato del modello di embedding.} A parit\`a di UMAP/HDBSCAN, sostituire \texttt{gte-small} con \texttt{all-MiniLM-L6-v2} produce \textbf{35 topic in meno} (151$\to$116, $-23\%$), \textbf{4.4 punti percentuali in meno di outlier} (31.9\%$\to$27.5\%) e un tempo totale \textbf{14.5 volte inferiore} (7\,417s$\to$513s). Poich\'e questo \`e l'\emph{unico} parametro cambiato tra le due righe, l'attribuzione causale \`e diretta: su questo corpus, \texttt{gte-small} produce embedding che UMAP/HDBSCAN separano in pi\`u cluster pi\`u piccoli (pi\`u topic, pi\`u outlier), mentre MiniLM produce una geometria che il clustering density-based riassume in meno cluster pi\`u compatti -- a un costo computazionale drasticamente inferiore, il che rende MiniLM la scelta preferibile su CPU per un corpus di questa dimensione, a meno che i topic pi\`u fini della Config 1 non siano specificamente richiesti.
 
-\paragraph{Config 3: un failure mode istruttivo.} Con \texttt{min\_cluster\_size=150} e \texttt{n\_neighbors=30}, HDBSCAN forma solo 49 cluster molto pi\`u grandi e tematicamente misti. Il c-TF-IDF, calcolato su cluster troppo eterogenei, diluisce le parole discriminanti con termini ad alta frequenza globale -- incluse le stopword: i topic risultanti contengono esplicitamente \textit{the}, \textit{to}, \textit{and}, \textit{of} tra le prime cinque parole (es.\ topic ``transformer, attention, \textbf{the}, models, \textbf{of}''), segno che il segnale semantico specifico del cluster \`e insufficiente rispetto al rumore introdotto dalla dimensione eccessiva.
+\paragraph{Config 2 $\to$ 3: effetto isolato di UMAP/HDBSCAN.} A parit\`a di embedding (MiniLM), passare da \texttt{n\_neighbors=15}/\texttt{min\_cluster\_size=50} a \texttt{n\_neighbors=30}/\texttt{min\_cluster\_size=150} (proiezione pi\`u globale, cluster minimi pi\`u grandi) riduce i topic da 116 a \textbf{46} ($-60\%$) e \emph{aumenta} gli outlier di 5.9 punti (27.5\%$\to$33.5\%): soglie di densit\`a pi\`u alte lasciano fuori pi\`u punti come rumore invece di assorbirli in cluster piccoli. La Config 3 replica inoltre un failure mode gi\`a osservato in precedenti esecuzioni: alcuni dei topic pi\`u popolosi (\textit{dialogue, \textbf{the}, dialog, to}; \textit{medical, clinical, \textbf{and}, \textbf{the}}; \textit{transformer, attention, \textbf{the}, models}) contengono esplicitamente stopword tra le prime parole c-TF-IDF, assente invece in Config 1 e 2 -- segno che cluster troppo eterogenei diluiscono il segnale lessicale specifico del topic fino a lasciar riemergere termini ad alta frequenza globale. Il fatto che la contaminazione compaia \emph{solo} nella Config 3, a parit\`a di embedding con la Config 2, isola la causa nei parametri di clustering, non nel modello.
 
-\paragraph{Configurazione consigliata.} La Config 2 risulta complessivamente la migliore: pi\`u topic, meno outlier, parole rappresentative pulite, tempo di esecuzione praticabile su CPU. Il laboratorio mostra come la qualit\`a del topic modeling dipenda criticamente dalla combinazione di tre fattori -- capacit\`a dell'embedding di catturare la semantica del dominio, granularit\`a della proiezione UMAP, soglia di densit\`a di HDBSCAN -- e come anche tecniche moderne come BERTopic non siano esenti da failure mode prevedibili e analizzabili.
+\paragraph{Il costo computazionale \`e quasi interamente nell'embedding, non nel clustering.} Il salto Config 2 (513s, include il calcolo di tutti gli embedding MiniLM) $\to$ Config 3 (35s, cache hit sugli stessi embedding) mostra che UMAP+HDBSCAN+BERTopic da soli, su embedding gi\`a calcolati, costano circa 35s anche con impostazioni pi\`u onerose (\texttt{n\_neighbors=30}); il grosso del tempo di Config 1 (7\,417s) \`e quindi quasi certamente il calcolo degli embedding con \texttt{gte-small} su CPU, non UMAP/HDBSCAN.
+
+\paragraph{Configurazione consigliata.} La Config 2 (MiniLM, parametri di clustering della baseline) \`e il miglior compromesso osservato: meno outlier della baseline, tempo di esecuzione praticabile su CPU (8m30s contro le 2 ore della Config 1), e nessuna contaminazione da stopword nei topic. Il laboratorio mostra concretamente, con un confronto a variabile isolata, come modello di embedding e parametri di clustering agiscano su assi indipendenti (granularit\`a/velocit\`a il primo, granularit\`a/purezza il secondo) e come un solo parametro sbagliato (qui, soglie HDBSCAN troppo larghe) sia sufficiente a degradare la qualit\`a dei topic in modo visibile e misurabile.
 
 % ============================================================
 \section{Lab 5 -- Retrieval-Augmented Generation (RAG)}
@@ -535,15 +541,15 @@ Il sistema RAG ibrido (SciBERT+FAISS+BM25+RRF) migliora sistematicamente la Prec
 \section{Conclusioni generali}
 % ============================================================
 
-I cinque laboratori, pur usando tecniche eterogenee (TF-IDF, WordNet/OMW, BERTopic, RAG neurale), convergono su alcune osservazioni ricorrenti:
+I cinque laboratori, pur usando tecniche eterogenee (SBERT, WordNet/OMW, BERTopic, RAG neurale), convergono su alcune osservazioni ricorrenti, tutte verificate nei dati raccolti e non solo attese a priori:
 
 \begin{enumerate}
-  \item \textbf{I concetti concreti con referente fisico stabile sono sistematicamente pi\`u trattabili computazionalmente} dei concetti astratti: maggiore sovrapposizione lessicale tra definizioni indipendenti (Lab 1), maggiore accuratezza di recupero onomasiologico (Lab 2), minore asimmetria cross-linguistica (Lab 3).
-  \item \textbf{I metodi lessicali puri (TF-IDF, BM25) sono baseline solide ma limitate} quando la variabilit\`a lessicale \`e alta: insufficienti per concetti astratti nel Lab 2, ma complementari -- non sostituibili -- al retrieval semantico nel Lab 5, dove la combinazione ibrida supera sistematicamente entrambi i metodi presi singolarmente.
-  \item \textbf{La qualit\`a dell'output automatico dipende criticamente dai parametri scelti}, e questa dipendenza \`e stata verificata esplicitamente in pi\`u laboratori: la combinazione di modello di embedding, granularit\`a UMAP e soglia HDBSCAN nel Lab 4 (con un vero e proprio failure mode osservato nella Config 3), e il valore di $k$ nel retrieval del Lab 5.
-  \item \textbf{La valutazione quantitativa rivela limiti che l'ispezione qualitativa da sola non mostrerebbe}: lo score pari a zero per sinonimi non riconosciuti nel Lab 2, le stopword infiltrate nei topic del Lab 4, la query su BERT non risolta correttamente nel Lab 5 nonostante un sistema altrimenti funzionante.
+  \item \textbf{Il referente fisico stabile riduce la variabilit\`a lessicale, ma il guadagno di SBERT rispetto a Jaccard \`e maggiore proprio dove manca}: nel Lab 1 il rapporto Simlex concreto/astratto \`e $1.59\times$, ma sceso a $1.05\times$ passando a Simsem (SBERT) -- la rappresentazione semantica compensa selettivamente la sovrapposizione lessicale mancante per i concetti astratti (Lab 1, $\Delta_{\text{Astratto}}=0.267 > \Delta_{\text{Concreto}}=0.256$); nel Lab 3 i sostantivi concreti con referente fisico (\textit{mouth}, \textit{table}) restano quelli a minore asimmetria cross-linguistica. Nel Lab 2, per\`o, questo pattern non si conferma pi\`u con l'attuale ricerca genus+iponimi: concreto (\textit{teapot}, 3.6\% accuratezza) e astratto (\textit{ethics}, 3.6\%) risultano appaiati, perch\'e il collo di bottiglia \`e ormai la profondit\`a/ampiezza della ricerca tassonomica, non la concretezza del concetto.
+  \item \textbf{Nel recupero automatico, il problema domin ante \`e spesso trovare i candidati giusti, non scegliere tra quelli trovati}: il Lab 2 lo dimostra scomponendo esplicitamente accuratezza globale (1.79\%), coverage -- il target \`e tra i candidati? (3.57\%) -- e accuratezza condizionata alla coverage (50\%). Il ranking (SBERT tra definizione e glosse) funziona discretamente quando il target \`e raggiungibile; il vero limite \`e a monte, nell'estrazione del genus e nella profondit\`a di iponimia esplorata.
+  \item \textbf{La qualit\`a dell'output automatico dipende in modo misurabile e isolabile dai parametri scelti}, quando il disegno sperimentale cambia un solo fattore alla volta: nel Lab 4, isolare l'effetto del modello di embedding (Config 1$\to$2: $-23\%$ topic, $-4.4$pp outlier, $14.5\times$ pi\`u veloce) da quello di UMAP/HDBSCAN (Config 2$\to$3: $-60\%$ topic, $+5.9$pp outlier, comparsa di stopword nei topic) permette di attribuire ciascun effetto alla sua causa, invece di osservare un cambiamento aggregato non interpretabile.
+  \item \textbf{Controllare l'integrit\`a dei dati grezzi non \`e meno importante della scelta del metodo}: nel dataset del Lab 1/Lab 2, 5 rispondenti su 28 (17.9\%) hanno le colonne astratto/concreto scambiate a coppie, contaminando silenziosamente sia le medie Simlex/Simsem sia l'accuratezza di recupero; nel Lab 3, un lemma spagnolo senza accento (\textit{linea} invece di \textit{l\'inea}) restituiva zero sensi da OMW, gonfiando artificialmente l'asimmetria misurata per quel lemma. In entrambi i casi l'errore era silenzioso -- nessuna eccezione, nessun crash -- e verificabile solo confrontando manualmente un campione dei dati con l'output atteso.
 \end{enumerate}
 
-Nel complesso, il percorso dei cinque laboratori mostra l'evoluzione naturale delle tecniche di NLP affrontate nel corso: da metodi lessicali e simbolici (Lab 1--3) verso rappresentazioni neurali contestuali (Lab 4--5), senza che i primi perdano rilevanza -- BM25 resta competitivo e complementare anche nel sistema pi\`u avanzato (RAG ibrido del Lab 5).
+Nel complesso, il percorso dei cinque laboratori mostra l'evoluzione naturale delle tecniche di NLP affrontate nel corso: da metodi lessicali e simbolici (Lab 1--3) verso rappresentazioni neurali contestuali (Lab 4--5), senza che i primi perdano rilevanza -- BM25 resta competitivo e complementare anche nel sistema pi\`u avanzato (RAG ibrido del Lab 5), ed \`e proprio il confronto diretto lessicale-vs-semantico (Simlex/Simsem nel Lab 1, retrieval-vs-ranking nel Lab 2, BM25-vs-SciBERT nel Lab 5) a fornire, in ogni laboratorio, il dato pi\`u interpretabile.
 
 \end{document}

@@ -1,0 +1,5 @@
+Concetto,Tipo,Specificita,Simlex,Simsem,Delta_Simsem_minus_Simlex,N_definizioni
+Music,Astratto,Generico,0.0492,0.3296,0.2804,28
+Ethics,Astratto,Specifico,0.0435,0.2974,0.2539,28
+Tree,Concreto,Generico,0.0807,0.3518,0.2711,28
+Teapot,Concreto,Specifico,0.0672,0.3073,0.2401,28

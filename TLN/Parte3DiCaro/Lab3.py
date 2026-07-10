@@ -1,4 +1,11 @@
+import sys
 import warnings
+
+# su Windows la console non e' UTF-8 di default: senza questo i print con em-dash
+# e altri simboli non-ASCII appaiono come '?'. reconfigure() (non un TextIOWrapper
+# manuale) perche' in Jupyter sys.stdout non espone sempre un .buffer grezzo.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
@@ -24,7 +31,7 @@ LEMMI = [
     ("bank", "banca", "banco", "sostantivo"),
     ("hand", "mano", "mano", "sostantivo"),
     ("head", "testa", "cabeza", "sostantivo"),
-    ("line", "linea", "linea", "sostantivo"),
+    ("line", "linea", "línea", "sostantivo"),
     ("key", "chiave", "llave", "sostantivo"),
     ("table", "tavolo", "mesa", "sostantivo"),
     ("mouth", "bocca", "boca", "sostantivo"),
@@ -78,12 +85,21 @@ def calcola_metriche(synsets, lemma, lang_code):
     IT/ES: OMW non fornisce frequenze robuste -> distribuzione uniforme.
     """
     n = len(synsets)
-    if n <= 1:
+    if n == 0:
+        # nessun senso trovato: non e' monosemia, e' un buco di copertura OMW
+        # (frequente per aggettivi IT/ES) -> niente valori fittizi come top1_share=1.0
         return {
-            "n_sensi": n,
+            "n_sensi": 0,
+            "entropia": np.nan,
+            "top1_share": np.nan,
+            "metodo_entropia": "no_senses",
+        }
+    if n == 1:
+        return {
+            "n_sensi": 1,
             "entropia": 0.0,
             "top1_share": 1.0,
-            "metodo_entropia": "degenerate",
+            "metodo_entropia": "monosemous",
         }
 
     if lang_code == "eng":
@@ -148,7 +164,10 @@ def stampa_statistiche(df):
             max_sensi=("n_sensi", "max"),
             media_entropia=("entropia", "mean"),
             media_top1=("top1_share", "mean"),
-            monosemici=("n_sensi", lambda x: (x <= 1).sum()),
+            # monosemici = esattamente 1 senso; zero_sensi = nessun senso trovato
+            # (buco di copertura OMW, non va confuso con la monosemia)
+            monosemici=("n_sensi", lambda x: (x == 1).sum()),
+            zero_sensi=("n_sensi", lambda x: (x == 0).sum()),
         )
         .round(3)
     )
@@ -205,6 +224,15 @@ def stampa_limiti_metodologici(df):
     print("\nDistribuzione metodo entropia per lingua:")
     tab = df.groupby(["lingua", "metodo_entropia"]).size().rename("n").reset_index()
     print(tab.to_string(index=False))
+
+    zero = df[df["n_sensi"] == 0]
+    if len(zero):
+        print(f"\nLemmi con 0 sensi trovati ({len(zero)} su {len(df)} record totali) -- "
+              f"buco di copertura OMW, non monosemia:")
+        conteggio = zero.groupby(["lingua", "categoria"]).size().rename("n").reset_index()
+        print(conteggio.to_string(index=False))
+    else:
+        print("\nNessun lemma con 0 sensi trovati.")
 
 
 # ─────────────────────────────────────────────
@@ -415,7 +443,7 @@ if __name__ == "__main__":
     print("\n\nANALISI QUALITATIVA DEI CASI PIU ASIMMETRICI")
     for en, it, es, cat in [
         ("bank", "banca", "banco", "sostantivo"),
-        ("line", "linea", "linea", "sostantivo"),
+        ("line", "linea", "línea", "sostantivo"),
         ("break", "rompere", "romper", "verbo"),
         ("run", "correre", "correr", "verbo"),
     ]:

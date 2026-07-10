@@ -143,12 +143,16 @@ for item in CONCEPTS:
         continue
 
     processed = [preprocess_definition(d) for d in raw_definitions]
-    cleaned_defs = [p[0] for p in processed if p[0]]
-    token_sets = [p[1] for p in processed if p[0]]
+    # allinea le definizioni grezze ai token puliti, scartando solo quelle
+    # svuotate dal preprocessing (nessuna lettera valida dopo la pulizia)
+    valid = [(raw, toks) for raw, (cleaned, toks) in zip(raw_definitions, processed) if cleaned]
 
-    if len(cleaned_defs) < 2:
+    if len(valid) < 2:
         print(f"Attenzione: definizioni utili insufficienti dopo preprocessing per {concept}")
         continue
+
+    raw_for_sbert = [r for r, _ in valid]
+    token_sets = [t for _, t in valid]
 
     # Simlex = media pairwise Jaccard sui token lemmatizzati
     simlex_scores = []
@@ -156,8 +160,10 @@ for item in CONCEPTS:
         simlex_scores.append(jaccard_similarity(token_sets[i], token_sets[j]))
     avg_simlex = float(np.mean(simlex_scores)) if simlex_scores else 0.0
 
-    # Simsem = cosine similarity su embedding Sentence-BERT
-    embs = SBERT_MODEL.encode(cleaned_defs, show_progress_bar=False)
+    # Simsem = cosine similarity su embedding Sentence-BERT del testo grezzo:
+    # SBERT e' addestrato su frasi naturali, rimuovere stopword/sintassi (come serve
+    # invece per Jaccard) degraderebbe l'input rispetto a quanto il modello si aspetta
+    embs = SBERT_MODEL.encode(raw_for_sbert, show_progress_bar=False)
     cos_sim_matrix = cosine_similarity(embs)
     upper_tri = cos_sim_matrix[np.triu_indices(cos_sim_matrix.shape[0], k=1)]
     avg_simsem = float(np.mean(upper_tri)) if len(upper_tri) else 0.0
@@ -170,7 +176,7 @@ for item in CONCEPTS:
             "Simlex": round(avg_simlex, 4),
             "Simsem": round(avg_simsem, 4),
             "Delta_Simsem_minus_Simlex": round(avg_simsem - avg_simlex, 4),
-            "N_definizioni": len(cleaned_defs),
+            "N_definizioni": len(valid),
         }
     )
 

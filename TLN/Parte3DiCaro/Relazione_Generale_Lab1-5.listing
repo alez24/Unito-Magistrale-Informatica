@@ -1,0 +1,4 @@
+def retrieve_hybrid(query, faiss_index, bm25, documents, metadata, k=5):
+    sem = retrieve_semantic(query, faiss_index, documents, metadata, k=20)
+    bm  = retrieve_bm25(query, bm25, documents, metadata, k=20)
+    return reciprocal_rank_fusion([sem, bm])[:k]

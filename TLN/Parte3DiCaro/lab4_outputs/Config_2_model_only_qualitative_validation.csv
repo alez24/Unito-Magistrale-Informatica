@@ -1,0 +1,300 @@
+config,topic,rank,title,abstract
+Config_2_model_only,0,1,"An Efficient Approach to Encoding Context for Spoken Language
+  Understanding","  In task-oriented dialogue systems, spoken language understanding, or SLU,
+refers to the task of parsing natural language user utterances into semantic
+frames. Making use of context from prior dialogue history holds the key to more
+effective SLU. State of the art approaches to SLU use memory networks to encode
+context by processing multiple utterances from the dialogue at each turn,
+resulting in significant trade-offs between accuracy and computational
+efficiency. On the other hand, downstream components like the dialogue state
+tracker (DST) already keep track of the dialogue state, which can serve as a
+summary of the dialogue history. In this work, we propose an efficient approach
+to encoding context from prior utterances for SLU. More specifically, our
+architecture includes a separate recurrent neural network (RNN) based encoding
+module that accumulates dialogue context to guide the frame parsing sub-tasks
+and can be shared between SLU and DST. In our experiments, we demonstrate the
+effectiveness of our approach on dialogues from two domains.
+"
+Config_2_model_only,0,2,Training Neural Response Selection for Task-Oriented Dialogue Systems,"  Despite their popularity in the chatbot literature, retrieval-based models
+have had modest impact on task-oriented dialogue systems, with the main
+obstacle to their application being the low-data regime of most task-oriented
+dialogue tasks. Inspired by the recent success of pretraining in language
+modelling, we propose an effective method for deploying response selection in
+task-oriented dialogue. To train response selection models for task-oriented
+dialogue tasks, we propose a novel method which: 1) pretrains the response
+selection model on large general-domain conversational corpora; and then 2)
+fine-tunes the pretrained model for the target dialogue domain, relying only on
+the small in-domain dataset to capture the nuances of the given dialogue
+domain. Our evaluation on six diverse application domains, ranging from
+e-commerce to banking, demonstrates the effectiveness of the proposed training
+method.
+"
+Config_2_model_only,0,3,"UniConv: A Unified Conversational Neural Architecture for Multi-domain
+  Task-oriented Dialogues","  Building an end-to-end conversational agent for multi-domain task-oriented
+dialogues has been an open challenge for two main reasons. First, tracking
+dialogue states of multiple domains is non-trivial as the dialogue agent must
+obtain complete states from all relevant domains, some of which might have
+shared slots among domains as well as unique slots specifically for one domain
+only. Second, the dialogue agent must also process various types of information
+across domains, including dialogue context, dialogue states, and database, to
+generate natural responses to users. Unlike the existing approaches that are
+often designed to train each module separately, we propose ""UniConv"" -- a novel
+unified neural architecture for end-to-end conversational systems in
+multi-domain task-oriented dialogues, which is designed to jointly train (i) a
+Bi-level State Tracker which tracks dialogue states by learning signals at both
+slot and domain level independently, and (ii) a Joint Dialogue Act and Response
+Generator which incorporates information from various input components and
+models dialogue acts and target responses simultaneously. We conduct
+comprehensive experiments in dialogue state tracking, context-to-text, and
+end-to-end settings on the MultiWOZ2.1 benchmark, achieving superior
+performance over competitive baselines.
+"
+Config_2_model_only,1,1,End-to-End Speech Translation of Arabic to English Broadcast News,"  Speech translation (ST) is the task of directly translating acoustic speech
+signals in a source language into text in a foreign language. ST task has been
+addressed, for a long time, using a pipeline approach with two modules : first
+an Automatic Speech Recognition (ASR) in the source language followed by a
+text-to-text Machine translation (MT). In the past few years, we have seen a
+paradigm shift towards the end-to-end approaches using sequence-to-sequence
+deep neural network models. This paper presents our efforts towards the
+development of the first Broadcast News end-to-end Arabic to English speech
+translation system. Starting from independent ASR and MT LDC releases, we were
+able to identify about 92 hours of Arabic audio recordings for which the manual
+transcription was also translated into English at the segment level. These data
+was used to train and compare pipeline and end-to-end speech translation
+systems under multiple scenarios including transfer learning and data
+augmentation techniques.
+"
+Config_2_model_only,1,2,"Synchronous Speech Recognition and Speech-to-Text Translation with
+  Interactive Decoding","  Speech-to-text translation (ST), which translates source language speech into
+target language text, has attracted intensive attention in recent years.
+Compared to the traditional pipeline system, the end-to-end ST model has
+potential benefits of lower latency, smaller model size, and less error
+propagation. However, it is notoriously difficult to implement such a model
+without transcriptions as intermediate. Existing works generally apply
+multi-task learning to improve translation quality by jointly training
+end-to-end ST along with automatic speech recognition (ASR). However, different
+tasks in this method cannot utilize information from each other, which limits
+the improvement. Other works propose a two-stage model where the second model
+can use the hidden state from the first one, but its cascade manner greatly
+affects the efficiency of training and inference process. In this paper, we
+propose a novel interactive attention mechanism which enables ASR and ST to
+perform synchronously and interactively in a single model. Specifically, the
+generation of transcriptions and translations not only relies on its previous
+outputs but also the outputs predicted in the other task. Experiments on TED
+speech translation corpora have shown that our proposed model can outperform
+strong baselines on the quality of speech translation and achieve better speech
+recognition performances as well.
+"
+Config_2_model_only,1,3,"A General Multi-Task Learning Framework to Leverage Text Data for Speech
+  to Text Tasks","  Attention-based sequence-to-sequence modeling provides a powerful and elegant
+solution for applications that need to map one sequence to a different
+sequence. Its success heavily relies on the availability of large amounts of
+training data. This presents a challenge for speech applications where labelled
+speech data is very expensive to obtain, such as automatic speech recognition
+(ASR) and speech translation (ST). In this study, we propose a general
+multi-task learning framework to leverage text data for ASR and ST tasks. Two
+auxiliary tasks, a denoising autoencoder task and machine translation task, are
+proposed to be co-trained with ASR and ST tasks respectively. We demonstrate
+that representing text input as phoneme sequences can reduce the difference
+between speech and text inputs, and enhance the knowledge transfer from text
+corpora to the speech to text tasks. Our experiments show that the proposed
+method achieves a relative 10~15% word error rate reduction on the English
+Librispeech task compared with our baseline, and improves the speech
+translation quality on the MuST-C tasks by 3.6~9.2 BLEU.
+"
+Config_2_model_only,2,1,Neural Machine Translation by Jointly Learning to Align and Translate,"  Neural machine translation is a recently proposed approach to machine
+translation. Unlike the traditional statistical machine translation, the neural
+machine translation aims at building a single neural network that can be
+jointly tuned to maximize the translation performance. The models proposed
+recently for neural machine translation often belong to a family of
+encoder-decoders and consists of an encoder that encodes a source sentence into
+a fixed-length vector from which a decoder generates a translation. In this
+paper, we conjecture that the use of a fixed-length vector is a bottleneck in
+improving the performance of this basic encoder-decoder architecture, and
+propose to extend this by allowing a model to automatically (soft-)search for
+parts of a source sentence that are relevant to predicting a target word,
+without having to form these parts as a hard segment explicitly. With this new
+approach, we achieve a translation performance comparable to the existing
+state-of-the-art phrase-based system on the task of English-to-French
+translation. Furthermore, qualitative analysis reveals that the
+(soft-)alignments found by the model agree well with our intuition.
+"
+Config_2_model_only,2,2,"Learning Contextualized Sentence Representations for Document-Level
+  Neural Machine Translation","  Document-level machine translation incorporates inter-sentential dependencies
+into the translation of a source sentence. In this paper, we propose a new
+framework to model cross-sentence dependencies by training neural machine
+translation (NMT) to predict both the target translation and surrounding
+sentences of a source sentence. By enforcing the NMT model to predict source
+context, we want the model to learn ""contextualized"" source sentence
+representations that capture document-level dependencies on the source side. We
+further propose two different methods to learn and integrate such
+contextualized sentence embeddings into NMT: a joint training method that
+jointly trains an NMT model with the source context prediction model and a
+pre-training & fine-tuning method that pretrains the source context prediction
+model on a large-scale monolingual document corpus and then fine-tunes it with
+the NMT model. Experiments on Chinese-English and English-German translation
+show that both methods can substantially improve the translation quality over a
+strong document-level Transformer baseline.
+"
+Config_2_model_only,2,3,Multilingual Neural Machine Translation for Zero-Resource Languages,"  In recent years, Neural Machine Translation (NMT) has been shown to be more
+effective than phrase-based statistical methods, thus quickly becoming the
+state of the art in machine translation (MT). However, NMT systems are limited
+in translating low-resourced languages, due to the significant amount of
+parallel data that is required to learn useful mappings between languages. In
+this work, we show how the so-called multilingual NMT can help to tackle the
+challenges associated with low-resourced language translation. The underlying
+principle of multilingual NMT is to force the creation of hidden
+representations of words in a shared semantic space across multiple languages,
+thus enabling a positive parameter transfer across languages. Along this
+direction, we present multilingual translation experiments with three languages
+(English, Italian, Romanian) covering six translation directions, utilizing
+both recurrent neural networks and transformer (or self-attentive) neural
+networks. We then focus on the zero-shot translation problem, that is how to
+leverage multi-lingual data in order to learn translation directions that are
+not covered by the available training material. To this aim, we introduce our
+recently proposed iterative self-training method, which incrementally improves
+a multilingual NMT on a zero-shot direction by just relying on monolingual
+data. Our results on TED talks data show that multilingual NMT outperforms
+conventional bilingual NMT, that the transformer NMT outperforms recurrent NMT,
+and that zero-shot NMT outperforms conventional pivoting methods and even
+matches the performance of a fully-trained bilingual system.
+"
+Config_2_model_only,3,1,Reinforced Multi-task Approach for Multi-hop Question Generation,"  Question generation (QG) attempts to solve the inverse of question answering
+(QA) problem by generating a natural language question given a document and an
+answer. While sequence to sequence neural models surpass rule-based systems for
+QG, they are limited in their capacity to focus on more than one supporting
+fact. For QG, we often require multiple supporting facts to generate
+high-quality questions. Inspired by recent works on multi-hop reasoning in QA,
+we take up Multi-hop question generation, which aims at generating relevant
+questions based on supporting facts in the context. We employ multitask
+learning with the auxiliary task of answer-aware supporting fact prediction to
+guide the question generator. In addition, we also proposed a question-aware
+reward function in a Reinforcement Learning (RL) framework to maximize the
+utilization of the supporting facts. We demonstrate the effectiveness of our
+approach through experiments on the multi-hop question answering dataset,
+HotPotQA. Empirical evaluation shows our model to outperform the single-hop
+neural question generation models on both automatic evaluation metrics such as
+BLEU, METEOR, and ROUGE, and human evaluation metrics for quality and coverage
+of the generated questions.
+"
+Config_2_model_only,3,2,R$^3$: Reinforced Reader-Ranker for Open-Domain Question Answering,"  In recent years researchers have achieved considerable success applying
+neural network methods to question answering (QA). These approaches have
+achieved state of the art results in simplified closed-domain settings such as
+the SQuAD (Rajpurkar et al., 2016) dataset, which provides a pre-selected
+passage, from which the answer to a given question may be extracted. More
+recently, researchers have begun to tackle open-domain QA, in which the model
+is given a question and access to a large corpus (e.g., wikipedia) instead of a
+pre-selected passage (Chen et al., 2017a). This setting is more complex as it
+requires large-scale search for relevant passages by an information retrieval
+component, combined with a reading comprehension model that ""reads"" the
+passages to generate an answer to the question. Performance in this setting
+lags considerably behind closed-domain performance. In this paper, we present a
+novel open-domain QA system called Reinforced Ranker-Reader $(R^3)$, based on
+two algorithmic innovations. First, we propose a new pipeline for open-domain
+QA with a Ranker component, which learns to rank retrieved passages in terms of
+likelihood of generating the ground-truth answer to a given question. Second,
+we propose a novel method that jointly trains the Ranker along with an
+answer-generation Reader model, based on reinforcement learning. We report
+extensive experimental results showing that our method significantly improves
+on the state of the art for multiple open-domain QA datasets.
+"
+Config_2_model_only,3,3,Top K Relevant Passage Retrieval for Biomedical Question Answering,"  Question answering is a task that answers factoid questions using a large
+collection of documents. It aims to provide precise answers in response to the
+user's questions in natural language. Question answering relies on efficient
+passage retrieval to select candidate contexts, where traditional sparse vector
+space models, such as TF-IDF or BM25, are the de facto method. On the web,
+there is no single article that could provide all the possible answers
+available on the internet to the question of the problem asked by the user. The
+existing Dense Passage Retrieval model has been trained on Wikipedia dump from
+Dec. 20, 2018, as the source documents for answering questions. Question
+answering (QA) has made big strides with several open-domain and machine
+comprehension systems built using large-scale annotated datasets. However, in
+the clinical domain, this problem remains relatively unexplored. According to
+multiple surveys, Biomedical Questions cannot be answered correctly from
+Wikipedia Articles. In this work, we work on the existing DPR framework for the
+biomedical domain and retrieve answers from the Pubmed articles which is a
+reliable source to answer medical questions. When evaluated on a BioASQ QA
+dataset, our fine-tuned dense retriever results in a 0.81 F1 score.
+"
+Config_2_model_only,4,1,"BERT Based Clinical Knowledge Extraction for Biomedical Knowledge Graph
+  Construction and Analysis","  Background : Knowledge is evolving over time, often as a result of new
+discoveries or changes in the adopted methods of reasoning. Also, new facts or
+evidence may become available, leading to new understandings of complex
+phenomena. This is particularly true in the biomedical field, where scientists
+and physicians are constantly striving to find new methods of diagnosis,
+treatment and eventually cure. Knowledge Graphs (KGs) offer a real way of
+organizing and retrieving the massive and growing amount of biomedical
+knowledge.
+  Objective : We propose an end-to-end approach for knowledge extraction and
+analysis from biomedical clinical notes using the Bidirectional Encoder
+Representations from Transformers (BERT) model and Conditional Random Field
+(CRF) layer.
+  Methods : The approach is based on knowledge graphs, which can effectively
+process abstract biomedical concepts such as relationships and interactions
+between medical entities. Besides offering an intuitive way to visualize these
+concepts, KGs can solve more complex knowledge retrieval problems by
+simplifying them into simpler representations or by transforming the problems
+into representations from different perspectives. We created a biomedical
+Knowledge Graph using using Natural Language Processing models for named entity
+recognition and relation extraction. The generated biomedical knowledge graphs
+(KGs) are then used for question answering.
+  Results : The proposed framework can successfully extract relevant structured
+information with high accuracy (90.7% for Named-entity recognition (NER), 88%
+for relation extraction (RE)), according to experimental findings based on
+real-world 505 patient biomedical unstructured clinical notes.
+  Conclusions : In this paper, we propose a novel end-to-end system for the
+construction of a biomedical knowledge graph from clinical textual using a
+variation of BERT models.
+"
+Config_2_model_only,4,2,"Pre-training technique to localize medical BERT and enhance biomedical
+  BERT","  Pre-training large-scale neural language models on raw texts has made a
+significant contribution to improving transfer learning in natural language
+processing (NLP). With the introduction of transformer-based language models,
+such as bidirectional encoder representations from transformers (BERT), the
+performance of information extraction from a free text by NLP has significantly
+improved for both the general domain and medical domain; however, it is
+difficult to train specific BERT models that perform well for domains in which
+there are few publicly available databases of high quality and large size. We
+hypothesized that this problem can be addressed by up-sampling a
+domain-specific corpus and using it for pre-training with a larger corpus in a
+balanced manner. Our proposed method consists of a single intervention with one
+option: simultaneous pre-training after up-sampling and amplified vocabulary.
+We conducted three experiments and evaluated the resulting products. We
+confirmed that our Japanese medical BERT outperformed conventional baselines
+and the other BERT models in terms of the medical document classification task
+and that our English BERT pre-trained using both the general and medical-domain
+corpora performed sufficiently well for practical use in terms of the
+biomedical language understanding evaluation (BLUE) benchmark. Moreover, our
+enhanced biomedical BERT model, in which clinical notes were not used during
+pre-training, showed that both the clinical and biomedical scores of the BLUE
+benchmark were 0.3 points above that of the ablation model trained without our
+proposed method. Well-balanced pre-training by up-sampling instances derived
+from a corpus appropriate for the target task allows us to construct a
+high-performance BERT model.
+"
+Config_2_model_only,4,3,"Applying unsupervised keyphrase methods on concepts extracted from
+  discharge sheets","  Clinical notes containing valuable patient information are written by
+different health care providers with various scientific levels and writing
+styles. It might be helpful for clinicians and researchers to understand what
+information is essential when dealing with extensive electronic medical
+records. Entities recognizing and mapping them to standard terminologies is
+crucial in reducing ambiguity in processing clinical notes. Although named
+entity recognition and entity linking are critical steps in clinical natural
+language processing, they can also result in the production of repetitive and
+low-value concepts. In other hand, all parts of a clinical text do not share
+the same importance or content in predicting the patient's condition. As a
+result, it is necessary to identify the section in which each content is
+recorded and also to identify key concepts to extract meaning from clinical
+texts. In this study, these challenges have been addressed by using clinical
+natural language processing techniques. In addition, in order to identify key
+concepts, a set of popular unsupervised key phrase extraction methods has been
+verified and evaluated. Considering that most of the clinical concepts are in
+the form of multi-word expressions and their accurate identification requires
+the user to specify n-gram range, we have proposed a shortcut method to
+preserve the structure of the expression based on TF-IDF. In order to evaluate
+the pre-processing method and select the concepts, we have designed two types
+of downstream tasks (multiple and binary classification) using the capabilities
+of transformer-based models. The obtained results show the superiority of
+proposed method in combination with SciBERT model, also offer an insight into
+the efficacy of general extracting essential phrase methods for clinical notes.
+"

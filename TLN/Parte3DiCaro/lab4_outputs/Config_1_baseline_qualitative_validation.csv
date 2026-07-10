@@ -1,0 +1,299 @@
+config,topic,rank,title,abstract
+Config_1_baseline,0,1,"End-to-end model for named entity recognition from speech without paired
+  training data","  Recent works showed that end-to-end neural approaches tend to become very
+popular for spoken language understanding (SLU). Through the term end-to-end,
+one considers the use of a single model optimized to extract semantic
+information directly from the speech signal. A major issue for such models is
+the lack of paired audio and textual data with semantic annotation. In this
+paper, we propose an approach to build an end-to-end neural model to extract
+semantic information in a scenario in which zero paired audio data is
+available. Our approach is based on the use of an external model trained to
+generate a sequence of vectorial representations from text. These
+representations mimic the hidden representations that could be generated inside
+an end-to-end automatic speech recognition (ASR) model by processing a speech
+signal. An SLU neural module is then trained using these representations as
+input and the annotated text as output. Last, the SLU module replaces the top
+layers of the ASR model to achieve the construction of the end-to-end model.
+Our experiments on named entity recognition, carried out on the QUAERO corpus,
+show that this approach is very promising, getting better results than a
+comparable cascade approach or than the use of synthetic voices.
+"
+Config_1_baseline,0,2,"Deep Speech Based End-to-End Automated Speech Recognition (ASR) for
+  Indian-English Accents","  Automated Speech Recognition (ASR) is an interdisciplinary application of
+computer science and linguistics that enable us to derive the transcription
+from the uttered speech waveform. It finds several applications in Military
+like High-performance fighter aircraft, helicopters, air-traffic controller.
+Other than military speech recognition is used in healthcare, persons with
+disabilities and many more. ASR has been an active research area. Several
+models and algorithms for speech to text (STT) have been proposed. One of the
+most recent is Mozilla Deep Speech, it is based on the Deep Speech research
+paper by Baidu. Deep Speech is a state-of-art speech recognition system is
+developed using end-to-end deep learning, it is trained using well-optimized
+Recurrent Neural Network (RNN) training system utilizing multiple Graphical
+Processing Units (GPUs). This training is mostly done using American-English
+accent datasets, which results in poor generalizability to other English
+accents. India is a land of vast diversity. This can even be seen in the
+speech, there are several English accents which vary from state to state. In
+this work, we have used transfer learning approach using most recent Deep
+Speech model i.e., deepspeech-0.9.3 to develop an end-to-end speech recognition
+system for Indian-English accents. This work utilizes fine-tuning and data
+argumentation to further optimize and improve the Deep Speech ASR system. Indic
+TTS data of Indian-English accents is used for transfer learning and
+fine-tuning the pre-trained Deep Speech model. A general comparison is made
+among the untrained model, our trained model and other available speech
+recognition services for Indian-English Accents.
+"
+Config_1_baseline,0,3,"Wav2Seq: Pre-training Speech-to-Text Encoder-Decoder Models Using Pseudo
+  Languages","  We introduce Wav2Seq, the first self-supervised approach to pre-train both
+parts of encoder-decoder models for speech data. We induce a pseudo language as
+a compact discrete representation, and formulate a self-supervised pseudo
+speech recognition task -- transcribing audio inputs into pseudo subword
+sequences. This process stands on its own, or can be applied as low-cost
+second-stage pre-training. We experiment with automatic speech recognition
+(ASR), spoken named entity recognition, and speech-to-text translation. We set
+new state-of-the-art results for end-to-end spoken named entity recognition,
+and show consistent improvements on 20 language pairs for speech-to-text
+translation, even when competing methods use additional text data for training.
+Finally, on ASR, our approach enables encoder-decoder methods to benefit from
+pre-training for all parts of the network, and shows comparable performance to
+highly optimized recent methods.
+"
+Config_1_baseline,1,1,Improving Retrieval-Based Question Answering with Deep Inference Models,"  Question answering is one of the most important and difficult applications at
+the border of information retrieval and natural language processing, especially
+when we talk about complex science questions which require some form of
+inference to determine the correct answer. In this paper, we present a two-step
+method that combines information retrieval techniques optimized for question
+answering with deep learning models for natural language inference in order to
+tackle the multi-choice question answering in the science domain. For each
+question-answer pair, we use standard retrieval-based models to find relevant
+candidate contexts and decompose the main problem into two different
+sub-problems. First, assign correctness scores for each candidate answer based
+on the context using retrieval models from Lucene. Second, we use deep learning
+architectures to compute if a candidate answer can be inferred from some
+well-chosen context consisting of sentences retrieved from the knowledge base.
+In the end, all these solvers are combined using a simple neural network to
+predict the correct answer. This proposed two-step model outperforms the best
+retrieval-based solver by over 3% in absolute accuracy.
+"
+Config_1_baseline,1,2,Automatic Question-Answering Using A Deep Similarity Neural Network,"  Automatic question-answering is a classical problem in natural language
+processing, which aims at designing systems that can automatically answer a
+question, in the same way as human does. In this work, we propose a deep
+learning based model for automatic question-answering. First the questions and
+answers are embedded using neural probabilistic modeling. Then a deep
+similarity neural network is trained to find the similarity score of a pair of
+answer and question. Then for each question, the best answer is found as the
+one with the highest similarity score. We first train this model on a
+large-scale public question-answering database, and then fine-tune it to
+transfer to the customer-care chat data. We have also tested our framework on a
+public question-answering database and achieved very good performance.
+"
+Config_1_baseline,1,3,"OneStop QAMaker: Extract Question-Answer Pairs from Text in a One-Stop
+  Approach","  Large-scale question-answer (QA) pairs are critical for advancing research
+areas like machine reading comprehension and question answering. To construct
+QA pairs from documents requires determining how to ask a question and what is
+the corresponding answer. Existing methods for QA pair generation usually
+follow a pipeline approach. Namely, they first choose the most likely candidate
+answer span and then generate the answer-specific question. This pipeline
+approach, however, is undesired in mining the most appropriate QA pairs from
+documents since it ignores the connection between question generation and
+answer extraction, which may lead to incompatible QA pair generation, i.e., the
+selected answer span is inappropriate for question generation. However, for
+human annotators, we take the whole QA pair into account and consider the
+compatibility between question and answer. Inspired by such motivation, instead
+of the conventional pipeline approach, we propose a model named OneStop
+generate QA pairs from documents in a one-stop approach. Specifically,
+questions and their corresponding answer span is extracted simultaneously and
+the process of question generation and answer extraction mutually affect each
+other. Additionally, OneStop is much more efficient to be trained and deployed
+in industrial scenarios since it involves only one model to solve the complex
+QA generation task. We conduct comprehensive experiments on three large-scale
+machine reading comprehension datasets: SQuAD, NewsQA, and DuReader. The
+experimental results demonstrate that our OneStop model outperforms the
+baselines significantly regarding the quality of generated questions, quality
+of generated question-answer pairs, and model efficiency.
+"
+Config_1_baseline,2,1,"BERT Based Clinical Knowledge Extraction for Biomedical Knowledge Graph
+  Construction and Analysis","  Background : Knowledge is evolving over time, often as a result of new
+discoveries or changes in the adopted methods of reasoning. Also, new facts or
+evidence may become available, leading to new understandings of complex
+phenomena. This is particularly true in the biomedical field, where scientists
+and physicians are constantly striving to find new methods of diagnosis,
+treatment and eventually cure. Knowledge Graphs (KGs) offer a real way of
+organizing and retrieving the massive and growing amount of biomedical
+knowledge.
+  Objective : We propose an end-to-end approach for knowledge extraction and
+analysis from biomedical clinical notes using the Bidirectional Encoder
+Representations from Transformers (BERT) model and Conditional Random Field
+(CRF) layer.
+  Methods : The approach is based on knowledge graphs, which can effectively
+process abstract biomedical concepts such as relationships and interactions
+between medical entities. Besides offering an intuitive way to visualize these
+concepts, KGs can solve more complex knowledge retrieval problems by
+simplifying them into simpler representations or by transforming the problems
+into representations from different perspectives. We created a biomedical
+Knowledge Graph using using Natural Language Processing models for named entity
+recognition and relation extraction. The generated biomedical knowledge graphs
+(KGs) are then used for question answering.
+  Results : The proposed framework can successfully extract relevant structured
+information with high accuracy (90.7% for Named-entity recognition (NER), 88%
+for relation extraction (RE)), according to experimental findings based on
+real-world 505 patient biomedical unstructured clinical notes.
+  Conclusions : In this paper, we propose a novel end-to-end system for the
+construction of a biomedical knowledge graph from clinical textual using a
+variation of BERT models.
+"
+Config_1_baseline,2,2,"Assessing mortality prediction through different representation models
+  based on concepts extracted from clinical notes","  Recent years have seen particular interest in using electronic medical
+records (EMRs) for secondary purposes to enhance the quality and safety of
+healthcare delivery. EMRs tend to contain large amounts of valuable clinical
+notes. Learning of embedding is a method for converting notes into a format
+that makes them comparable. Transformer-based representation models have
+recently made a great leap forward. These models are pre-trained on large
+online datasets to understand natural language texts effectively. The quality
+of a learning embedding is influenced by how clinical notes are used as input
+to representation models. A clinical note has several sections with different
+levels of information value. It is also common for healthcare providers to use
+different expressions for the same concept. Existing methods use clinical notes
+directly or with an initial preprocessing as input to representation models.
+However, to learn a good embedding, we identified the most essential clinical
+notes section. We then mapped the extracted concepts from selected sections to
+the standard names in the Unified Medical Language System (UMLS). We used the
+standard phrases corresponding to the unique concepts as input for clinical
+models. We performed experiments to measure the usefulness of the learned
+embedding vectors in the task of hospital mortality prediction on a subset of
+the publicly available Medical Information Mart for Intensive Care (MIMIC-III)
+dataset. According to the experiments, clinical transformer-based
+representation models produced better results with getting input generated by
+standard names of extracted unique concepts compared to other input formats.
+The best-performing models were BioBERT, PubMedBERT, and UmlsBERT,
+respectively.
+"
+Config_1_baseline,2,3,How to Leverage Multimodal EHR Data for Better Medical Predictions?,"  Healthcare is becoming a more and more important research topic recently.
+With the growing data in the healthcare domain, it offers a great opportunity
+for deep learning to improve the quality of medical service. However, the
+complexity of electronic health records (EHR) data is a challenge for the
+application of deep learning. Specifically, the data produced in the hospital
+admissions are monitored by the EHR system, which includes structured data like
+daily body temperature, and unstructured data like free text and laboratory
+measurements. Although there are some preprocessing frameworks proposed for
+specific EHR data, the clinical notes that contain significant clinical value
+are beyond the realm of their consideration. Besides, whether these different
+data from various views are all beneficial to the medical tasks and how to best
+utilize these data remain unclear. Therefore, in this paper, we first extract
+the accompanying clinical notes from EHR and propose a method to integrate
+these data, we also comprehensively study the different models and the data
+leverage methods for better medical task prediction. The results on two medical
+prediction tasks show that our fused model with different data outperforms the
+state-of-the-art method that without clinical notes, which illustrates the
+importance of our fusion method and the value of clinical note features. Our
+code is available at https: //github.com/emnlp-mimic/mimic.
+"
+Config_1_baseline,3,1,Query-Based Abstractive Summarization Using Neural Networks,"  In this paper, we present a model for generating summaries of text documents
+with respect to a query. This is known as query-based summarization. We adapt
+an existing dataset of news article summaries for the task and train a
+pointer-generator model using this dataset. The generated summaries are
+evaluated by measuring similarity to reference summaries. Our results show that
+a neural network summarization model, similar to existing neural network models
+for abstractive summarization, can be constructed to make use of queries to
+produce targeted summaries.
+"
+Config_1_baseline,3,2,Automated News Summarization Using Transformers,"  The amount of text data available online is increasing at a very fast pace
+hence text summarization has become essential. Most of the modern recommender
+and text classification systems require going through a huge amount of data.
+Manually generating precise and fluent summaries of lengthy articles is a very
+tiresome and time-consuming task. Hence generating automated summaries for the
+data and using it to train machine learning models will make these models space
+and time-efficient. Extractive summarization and abstractive summarization are
+two separate methods of generating summaries. The extractive technique
+identifies the relevant sentences from the original document and extracts only
+those from the text. Whereas in abstractive summarization techniques, the
+summary is generated after interpreting the original text, hence making it more
+complicated. In this paper, we will be presenting a comprehensive comparison of
+a few transformer architecture based pre-trained models for text summarization.
+For analysis and comparison, we have used the BBC news dataset that contains
+text data that can be used for summarization and human generated summaries for
+evaluating and comparing the summaries generated by machine learning models.
+"
+Config_1_baseline,3,3,Multi-Document Summarization via Discriminative Summary Reranking,"  Existing multi-document summarization systems usually rely on a specific
+summarization model (i.e., a summarization method with a specific parameter
+setting) to extract summaries for different document sets with different
+topics. However, according to our quantitative analysis, none of the existing
+summarization models can always produce high-quality summaries for different
+document sets, and even a summarization model with good overall performance may
+produce low-quality summaries for some document sets. On the contrary, a
+baseline summarization model may produce high-quality summaries for some
+document sets. Based on the above observations, we treat the summaries produced
+by different summarization models as candidate summaries, and then explore
+discriminative reranking techniques to identify high-quality summaries from the
+candidates for difference document sets. We propose to extract a set of
+candidate summaries for each document set based on an ILP framework, and then
+leverage Ranking SVM for summary reranking. Various useful features have been
+developed for the reranking process, including word-level features,
+sentence-level features and summary-level features. Evaluation results on the
+benchmark DUC datasets validate the efficacy and robustness of our proposed
+approach.
+"
+Config_1_baseline,4,1,"A Hybrid Approach for Improved Low Resource Neural Machine Translation
+  using Monolingual Data","  Many language pairs are low resource, meaning the amount and/or quality of
+available parallel data is not sufficient to train a neural machine translation
+(NMT) model which can reach an acceptable standard of accuracy. Many works have
+explored using the readily available monolingual data in either or both of the
+languages to improve the standard of translation models in low, and even high,
+resource languages. One of the most successful of such works is the
+back-translation that utilizes the translations of the target language
+monolingual data to increase the amount of the training data. The quality of
+the backward model which is trained on the available parallel data has been
+shown to determine the performance of the back-translation approach. Despite
+this, only the forward model is improved on the monolingual target data in
+standard back-translation. A previous study proposed an iterative
+back-translation approach for improving both models over several iterations.
+But unlike in the traditional back-translation, it relied on both the target
+and source monolingual data. This work, therefore, proposes a novel approach
+that enables both the backward and forward models to benefit from the
+monolingual target data through a hybrid of self-learning and back-translation
+respectively. Experimental results have shown the superiority of the proposed
+approach over the traditional back-translation method on English-German low
+resource neural machine translation. We also proposed an iterative
+self-learning approach that outperforms the iterative back-translation while
+also relying only on the monolingual target data and require the training of
+less models.
+"
+Config_1_baseline,4,2,Improving Neural Machine Translation Models with Monolingual Data,"  Neural Machine Translation (NMT) has obtained state-of-the art performance
+for several language pairs, while only using parallel data for training.
+Target-side monolingual data plays an important role in boosting fluency for
+phrase-based statistical machine translation, and we investigate the use of
+monolingual data for NMT. In contrast to previous work, which combines NMT
+models with separately trained language models, we note that encoder-decoder
+NMT architectures already have the capacity to learn the same information as a
+language model, and we explore strategies to train with monolingual data
+without changing the neural network architecture. By pairing monolingual
+training data with an automatic back-translation, we can treat it as additional
+parallel training data, and we obtain substantial improvements on the WMT 15
+task English<->German (+2.8-3.7 BLEU), and for the low-resourced IWSLT 14 task
+Turkish->English (+2.1-3.4 BLEU), obtaining new state-of-the-art results. We
+also show that fine-tuning on in-domain monolingual and parallel data gives
+substantial improvements for the IWSLT 15 task English->German.
+"
+Config_1_baseline,4,3,Multilingual Neural Machine Translation for Zero-Resource Languages,"  In recent years, Neural Machine Translation (NMT) has been shown to be more
+effective than phrase-based statistical methods, thus quickly becoming the
+state of the art in machine translation (MT). However, NMT systems are limited
+in translating low-resourced languages, due to the significant amount of
+parallel data that is required to learn useful mappings between languages. In
+this work, we show how the so-called multilingual NMT can help to tackle the
+challenges associated with low-resourced language translation. The underlying
+principle of multilingual NMT is to force the creation of hidden
+representations of words in a shared semantic space across multiple languages,
+thus enabling a positive parameter transfer across languages. Along this
+direction, we present multilingual translation experiments with three languages
+(English, Italian, Romanian) covering six translation directions, utilizing
+both recurrent neural networks and transformer (or self-attentive) neural
+networks. We then focus on the zero-shot translation problem, that is how to
+leverage multi-lingual data in order to learn translation directions that are
+not covered by the available training material. To this aim, we introduce our
+recently proposed iterative self-training method, which incrementally improves
+a multilingual NMT on a zero-shot direction by just relying on monolingual
+data. Our results on TED talks data show that multilingual NMT outperforms
+conventional bilingual NMT, that the transformer NMT outperforms recurrent NMT,
+and that zero-shot NMT outperforms conventional pivoting methods and even
+matches the performance of a fully-trained bilingual system.
+"
