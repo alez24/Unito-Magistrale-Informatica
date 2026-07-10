@@ -161,6 +161,8 @@ Il retrieval semantico si basa su \textbf{dense embeddings}: ogni documento e og
 
 Si usa \textbf{SciBERT} (\texttt{allenai/scibert\_scivocab\_uncased}) come modello di embedding: un BERT pre-addestrato su 1,14 milioni di paper scientifici da Semantic Scholar. Produce vettori di dimensione 768, normalizzati a norma unitaria per l'uso con similarit\`a coseno.
 
+\textit{Nota sulla scelta del modello}: SciBERT non \`e un modello \texttt{sentence-transformers} nativo, cio\`e non \`e stato fine-tuned con un obiettivo di similarit\`a tra frasi/documenti; caricandolo con \texttt{SentenceTransformer(...)} si ottiene un mean pooling di default (con relativo warning a runtime), che funziona ma pu\`o soffrire del problema noto di \textit{anisotropia} degli embedding BERT non specializzati per il retrieval. La scelta resta difendibile per il vocabolario specializzato nel dominio scientifico, ma un'alternativa pi\`u indicata sarebbe \texttt{allenai/specter} (o \texttt{specter2}), una variante di SciBERT gi\`a addestrata esplicitamente per la similarit\`a tra paper scientifici (tramite citazioni come segnale di supervisione).
+
 L'indice di ricerca \`e costruito con \textbf{FAISS} (Facebook AI Similarity Search), che implementa \texttt{IndexFlatIP} (inner product su vettori normalizzati, equivalente alla similarit\`a coseno) e consente ricerca efficiente su decine di migliaia di vettori.
 
 \subsection{Retrieval lessicale con BM25}
@@ -648,11 +650,26 @@ La robustezza bassa al corpus grande segnala la necessit\`a di tecniche di \text
 
 La query ``named entity recognition'' \`e quella con P@5 pi\`u alta e stabile (0.60--0.80): il termine ``NER'' \`e molto specifico e BM25 lo gestisce perfettamente. La query ``BERT / self-attention'' ha P@5 bassa a N=25\,000 (0.00): a quella dimensione del corpus, il retrieval trova paper che parlano di attention in generale, senza includere paper specificatamente su BERT tra i top-5.
 
+\subsection{Nota metodologica: revisione dei corpus campionati e delle metriche}
+
+I numeri e le interpretazioni discussi in questa sezione sono stati prodotti da una prima versione degli script che presentava alcuni limiti metodologici, corretti in una revisione successiva del codice (\texttt{lab5rag.py} e \texttt{lab5\_hybrid.py}):
+
+\begin{itemize}
+  \item \textbf{Campionamento non annidato}: ogni corpus a $N$\_DOCS diverso era ottenuto con una chiamata indipendente a \texttt{df.sample(n=N, random\_state=42)}. Poich\'e pandas non garantisce che un campione pi\`u piccolo sia un sottoinsieme di uno pi\`u grande, un paper poteva essere presente nel corpus da 5\,000 documenti e assente in quello da 44\,949 (o viceversa) per puro effetto del campionamento, non per un reale ``degrado del retrieval al crescere del corpus''. Questo rimette in discussione in particolare le spiegazioni sopra proposte per il picco a N=5\,000, il calo a N=44\,949 e il crollo della robustezza a N=25\,000: non si pu\`o escludere che riflettano semplicemente quali paper sono finiti in quali campioni, pi\`u che un effetto genuino della dimensione del corpus. Nella revisione, il dataset viene mischiato una sola volta e ogni corpus prende i primi $N$ documenti di quell'ordine fisso, cos\`i che i corpus siano sovrainsiemi annidati gli uni degli altri e l'effetto di $N$\_DOCS sia isolato correttamente.
+  \item \textbf{Precision@k non uniforme fra i due script}: lo script base cercava le keyword in titolo+abstract, quello ibrido solo nel titolo (una misura pi\`u severa): il confronto diretto dei numeri fra i due script, per come erano definiti, non era pienamente equo. Nella revisione entrambi gli script cercano le keyword in titolo+abstract.
+  \item \textbf{Matching a substring}: keyword come ``ner'' o ``bert'' potevano matchare falsi positivi (``corner'', ``RoBERTa''), gonfiando la Precision@k. Nella revisione il matching \`e per parola (o frase) intera.
+  \item \textbf{Tokenizzazione BM25 naive} (\texttt{split()} su spazi, senza rimuovere la punteggiatura attaccata ai token): pu\`o aver penalizzato BM25 nei confronti con l'embedding semantico. Nella revisione la tokenizzazione usa \texttt{\textbackslash w+}.
+  \item \textbf{Troncamento del contesto sull'intero blocco} (\texttt{MAX\_CONTEXT=3000} caratteri, circa 2--3 abstract): con $k$ grande, l'LLM vedeva comunque solo i primi 2--3 paper, rendendo il confronto ``al variare di $k$'' meno informativo di quanto sembrasse; inoltre la faithfulness proxy leggeva una finestra di contesto (500 caratteri) diversa da quella realmente vista dall'LLM (3000 caratteri), sottostimandola per costruzione. Nella revisione il troncamento \`e per singolo paper, e la faithfulness usa la stessa finestra del prompt.
+  \item \textbf{Generazione non deterministica nonostante il commento in codice}: gli script usavano \texttt{do\_sample=True} con \texttt{temperature=0.3}, quindi le risposte (e le metriche Answer Relevance/Faithfulness da esse derivate) potevano variare fra un'esecuzione e l'altra, contraddicendo il commento che le descriveva come deterministiche. Nella revisione la generazione \`e greedy (\texttt{do\_sample=False}).
+\end{itemize}
+
+Il fix pi\`u rilevante \`e il primo: rende finalmente interpretabile la curva ``Precision@k su BERT al variare di N\_DOCS'' discussa in \texttt{lab5rag.py}, isolando l'effetto della dimensione del corpus da quello, puramente casuale, della presenza/assenza di un singolo paper nel campione. Le tabelle e le conclusioni quantitative di questo capitolo andrebbero quindi rigenerate rilanciando gli script aggiornati prima di essere usate come risultato finale; le osservazioni qualitative (il retrieval ibrido recupera meglio i termini tecnici esatti, la Faithfulness beneficia della fusione, la Context Relevance \`e parzialmente circolare rispetto al retrieval semantico) restano valide indipendentemente dal fix.
+
 % ============================================================
 \section{Conclusioni}
 % ============================================================
 
-Il laboratorio ha implementato un sistema RAG ibrido su un corpus di paper scientifici NLP, dimostrando che la combinazione di retrieval semantico (SciBERT + FAISS) e lessicale (BM25) tramite Reciprocal Rank Fusion porta a miglioramenti consistenti rispetto al solo retrieval semantico.
+Il laboratorio ha implementato un sistema RAG ibrido su un corpus di paper scientifici NLP, dimostrando che la combinazione di retrieval semantico (SciBERT + FAISS) e lessicale (BM25) tramite Reciprocal Rank Fusion porta a miglioramenti consistenti rispetto al solo retrieval semantico. I numeri esatti riportati sotto sono quelli della prima esecuzione (Sezione~9.7): la direzione qualitativa dei risultati è considerata solida, ma andrebbe confermata rilanciando l'esperimento con gli script corretti prima di essere citata come risultato definitivo.
 
 I risultati principali sono:
 

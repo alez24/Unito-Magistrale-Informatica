@@ -10,8 +10,15 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 #
 # Esperimento: confronto RAG base vs ibrido al variare
 # della dimensione del corpus (N_DOCS).
+#
+# I corpus a N_DOCS diversi sono sovrainsiemi annidati gli uni
+# degli altri (si mischia il dataset una sola volta e si
+# prendono i primi N_DOCS), altrimenti un paper potrebbe comparire
+# in un campione e non nell'altro per puro caso di campionamento,
+# invalidando il confronto "al variare di N_DOCS".
 # ============================================================
 
+import re
 import torch
 import faiss
 import numpy as np
@@ -23,12 +30,19 @@ from rank_bm25 import BM25Okapi
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
+try:
+    from nltk.corpus import stopwords as nltk_sw
+    STOPWORDS = set(nltk_sw.words('english'))
+except Exception:
+    STOPWORDS = set()
+
 # ============================================================
 # CONFIGURAZIONE ESPERIMENTO
 # ============================================================
 
-N_DOCS_LIST   = [1000, 5000, 15000,25000,44949]  # valori da testare
+N_DOCS_LIST   = [1000, 5000, 15000, 25000, 44949]  # valori da testare
 RANDOM_STATE  = 42
+PER_DOC_CHARS = 800  # troncamento per singolo paper nel contesto (non sul blocco intero)
 EMBEDDING_MODEL = "allenai/scibert_scivocab_uncased"
 LLM_MODEL       = "microsoft/Phi-3.5-mini-instruct"
 
@@ -67,6 +81,20 @@ PARAPHRASES = {
 
 EVAL_QUERIES = list(GOLD_STANDARD.keys())
 
+
+def match_kw(text, keywords):
+    """Match per parola intera: un semplice 'kw in text' farebbe matchare
+    'ner' con 'corner' o 'bert' con 'roberta'."""
+    text = text.lower()
+    return any(re.search(r'\b' + re.escape(kw) + r'\b', text) for kw in keywords)
+
+
+def tok(text):
+    """Tokenizzazione per BM25 basata su \\w+: split() lascerebbe la punteggiatura
+    attaccata ai token (es. 'BERT,' o 'work?'), che non matchano mai le query pulite."""
+    return re.findall(r'\w+', text.lower())
+
+
 # ============================================================
 # UTILITY: stampa separatori e tabelle
 # ============================================================
@@ -95,12 +123,47 @@ abstract_col = next((c for c in df_full.columns if 'abstract' in c.lower()
                      or 'summar' in c.lower()), df_full.columns[1])
 year_col     = next((c for c in df_full.columns if 'year'     in c.lower()), None)
 
+# mischiato una sola volta: ogni N_DOCS prende i primi N di questo stesso ordine
+df_shuffled = df_full.sample(frac=1, random_state=RANDOM_STATE).reset_index(drop=True)
+MAX_N_DOCS  = max(N_DOCS_LIST)
+
+
+def build_corpus(df, n):
+    """Prende i primi n documenti di un dataframe già mischiato una volta sola."""
+    df_s = df.head(n).reset_index(drop=True)
+    docs, meta = [], []
+    for _, row in df_s.iterrows():
+        title    = str(row[title_col])    if pd.notna(row[title_col])    else 'No Title'
+        abstract = str(row[abstract_col]) if pd.notna(row[abstract_col]) else 'No Abstract'
+        year     = str(row[year_col])     if year_col and pd.notna(row[year_col]) else 'Unknown'
+        docs.append(f"Title: {title}\n\nAbstract: {abstract}")
+        meta.append({'title': title, 'year': year})
+    return docs, meta
+
 # ============================================================
-# STEP 2: Caricamento modello embedding (una volta sola)
+# STEP 2: Caricamento modello embedding + embeddings del corpus completo
 # ============================================================
 header("STEP 2 — Caricamento SciBERT")
 embedding_model = SentenceTransformer(EMBEDDING_MODEL)
 print("  SciBERT caricato.")
+
+
+def build_faiss_index(embeddings):
+    """Costruisce l'indice FAISS (IndexFlatIP) da embeddings già calcolati."""
+    idx = faiss.IndexFlatIP(embeddings.shape[1])
+    idx.add(embeddings.astype(np.float32))
+    return idx
+
+
+# Corpus ed embeddings calcolati una sola volta sul corpus più grande: i corpus
+# più piccoli si ottengono per slicing, senza dover ricodificare da capo a ogni N_DOCS
+print(f"  Costruzione corpus completo ({MAX_N_DOCS:,} documenti) ed embeddings...")
+all_documents, all_metadata = build_corpus(df_shuffled, MAX_N_DOCS)
+all_embeddings = embedding_model.encode(
+    all_documents, show_progress_bar=True,
+    batch_size=64, convert_to_numpy=True, normalize_embeddings=True
+).astype(np.float32)
+print(f"  Embeddings calcolati: {all_embeddings.shape}")
 
 # ============================================================
 # STEP 3: Caricamento LLM (una volta sola)
@@ -114,13 +177,14 @@ if torch.cuda.is_available():
 tokenizer = AutoTokenizer.from_pretrained(LLM_MODEL)
 model     = AutoModelForCausalLM.from_pretrained(
     LLM_MODEL,
-    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+    dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
     device_map="auto",
     low_cpu_mem_usage=True
 )
 llm = pipeline(
     'text-generation', model=model, tokenizer=tokenizer,
-    max_new_tokens=300, do_sample=True, temperature=0.3,
+    max_new_tokens=300, do_sample=False,   # greedy: riproducibile fra run
+    return_full_text=False,                # solo il testo generato, non prompt+testo
     pad_token_id=tokenizer.eos_token_id,
     clean_up_tokenization_spaces=False
 )
@@ -130,31 +194,9 @@ print("  Modello caricato.")
 # FUNZIONI DI RETRIEVAL E VALUTAZIONE
 # ============================================================
 
-def build_corpus(df, n):
-    """Campiona n documenti e costruisce liste documenti/metadata."""
-    df_s = df.sample(n=n, random_state=RANDOM_STATE).reset_index(drop=True)
-    docs, meta = [], []
-    for _, row in df_s.iterrows():
-        title    = str(row[title_col])    if pd.notna(row[title_col])    else 'No Title'
-        abstract = str(row[abstract_col]) if pd.notna(row[abstract_col]) else 'No Abstract'
-        year     = str(row[year_col])     if year_col and pd.notna(row[year_col]) else 'Unknown'
-        docs.append(f"Title: {title}\n\nAbstract: {abstract}")
-        meta.append({'title': title, 'year': year})
-    return docs, meta
-
-
-def build_faiss_index(documents):
-    embeddings = embedding_model.encode(
-        documents, show_progress_bar=True,
-        batch_size=64, convert_to_numpy=True, normalize_embeddings=True
-    )
-    idx = faiss.IndexFlatIP(embeddings.shape[1])
-    idx.add(embeddings.astype(np.float32))
-    return idx
-
 
 def build_bm25_index(documents):
-    tokenized = [doc.lower().split() for doc in documents]
+    tokenized = [tok(doc) for doc in documents]
     return BM25Okapi(tokenized), tokenized
 
 
@@ -171,7 +213,7 @@ def retrieve_semantic(query, faiss_index, documents, metadata, k=10):
 
 
 def retrieve_bm25(query, bm25, documents, metadata, k=10):
-    scores = bm25.get_scores(query.lower().split())
+    scores = bm25.get_scores(tok(query))
     top    = np.argsort(scores)[::-1][:k]
     return [
         {'rank': i+1, 'score': float(scores[ix]), 'idx': int(ix),
@@ -203,12 +245,10 @@ def retrieve_hybrid(query, faiss_index, bm25, documents, metadata, k=5):
 
 def rag_answer(query, results):
     context_parts = [
-        f"[Paper {r['rank']}] {r['metadata']['title']}\n{r['document']}"
+        f"[Paper {r['rank']}] {r['metadata']['title']}\n{r['document'][:PER_DOC_CHARS]}"
         for r in results
     ]
     context = "\n\n".join(context_parts)
-    if len(context) > 3000:
-        context = context[:3000] + "\n[...truncated...]"
     messages = [
         {"role": "system", "content": (
             "You are a helpful assistant specialized in NLP research. "
@@ -221,16 +261,14 @@ def rag_answer(query, results):
             f"Question: {query}\n\nAnswer based on the context above, citing paper numbers:"
         )}
     ]
-    prompt    = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-    output    = llm(prompt)
-    full_text = output[0]['generated_text']
-    return full_text[len(prompt):].strip() if full_text.startswith(prompt) else full_text
+    prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    output = llm(prompt)
+    return output[0]['generated_text'].strip()
 
 
 def precision_at_k(results, relevant_keywords, k=5):
     return sum(
-        1 for r in results[:k]
-        if any(kw in r['metadata']['title'].lower() for kw in relevant_keywords)
+        1 for r in results[:k] if match_kw(r['document'], relevant_keywords)
     ) / k
 
 
@@ -247,27 +285,23 @@ def answer_relevance(query, answer):
 
 
 def faithfulness_proxy(answer, results):
-    import re
-    try:
-        from nltk.corpus import stopwords as nltk_sw
-        sw = set(nltk_sw.words('english'))
-    except Exception:
-        sw = set()
-    context_text  = ' '.join(r['document'][:500] for r in results).lower()
+    # stessa finestra per-documento usata in rag_answer (PER_DOC_CHARS), altrimenti la
+    # faithfulness e' sottostimata per costruzione rispetto al contesto realmente visto dall'LLM
+    context_text  = ' '.join(r['document'][:PER_DOC_CHARS] for r in results).lower()
     words         = re.findall(r'\b[a-z]{4,}\b', answer.lower())
-    content_words = [w for w in words if w not in sw]
+    content_words = [w for w in words if w not in STOPWORDS]
     if not content_words:
         return 0.0
     return sum(1 for w in content_words if w in context_text) / len(content_words)
 
 
-def robustness_test(query, paraphrases, faiss_index, bm25, documents, metadata, k=5):
-    base_titles = {r['metadata']['title']
-                   for r in retrieve_hybrid(query, faiss_index, bm25, documents, metadata, k)}
+def robustness_test(query, paraphrases, retrieve_fn, k=5):
+    """Overlap fra i top-k di una query e delle sue parafrasi, secondo la funzione
+    di retrieval passata (cosi' si puo' confrontare la robustezza base vs ibrido)."""
+    base_titles = {r['metadata']['title'] for r in retrieve_fn(query, k)}
     overlaps = []
     for para in paraphrases:
-        para_titles = {r['metadata']['title']
-                       for r in retrieve_hybrid(para, faiss_index, bm25, documents, metadata, k)}
+        para_titles = {r['metadata']['title'] for r in retrieve_fn(para, k)}
         overlaps.append(len(base_titles & para_titles) / k)
     return float(np.mean(overlaps))
 
@@ -285,18 +319,17 @@ for N_DOCS in N_DOCS_LIST:
     print(f"  ESPERIMENTO  N_DOCS = {N_DOCS:,}")
     sep("=")
 
-    # --- Costruzione corpus e indici ---
-    print(f"\n  [1/4] Costruzione corpus ({N_DOCS:,} documenti)...")
-    documents, metadata = build_corpus(df_full, N_DOCS)
+    # --- Corpus (slice), indice FAISS (slice degli embeddings) e indice BM25 ---
+    print(f"\n  [1/3] Corpus per N_DOCS={N_DOCS:,} (slice del corpus completo)...")
+    documents   = all_documents[:N_DOCS]
+    metadata    = all_metadata[:N_DOCS]
+    faiss_index = build_faiss_index(all_embeddings[:N_DOCS])
 
-    print(f"  [2/4] Costruzione indice FAISS...")
-    faiss_index = build_faiss_index(documents)
-
-    print(f"  [3/4] Costruzione indice BM25...")
+    print(f"  [2/3] Costruzione indice BM25...")
     bm25_index, _ = build_bm25_index(documents)
 
     # --- Precision@5 ---
-    print(f"\n  [4/4] Valutazione Precision@5...")
+    print(f"\n  [3/3] Valutazione Precision@5...")
     p5_base_list, p5_hyb_list = [], []
 
     for query, keywords in GOLD_STANDARD.items():
@@ -326,13 +359,19 @@ for N_DOCS in N_DOCS_LIST:
         ff_base_list.append(faithfulness_proxy(ans_base,   base_res))
         ff_hyb_list.append(faithfulness_proxy(ans_hybrid, hybrid_res))
 
-    # --- Robustezza ---
-    rob_scores = []
+    # --- Robustezza (base vs ibrido, cosi' si vede se la fusione stabilizza le parafrasi) ---
+    rob_base_scores, rob_hyb_scores = [], []
     for query, paras in PARAPHRASES.items():
-        rob_scores.append(
-            robustness_test(query, paras, faiss_index, bm25_index, documents, metadata)
-        )
-    avg_rob = float(np.mean(rob_scores))
+        rob_base_scores.append(robustness_test(
+            query, paras,
+            lambda q, k: retrieve_semantic(q, faiss_index, documents, metadata, k=k)
+        ))
+        rob_hyb_scores.append(robustness_test(
+            query, paras,
+            lambda q, k: retrieve_hybrid(q, faiss_index, bm25_index, documents, metadata, k=k)
+        ))
+    avg_rob_base = float(np.mean(rob_base_scores))
+    avg_rob_hyb  = float(np.mean(rob_hyb_scores))
 
     # --- Salva risultati ---
     all_results.append({
@@ -345,7 +384,8 @@ for N_DOCS in N_DOCS_LIST:
         'ar_hyb':     np.mean(ar_hyb_list),
         'ff_base':    np.mean(ff_base_list),
         'ff_hyb':     np.mean(ff_hyb_list),
-        'robustness': avg_rob,
+        'robustness_base': avg_rob_base,
+        'robustness_hyb':  avg_rob_hyb,
         # dettaglio P@5 per query
         'p5_base_detail': dict(zip(GOLD_STANDARD.keys(), p5_base_list)),
         'p5_hyb_detail':  dict(zip(GOLD_STANDARD.keys(), p5_hyb_list)),
@@ -360,11 +400,11 @@ for N_DOCS in N_DOCS_LIST:
         ("Context Relevance", 'cr_base',  'cr_hyb'),
         ("Answer Relevance",  'ar_base',  'ar_hyb'),
         ("Faithfulness",      'ff_base',  'ff_hyb'),
+        ("Robustezza",        'robustness_base', 'robustness_hyb'),
     ]:
         b = all_results[-1][kb]
         h = all_results[-1][kh]
         print(f"  {label:<25} {b:>8.3f} {h:>8.3f} {h-b:>+8.3f}")
-    print(f"  {'Robustezza':<25} {'':>8} {avg_rob:>8.3f}")
 
 # ============================================================
 # RIEPILOGO FINALE COMPARATIVO
@@ -390,11 +430,10 @@ metrics = [
     ("CR",          'cr_base',  'cr_hyb'),
     ("AR",          'ar_base',  'ar_hyb'),
     ("FF",          'ff_base',  'ff_hyb'),
+    ("Rob",         'robustness_base', 'robustness_hyb'),
 ]
-# Header
-header_cols = ["N_DOCS"] + [f"{m}_B" for m, *_ in metrics] + [f"{m}_H" for m, *_ in metrics] + ["Rob"]
-col_w = [8] + [7] * (len(metrics) * 2) + [6]
-fmt = "  " + "  ".join(f"{{:>{w}}}" for w in col_w)
+header_cols = ["N_DOCS"] + [f"{m}_B" for m, *_ in metrics] + [f"{m}_H" for m, *_ in metrics]
+col_w = [8] + [7] * (len(metrics) * 2)
 print("\n  " + "  ".join(f"{h:>{w}}" for h, w in zip(header_cols, col_w)))
 print(f"  {'-' * (sum(col_w) + 2 * len(col_w))}")
 for r in all_results:
@@ -403,14 +442,12 @@ for r in all_results:
         vals.append(f"{r[kb]:.3f}")
     for _, _, kh in metrics:
         vals.append(f"{r[kh]:.3f}")
-    vals.append(f"{r['robustness']:.3f}")
     print("  " + "  ".join(f"{v:>{w}}" for v, w in zip(vals, col_w)))
 
 # --- Dettaglio P@5 per query ---
 print("\n\n  PRECISION@5 IBRIDO — dettaglio per query al variare di N_DOCS")
-queries_short = [q[:35] for q in GOLD_STANDARD.keys()]
 col_w2 = [37] + [8] * len(N_DOCS_LIST)
-print("\n  " + "  ".join(f"{'N='+str(n):>{8}}" for n in ["Query"] + N_DOCS_LIST))
+print("\n  " + f"{'Query':<37}" + "  ".join(f"{'N='+str(n):>{8}}" for n in N_DOCS_LIST))
 print(f"  {'-' * (37 + 10 * len(N_DOCS_LIST))}")
 for i, q in enumerate(GOLD_STANDARD.keys()):
     row = f"  {q[:36]:<37}"
@@ -419,11 +456,11 @@ for i, q in enumerate(GOLD_STANDARD.keys()):
     print(row)
 
 # --- Robustezza ---
-print("\n\n  ROBUSTEZZA (overlap@5 su query parafrasate)")
-print(f"\n  {'N_DOCS':<10} {'Robustezza':>12}")
-print(f"  {'-'*25}")
+print("\n\n  ROBUSTEZZA (overlap@5 su query parafrasate): base vs ibrido")
+print(f"\n  {'N_DOCS':<10} {'Base':>8} {'Ibrido':>8}")
+print(f"  {'-'*28}")
 for r in all_results:
-    print(f"  {r['n_docs']:<10,} {r['robustness']:>12.3f}")
+    print(f"  {r['n_docs']:<10,} {r['robustness_base']:>8.3f} {r['robustness_hyb']:>8.3f}")
 
 sep("=")
 print("  ESPERIMENTO COMPLETATO")

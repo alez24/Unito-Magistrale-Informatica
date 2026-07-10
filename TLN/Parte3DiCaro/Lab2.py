@@ -1,169 +1,265 @@
-"""
-LAB-2: Valutazione Content-to-Form (Ricerca Onomasiologica)
-TLN 2025/2026 - Prof. Di Caro
+import itertools
+import re
+import string
 
-Obiettivo: data una definizione (contenuto), risalire al synset WordNet corretto (forma).
-Approccio: cosine similarity TF-IDF tra ogni definizione e le glosse dei synset candidati.
-"""
-
-import pandas as pd
-import re, string, itertools
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
+import pandas as pd
+from nltk import pos_tag, word_tokenize
+from nltk.corpus import stopwords, wordnet as wn
+from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+try:
+	from sentence_transformers import SentenceTransformer
+	_HAS_SBERT = True
+except Exception:
+	_HAS_SBERT = False
+
 
 # ---------------------------------------------------------------------------
-# 1. SYNSET CANDIDATI (da WordNet 3.1)
-#    Per ogni concetto: lista di (synset_id, glossa)
-#    Il primo elemento è il synset target (quello corretto)
+# 1) CONFIG
 # ---------------------------------------------------------------------------
-WORDNET_SYNSETS = {
-    'Music': [
-        ('music.n.01', 'an artistic form of auditory communication incorporating instrumental or vocal tones in a structured and continuous manner'),
-        ('music.n.02', 'any agreeable (pleasing and harmonious) sounds'),
-        ('music.n.03', 'musical activity (singing or whistling etc.)'),
-        ('music.n.04', 'the sounds produced by singers or musical instruments (or reproductions of such sounds)'),
-        ('music.n.05', 'punishment for one\'s actions'),
-    ],
-    'Ethics': [
-        ('ethics.n.01', 'the philosophical study of moral values and rules'),
-        ('ethical_motive.n.01', 'motivation based on ideas of right and wrong'),
-        ('ethics.n.02e wqtrewqt9r', 'a system of principles governing morality and acceptable conduct'),
-        ('morality.n.01', 'concern with the distinction between good and evil or right and wrong; right or good conduct'),
-        ('moral_philosophy.n.01', 'the branch of philosophy that studies the principles of right and wrong in human conduct'),
-    ],
-    'Tree': [
-        ('tree.n.01', 'a tall perennial woody plant having a main trunk and branches forming a distinct elevated crown; includes both gymnosperms and angiosperms'),
-        ('tree.n.02', 'a figure that branches from a single root'),
-        ('tree.n.03', 'English actor and theater manager who was the son of Herbert Beerbohm Tree'),
-        ('corner.n.04', 'force a person or an animal into a position from which he cannot escape'),
-        ('plant.n.01', 'a living organism lacking the power of locomotion'),
-    ],
-    'Teapot': [
-        ('teapot.n.01', 'pot for brewing tea; usually has a spout and handle'),
-        ('pot.n.01', 'metal or earthenware cooking vessel that is usually round and deep; often has a handle and lid'),
-        ('vessel.n.03', 'a container used for carrying or storing liquids'),
-        ('kettle.n.01', 'a metal pot for stewing or boiling; usually has a lid'),
-        ('container.n.01', 'any object that can be used to hold things (especially a large metal container for liquids)'),
-    ]
+DATASET_PATH = "Dataset definizioni-spurio.csv"
+OUTPUT_PATH = "risultati_lab2_wordnet_genus.csv"
+
+# Use SBERT when available, otherwise fallback to TF-IDF.
+SIMILARITY_BACKEND = "sbert" if _HAS_SBERT else "tfidf"
+SBERT_MODEL_NAME = "all-MiniLM-L6-v2"
+
+
+# ---------------------------------------------------------------------------
+# 2) NLTK RESOURCES + PREPROCESSING
+# ---------------------------------------------------------------------------
+STOPWORDS = set(stopwords.words("english"))
+LEMMATIZER = WordNetLemmatizer()
+
+
+def _wordnet_pos(treebank_pos):
+	if treebank_pos.startswith("J"):
+		return wn.ADJ
+	if treebank_pos.startswith("V"):
+		return wn.VERB
+	if treebank_pos.startswith("N"):
+		return wn.NOUN
+	if treebank_pos.startswith("R"):
+		return wn.ADV
+	return wn.NOUN
+
+
+def clean_text(text):
+	if not isinstance(text, str):
+		return ""
+
+	text = text.lower()
+	text = re.sub(f"[{re.escape(string.punctuation)}]", " ", text)
+	tokens = [tok for tok in text.split() if tok.isalpha() and len(tok) > 2 and tok not in STOPWORDS]
+
+	if not tokens:
+		return ""
+
+	tagged = pos_tag(tokens)
+	lemmas = [LEMMATIZER.lemmatize(tok, _wordnet_pos(pos)) for tok, pos in tagged]
+	return " ".join(lemmas)
+
+
+# ---------------------------------------------------------------------------
+# 3) GENUS EXTRACTION
+# ---------------------------------------------------------------------------
+def extract_genus(definition):
+	if not isinstance(definition, str):
+		return None
+
+	# Rule 1: noun immediately after copula ("is/are")
+	m = re.search(r"\b(?:is|are)\b\s+(?:an?\s+)?([a-zA-Z-]+)", definition.lower())
+	if m:
+		candidate = m.group(1)
+		if wn.synsets(candidate, pos=wn.NOUN):
+			return candidate
+
+	# Rule 2: first noun in the definition
+	tokens = [t for t in word_tokenize(definition.lower()) if t.isalpha()]
+	if not tokens:
+		return None
+
+	tagged = pos_tag(tokens)
+	for tok, pos in tagged:
+		if pos.startswith("NN") and wn.synsets(tok, pos=wn.NOUN):
+			return tok
+
+	return None
+
+
+# ---------------------------------------------------------------------------
+# 4) WORDNET CANDIDATE RETRIEVAL (GENUS PRINCIPLE)
+# ---------------------------------------------------------------------------
+def get_candidates_from_genus(genus):
+	if not genus:
+		return []
+
+	genus_synsets = wn.synsets(genus, pos=wn.NOUN)
+	if not genus_synsets:
+		return []
+
+	candidates = []
+	for syn in genus_synsets:
+		candidates.append(syn)
+		# one-level hyponyms (direct descendants) for constrained search
+		candidates.extend(syn.hyponyms())
+
+	# de-duplicate while preserving order
+	seen = set()
+	unique = []
+	for syn in candidates:
+		if syn.name() not in seen:
+			seen.add(syn.name())
+			unique.append(syn)
+	return unique
+
+
+# ---------------------------------------------------------------------------
+# 5) SIMILARITY
+# ---------------------------------------------------------------------------
+class SimilarityScorer:
+	def __init__(self, backend="tfidf", sbert_model_name="all-MiniLM-L6-v2"):
+		self.backend = backend
+		self.sbert_model_name = sbert_model_name
+		self.model = None
+		if self.backend == "sbert":
+			self.model = SentenceTransformer(self.sbert_model_name)
+
+	def score(self, definition, candidates):
+		if not candidates:
+			return None, 0.0, "no_candidates"
+
+		def_clean = clean_text(definition)
+		if not def_clean:
+			return None, 0.0, "empty_definition"
+
+		glosses = [clean_text(s.definition()) for s in candidates]
+		if not any(glosses):
+			return None, 0.0, "empty_glosses"
+
+		try:
+			if self.backend == "sbert":
+				corpus = [def_clean] + glosses
+				embs = self.model.encode(corpus)
+				sims = cosine_similarity([embs[0]], embs[1:])[0]
+			else:
+				corpus = [def_clean] + glosses
+				tfidf = TfidfVectorizer()
+				mat = tfidf.fit_transform(corpus)
+				sims = cosine_similarity(mat[0:1], mat[1:])[0]
+
+			max_val = float(np.max(sims))
+			winners = np.where(sims == max_val)[0]
+			if len(winners) != 1:
+				return None, max_val, "tie"
+
+			best = candidates[int(winners[0])]
+			return best, max_val, "ok"
+
+		except Exception:
+			return None, 0.0, "scoring_error"
+
+
+# ---------------------------------------------------------------------------
+# 6) DATASET MAPPING + GOLD LABELS
+# ---------------------------------------------------------------------------
+COLUMN_MAP = {
+	"music": "(AG) Definizione del concetto ASTRATTO e GENERICO",
+	"ethics": "(AS) Definizione del concetto ASTRATTO e SPECIFICO",
+	"tree": "(CG) Definizione del concetto CONCRETO e GENERICO",
+	"teapot": "(CS) Definizione del concetto CONCRETO e SPECIFICO",
 }
 
-# ---------------------------------------------------------------------------
-# 2. STOPWORDS E PULIZIA TESTO
-# da modificare e implementare NTLK per rimuovere stopwords e punteggiatura, e per lemmatizzare le parole
-# ---------------------------------------------------------------------------
-STOPWORDS = set([
-    'a','an','the','and','or','but','in','on','of','to','for','is','are',
-    'was','were','it','its','this','that','which','with','by','from','as','at','be',
-    'has','have','had','not','can','may','also','one','two','used','use','often',
-    'usually','made','make','such','some','other','their','they','them','than',
-    'more','most','very','each','both','into','through','during','including',
-    'before','after','above','below','between','out','off','over','under','then',
-    'once','here','there','when','where','who','how','all','any','few','no','nor',
-    'so','yet','only','own','same','just','because','while','although','though',
-    'if','what','about','up','down','s','do','does','did','will','would','could',
-    'should','might','must','shall','been','being','am','he','she','we','you',
-    'i','me','him','her','us','my','your','his','our','its'
-])
-
-def clean(text):
-    """Pulisce il testo rimuovendo punteggiatura e stopwords."""
-    if not isinstance(text, str):
-        return ''
-    text = text.lower()
-    text = re.sub(f'[{re.escape(string.punctuation)}]', ' ', text)
-    return ' '.join([w for w in text.split() if w not in STOPWORDS and len(w) > 2])
-
-# ---------------------------------------------------------------------------
-# 3. CARICAMENTO DATI
-# ---------------------------------------------------------------------------
-df = pd.read_csv('Dataset definizioni-spurio.csv')
-print(f"Dataset caricato: {len(df)} righe\n")
-
-col_map = {
-    'Music':  '(AG) Definizione del concetto ASTRATTO e GENERICO',
-    'Ethics': '(AS) Definizione del concetto ASTRATTO e SPECIFICO',
-    'Tree':   '(CG) Definizione del concetto CONCRETO e GENERICO',
-    'Teapot': '(CS) Definizione del concetto CONCRETO e SPECIFICO',
+# Gold synsets used only for evaluation.
+TARGET_SYNSET = {
+	"music": "music.n.01",
+	"ethics": "ethic.n.01",
+	"tree": "tree.n.01",
+	"teapot": "teapot.n.01",
 }
 
-# ---------------------------------------------------------------------------
-# 4. RICERCA ONOMASIOLOGICA: definizione → synset
-# ---------------------------------------------------------------------------
-all_results = []
 
-for concept, col in col_map.items():
-    definitions = df[col].dropna().tolist()
-    synsets     = WORDNET_SYNSETS[concept]
-    syn_names   = [s[0] for s in synsets]
-    syn_glosses = [s[1] for s in synsets]
-    target_syn  = syn_names[0]  # synset corretto
+def evaluate_concept(df, concept, column, scorer):
+	rows = []
+	target = TARGET_SYNSET[concept]
 
-    concept_results = []
-    for idx, defn in enumerate(definitions):
-        defn_clean    = clean(defn)
-        glosses_clean = [clean(g) for g in syn_glosses]
+	definitions = df[column].dropna().tolist()
+	for idx, definition in enumerate(definitions, start=1):
+		genus = extract_genus(definition)
+		candidates = get_candidates_from_genus(genus)
+		best, score, status = scorer.score(definition, candidates)
 
-        # Calcola cosine similarity TF-IDF tra definizione e ogni glossa
-        corpus = [defn_clean] + glosses_clean
-        tfidf  = TfidfVectorizer()
-        try:
-            mat   = tfidf.fit_transform(corpus)
-            sims  = cosine_similarity(mat[0:1], mat[1:])[0]
-            best_idx    = int(np.argmax(sims))
-            best_score  = round(float(sims[best_idx]), 4)
-            best_synset = syn_names[best_idx]
-            best_gloss  = syn_glosses[best_idx]
-        except Exception:
-            best_synset = target_syn
-            best_score  = 0.0
-            best_gloss  = syn_glosses[0]
+		best_name = best.name() if best else None
+		is_correct = (best_name == target)
 
-        correct = (best_synset == target_syn)
+		rows.append(
+			{
+				"concept": concept,
+				"def_id": idx,
+				"definition": definition,
+				"genus": genus,
+				"n_candidates": len(candidates),
+				"pred_synset": best_name,
+				"pred_gloss": best.definition() if best else None,
+				"target_synset": target,
+				"score": round(float(score), 6),
+				"status": status,
+				"is_correct": bool(is_correct),
+			}
+		)
 
-        concept_results.append({
-            'Concetto':     concept,
-            'Tipo':         'Astratto' if concept in ['Music', 'Ethics'] else 'Concreto',
-            'Specificità':  'Generico' if concept in ['Music', 'Tree']   else 'Specifico',
-            'Def_ID':       idx + 1,
-            'Definizione':  defn,
-            'Synset trovato': best_synset,
-            'Synset corretto': target_syn,
-            'Corretto':     correct,
-            'Score':        best_score,
-            'Glossa WordNet': best_gloss,
-        })
-        all_results.append(concept_results[-1])
+	return rows
 
-    scores  = [r['Score'] for r in concept_results]
-    correct_count = sum(1 for r in concept_results if r['Corretto'])
 
-    print(f"{'='*60}")
-    print(f"Concetto: {concept} | Tipo: {concept_results[0]['Tipo']} {concept_results[0]['Specificità']}")
-    print(f"Synset target: {target_syn}")
-    print(f"Synset trovato correttamente: {correct_count}/{len(definitions)}")
-    print(f"Score medio: {np.mean(scores):.4f} | Max: {max(scores):.4f} | Min: {min(scores):.4f}")
+def print_summary(results_df):
+	print("\n" + "=" * 78)
+	print("LAB-2 | Content-to-Form con WordNet reale (genus + iponimi)")
+	print(f"Backend similarita: {SIMILARITY_BACKEND}")
+	print("=" * 78)
 
-# ---------------------------------------------------------------------------
-# 5. AGGREGAZIONE E OUTPUT
-# ---------------------------------------------------------------------------
-res_df = pd.DataFrame(all_results)
+	# Accuracy includes failures/ties as wrong: no inflated fallback.
+	acc = results_df["is_correct"].mean() if len(results_df) else 0.0
+	print(f"Accuracy globale: {acc:.4f}")
 
-print(f"\n{'='*60}")
-print("AGGREGAZIONE PER TIPO (Astratto vs Concreto)")
-agg_tipo = res_df.groupby('Tipo').agg(
-    Score_medio=('Score', 'mean'),
-    Accuratezza=('Corretto', 'mean')
-).round(4)
-print(agg_tipo)
+	by_concept = (
+		results_df.groupby("concept")["is_correct"]
+		.mean()
+		.sort_index()
+	)
+	print("\nAccuracy per concetto:")
+	for concept, val in by_concept.items():
+		print(f"- {concept}: {val:.4f}")
 
-print(f"\nAGGREGAZIONE PER SPECIFICITÀ (Generico vs Specifico)")
-agg_spec = res_df.groupby('Specificità').agg(
-    Score_medio=('Score', 'mean'),
-    Accuratezza=('Corretto', 'mean')
-).round(4)
-print(agg_spec)
+	print("\nDistribuzione status:")
+	status_counts = results_df["status"].value_counts(dropna=False)
+	for status, cnt in status_counts.items():
+		print(f"- {status}: {cnt}")
 
-# Salva risultati
-res_df.to_csv('risultati_lab2.csv', index=False)
-print("\nRisultati salvati in: risultati_lab2.csv")
+
+def main():
+	df = pd.read_csv(DATASET_PATH)
+
+	scorer = SimilarityScorer(
+		backend=SIMILARITY_BACKEND,
+		sbert_model_name=SBERT_MODEL_NAME,
+	)
+
+	all_rows = []
+	for concept, column in COLUMN_MAP.items():
+		if column not in df.columns:
+			raise KeyError(f"Colonna mancante nel dataset: {column}")
+		concept_rows = evaluate_concept(df, concept, column, scorer)
+		all_rows.extend(concept_rows)
+
+	results_df = pd.DataFrame(all_rows)
+	results_df.to_csv(OUTPUT_PATH, index=False)
+
+	print_summary(results_df)
+	print(f"\nRisultati dettagliati salvati in: {OUTPUT_PATH}")
+
+
+if __name__ == "__main__":
+	main()

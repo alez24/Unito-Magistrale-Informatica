@@ -13,7 +13,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 #   - Embedding: SciBERT (allenai/scibert_scivocab_uncased)
 #   - FAISS:     IndexFlatIP (ricerca esatta, CPU)
 #   - LLM:       microsoft/Phi-3.5-mini-instruct
-#   - Temp:      0.3
+#   - Decoding:  greedy (do_sample=False) per risposte riproducibili
 #
 # Esperimento (risposta alle domande del Prof. Di Caro):
 #   per ogni N_DOCS in N_DOCS_LIST si confrontano diversi
@@ -22,6 +22,12 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 #   Questo permette di vedere se la qualità del retrieval
 #   semantico puro (senza BM25/hybrid) cambia con la dimensione
 #   del corpus, oltre che con k.
+#
+#   I corpus a N_DOCS diversi sono sovrainsiemi annidati gli uni
+#   degli altri (si mischia il dataset una sola volta e si
+#   prendono i primi N_DOCS): così l'effetto di N_DOCS è isolato
+#   dal caso di un documento che compare in un campione e non
+#   nell'altro per pura variazione del campionamento casuale.
 # ============================================================
 
 import re
@@ -53,6 +59,8 @@ except Exception:
 N_DOCS_LIST = [1000, 5000, 15000, 25000, 44949]  # valori da testare
 K_VALUES    = [3, 5, 10, 15]
 RANDOM_STATE = 42
+PER_DOC_CHARS = 800  # troncamento per singolo paper nel contesto (non sul blocco intero:
+                      # cosi' tutti i k paper entrano nel prompt anche per k grandi)
 
 EMBEDDING_MODEL = "allenai/scibert_scivocab_uncased"
 LLM_MODEL       = "microsoft/Phi-3.5-mini-instruct"
@@ -81,6 +89,14 @@ GOLD_STANDARD = {
     ],
 }
 
+
+def match_kw(text, keywords):
+    """Match per parola intera (o frase intera per keyword multi-parola): un semplice
+    'kw in text' farebbe matchare 'ner' con 'corner' o 'bert' con 'roberta'."""
+    text = text.lower()
+    return any(re.search(r'\b' + re.escape(kw) + r'\b', text) for kw in keywords)
+
+
 # ============================================================
 # STEP 1: Caricamento dataset completo (una volta sola)
 # ============================================================
@@ -95,10 +111,15 @@ abstract_col = next((c for c in df_full.columns if 'abstract' in c.lower()
                      or 'summar' in c.lower()), df_full.columns[1])
 year_col     = next((c for c in df_full.columns if 'year'     in c.lower()), None)
 
+# mischiato una sola volta: ogni N_DOCS prende i primi N di questo stesso ordine,
+# quindi i corpus di dimensioni diverse sono sovrainsiemi annidati l'uno dell'altro
+df_shuffled = df_full.sample(frac=1, random_state=RANDOM_STATE).reset_index(drop=True)
+MAX_N_DOCS = max(N_DOCS_LIST)
+
 
 def build_corpus(df, n):
-    """Campiona n documenti (riproducibile) e costruisce documenti/metadata."""
-    df_s = df.sample(n=n, random_state=RANDOM_STATE).reset_index(drop=True)
+    """Prende i primi n documenti di un dataframe già mischiato una volta sola."""
+    df_s = df.head(n).reset_index(drop=True)
     docs, meta = [], []
     for _, row in df_s.iterrows():
         title    = str(row[title_col])    if pd.notna(row[title_col])    else 'No Title'
@@ -110,7 +131,7 @@ def build_corpus(df, n):
 
 
 # ============================================================
-# STEP 2: Caricamento modello embedding (una volta sola)
+# STEP 2: Caricamento modello embedding + embeddings del corpus completo
 # ============================================================
 # Scelta: SciBERT (allenai/scibert_scivocab_uncased)
 # Motivazione: pre-addestrato su 1.14M paper scientifici,
@@ -122,22 +143,59 @@ embedding_model = SentenceTransformer(EMBEDDING_MODEL)
 print("SciBERT caricato.")
 
 
-def build_faiss_index(documents):
-    """Genera gli embeddings SciBERT e costruisce l'indice FAISS (IndexFlatIP)."""
-    embeddings = embedding_model.encode(
-        documents,
-        show_progress_bar=True,
-        batch_size=64,
-        convert_to_numpy=True,
-        normalize_embeddings=True   # obbligatorio per IndexFlatIP (cosine similarity)
-    )
+def build_faiss_index(embeddings):
+    """Costruisce l'indice FAISS (IndexFlatIP) da embeddings già calcolati."""
     idx = faiss.IndexFlatIP(embeddings.shape[1])  # 768 per SciBERT
     idx.add(embeddings.astype(np.float32))
     return idx
 
 
+# Corpus ed embeddings calcolati una sola volta sul corpus più grande: i corpus
+# più piccoli si ottengono per slicing, senza dover ricodificare da capo a ogni N_DOCS
+print(f"\n[STEP 2b] Costruzione corpus completo ({MAX_N_DOCS:,} documenti) ed embeddings...")
+all_documents, all_metadata = build_corpus(df_shuffled, MAX_N_DOCS)
+all_embeddings = embedding_model.encode(
+    all_documents,
+    show_progress_bar=True,
+    batch_size=64,
+    convert_to_numpy=True,
+    normalize_embeddings=True
+).astype(np.float32)
+print(f"Embeddings calcolati: {all_embeddings.shape}")
+
 # ============================================================
-# STEP 3: Retriever e pipeline RAG
+# STEP 3: Caricamento LLM - Phi-3.5-mini-instruct (una volta sola)
+# ============================================================
+# Scelta: microsoft/Phi-3.5-mini-instruct (3.8B parametri), float16 su
+# GPU / float32 su CPU. Decoding greedy per risposte riproducibili.
+# ============================================================
+print("\n[STEP 3] Caricamento LLM: Phi-3.5-mini-instruct...")
+print("(prima volta scarica ~7.6GB, poi usa la cache)")
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+tokenizer = AutoTokenizer.from_pretrained(LLM_MODEL)
+model = AutoModelForCausalLM.from_pretrained(
+    LLM_MODEL,
+    dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+    device_map="auto",
+    low_cpu_mem_usage=True
+)
+llm = pipeline(
+    'text-generation',
+    model=model,
+    tokenizer=tokenizer,
+    max_new_tokens=300,
+    do_sample=False,          # greedy: riproducibile fra run, necessario per confrontare le metriche
+    return_full_text=False,   # restituisce solo il testo generato, non prompt+testo
+    pad_token_id=tokenizer.eos_token_id,
+    clean_up_tokenization_spaces=False
+)
+print(f"Modello caricato su {device}")
+
+
+# ============================================================
+# STEP 4: Retriever e pipeline RAG
 # ============================================================
 def retrieve(query, faiss_index, documents, metadata, k=5):
     """Recupera i k documenti più rilevanti per la query (FAISS + SciBERT)."""
@@ -159,15 +217,10 @@ def retrieve(query, faiss_index, documents, metadata, k=5):
 def rag_answer(query, results):
     """Costruisce il prompt dai documenti recuperati e genera la risposta con Phi-3.5-mini."""
     context_parts = [
-        f"[Paper {r['rank']}] {r['metadata']['title']}\n{r['document']}"
+        f"[Paper {r['rank']}] {r['metadata']['title']}\n{r['document'][:PER_DOC_CHARS]}"
         for r in results
     ]
     context = "\n\n".join(context_parts)
-
-    # Limita contesto: teniamo il prompt ragionevole per velocità di generazione su CPU
-    MAX_CONTEXT = 3000
-    if len(context) > MAX_CONTEXT:
-        context = context[:MAX_CONTEXT] + "\n[...truncated...]"
 
     messages = [
         {
@@ -189,41 +242,9 @@ def rag_answer(query, results):
         }
     ]
 
-    prompt    = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-    output    = llm(prompt)
-    full_text = output[0]['generated_text']
-    return full_text[len(prompt):].strip() if full_text.startswith(prompt) else full_text
-
-
-# ============================================================
-# STEP 4: Caricamento LLM - Phi-3.5-mini-instruct (una volta sola)
-# ============================================================
-# Scelta: microsoft/Phi-3.5-mini-instruct (3.8B parametri), float16 su
-# GPU / float32 su CPU. Temperatura bassa (0.3) per risposte deterministiche.
-# ============================================================
-print("\n[STEP 4] Caricamento LLM: Phi-3.5-mini-instruct...")
-print("(prima volta scarica ~7.6GB, poi usa la cache)")
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
-tokenizer = AutoTokenizer.from_pretrained(LLM_MODEL)
-model = AutoModelForCausalLM.from_pretrained(
-    LLM_MODEL,
-    dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-    device_map="auto",
-    low_cpu_mem_usage=True
-)
-llm = pipeline(
-    'text-generation',
-    model=model,
-    tokenizer=tokenizer,
-    max_new_tokens=300,
-    do_sample=True,
-    temperature=0.3,
-    pad_token_id=tokenizer.eos_token_id,
-    clean_up_tokenization_spaces=False
-)
-print(f"Modello caricato su {device}")
+    prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    output = llm(prompt)
+    return output[0]['generated_text'].strip()
 
 
 # ============================================================
@@ -231,8 +252,7 @@ print(f"Modello caricato su {device}")
 # ============================================================
 def precision_at_k(results, relevant_keywords):
     return sum(
-        1 for r in results
-        if any(kw in r['document'].lower() for kw in relevant_keywords)
+        1 for r in results if match_kw(r['document'], relevant_keywords)
     ) / len(results)
 
 
@@ -249,7 +269,10 @@ def answer_relevance(query, answer):
 
 
 def faithfulness_proxy(answer, results):
-    context_text  = ' '.join(r['document'][:500] for r in results).lower()
+    # stessa finestra per-documento usata in rag_answer, altrimenti la faithfulness
+    # risulterebbe sottostimata per costruzione (risposta generata da più contesto
+    # di quanto la metrica vada poi a verificare)
+    context_text  = ' '.join(r['document'][:PER_DOC_CHARS] for r in results).lower()
     words         = re.findall(r'\b[a-z]{4,}\b', answer.lower())
     content_words = [w for w in words if w not in STOPWORDS]
     if not content_words:
@@ -269,14 +292,13 @@ for N_DOCS in N_DOCS_LIST:
     print(f"  ESPERIMENTO  N_DOCS = {N_DOCS:,}")
     print('=' * 60)
 
-    print(f"\n[1/3] Costruzione corpus ({N_DOCS:,} documenti)...")
-    documents, metadata = build_corpus(df_full, N_DOCS)
-
-    print("[2/3] Generazione embeddings e indice FAISS...")
-    faiss_index = build_faiss_index(documents)
+    print(f"\n[1/2] Corpus e indice FAISS per N_DOCS={N_DOCS:,} (slice del corpus completo)...")
+    documents   = all_documents[:N_DOCS]
+    metadata    = all_metadata[:N_DOCS]
+    faiss_index = build_faiss_index(all_embeddings[:N_DOCS])
     print(f"Indice FAISS creato con {faiss_index.ntotal} vettori")
 
-    print("[3/3] Confronto k su 7 query eterogenee...")
+    print("[2/2] Confronto k su 7 query eterogenee...")
     k_summary = []
     for k in K_VALUES:
         p_list, cr_list, p_bert = [], [], None

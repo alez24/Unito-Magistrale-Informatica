@@ -24,7 +24,9 @@ from gensim.models import Word2Vec
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 
-warnings.filterwarnings('ignore', module=r'gensim.*')  # silenzia i warning non critici di gensim, non i nostri
+ # silenzia i warning non critici di gensim, non i nostri
+warnings.filterwarnings('ignore', module=r'gensim.*') 
+
 
 try:
     stop = set(stopwords.words('english'))
@@ -57,9 +59,6 @@ print(f"Dataset: {df.shape[0]} canzoni, {df['artist'].nunique()} artisti")
 # ============================================================
 print("\n[STEP 2] Selezione artisti per era...")
 
-# NOTA: 'Led Zeppelin' non e' presente in questo dataset con questo nome
-# esatto (verificato su df['artist'].unique()) ed e' stato sostituito con
-# 'Black Sabbath' per mantenere 12 artisti rappresentativi degli anni 70.
 artisti_70s = [
     'Black Sabbath', 'Pink Floyd', 'Queen',
     'Eagles', 'Fleetwood Mac', 'Bee Gees',
@@ -82,8 +81,7 @@ print(f"Canzoni anni 70:       {len(df_70s)}")
 print(f"\nArtisti 2000s trovati: {sorted(df_2000s['artist'].unique())}")
 print(f"Canzoni anni 2000:     {len(df_2000s)}")
 
-# controllo esplicito: un nome artista sbagliato/assente nel dataset fa
-# fallire il match silenziosamente (isin() non segnala nulla)
+# isin() non solleva errori se un nome non trova corrispondenze: verifica esplicita
 n_trovati_70s   = df_70s['artist'].nunique()
 n_trovati_2000s = df_2000s['artist'].nunique()
 if n_trovati_70s != len(artisti_70s):
@@ -146,11 +144,12 @@ params = dict(
     vector_size = 100,
     window      = 5,
     min_count   = 3,
-    workers     = 4,
+    workers     = 1,     # riproducibilita' bit-esatta: con workers>1 l'ordine di
+                          # elaborazione tra thread varia e il training smette di essere
+                          # deterministico anche a parita' di seed (costo trascurabile
+                          # su un corpus di questa dimensione)
     epochs      = 20,
-    seed        = 42     # fissa l'inizializzazione, ma con workers>1 gensim non e'
-                          # bit-esatto tra run diversi (l'ordine di elaborazione dei
-                          # worker varia); per riproducibilita' totale servirebbe workers=1
+    seed        = 42
 )
 
 model_70s   = Word2Vec(sentences=df_70s['tokens'].tolist(),   **params)
@@ -378,8 +377,13 @@ def fai_clustering(model, n_clusters=6, top_words=200):
     """Raggruppa le parole più frequenti in cluster semantici via KMeans sugli embedding."""
     parole  = model.wv.index_to_key[:top_words]
     vettori = np.array([model.wv[w] for w in parole])
+    # KMeans usa distanza euclidea: senza normalizzare, un vettore con norma anomala
+    # domina la distanza e finisce isolato in un cluster singoletto. Normalizzando a
+    # norma unitaria il clustering diventa coerente con la cosine similarity usata
+    # nel resto dell'analisi.
+    vettori_norm = vettori / np.linalg.norm(vettori, axis=1, keepdims=True)
     km      = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-    labels  = km.fit_predict(vettori)
+    labels  = km.fit_predict(vettori_norm)
     cluster = {}
     for p, l in zip(parole, labels):
         cluster.setdefault(l, []).append(p)

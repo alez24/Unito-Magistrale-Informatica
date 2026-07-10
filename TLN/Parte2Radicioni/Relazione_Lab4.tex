@@ -17,6 +17,8 @@
 \usepackage{tabularx}
 \usepackage{tcolorbox}
 \tcbuselibrary{listings,breakable,skins}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, calc}
 
 \geometry{
   top=2.5cm, bottom=2.5cm,
@@ -150,6 +152,8 @@ L'analisi copre i seguenti aspetti:
   \item Classificazione di frasi tramite perplexity e log-likelihood.
 \end{enumerate}
 
+L'intero flusso sperimentale procede in tre fasi: i due corpus (Twitter e letterario) vengono puliti e tokenizzati separatamente, mantenendo ciascun tweet/frase come sequenza a sé (Sezione~\ref{sec:addestramento-lm} spiega perché questo passaggio è cruciale); le sequenze vengono usate per addestrare due coppie di modelli n-gram (MLE e Laplace) indipendenti; dai modelli addestrati si diramano infine i tre utilizzi a valle discussi nel resto della relazione: generazione di testo, classificazione di dominio tramite perplexity e classificazione tramite log-likelihood.
+
 % ============================================================
 \section{Background Teorico}
 % ============================================================
@@ -269,15 +273,17 @@ vocab_lett_set  = set(tokens_lett)
     \toprule
     \textbf{Statistica} & \textbf{Twitter} & \textbf{Letterario} \\
     \midrule
-    Token totali           & $\sim$120\,000 & $\sim$160\,000 \\
-    Parole uniche (types)  & $\sim$20\,000  & $\sim$8\,000   \\
-    TTR                    & $\sim$0.17     & $\sim$0.05     \\
-    Lunghezza media frase  & $\sim$10 token & $\sim$22 token \\
+    Token totali           & 94\,706 & 158\,267 \\
+    Parole uniche (types)  & 12\,024 & 9\,305   \\
+    TTR grezzo$^{*}$       & 0.1270  & 0.0588   \\
+    Lunghezza media frase  & 16.0 token & 25.6 token \\
     \bottomrule
   \end{tabular}
+  \\[0.3em]
+  {\footnotesize $^{*}$Calcolato sull'intero corpus di ciascun dominio: non è un confronto valido, perché il TTR scende all'aumentare dei token. Il confronto corretto, su campioni di uguale dimensione, è in Sezione~11.1.}
 \end{table}
 
-Il TTR più alto di Twitter riflette l'enorme varietà lessicale (slang, hashtag trasformati in parole, emoticon testuali), mentre il testo letterario ha un vocabolario più ristretto ma frasi molto più lunghe.
+Le parole uniche riflettono la dimensione del vocabolario di ciascun corpus così com'è, mentre il testo letterario ha frasi molto più lunghe in media. Il TTR grezzo qui sopra non è direttamente confrontabile tra i due domini (Sezione~11.1 presenta il confronto corretto).
 
 \subsection{Rimozione delle stopwords e analisi dei bigrammi}
 
@@ -299,30 +305,36 @@ Rimuovendo le stopwords emergono i bigrammi semanticamente significativi di cias
 
 % ============================================================
 \section{Addestramento dei Modelli Linguistici}
+\label{sec:addestramento-lm}
 % ============================================================
 
 \subsection{Preparazione e fitting}
 
-NLTK fornisce \texttt{padded\_everygram\_pipeline}, che aggiunge automaticamente i token di inizio (\texttt{<s>}) e fine (\texttt{</s>}) frase e genera tutti gli N-grammi fino a $n$:
+NLTK fornisce \texttt{padded\_everygram\_pipeline}, che aggiunge automaticamente i token di inizio (\texttt{<s>}) e fine (\texttt{</s>}) frase e genera tutti gli N-grammi fino a $n$. Ogni tweet e ogni frase del romanzo viene passato come sequenza a sé stante, in modo che il padding (e quindi i bigrammi generati) non attraversi il confine tra un tweet/frase e il successivo:
 
 \begin{pylisting}[title={Addestramento modelli MLE e Laplace per bigrammi ($n=2$)}]
 n = 2
 
+sequenze_tweet = [word_tokenize(t) for t in tweets_puliti]
+frasi_lett_raw = sent_tokenize(testo_letterario_raw)
+sequenze_lett  = [word_tokenize(pulisci_letterario(f)) for f in frasi_lett_raw]
+sequenze_lett  = [s for s in sequenze_lett if s]
+
 # Modelli MLE: per generazione e probabilita' condizionali
-train_tw_mle, vocab_tw_mle = padded_everygram_pipeline(n, [tokens_tweet])
+train_tw_mle, vocab_tw_mle = padded_everygram_pipeline(n, sequenze_tweet)
 modello_tweet = MLE(n)
 modello_tweet.fit(train_tw_mle, vocab_tw_mle)
 
-train_lt_mle, vocab_lt_mle = padded_everygram_pipeline(n, [tokens_lett])
+train_lt_mle, vocab_lt_mle = padded_everygram_pipeline(n, sequenze_lett)
 modello_lett = MLE(n)
 modello_lett.fit(train_lt_mle, vocab_lt_mle)
 
 # Modelli Laplace: per perplexity (gestisce parole mai viste)
-train_tw_lp, vocab_tw_lp = padded_everygram_pipeline(n, [tokens_tweet])
+train_tw_lp, vocab_tw_lp = padded_everygram_pipeline(n, sequenze_tweet)
 modello_tweet_lp = Laplace(n)
 modello_tweet_lp.fit(train_tw_lp, vocab_tw_lp)
 
-train_lt_lp, vocab_lt_lp = padded_everygram_pipeline(n, [tokens_lett])
+train_lt_lp, vocab_lt_lp = padded_everygram_pipeline(n, sequenze_lett)
 modello_lett_lp = Laplace(n)
 modello_lett_lp.fit(train_lt_lp, vocab_lt_lp)
 \end{pylisting}
@@ -332,6 +344,8 @@ Si addestrano due varianti per ciascun corpus:
   \item \textbf{MLE}: usato per la generazione di testo e il calcolo delle probabilità condizionali.
   \item \textbf{Laplace}: usato per la perplexity, poiché MLE assegna probabilità 0 a parole mai viste, rendendo la perplexity infinita.
 \end{itemize}
+
+\textbf{Nota su una correzione di correttezza}: in una prima versione, tutti i tweet (o tutte le frasi del romanzo) venivano concatenati in un'unica sequenza prima di essere passati a \texttt{padded\_everygram\_pipeline}. Questo produceva un solo \texttt{<s>}/\texttt{</s>} per l'intero corpus, e generava bigrammi spuri a cavallo tra la fine di un tweet e l'inizio del successivo (una relazione che nella realtà non esiste). Passare una sequenza per ogni tweet/frase risolve il problema.
 
 \subsection{Probabilità condizionali}
 
@@ -388,13 +402,17 @@ Il metodo \texttt{generate()} campiona parola per parola usando le probabilità 
 
 L'idea è usare la perplexity come classificatore: dato un testo, il modello che gli assegna \textbf{perplexity più bassa} è quello del dominio di appartenenza.
 
-Si usano 8 frasi di test (4 da Twitter, 4 letterarie) e si calcola la perplexity con entrambi i modelli Laplace. Poiché i vocabolari hanno dimensioni molto diverse, si normalizza dividendo per la dimensione del vocabolario:
+Si usano 8 frasi di test (4 da Twitter, 4 letterarie) e si calcola la perplexity con entrambi i modelli Laplace. \texttt{perplexity()} di NLTK si aspetta in input una sequenza di n-grammi (non i token grezzi), quindi le frasi vengono prima riportate in bigrammi con padding tramite \texttt{pad\_both\_ends}. Poiché i vocabolari hanno dimensioni molto diverse, il verdetto si basa sulla perplexity normalizzata per la dimensione del vocabolario:
 
 \begin{pylisting}[title={Classificazione tramite perplexity normalizzata}]
+def calcola_perplexity(modello, tokens, n=2):
+    ngr = list(ngrams(pad_both_ends(tokens, n=n), n))
+    return modello.perplexity(ngr)
+
 for nome, frase in frasi_test.items():
     tokens_frase = word_tokenize(frase)
-    pp_tw   = modello_tweet_lp.perplexity(tokens_frase)
-    pp_lett = modello_lett_lp.perplexity(tokens_frase)
+    pp_tw   = calcola_perplexity(modello_tweet_lp, tokens_frase, n)
+    pp_lett = calcola_perplexity(modello_lett_lp, tokens_frase, n)
 
     # Normalizza per la dimensione del vocabolario
     pp_tw_n   = pp_tw   / len(modello_tweet_lp.vocab)
@@ -405,9 +423,30 @@ for nome, frase in frasi_test.items():
     corretto        = "corretto" if verdetto == verdetto_atteso else "errato"
 \end{pylisting}
 
+\begin{table}[H]
+  \centering
+  \caption{Perplexity Laplace (non normalizzata) sulle 8 frasi di test}
+  \begin{tabular}{lrrc}
+    \toprule
+    \textbf{Frase} & \textbf{PP Twitter} & \textbf{PP Letterario} & \textbf{Verdetto} \\
+    \midrule
+    tw\_pos\_1 & 128.1  & 538.7  & TW \checkmark \\
+    tw\_pos\_2 & 1425.3 & 3434.1 & TW \checkmark \\
+    tw\_neg\_1 & 235.7  & 2151.0 & TW \checkmark \\
+    tw\_neg\_2 & 577.8  & 1375.3 & TW \checkmark \\
+    lett\_1    & 6321.1 & 290.1  & LT \checkmark \\
+    lett\_2    & 797.7  & 159.3  & LT \checkmark \\
+    lett\_3    & 3821.2 & 442.0  & LT \checkmark \\
+    lett\_4    & 2605.8 & 126.2  & LT \checkmark \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Con la perplexity calcolata correttamente sui bigrammi, il verdetto (basato sui valori normalizzati) è corretto per tutte le 8 frasi: \textbf{accuratezza 8/8 = 100\%}.
+
 \subsection{Limiti della perplexity come classificatore}
 
-La perplexity può risultare instabile quando i vocabolari hanno dimensioni molto diverse o quando le frasi di test contengono parole rare. Per questo motivo si è implementato un classificatore alternativo basato sulla log-likelihood.
+Su questo specifico set di frasi la perplexity normalizzata raggiunge il 100\% di accuratezza, tanto quanto la log-likelihood (Sezione~8): i due domini sono linguisticamente così distanti che entrambi i metodi separano correttamente ogni frase di test. Il vantaggio della log-likelihood non è quindi visibile in questo esperimento, ma resta valido sul piano teorico: la normalizzazione per $|V|$ usata per la perplexity è una correzione empirica, non una pratica standard, mentre la log-likelihood confronta direttamente due modelli sullo stesso testo senza bisogno di questo aggiustamento ad hoc.
 
 % ============================================================
 \section{Classificatore con Log-Likelihood}
@@ -415,10 +454,8 @@ La perplexity può risultare instabile quando i vocabolari hanno dimensioni molt
 
 \begin{pylisting}[title={Calcolo della log-likelihood di una sequenza}]
 def log_likelihood(modello, tokens):
-    """
-    Somma dei log P(w_i | w_{i-1}).
-    Piu' alta (meno negativa) = il modello conosce meglio il testo.
-    """
+    # Log-prob. media per token. Richiede Laplace: con MLE un bigramma
+    # mai visto avrebbe prob. 0 e il floor sotto dominerebbe la somma.
     score = 0.0
     for i in range(1, len(tokens)):
         contesto = [tokens[i-1]]
@@ -427,8 +464,8 @@ def log_likelihood(modello, tokens):
         if prob > 0:
             score += math.log(prob)
         else:
-            score += math.log(1e-10)  # floor per parole mai viste
-    return score
+            score += math.log(1e-10)  # floor, quasi mai attivo
+    return score / (len(tokens) - 1)
 
 def classifica_loglik(testo, mod_tw, mod_lt):
     tokens  = word_tokenize(testo.lower())
@@ -437,14 +474,40 @@ def classifica_loglik(testo, mod_tw, mod_lt):
     # vince il modello con log-likelihood piu' alta
     verdetto = "TWITTER" if ll_tw > ll_lett else "LETTERARIO"
     return verdetto, ll_tw, ll_lett
+
+for testo in testi_classificare:
+    classifica_loglik(testo, modello_tweet_lp, modello_lett_lp)  # Laplace, non MLE
 \end{pylisting}
 
-Il classificatore assegna il testo al modello con log-likelihood più alta (meno negativa). Questo approccio è più robusto della perplexity normalizzata perché:
+\textbf{Nota su una correzione di correttezza}: in una prima versione \texttt{classifica\_loglik} veniva chiamato con i modelli MLE (\texttt{modello\_tweet}, \texttt{modello\_lett}), in contraddizione con la docstring della funzione, che assume uno smoothing di tipo Laplace. Con MLE, qualunque bigramma mai visto in training ha probabilità esattamente $0$, il floor manuale ($\log 10^{-10} \approx -23$) scatta e finisce per dominare l'intera somma: il classificatore diventava di fatto ``chi ha meno bigrammi mai visti vince'' invece di un confronto genuino di verosimiglianza. Usare i modelli Laplace (che non assegnano mai probabilità esattamente nulla) rende il floor un caso limite che in pratica non si attiva più. Si è inoltre normalizzato il punteggio dividendo per il numero di transizioni, per ottenere una log-likelihood media per token confrontabile anche tra frasi di lunghezza diversa.
+
+Il classificatore assegna il testo al modello con log-likelihood più alta (meno negativa). Rispetto alla perplexity normalizzata, questo approccio ha alcuni vantaggi metodologici:
 \begin{itemize}
-  \item Non dipende dalla lunghezza della frase.
-  \item Non è influenzato dalla dimensione del vocabolario.
-  \item Un floor di $10^{-10}$ (invece di $P=0$) evita i valori $-\infty$.
+  \item Non richiede di dividere per la dimensione del vocabolario per rendere i due modelli confrontabili.
+  \item Un floor di $10^{-10}$ (invece di $P=0$) evita i valori $-\infty$ sui bigrammi mai visti, pur restando un caso limite che con Laplace non si attiva quasi mai.
 \end{itemize}
+
+\begin{table}[H]
+  \centering
+  \caption{Log-likelihood media per token (modelli Laplace) sulle 8 frasi di test}
+  \small
+  \begin{tabular}{>{\raggedright\arraybackslash}p{6.8cm}rrl}
+    \toprule
+    \textbf{Frase} & \textbf{LL Twitter} & \textbf{LL Letterario} & \textbf{Verdetto} \\
+    \midrule
+    i love you so much thank you                 & $-5.289$ & $-7.138$ & TWITTER \\
+    she had been very well disposed towards him   & $-9.205$ & $-6.143$ & LETTERARIO \\
+    i miss you so much cant stop thinking         & $-6.476$ & $-8.280$ & TWITTER \\
+    it was a very good thing to have done         & $-6.828$ & $-5.110$ & LETTERARIO \\
+    happy birthday love you so much               & $-5.622$ & $-7.727$ & TWITTER \\
+    she was not a woman of many words             & $-8.288$ & $-6.323$ & LETTERARIO \\
+    i cant stop smiling so happy                  & $-7.662$ & $-8.890$ & TWITTER \\
+    mr knightley had always been very fond of her & $-9.062$ & $-5.882$ & LETTERARIO \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Tutti gli 8 verdetti coincidono con il dominio atteso: \textbf{accuratezza 8/8 = 100\%}, in linea con quanto ottenuto dalla perplexity normalizzata (Sezione~7). Si noti che questo set di frasi è diverso (per quanto in parte sovrapposto) da quello usato in Sezione~7 per la perplexity.
 
 % ============================================================
 \section{MLE vs.\ Laplace: confronto diretto}
@@ -456,11 +519,8 @@ print(modello_tweet.score(parola_rara, ['i']))     # MLE    -> 0.0
 print(modello_tweet_lp.score(parola_rara, ['i']))  # Laplace -> valore > 0
 
 frase_rara = word_tokenize("i xyzword lol")
-try:
-    pp_mle = modello_tweet.perplexity(frase_rara)
-except:
-    pp_mle = float('inf')   # MLE -> perplexity infinita
-pp_lap = modello_tweet_lp.perplexity(frase_rara)
+pp_mle = calcola_perplexity(modello_tweet,    frase_rara, n)  # MLE -> inf
+pp_lap = calcola_perplexity(modello_tweet_lp, frase_rara, n)
 \end{pylisting}
 
 \begin{table}[H]
@@ -470,37 +530,53 @@ pp_lap = modello_tweet_lp.perplexity(frase_rara)
     \toprule
     \textbf{Metrica}              & \textbf{MLE}     & \textbf{Laplace} \\
     \midrule
-    $P(\text{xyzword} \mid i)$    & $0.0$            & $> 0$            \\
-    Perplexity su frase rara      & $\infty$         & valore finito    \\
+    $P(\text{xyzword} \mid i)$    & $0.000000$       & $0.000065$       \\
+    Perplexity su frase rara      & $\infty$         & $1111.48$        \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-Il MLE è inutilizzabile per calcolare la perplexity su frasi con parole fuori vocabolario, mentre Laplace garantisce sempre un valore finito.
+Il MLE è inutilizzabile per calcolare la perplexity su frasi con parole fuori vocabolario (basta una singola parola ignota per rendere l'intera frase impossibile secondo il modello, con perplexity infinita), mentre Laplace garantisce sempre un valore finito.
 
 % ============================================================
 \section{Confronto $n=1, 2, 3$}
 % ============================================================
+
+Tutti e tre i modelli sono addestrati solo sul corpus Twitter (\texttt{sequenze\_tweet}), e la stessa frase viene valutata sia in-dominio (Twitter) sia fuori dominio (letteraria):
 
 \begin{pylisting}[title={Confronto della perplexity al variare di $n$}]
 frase_tw = word_tokenize("i love you so much thank you")
 frase_lt = word_tokenize("she had been very well disposed")
 
 for n_test in [1, 2, 3]:
-    tr_tmp, voc_tmp = padded_everygram_pipeline(n_test, [tokens_tweet])
+    tr_tmp, voc_tmp = padded_everygram_pipeline(n_test, sequenze_tweet)
     mod_tmp = Laplace(n_test)
     mod_tmp.fit(tr_tmp, voc_tmp)
 
-    pp_tw = mod_tmp.perplexity(frase_tw)
-    pp_lt = mod_tmp.perplexity(frase_lt)
+    pp_tw = calcola_perplexity(mod_tmp, frase_tw, n_test)
+    pp_lt = calcola_perplexity(mod_tmp, frase_lt, n_test)
     print(f"n={n_test}: PP Twitter={pp_tw:.2f}, PP Letterario={pp_lt:.2f}")
 \end{pylisting}
 
+\begin{table}[H]
+  \centering
+  \caption{Perplexity Laplace al variare di $n$ (modelli addestrati solo su Twitter)}
+  \begin{tabular}{lrr}
+    \toprule
+    \textbf{$n$} & \textbf{PP frase Twitter} & \textbf{PP frase Letteraria} \\
+    \midrule
+    1 & 124.04 & 1727.63  \\
+    2 & 128.14 & 8059.42  \\
+    3 & 307.20 & 10003.72 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
 All'aumentare di $n$:
 \begin{itemize}
-  \item Il modello cattura dipendenze a più lungo raggio, risultando più espressivo.
-  \item La perplexity su frasi del dominio corretto tende a diminuire (il modello conosce meglio il contesto).
-  \item Il rischio di \textbf{data sparsity} aumenta: con $n=3$ molti trigrammi specifici non appaiono nel training.
+  \item La perplexity aumenta per \emph{entrambe} le frasi, non solo per quella fuori dominio: con $n$ maggiore lo smoothing di Laplace deve distribuire probabilità su uno spazio di n-grammi molto più grande ($|V|^n$), e la maggior parte non è mai stata osservata nel training. Questo effetto di \textbf{data sparsity} penalizza anche la frase in-dominio.
+  \item L'aumento è però molto più marcato per la frase letteraria (fuori dominio): il divario tra le due perplexity si allarga passando da $n=1$ a $n=2$, segno che il modello sta imparando dipendenze sempre più specifiche del corpus Twitter, che la frase letteraria non rispetta.
+  \item Questo mostra un compromesso pratico: aumentare $n$ rende il modello più specifico al proprio dominio (utile per distinguere i due stili), ma anche più fragile per data sparsity quando applicato a un corpus di addestramento di dimensioni moderate.
 \end{itemize}
 
 % ============================================================
@@ -509,12 +585,15 @@ All'aumentare di $n$:
 
 \subsection{Type-Token Ratio}
 
-\begin{pylisting}[title={Calcolo del TTR}]
-ttr_tweet = len(vocab_tweet_set) / len(tokens_tweet)
-ttr_lett  = len(vocab_lett_set)  / len(tokens_lett)
+Il TTR non è confrontabile calcolandolo sull'intero corpus di ciascun dominio: è una quantità che \emph{scende} strutturalmente all'aumentare del numero di token (le parole nuove si esauriscono via via che il testo prosegue), quindi confrontare il TTR di $\sim$95\,000 token di tweet con quello di $\sim$158\,000 token di \textit{Emma} misura soprattutto quale corpus è più piccolo, non quale sia lessicalmente più vario. Il TTR va quindi calcolato su campioni di uguale dimensione:
+
+\begin{pylisting}[title={Calcolo del TTR su campioni di uguale dimensione}]
+N = min(len(tokens_tweet), len(tokens_lett))
+ttr_tweet = len(set(tokens_tweet[:N])) / N
+ttr_lett  = len(set(tokens_lett[:N]))  / N
 \end{pylisting}
 
-Twitter ha un TTR maggiore: nonostante i tweet siano brevi e ripetitivi nei contenuti, il vocabolario è eterogeneo per la presenza di slang, hashtag, nomi propri e abbreviazioni. Il testo letterario, pur più lungo, usa un vocabolario relativamente ristretto e ricorrente.
+Su un campione di $N = 94\,706$ token (la dimensione dell'intero corpus Twitter, il più piccolo dei due) si ottiene $\text{TTR}_{\text{Twitter}} = 0.1270$ e $\text{TTR}_{\text{Letterario}} = 0.0719$. Twitter mantiene un TTR più alto anche a parità di token campionati (nonostante il divario si riduca rispetto al confronto non corretto, che dava $0.1270$ vs.\ $0.0588$): il vocabolario resta eterogeneo per la presenza di slang, hashtag, nomi propri e abbreviazioni, mentre il testo letterario, anche su un campione della stessa dimensione, usa un vocabolario relativamente più ristretto e ricorrente.
 
 \subsection{Lunghezza media delle frasi}
 
@@ -533,6 +612,31 @@ Le frasi letterarie sono circa il doppio più lunghe dei tweet: il romanzo di Au
 \section{Risultati e Discussione}
 % ============================================================
 
+La Figura~\ref{fig:confronto-risultati} raccoglie in un unico pannello i risultati chiave discussi nelle sezioni precedenti: i bigrammi più frequenti nei due domini (Sezione~4.2), il confronto diretto di log-likelihood sulle quattro frasi di test (Sezione~8) e le metriche linguistiche strutturali (TTR e lunghezza media, Sezione~11).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{confronto_risultati_laboratorio.png}
+\caption{Riepilogo visivo: top-10 bigrammi per dominio (senza stopword), log-likelihood cross-domain sulle quattro frasi di test, e confronto di TTR e lunghezza media frase.}
+\label{fig:confronto-risultati}
+\end{figure}
+
+\subsection{Perché entrambi i classificatori raggiungono il 100\%}
+
+Sia la perplexity normalizzata (Sezione~7) sia la log-likelihood (Sezione~8) classificano correttamente \emph{tutte} le frasi di test. Il motivo è strutturale: il vocabolario di Twitter (slang, forme contratte, hashtag) e quello di Austen (registro ottocentesco, nomi propri come \textit{Mr.\ Knightley}) si sovrappongono solo in un nucleo comune di parole funzionali, per cui una frase di un dominio contiene quasi sempre bigrammi mai osservati nel modello dell'altro — con Laplace questo si traduce in una perplexity nettamente peggiore per il modello ``sbagliato''.
+
+Questo spiega anche perché il vantaggio teorico della log-likelihood (non richiede la normalizzazione ad hoc per $|V|$, Sezione~7.2) non si traduca qui in un'accuratezza misurabilmente superiore: il compito è troppo facile per discriminare fra i due metodi. Un test più severo userebbe frasi di confine (es.\ testo giornalistico, a metà fra i due registri) invece di frasi nettamente appartenenti a un dominio.
+
+\subsection{Il ruolo dello smoothing: non solo evitare probabilità zero}
+
+Il confronto MLE vs.\ Laplace (Sezione~9) mostra che lo smoothing non è solo un accorgimento anti-crash, ma cambia concretamente l'output: su una parola mai vista, MLE assegna probabilità $0$ e perplexity $\infty$ (inutilizzabile per classificare o confrontare frasi), mentre Laplace assegna una probabilità piccola ma finita ($6.5 \times 10^{-5}$) e una perplexity finita ($1111.48$). Senza smoothing, l'intera pipeline di valutazione delle Sezioni~7 e~10 sarebbe stata impossibile su dati reali, dove le parole fuori vocabolario sono la norma.
+
+\subsection{L'ordine $n$ non aiuta linearmente: il costo della sparsity}
+
+Il confronto fra $n=1,2,3$ (Sezione~10, Tabella~5) mostra che la perplexity \emph{aumenta} con $n$ per entrambe le frasi, non solo per quella fuori dominio: la PP Twitter passa da $124.04$ a $307.20$ ($n{=}1\to3$), perché lo spazio degli n-grammi cresce come $|V|^n$ mentre i dati di training restano fissi (data sparsity). L'effetto è però molto più marcato fuori dominio: la PP letteraria passa da $1727.63$ a $10003.72$ (fattore $\sim5.8\times$ contro $\sim2.5\times$ per Twitter). Aumentare $n$ non rende quindi un modello ``migliore'' in assoluto, ma più specifico al proprio dominio — utile per un classificatore, ma rischioso per generazione o autocompletamento, dove il testo in input non sempre coincide con lo stile del training.
+
+\subsection{Sintesi tabellare}
+
 \begin{table}[H]
   \centering
   \caption{Riepilogo delle caratteristiche dei due domini}
@@ -541,11 +645,10 @@ Le frasi letterarie sono circa il doppio più lunghe dei tweet: il romanzo di Au
     \textbf{Caratteristica}  & \textbf{Twitter}   & \textbf{Letterario} \\
     \midrule
     Dataset                  & 10\,000 tweet      & \textit{Emma}, Austen (1816) \\
-    TTR                      & alto ($\sim$0.17)  & basso ($\sim$0.05)  \\
-    Lunghezza media frase    & $\sim$10 token     & $\sim$22 token      \\
+    TTR (campioni pari)      & alto (0.1270)      & basso (0.0719)      \\
+    Lunghezza media frase    & 16.0 token         & 25.6 token          \\
     Bigrammi tipici          & emozioni, auguri   & titoli, azioni      \\
     Smoothing consigliato    & Laplace            & Laplace             \\
-    Classificatore migliore  & Log-likelihood     & Log-likelihood      \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -555,13 +658,13 @@ Le frasi letterarie sono circa il doppio più lunghe dei tweet: il romanzo di Au
 \begin{enumerate}
   \item \textbf{I modelli N-gram riflettono lo stile del corpus}: il testo generato da ciascun modello è chiaramente riconoscibile come appartenente al dominio di addestramento.
 
-  \item \textbf{La perplexity da sola non basta come classificatore}: la differenza di dimensione del vocabolario e la presenza di parole OOV la rendono instabile; la log-likelihood è più affidabile.
+  \item \textbf{Entrambi i classificatori raggiungono il 100\% di accuratezza} (Sezione~12.1): un risultato dovuto alla forte distanza lessicale fra i due domini più che a un vantaggio specifico di un metodo sull'altro.
 
-  \item \textbf{Laplace è indispensabile per la robustezza}: MLE è ottimo per stimare probabilità su dati visti, ma non può gestire frasi di test con parole nuove.
+  \item \textbf{Laplace è indispensabile per la robustezza} (Sezione~12.2): MLE è ottimo per stimare probabilità su dati visti, ma non può gestire frasi di test con parole nuove.
 
   \item \textbf{$n=2$ è un buon compromesso}: cattura dipendenze locali senza soffrire troppo di sparsity, a differenza di $n=3$.
 
-  \item \textbf{Twitter è linguisticamente più vario ma meno strutturato}: TTR alto, frasi brevi, bigrammi emotivi. Austen ha TTR basso ma struttura sintattica ricca.
+  \item \textbf{Twitter è linguisticamente più vario ma meno strutturato}: TTR più alto anche a parità di token campionati, frasi brevi, bigrammi emotivi. Austen ha TTR più basso ma struttura sintattica ricca.
 \end{enumerate}
 
 % ============================================================
@@ -570,7 +673,7 @@ Le frasi letterarie sono circa il doppio più lunghe dei tweet: il romanzo di Au
 
 Il laboratorio ha dimostrato come i modelli linguistici basati su N-grammi siano in grado di catturare differenze stilistiche significative tra due domini molto distanti. Il modello addestrato su Twitter genera testo informale e ripetitivo, mentre quello addestrato su Austen produce frasi più formali e articolate.
 
-Il classificatore basato sulla log-likelihood si è rivelato più robusto della perplexity per la classificazione di dominio, grazie alla sua indipendenza dalla dimensione del vocabolario. Le tecniche di smoothing (in particolare Laplace) sono essenziali per rendere i modelli applicabili a testi reali che contengono inevitabilmente parole fuori vocabolario.
+Sia la perplexity normalizzata sia la log-likelihood classificano correttamente il 100\% delle frasi di test: la distanza linguistica tra i due domini è tale da rendere il compito facile per entrambi i metodi. La log-likelihood resta preferibile sul piano metodologico perché confronta i due modelli senza bisogno di una normalizzazione ad hoc per la dimensione del vocabolario. Le tecniche di smoothing (in particolare Laplace) restano comunque essenziali per rendere i modelli applicabili a testi reali che contengono inevitabilmente parole fuori vocabolario.
 
 % ============================================================
 \section{Dichiarazione sui Contributi di IA}
@@ -580,8 +683,10 @@ Per questo laboratorio ci siamo appoggiati anche a uno strumento di intelligenza
 
 \begin{itemize}
   \item \textbf{Snellimento dei commenti nel codice}: molti commenti erano troppo lunghi o ripetevano quanto già scritto nel testo; li abbiamo resi più diretti (es.\ perché serve addestrare un modello Laplace separato da MLE, o cosa misura esattamente la perplexity normalizzata per vocabolario).
-  \item \textbf{Confronto sulle scelte di analisi}: discussione sul perché la perplexity normalizzata sia meno stabile della log-likelihood come classificatore di dominio, cosa che ci ha portato ad approfondire quest'ultima nella Sezione~8.
+  \item \textbf{Individuazione e correzione di due bug metodologici}: \texttt{perplexity()} di NLTK si aspetta in input n-grammi, non token grezzi (passandole i token grezzi calcola probabilità su singoli caratteri anziché su parole), e i modelli venivano addestrati su un'unica sequenza per l'intero corpus invece che una per ciascun tweet/frase, generando bigrammi spuri a cavallo tra un tweet e il successivo. Dopo la correzione abbiamo rilanciato lo script e aggiornato tutte le tabelle di perplexity con i valori reali (Sezioni~7, 9, 10).
   \item \textbf{Verifica di piccoli dettagli di correttezza}: rilettura del codice per controllare che pipeline di preprocessing, addestramento e valutazione fossero coerenti tra i due domini (Twitter e letterario).
+  \item \textbf{Correzione di un'incoerenza tra codice e docstring}: il classificatore a log-likelihood veniva chiamato con i modelli MLE anziché Laplace, in contraddizione con la docstring della funzione; con MLE un bigramma mai visto attiva un floor artificiale ($\log 10^{-10}$) che di fatto decide la classificazione al posto della verosimiglianza reale. Abbiamo anche normalizzato lo score per la lunghezza della frase, per confrontare correttamente frasi di lunghezza diversa.
+  \item \textbf{Correzione del confronto TTR}: il Type-Token Ratio calcolato sull'intero corpus non era confrontabile tra i due domini (dipende dalla dimensione del corpus); ricalcolato su campioni di uguale dimensione (Sezione~11.1).
 \end{itemize}
 
 L'impostazione del lavoro, le scelte metodologiche, l'interpretazione critica dei risultati e la stesura della relazione restano nostre.

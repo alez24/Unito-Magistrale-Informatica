@@ -17,6 +17,8 @@
 \usepackage{tabularx}
 \usepackage{tcolorbox}
 \tcbuselibrary{listings,breakable,skins}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, calc}
 
 \geometry{
   top=2.5cm, bottom=2.5cm,
@@ -140,6 +142,8 @@ L'obiettivo principale è confrontare il linguaggio della musica degli \textbf{a
 \end{itemize}
 
 Il dataset usato è lo \textit{Spotify Million Song Dataset}, che contiene testi di migliaia di artisti. Si selezionano manualmente artisti rappresentativi per ciascuna era e si addestrano due modelli Word2Vec separati, uno per era.
+
+Il flusso sperimentale procede in tre fasi: dal dataset completo si selezionano le canzoni degli artisti delle due ere, si puliscono e tokenizzano separatamente, e si addestrano due modelli Word2Vec Skip-gram indipendenti (uno per era, Sezione~\ref{sec:addestramento-w2v}); dai due modelli si diramano infine le quattro analisi discusse nel resto della relazione: parole simili, similarità coseno tra coppie, deriva semantica sistematica (semantic shift) e clustering con visualizzazione t-SNE.
 
 % ============================================================
 \section{Background Teorico}
@@ -266,6 +270,7 @@ Dopo la pulizia, il corpus anni 70 conta \textbf{163\,180 token} (11\,174 unici)
 
 % ============================================================
 \section{Addestramento dei Modelli Word2Vec}
+\label{sec:addestramento-w2v}
 % ============================================================
 
 \begin{pylisting}[title={Addestramento Word2Vec con Gensim}]
@@ -274,9 +279,9 @@ params = dict(
     vector_size = 100,   # dimensione dei vettori
     window      = 5,     # finestra di contesto (+-5 parole)
     min_count   = 3,     # ignora parole con freq < 3
-    workers     = 4,     # thread paralleli
+    workers     = 1,     # 1 thread: riproducibilita' bit-esatta a parita' di seed
     epochs      = 20,    # passaggi sul corpus
-    seed        = 42     # riproducibilita'
+    seed        = 42
 )
 
 model_70s   = Word2Vec(sentences=df_70s['tokens'].tolist(),   **params)
@@ -328,13 +333,13 @@ Per ogni parola chiave si estraggono i 3 vicini più prossimi nei due spazi vett
     \toprule
     \textbf{Parola} & \textbf{Top 3 Anni 70} & \textbf{Top 3 Anni 2000} \\
     \midrule
-    love  & forsake, posses, bees     & elastic, everlastic, spastic \\
-    night & gloria, musk, plague      & mmmarry, mmmmarry, friday \\
-    heart & hijack, indecision, hijacked & aaate, withstand, amaze \\
-    world & evergrowing, alter, joins & rule, slips, swirls \\
-    time  & verse, capture, spends    & thanks, closing, replaced \\
-    life  & lalala, earn, changin     & kandy, intoxicated, overdrive \\
-    feel  & sheer, cardiac, travlin   & caren, garner, manicure \\
+    love  & forsake, harmony, tender  & everlastic, lusting, elastic \\
+    night & tonights, starry, gloria  & mmmarry, friday, mmmmarry \\
+    heart & hijack, indecision, steals & aaate, amaze, belongs \\
+    world & battleground, smash, upside & slips, rule, seas \\
+    time  & rages, rediscover, enemies & thanks, wasting, replaced \\
+    life  & lalala, earn, lalena      & intoxicated, overdrive, kandy \\
+    feel  & sheer, cardiac, tense     & caren, garner, alienated \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -368,22 +373,33 @@ La similarità coseno tra coppie tematicamente significative permette di quantif
     \toprule
     \textbf{Coppia} & \textbf{Anni 70} & \textbf{Anni 2000} \\
     \midrule
-    (love, heart)  & 0.333 & 0.252 \\
-    (love, money)  & 0.237 & 0.249 \\
-    (night, dark)  & 0.308 & 0.340 \\
-    (god, heaven)  & 0.255 & 0.200 \\
-    (war, peace)   & 0.429 & 0.407 \\
-    (free, soul)   & 0.259 & 0.145 \\
+    (love, heart)  & 0.326 & 0.262 \\
+    (love, money)  & 0.158 & 0.320 \\
+    (night, dark)  & 0.286 & 0.330 \\
+    (god, heaven)  & 0.281 & 0.202 \\
+    (war, peace)   & 0.398 & 0.377 \\
+    (free, soul)   & 0.268 & 0.134 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \begin{itemize}
-  \item \textbf{(love, heart)}: similarità moderata in entrambe le ere, più alta negli anni 70 (0.33 vs 0.25) — coerente con un tema universale la cui espressione lessicale rimane comunque parzialmente stabile.
-  \item \textbf{(god, heaven)}: più alta negli anni 70 (0.26 vs 0.20); una possibile lettura è la maggiore presenza di rock spirituale/blues in quel campione di artisti, ma con soli 6 esempi la differenza va presa come indicativa, non come prova.
-  \item \textbf{(war, peace)}: valori alti e vicini in entrambe le ere (0.43 vs 0.41) — la coppia resta fortemente associata indipendentemente dal periodo, senza un chiaro segnale di cambiamento storico da questi soli dati.
-  \item \textbf{(free, soul)}: calo netto dagli anni 70 (0.26) agli anni 2000 (0.15) — la coppia più significativa del gruppo, compatibile con un progressivo allontanamento semantico dei due termini nel lessico musicale.
+  \item \textbf{(love, heart)}: similarità moderata in entrambe le ere, più alta negli anni 70 (0.33 vs 0.26) — coerente con un tema universale la cui espressione lessicale rimane comunque parzialmente stabile.
+  \item \textbf{(god, heaven)}: più alta negli anni 70 (0.28 vs 0.20); una possibile lettura è la maggiore presenza di rock spirituale/blues in quel campione di artisti, ma con soli 6 esempi la differenza va presa come indicativa, non come prova.
+  \item \textbf{(war, peace)}: valori alti e vicini in entrambe le ere (0.40 vs 0.38) — la coppia resta fortemente associata indipendentemente dal periodo, senza un chiaro segnale di cambiamento storico da questi soli dati.
+  \item \textbf{(free, soul)}: calo netto dagli anni 70 (0.27) agli anni 2000 (0.13) — la coppia più significativa del gruppo, compatibile con un progressivo allontanamento semantico dei due termini nel lessico musicale.
 \end{itemize}
+
+La Figura~\ref{fig:w2v-heatmap} estende il confronto a 12 parole chiave (invece delle sole 6 coppie ispezionate a mano), mostrando la matrice di similarità coseno completa per ciascuna era e la loro differenza puntuale.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{word2vec_heatmap.png}
+\caption{Similarità coseno tra 12 parole chiave: anni 70 (sinistra), anni 2000 (centro), differenza puntuale 2000s$-$70s (destra).}
+\label{fig:w2v-heatmap}
+\end{figure}
+
+Il pannello di destra rende visibile a colpo d'occhio dove il confronto a coppie isolate (sopra) generalizza bene e dove no: \textit{life}--\textit{love} cala di $-0.36$ (il calo più marcato dell'intera matrice), mentre \textit{night}--\textit{god} e \textit{heart}--\textit{god} salgono di $+0.14$/$+0.13$. Il quadro complessivo è quello di piccoli spostamenti diffusi in entrambe le direzioni piuttosto che un'unica tendenza dominante (es.\ ``tutto si allontana'' o ``tutto si avvicina''), coerente con l'idea che il lessico condiviso fra le due ere si riorganizzi localmente attorno a singole parole più che spostarsi in blocco.
 
 % ============================================================
 \section{Analisi del Vocabolario}
@@ -410,10 +426,12 @@ interessanti_2000s = sorted(
 
 L'analisi del vocabolario distingue tre insiemi:
 \begin{itemize}
-  \item \textbf{Parole esclusive degli anni 70}: termini del rock psichedelico, della controcultura e del glam rock che non compaiono (con frequenza sufficiente) nei testi degli anni 2000.
-  \item \textbf{Parole esclusive degli anni 2000}: termini tipici del rap, del pop elettronico e del linguaggio urbano contemporaneo.
+  \item \textbf{Parole esclusive degli anni 70} (frequenza $>20$): \textit{boogie, diddley, whop, aaaahh, mustapha, ahha, gentle, zane, bicycle, pity, lucy, chingaling, hitch, bee, hike, ooooh, honky, rockn, andrew, wooh}.
+  \item \textbf{Parole esclusive degli anni 2000} (frequenza $>20$): \textit{superstar, hooker, gangsta, yall, rap, retro, muh, ayo, chocolate, freezer, mom, eheh, gaga, gangstas, presents, artpop, idiot, glam, army, spot}.
   \item \textbf{Parole comuni}: il nucleo lessicale condiviso tra le due ere — temi universali come amore, tempo, vita, notte.
 \end{itemize}
+
+Confrontando queste liste con il dataset originale emerge un fatto rilevante per l'interpretazione dell'intero esperimento: molte delle parole ``caratteristiche di un'era'' sono in realtà caratteristiche di un singolo artista, non del periodo nel suo complesso. \textit{Mustapha} e \textit{bicycle} compaiono quasi esclusivamente nei brani dei Queen (\textit{Mustapha}, \textit{Bicycle Race}); \textit{diddley} viene da \textit{Diddley Daddy} dei Rolling Stones (una cover di Bo Diddley); dal lato anni 2000, \textit{gaga}, \textit{artpop} e \textit{retro} sono quasi interamente concentrate nei brani di Lady Gaga (il suo stesso nome usato come ad-lib, più il titolo dell'album \textit{Artpop}), e \textit{gangsta} viene esclusivamente da Eminem. Il ``vocabolario esclusivo di un'era'' misura quindi in parte lo stile idiosincratico di un singolo artista molto rappresentato nel campione, non un tratto condiviso del periodo — un limite di selezione degli artisti discusso più a fondo in Sezione~11.5.
 
 % ============================================================
 \section{Analisi Sistematica del Semantic Shift}
@@ -472,14 +490,35 @@ Con soglia \texttt{FREQ\_COPPIE=100} si ottengono \textbf{245 parole candidate} 
     \toprule
     \textbf{Coppia} & \textbf{Anni 70} & \textbf{Anni 2000} & \textbf{$\Delta$} & \textbf{Trend} \\
     \midrule
-    (free, knows)     & 0.268  & $-0.139$ & 0.408 & più lontane \\
-    (friends, move)   & $-0.105$ & 0.299  & 0.405 & più vicine \\
-    (anything, soul)  & 0.343  & $-0.053$ & 0.397 & più lontane \\
-    (play, used)      & 0.366  & $-0.029$ & 0.396 & più lontane \\
-    (running, hands)  & 0.360  & $-0.026$ & 0.386 & più lontane \\
+    (tell, world)     & 0.447  & 0.000    & 0.447 & più lontane \\
+    (fight, two)      & $-0.078$ & 0.332  & 0.409 & più vicine \\
+    (remember, lies)  & 0.424  & 0.016    & 0.408 & più lontane \\
+    (happy, show)     & 0.428  & 0.022    & 0.406 & più lontane \\
+    (old, city)       & $-0.094$ & 0.305  & 0.399 & più vicine \\
     \bottomrule
   \end{tabular}
 \end{table}
+
+All'estremo opposto della classifica, le coppie con $\Delta$ più basso mostrano un valore identico fino alla quarta cifra decimale in entrambe le ere:
+
+\begin{table}[H]
+  \centering
+  \caption{Le 5 coppie con variazione di similarità più bassa (risultati reali)}
+  \small
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Coppia} & \textbf{Anni 70} & \textbf{Anni 2000} & \textbf{$\Delta$} \\
+    \midrule
+    (round, last)       & 0.1493  & 0.1493  & 0.0000 \\
+    (watch, run)        & 0.2164  & 0.2164  & 0.0000 \\
+    (everyone, stars)   & 0.0607  & 0.0607  & 0.0000 \\
+    (gone, lose)        & 0.1860  & 0.1860  & 0.0000 \\
+    (bring, sky)        & 0.1347  & 0.1347  & 0.0000 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{Attenzione}: questi valori non sono una prova di stabilità semantica genuina fra le due ere. Con $29\,890$ coppie confrontate e i delta distribuiti su un range di poco più di $0.4$, la spaziatura attesa fra valori adiacenti nella distribuzione ordinata è dell'ordine di $10^{-5}$: a questa risoluzione, un certo numero di coppie ottiene un delta praticamente nullo per semplice densità statistica della coda della distribuzione, non perché la relazione fra le due parole sia rimasta davvero identica nei due modelli indipendenti. Va quindi letta come un artefatto dell'ordinamento, non come un risultato interpretabile parola per parola — a differenza delle coppie in testa alla classifica (Tabella~4), il cui $\Delta$ è abbastanza grande da non poter essere spiegato dalla sola densità dei dati.
 
 \subsection{Parole con maggiore cambiamento di contesto}
 \label{sec:vocab-shift}
@@ -519,7 +558,20 @@ L'analisi sistematica calcola, per ogni parola comune frequente, l'overlap tra i
   \item I \textbf{vicini stabili}: parole rimaste nel vicinato in entrambe le ere — il nucleo semantico stabile della parola.
 \end{itemize}
 
-Con soglia \texttt{FREQ\_MINIMA=30} si ottengono \textbf{648 parole comuni} analizzate. Un risultato inatteso: per la maggior parte delle parole nel top-30 (es.\ \textit{daddy}, \textit{understand}, \textit{would}, \textit{stars}) l'overlap è \textbf{0\%} (cambiamento 100\%) — nessuno dei 10 vicini più prossimi coincide fra le due ere. Le parole più \textbf{stabili} (overlap più alto, comunque solo 20--30\%) sono \textit{new} (\textit{brand, orleans, york}), \textit{pay} (\textit{price, rent}) e \textit{fate} (\textit{sealed, twist}). Questo conferma quanto osservato in Sezione~\ref{sec:parole-simili}: con corpus di poche migliaia di canzoni per era, il vicinato immediato di una parola è dominato da rumore statistico più che da un segnale semantico stabile, e va quindi interpretato con cautela.
+Con soglia \texttt{FREQ\_MINIMA=30} si ottengono \textbf{648 parole comuni} analizzate. Un risultato inatteso: per la maggior parte delle parole nel top-30 (es.\ \textit{dreaming}, \textit{making}, \textit{war}, \textit{follow}, \textit{open}) l'overlap è \textbf{0\%} (cambiamento 100\%) — nessuno dei 10 vicini più prossimi coincide fra le due ere. Questo conferma quanto osservato in Sezione~\ref{sec:parole-simili}: con corpus di poche migliaia di canzoni per era, il vicinato immediato di una parola è dominato da rumore statistico più che da un segnale semantico stabile, e va quindi interpretato con cautela.
+
+Le parole più \textbf{stabili} (overlap più alto, comunque solo 10--30\%) sono \textit{new} (vicini comuni: \textit{brand, orleans, york}), \textit{rest} (\textit{test, vagabonds}), \textit{room} (\textit{hotel}), \textit{roll} (\textit{rock}), \textit{took} (\textit{advantage}), \textit{clothes} (\textit{wear}), \textit{every} (\textit{single}) e \textit{pull} (\textit{plug}). Guardando questi esempi da vicino emerge un pattern linguistico più interessante della semplice ``stabilità'': ciò che sopravvive intatto per 30 anni non sono temi o significati, ma \textbf{collocazioni e formule fisse della lingua} — \textit{brand new}, \textit{New York}, \textit{New Orleans}, \textit{rock and roll}, \textit{hotel room}, \textit{took advantage}, \textit{pull the plug}, \textit{every single}. Il nucleo lessicale che il modello riconosce come invariato nel tempo è quindi prevalentemente \textbf{collocazionale}, non semantico: espressioni multi-parola così frequenti e rigide da restare ancorate le une alle altre indipendentemente dall'era, mentre il resto del vocabolario si muove liberamente.
+
+La Figura~\ref{fig:w2v-drift} visualizza insieme i due risultati di questa sezione: a sinistra le top-20 parole per grado di cambiamento (Sezione~\ref{sec:vocab-shift}), quasi tutte al 100\%; a destra lo scatter delle $29\,890$ coppie confrontate in Sezione~\ref{sec:shift-sistematico}, con le coppie a delta più alto (fra cui \textit{tell--world} e \textit{happy--show}) annotate esplicitamente.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{word2vec_drift.png}
+\caption{Deriva semantica: (sinistra) top-20 parole per grado di cambiamento di contesto; (destra) similarità coseno delle coppie di parole comuni, anni 70 vs anni 2000 — sopra la diagonale indica coppie diventate più simili nei 2000s, sotto indica coppie diventate più distanti.}
+\label{fig:w2v-drift}
+\end{figure}
+
+Lo scatter a destra rende visibile un aspetto che le sole tabelle non mostrano: la nuvola di punti è nettamente sbilanciata sotto la diagonale, cioè la maggioranza delle coppie comuni risulta \emph{meno} simile nel 2000 che negli anni 70, non semplicemente ``diversa in modo casuale''. Questo è coerente con un vocabolario condiviso che, negli anni 2000, viene ricombinato in configurazioni sintattiche/collocazionali più varie (si veda anche la lettura dei cluster in Sezione~9) piuttosto che con un lessico comune che resta stabile nel tempo.
 
 % ============================================================
 \section{Clustering K-Means}
@@ -529,8 +581,11 @@ Con soglia \texttt{FREQ\_MINIMA=30} si ottengono \textbf{648 parole comuni} anal
 def fai_clustering(model, n_clusters=6, top_words=200):
     parole  = model.wv.index_to_key[:top_words]   # top 200 per freq
     vettori = np.array([model.wv[w] for w in parole])
+    # normalizza a norma unitaria: senza, un vettore con norma anomala
+    # domina la distanza euclidea di K-Means e resta isolato in un cluster singoletto
+    vettori_norm = vettori / np.linalg.norm(vettori, axis=1, keepdims=True)
     km      = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-    labels  = km.fit_predict(vettori)
+    labels  = km.fit_predict(vettori_norm)
     cluster = {}
     for p, l in zip(parole, labels):
         cluster.setdefault(l, []).append(p)
@@ -546,16 +601,16 @@ Il clustering opera sulle \textbf{200 parole più frequenti} del vocabolario di 
   \centering
   \caption{Cluster K-Means, anni 70 (risultati reali, prime 12 parole per cluster)}
   \small
-  \begin{tabular}{cl}
+  \begin{tabular}{c>{\raggedright\arraybackslash}p{11.5cm}}
     \toprule
     \textbf{Cluster} & \textbf{Parole} \\
     \midrule
-    0 & know, got, time, see, get, well, take, come, let, man, back, could \\
-    1 & song, sing \\
-    2 & love, like, yeah, one, way, say, away, life, night, little, right, world \\
-    3 & never, eyes, light, believe, dance, face, dream, must, fire, far, sky, lost \\
-    4 & baby, want, gonna, make, give, would, gotta, sweet, alright, honey, money, rock \\
-    5 & day, things, head, new, stay, made, days, kind, years, done, used \\
+    0 & love, got, baby, yeah, want, well, take, gonna, away, let, make, right \\
+    1 & get, come, man, back, tell, home, find, woman, better, people, dance, old \\
+    2 & feel, heart, world, long, good, still, said, ooh, keep, gone, hey, alone \\
+    3 & say, would, going, always, turn, nothing, end, dream, everything, must, call, someone \\
+    4 & know, see, little, look, think, girl, light, please, bad, thing, put, blue \\
+    5 & like, time, one, never, way, life, night, could, day, eyes, give, every \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -564,21 +619,21 @@ Il clustering opera sulle \textbf{200 parole più frequenti} del vocabolario di 
   \centering
   \caption{Cluster K-Means, anni 2000 (risultati reali, prime 12 parole per cluster)}
   \small
-  \begin{tabular}{cl}
+  \begin{tabular}{c>{\raggedright\arraybackslash}p{11.5cm}}
     \toprule
     \textbf{Cluster} & \textbf{Parole} \\
     \midrule
-    0 & world, keep, leave, tired, open \\
-    1 & know, love, get, one, got, come, want, never, cause, back, see, baby \\
-    2 & wrong, song, sing \\
-    3 & said, eyes, would, even, change, wish, thought, help, forever, christmas, knew, true \\
-    4 & like, yeah, time, feel, give, need, think, life, night, day, look, ooh \\
-    5 & around, put, long, believe, someone, dance, high, stand, hands, talk, getting, real \\
+    0 & got, time, away, around, need, life, night, day, mind, gone, thing, face \\
+    1 & love, one, want, never, way, take, feel, right, little, every, everything, always \\
+    2 & like, know, get, yeah, come, cause, baby, make, give, think, eyes, ooh \\
+    3 & let, world, girl, hold, stop, going, show, wrong, live, dance, beautiful, far \\
+    4 & back, well, heart, look, find, nothing, tonight, last, put, head, better, turn \\
+    5 & see, say, gonna, could, wanna, said, home, man, still, would, even, alone \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-Lavorando sulle 200 parole più \textbf{frequenti} (non su un campione casuale del vocabolario), i cluster sono dominati da parole funzionali e verbi comuni (\textit{know, got, get, come}) piuttosto che da lessico tematico raro: il risultato è quindi più vicino a una segmentazione \textbf{sintattico-collocazionale} che a una netta separazione per macrotema. Detto questo, alcuni cluster restano interpretabili: il cluster 4 degli anni 70 (\textit{baby, want, gonna, sweet, honey, money}) è riconoscibile come nucleo lessicale del desiderio/corteggiamento, e il cluster 3 degli anni 70 (\textit{eyes, light, dance, dream, fire, sky}) ha una connotazione atmosferico-onirica coerente col rock degli anni 70. Nei cluster degli anni 2000 emergono invece isole più piccole e specifiche (cluster 0: \textit{tired, open}; cluster 2: \textit{wrong, song, sing}), segno di un vocabolario più frammentato su questo campione. Va però ribadito il limite già discusso in Sezione~\ref{sec:parole-simili}: con corpus di questa dimensione le strutture emergenti vanno lette come indicazioni, non come conclusioni robuste.
+Dopo aver normalizzato i vettori a norma unitaria prima del clustering (un vettore con norma anomala, in K-Means con distanza euclidea, finiva isolato in un cluster singoletto — un artefatto risolto rendendo la geometria del clustering coerente con la cosine similarity usata nel resto dell'analisi), i sei cluster risultano ben bilanciati per entrambe le ere. Lavorando sulle 200 parole più \textbf{frequenti} (non su un campione casuale del vocabolario), restano comunque dominati da parole funzionali e verbi comuni (\textit{know, got, get, come}) piuttosto che da lessico tematico raro: il risultato è quindi più vicino a una segmentazione \textbf{sintattico-collocazionale} che a una netta separazione per macrotema. Alcuni cluster sono comunque interpretabili, e soprattutto \textbf{ricorrono in entrambe le ere}: il cluster 0 degli anni 70 (\textit{love, baby, want, gonna, away, make, right}) e il cluster 1 degli anni 2000 (\textit{love, want, feel, right, everything, always}) condividono lo stesso registro di desiderio/relazione affettiva; il cluster 5 degli anni 70 (\textit{time, life, night, day, eyes}) e il cluster 0 degli anni 2000 (\textit{time, life, night, day, mind, face}) condividono un registro temporale/esistenziale simile. Più che rivelare macrotemi distinti per epoca, il clustering mostra quindi una struttura sintattico-tematica di fondo piuttosto stabile nel tempo. Va comunque ribadito il limite già discusso in Sezione~\ref{sec:parole-simili}: con corpus di questa dimensione le strutture emergenti vanno lette come indicazioni, non come conclusioni robuste.
 
 % ============================================================
 \section{Visualizzazione t-SNE}
@@ -614,50 +669,73 @@ def tsne_plot(parole, vettori, labels, titolo, ax, n_clusters=6):
 
 Il grafico t-SNE mostra la distribuzione delle 200 parole più frequenti in 2D, con colori diversi per cluster. Le parole semanticamente rilevanti (amore, vita, notte, cuore, ecc.) vengono annotate direttamente sul grafico per facilitare l'interpretazione.
 
-La disposizione dei punti rivela la \textbf{struttura interna} del lessico di ciascuna era: se i cluster sono ben separati, il linguaggio è più specializzato per tema; se i cluster si sovrappongono, il lessico è più polisemico e interdipendente.
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{word2vec_cluster.png}
+\caption{Proiezione t-SNE dei 6 cluster K-Means, anni 70 (sinistra) vs anni 2000 (destra), con le parole tematicamente rilevanti annotate.}
+\label{fig:w2v-tsne}
+\end{figure}
+
+La disposizione dei punti rivela la \textbf{struttura interna} del lessico di ciascuna era: se i cluster sono ben separati, il linguaggio è più specializzato per tema; se i cluster si sovrappongono, il lessico è più polisemico e interdipendente. In entrambe le proiezioni i cluster appaiono visivamente sovrapposti, senza una separazione netta in regioni distinte del piano — coerente con la lettura data in Sezione~9: sulle 200 parole più frequenti il segnale dominante è collocazionale/sintattico, non tematico, e t-SNE (che preserva la struttura locale ma non necessariamente crea macro-isole ben separate) rende visivamente evidente proprio questa continuità, più che una netta suddivisione in macrotemi.
 
 % ============================================================
 \section{Risultati e Discussione}
 % ============================================================
 
+\subsection{Il paradosso della scala: esempi singoli rumorosi, statistiche aggregate più robuste}
+
+Le due ere condividono \textbf{2973 parole} sulle rispettive 4752 (anni 70) e 4800 (anni 2000) del vocabolario Word2Vec, con oltre 1700 parole esclusive per lato (Sezione~4). Interrogando questo spazio su singole parole isolate — i vicini di \textit{love} o \textit{night} (Sezione~\ref{sec:parole-simili}), o l'overlap dei vicini per le 648 parole comuni (Sezione~\ref{sec:vocab-shift}) — il segnale è quasi sempre dominato dal rumore: la maggioranza delle parole nel top-30 per cambiamento ha overlap $0\%$. Con corpus di 1729 e 1312 canzoni, ogni parola compare in troppi contesti diversi per stabilizzare un vicinato semantico coerente.
+
+Il quadro cambia passando all'\textbf{analisi aggregata su centinaia di coppie} (Sezione~\ref{sec:shift-sistematico}): filtrando le 245 parole con frequenza $\geq 100$ e confrontando le $29\,890$ coppie possibili, i pattern nella coda della distribuzione risultano più difendibili perché emergono da un confronto sistematico, non da una scelta soggettiva — a patto di scartare le coppie con $\Delta$ quasi nullo, che sono un artefatto di densità statistica più che un segnale di stabilità reale (si veda l'avvertenza in Sezione~\ref{sec:shift-sistematico}). Un risultato più solido di un singolo numero isolato viene invece dal confronto con i vicini più stabili in assoluto (Sezione~\ref{sec:vocab-shift}): non si tratta di temi condivisi, ma di \textbf{collocazioni fisse della lingua} (\textit{brand new}, \textit{rock and roll}, \textit{hotel room}) — il nucleo del lessico musicale che il tempo non cambia è collocazionale, non semantico.
+
+\subsection{Cosa aggiunge il clustering rispetto alle coppie di parole}
+
+Il clustering K-Means (Sezione~9) analizza la struttura del vocabolario da un'angolazione complementare alle coppie: la geometria complessiva delle 200 parole più frequenti. I cluster ottenuti sono prevalentemente \textbf{sintattico-collocazionali} (dominati da verbi e parole funzionali, es.\ \textit{know, got, get, come}) piuttosto che tematici, perché le parole più frequenti sono anche le più polisemiche. Lo stesso tipo di cluster — un nucleo di desiderio/relazione affettiva, uno temporale/esistenziale — ricompare in entrambe le ere con parole in parte diverse, segno che a restare stabile nel tempo è la struttura sintattico-tematica di fondo, più che uno specifico insieme di macrotemi.
+
+\subsection{Sintesi: cosa può (e non può) dimostrare questo esperimento}
+
+Nel complesso, i risultati supportano un'affermazione \textbf{qualitativa} solida — i due corpora occupano regioni lessicali parzialmente sovrapposte ma distinte, coerenti con i generi musicali attesi nelle due ere — ma non affermazioni \textbf{quantitative} forti sul cambiamento semantico di una singola parola, che restano suggestive più che dimostrate. Servirebbero corpus ordini di grandezza più grandi, più artisti per era e un test di significatività statistica, oggi assenti. Resta comunque un risultato metodologicamente utile: mostra dove passa il confine fra ciò che Word2Vec rivela in modo affidabile a piccola scala (statistiche aggregate) e ciò che richiede cautela (giudizi su parole isolate).
+
 \begin{table}[H]
   \centering
   \caption{Riepilogo comparativo delle caratteristiche dei due corpus}
-  \begin{tabular}{lcc}
+  \begin{tabular}{lrr}
     \toprule
     \textbf{Caratteristica}       & \textbf{Anni 70}       & \textbf{Anni 2000} \\
     \midrule
     Artisti rappresentativi       & 12                     & 11 \\
     Generi principali             & Rock, Glam, Disco      & Pop, Rap, Alt-rock \\
-    Modello                       & Word2Vec Skip-gram     & Word2Vec Skip-gram \\
-    Dimensione vettori            & 100                    & 100 \\
-    Finestra di contesto          & 5                      & 5 \\
-    Metrica di confronto          & Similarità coseno      & Similarità coseno \\
-    Analisi shift semantico       & Overlap vicini ($k=10$)& Overlap vicini ($k=10$) \\
-    Clustering                    & K-Means ($k=6$)        & K-Means ($k=6$) \\
-    Visualizzazione               & t-SNE 2D               & t-SNE 2D \\
+    Canzoni (post-pulizia)        & 1\,729                 & 1\,312 \\
+    Token totali                  & 163\,180               & 149\,820 \\
+    Token unici (post-pulizia)    & 11\,174                & 11\,551 \\
+    Vocabolario Word2Vec          & 4\,752                 & 4\,800 \\
+    Parole esclusive              & 1\,779                 & 1\,827 \\
     \bottomrule
   \end{tabular}
+  \\[0.3em]
+  {\footnotesize Parole comuni ai due vocabolari: 2\,973 (Sezione~4).}
 \end{table}
 
 \subsection{Osservazioni principali}
 
 \begin{enumerate}
-  \item \textbf{Le rappresentazioni vettoriali catturano differenze culturali}: la stessa parola (es.\ \textit{love}, \textit{night}) ha vicini diversi nei due modelli, riflettendo il diverso immaginario delle due ere musicali.
+  \item \textbf{Le rappresentazioni vettoriali riflettono differenze di dominio a livello aggregato}: sulle singole parole isolate (es.\ \textit{love}, \textit{night}) i vicini estratti sono in gran parte rumore (Sezione~\ref{sec:parole-simili}), ma su statistiche aggregate su centinaia di parole il segnale diventa più affidabile (Sezione~11.1).
 
-  \item \textbf{Il semantic shift è misurabile quantitativamente}: l'overlap dei vicini fornisce una metrica comparabile tra parole diverse. Parole con overlap basso hanno attraversato un cambiamento semantico significativo.
+  \item \textbf{Il semantic shift sistematico è più informativo dell'overlap puntuale}: l'overlap dei 10 vicini più prossimi satura a 0\% per la stragrande maggioranza delle 648 parole comuni analizzate (Sezione~\ref{sec:vocab-shift}), mentre l'analisi aggregata sulle 29\,890 coppie (Sezione~\ref{sec:shift-sistematico}) individua candidati di deriva semantica più difendibili.
 
-  \item \textbf{Il vocabolario esclusivo rivela le specificità culturali}: le parole presenti solo in un'era riflettono temi, slang e riferimenti culturali propri di quel periodo storico.
+  \item \textbf{Il vocabolario esclusivo rivela più il bias di selezione che il periodo storico}: molte parole presenti solo in un'era, verificate contro il dataset originale, si rivelano specifiche di un singolo artista (es.\ \textit{mustapha}, \textit{bicycle} per i Queen; \textit{gaga}, \textit{artpop} per Lady Gaga) più che rappresentative dell'intera era (Sezione~7).
 
-  \item \textbf{I cluster K-Means sono interpretabili}: i gruppi semantici emergono in modo naturale dai vettori Word2Vec senza supervisionare il processo, confermando la qualità delle rappresentazioni apprese.
+  \item \textbf{I cluster K-Means sono prevalentemente sintattico-collocazionali, non tematici}: lavorando sulle 200 parole più frequenti (le più polisemiche) i gruppi emergono attorno a verbi e parole funzionali comuni, con solo alcune isole tematicamente interpretabili (Sezione~9).
 
-  \item \textbf{t-SNE visualizza la struttura semantica}: la separazione spaziale dei cluster nel piano 2D riflette le relazioni tra macrotemi lessicali, rendendo visibili differenze altrimenti invisibili in 100 dimensioni.
+  \item \textbf{t-SNE conferma la sovrapposizione dei cluster}: nelle proiezioni 2D i cluster appaiono visivamente sovrapposti anziché ben separati, coerente con un segnale collocazionale/sintattico piuttosto che una netta suddivisione in macrotemi (Sezione~10).
+
+  \item \textbf{Il nucleo lessicale più stabile nel tempo è collocazionale, non semantico}: le parole con vicinato più invariato fra le due ere non condividono un tema, ma fanno parte di espressioni fisse della lingua (\textit{brand new}, \textit{rock and roll}, \textit{hotel room}, Sezione~\ref{sec:vocab-shift}) — ciò che 30 anni di musica non cambiano sono le formule linguistiche congelate, non i significati.
 \end{enumerate}
 
 \subsection{Limiti dell'approccio}
 
 \begin{itemize}
-  \item \textbf{Bias nella selezione degli artisti}: la scelta manuale degli artisti introduce un bias soggettivo. Artisti diversi avrebbero potuto dare risultati differenti.
+  \item \textbf{Bias nella selezione degli artisti, dimostrato non solo ipotizzato}: la scelta manuale degli artisti introduce un bias soggettivo, ed è verificabile concretamente nei dati (Sezione~7) — parole ``caratteristiche di un'era'' come \textit{mustapha}, \textit{bicycle} (Queen) o \textit{gaga}, \textit{artpop} (Lady Gaga) sono in realtà specifiche di un singolo artista molto rappresentato nel campione. Artisti diversi avrebbero potuto dare risultati differenti.
   \item \textbf{Corpus sbilanciati}: se gli artisti degli anni 2000 hanno in media più canzoni nel dataset, il modello corrispondente sarà addestrato su più dati, rendendo il confronto non del tutto omogeneo.
   \item \textbf{Spazi vettoriali non allineati}: i due modelli sono addestrati indipendentemente; gli spazi vettoriali risultanti non sono direttamente comparabili tramite distanza euclidea — la similarità coseno interna a ciascun modello è però robusta.
   \item \textbf{Dipendenza dal preprocessing}: la rimozione delle stopwords e dei token corti può eliminare parole grammaticalmente significative.
@@ -669,7 +747,7 @@ La disposizione dei punti rivela la \textbf{struttura interna} del lessico di ci
 
 Il laboratorio ha dimostrato come Word2Vec, applicato a testi musicali, sia in grado di catturare differenze semantiche e culturali tra due ere distanti nel tempo. I modelli addestrati separatamente sugli anni 70 e sugli anni 2000 producono spazi vettoriali che riflettono i diversi immaginari, temi e registri linguistici delle rispettive epoche.
 
-L'analisi sistematica del semantic shift — tramite overlap dei vicini e delta di similarità — permette di identificare quantitativamente quali parole hanno cambiato contesto d'uso e in quale direzione. I cluster K-Means e la visualizzazione t-SNE completano l'analisi con una prospettiva strutturale, rivelando i macrotemi lessicali di ciascuna era.
+L'analisi sistematica del semantic shift — tramite overlap dei vicini e delta di similarità — permette di identificare quantitativamente quali parole hanno cambiato contesto d'uso e in quale direzione, con maggiore affidabilità quando condotta su statistiche aggregate piuttosto che su singole parole isolate. I cluster K-Means e la visualizzazione t-SNE completano l'analisi con una prospettiva strutturale: sulle parole più frequenti la struttura che emerge è prevalentemente sintattico-collocazionale, con solo alcuni nuclei tematici riconoscibili. Il risultato più robusto dell'intera analisi è forse il più controintuitivo: ciò che resta stabile nel lessico musicale a 30 anni di distanza non sono i temi, ma le \textbf{collocazioni fisse} della lingua (\textit{brand new}, \textit{rock and roll}, \textit{hotel room}).
 
 Questo tipo di analisi, applicabile a qualsiasi corpus diacronico, mostra il potenziale delle rappresentazioni distribuzionali per lo studio dell'evoluzione del linguaggio nel tempo.
 
@@ -680,10 +758,13 @@ Questo tipo di analisi, applicabile a qualsiasi corpus diacronico, mostra il pot
 Per questo laboratorio ci siamo appoggiati anche a uno strumento di intelligenza artificiale generativa (Claude, Anthropic), usato come supporto puntuale durante lo sviluppo e non come autore del lavoro. Qualche esempio concreto di come lo abbiamo usato:
 
 \begin{itemize}
-  \item \textbf{Correzione di un bug nel codice}: nel riepilogo finale dello script il passaggio era erroneamente etichettato come ``[STEP 10]'' invece di ``[STEP 12]'', un residuo di una versione precedente con meno fasi di analisi.
-  \item \textbf{Rimozione di codice morto}: due import mai utilizzati (\texttt{nltk}, \texttt{word\_tokenize}), rimasti da una versione precedente dello script in cui la tokenizzazione era gestita diversamente.
-  \item \textbf{Snellimento dei commenti}: molti commenti erano ridondanti rispetto al codice stesso; li abbiamo resi più mirati (es.\ cosa rappresenta l'overlap dei vicini come proxy del semantic shift).
-  \item \textbf{Confronto sulle scelte di analisi}: discussione sul perché normalizzare per la dimensione del vocabolario nel confronto tra i due modelli Word2Vec, e su quali limiti avesse l'analisi (bias nella selezione degli artisti, corpus sbilanciati).
+  \item \textbf{Correzione di un bug metodologico (Skip-gram vs.\ CBOW)}: il codice non impostava esplicitamente \texttt{sg=1}, quindi Gensim addestrava silenziosamente un modello CBOW nonostante testo e relazione dichiarassero Skip-gram; corretto impostando il parametro esplicitamente (Sezione~2.2).
+  \item \textbf{Verifica dei dati contro il dataset reale}: \textit{Led Zeppelin}, incluso nella selezione iniziale degli artisti anni 70, non è risultato presente nel dataset con questo nome esatto — un fallimento silenzioso di \texttt{df['artist'].isin(...)} che sarebbe passato inosservato. Sostituito con \textit{Black Sabbath} e aggiunto un controllo esplicito sul numero di artisti effettivamente trovati (Sezione~3.2).
+  \item \textbf{Vettorizzazione del calcolo di similarità}: l'analisi sistematica delle coppie di parole (Sezione~\ref{sec:shift-sistematico}, 245 parole, quasi 30\,000 coppie) usava $O(N^2)$ chiamate a \texttt{.similarity()}; sostituito con un unico prodotto matriciale, necessario per rendere l'analisi eseguibile in tempi ragionevoli.
+  \item \textbf{Correzione della pipeline di pulizia}: le contrazioni inglesi (\textit{don't}, \textit{you're}) perdevano l'apostrofo prima del filtro stopword, restando nel corpus come rumore lessicale; aggiunte esplicitamente le forme contratte più comuni alla lista di stopword (Sezione~3.3).
+  \item \textbf{Discussione sui limiti dell'analisi}: confronto sui limiti metodologici del confronto tra i due modelli (bias nella selezione manuale degli artisti, corpus di dimensioni sbilanciate, spazi vettoriali non allineati fra le due ere) — si veda Sezione~11.5.
+  \item \textbf{Organizzazione dell'output a console}: le stampe dei risultati (tabelle di parole simili, coppie di similarità, deriva semantica) sono state riformattate con colonne allineate e separatori (es.\ \texttt{\{:<12\}}, \texttt{\{:>8.4f\}}), per rendere l'output leggibile durante l'esecuzione invece di semplici \texttt{print} non allineati.
+  \item \textbf{Correzione della riproducibilità e di un clustering degenere}: con \texttt{workers=4} il training di Gensim non è bit-esatto a parità di seed, e un run diverso da quello usato per compilare la relazione produceva numeri diversi in tutte le tabelle. Corretto impostando \texttt{workers=1} (costo trascurabile su questo corpus) e rigenerando l'intera relazione da un unico run congelato. Nello stesso passaggio si è notato che il clustering K-Means produceva occasionalmente cluster singoletto: risolto normalizzando i vettori a norma unitaria prima di applicare K-Means, coerentemente con la cosine similarity usata nel resto dell'analisi.
 \end{itemize}
 
 L'impostazione del lavoro, le scelte metodologiche, l'interpretazione critica dei risultati e la stesura della relazione restano nostre.
