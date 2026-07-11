@@ -1,0 +1,41 @@
+POS_MAP = {'sostantivo': wn.NOUN, 'verbo': wn.VERB, 'aggettivo': wn.ADJ}
+
+def english_sense_counts(lemma_en, synsets):
+    """Conteggi SemCor per ciascun synset, sommando i lemmi che matchano."""
+    target = lemma_en.lower().replace(" ", "_")
+    return [sum(l.count() for l in syn.lemmas()
+                if l.name().lower() == target) for syn in synsets]
+
+def calcola_metriche(synsets, lemma, lang_code):
+    n = len(synsets)
+    if n == 0:                                    # buco di copertura OMW
+        return {'n_sensi': 0, 'entropia': np.nan, 'top1_share': np.nan,
+                'metodo_entropia': 'no_senses'}
+    if n == 1:
+        return {'n_sensi': 1, 'entropia': 0.0, 'top1_share': 1.0,
+                'metodo_entropia': 'monosemous'}
+
+    if lang_code == 'eng':                        # entropia reale da SemCor
+        counts = np.array(english_sense_counts(lemma, synsets), dtype=float)
+        if counts.sum() > 0:
+            dist = counts / counts.sum()
+            return {'n_sensi': n, 'entropia': round(float(scipy_entropy(dist, base=2)), 4),
+                     'top1_share': round(float(dist.max()), 4),
+                     'metodo_entropia': 'real_semcor'}
+
+    dist = np.ones(n) / n                          # fallback uniforme (IT/ES)
+    return {'n_sensi': n, 'entropia': round(float(scipy_entropy(dist, base=2)), 4),
+            'top1_share': round(1 / n, 4), 'metodo_entropia': 'uniform_fallback'}
+
+def costruisci_dataframe() -> pd.DataFrame:
+    righe = []
+    for lemma_en, lemma_it, lemma_es, categoria in LEMMI:
+        wn_pos = POS_MAP[categoria]
+        for lang_code, lemma in [('eng', lemma_en),
+                                  ('ita', lemma_it), ('spa', lemma_es)]:
+            synsets = wn.synsets(lemma, pos=wn_pos, lang=lang_code)
+            metriche = calcola_metriche(synsets, lemma, lang_code)
+            righe.append({'lemma_en': lemma_en, 'lemma': lemma,
+                          'lingua_code': lang_code,
+                          'categoria': categoria, **metriche})
+    return pd.DataFrame(righe)

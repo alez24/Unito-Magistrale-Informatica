@@ -159,11 +159,27 @@ def build_faiss_index(embeddings):
 # più piccoli si ottengono per slicing, senza dover ricodificare da capo a ogni N_DOCS
 print(f"  Costruzione corpus completo ({MAX_N_DOCS:,} documenti) ed embeddings...")
 all_documents, all_metadata = build_corpus(df_shuffled, MAX_N_DOCS)
-all_embeddings = embedding_model.encode(
-    all_documents, show_progress_bar=True,
-    batch_size=64, convert_to_numpy=True, normalize_embeddings=True
-).astype(np.float32)
-print(f"  Embeddings calcolati: {all_embeddings.shape}")
+
+# cache su disco: condivisa con lab5rag.py, che usa stesso shuffle/MAX_N_DOCS/modello e
+# quindi produce lo stesso corpus -- evita di ricodificare 44.949 abstract due volte.
+# La firma verifica che la cache corrisponda davvero a questo corpus prima di riusarla.
+EMB_CACHE_PATH = f"scibert_embeddings_{MAX_N_DOCS}.npy"
+EMB_CACHE_META_PATH = f"scibert_embeddings_{MAX_N_DOCS}.meta.txt"
+emb_signature = f"{MAX_N_DOCS}|{RANDOM_STATE}|{EMBEDDING_MODEL}|{all_documents[0][:80]}|{all_documents[-1][:80]}"
+
+if (os.path.exists(EMB_CACHE_PATH) and os.path.exists(EMB_CACHE_META_PATH)
+        and open(EMB_CACHE_META_PATH, encoding="utf-8").read() == emb_signature):
+    print(f"  Embeddings trovati in cache ({EMB_CACHE_PATH}), li ricarico...")
+    all_embeddings = np.load(EMB_CACHE_PATH)
+else:
+    all_embeddings = embedding_model.encode(
+        all_documents, show_progress_bar=True,
+        batch_size=64, convert_to_numpy=True, normalize_embeddings=True
+    ).astype(np.float32)
+    np.save(EMB_CACHE_PATH, all_embeddings)
+    with open(EMB_CACHE_META_PATH, "w", encoding="utf-8") as f:
+        f.write(emb_signature)
+print(f"  Embeddings disponibili: {all_embeddings.shape}")
 
 # ============================================================
 # STEP 3: Caricamento LLM (una volta sola)
@@ -244,8 +260,10 @@ def retrieve_hybrid(query, faiss_index, bm25, documents, metadata, k=5):
 
 
 def rag_answer(query, results):
+    # niente titolo anteposto: r['document'] inizia gia' con "Title: ...", altrimenti
+    # il titolo comparirebbe due volte nel prompt
     context_parts = [
-        f"[Paper {r['rank']}] {r['metadata']['title']}\n{r['document'][:PER_DOC_CHARS]}"
+        f"[Paper {r['rank']}]\n{r['document'][:PER_DOC_CHARS]}"
         for r in results
     ]
     context = "\n\n".join(context_parts)
@@ -312,6 +330,7 @@ def robustness_test(query, paraphrases, retrieve_fn, k=5):
 
 # Struttura per raccogliere tutti i risultati
 all_results = []   # lista di dict, uno per N_DOCS
+qa_rows     = []   # query/risposte base vs ibrido, per esempi qualitativi nel report
 
 for N_DOCS in N_DOCS_LIST:
 
@@ -358,6 +377,13 @@ for N_DOCS in N_DOCS_LIST:
         ar_hyb_list.append(answer_relevance(query, ans_hybrid))
         ff_base_list.append(faithfulness_proxy(ans_base,   base_res))
         ff_hyb_list.append(faithfulness_proxy(ans_hybrid, hybrid_res))
+
+        qa_rows.append({
+            'n_docs': N_DOCS, 'query': query,
+            'answer_base': ans_base, 'answer_hybrid': ans_hybrid,
+            'answer_relevance_base': ar_base_list[-1], 'answer_relevance_hybrid': ar_hyb_list[-1],
+            'faithfulness_base': ff_base_list[-1], 'faithfulness_hybrid': ff_hyb_list[-1],
+        })
 
     # --- Robustezza (base vs ibrido, cosi' si vede se la fusione stabilizza le parafrasi) ---
     rob_base_scores, rob_hyb_scores = [], []
@@ -461,6 +487,26 @@ print(f"\n  {'N_DOCS':<10} {'Base':>8} {'Ibrido':>8}")
 print(f"  {'-'*28}")
 for r in all_results:
     print(f"  {r['n_docs']:<10,} {r['robustness_base']:>8.3f} {r['robustness_hyb']:>8.3f}")
+
+# ============================================================
+# SALVATAGGIO SU DISCO (numeri e risposte generate per la relazione,
+# senza doverli ricopiare a mano dallo stdout o rilanciare il run)
+# ============================================================
+detail_rows = [
+    {'n_docs': r['n_docs'], 'query': q,
+     'p5_base': r['p5_base_detail'][q], 'p5_hyb': r['p5_hyb_detail'][q]}
+    for r in all_results for q in r['p5_base_detail']
+]
+summary_df = pd.DataFrame([
+    {k: v for k, v in r.items() if k not in ('p5_base_detail', 'p5_hyb_detail')}
+    for r in all_results
+])
+summary_df.to_csv('risultati_hybrid_ndocs.csv', index=False)
+pd.DataFrame(detail_rows).to_csv('risultati_hybrid_p5_detail.csv', index=False)
+pd.DataFrame(qa_rows).to_csv('risultati_hybrid_risposte.csv', index=False)
+
+print("\n  Salvati: risultati_hybrid_ndocs.csv, risultati_hybrid_p5_detail.csv, "
+      "risultati_hybrid_risposte.csv")
 
 sep("=")
 print("  ESPERIMENTO COMPLETATO")

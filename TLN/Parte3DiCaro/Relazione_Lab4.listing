@@ -1,0 +1,15 @@
+configurations = [
+    {"nome": "Config_1_baseline", "embedding_model": "thenlper/gte-small",
+     "umap_params": {"n_components": 5, "n_neighbors": 15, "min_dist": 0.0,
+                      "metric": "cosine", "random_state": 42},
+     "hdbscan_params": {"min_cluster_size": 50, "metric": "euclidean",
+                         "cluster_selection_method": "eom"}},
+    {  # Cambia SOLO il modello embedding rispetto alla baseline
+     "nome": "Config_2_model_only", "embedding_model": "all-MiniLM-L6-v2",
+     "umap_params": {...},      # identico a Config_1
+     "hdbscan_params": {...}},  # identico a Config_1
+    {  # Stesso embedding di Config_2, cambia SOLO UMAP/HDBSCAN
+     "nome": "Config_3_cluster_only", "embedding_model": "all-MiniLM-L6-v2",
+     "umap_params": {"n_components": 10, "n_neighbors": 30, ...},
+     "hdbscan_params": {"min_cluster_size": 150, ...}},
+]

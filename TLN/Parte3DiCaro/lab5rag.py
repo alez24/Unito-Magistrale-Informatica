@@ -154,14 +154,31 @@ def build_faiss_index(embeddings):
 # più piccoli si ottengono per slicing, senza dover ricodificare da capo a ogni N_DOCS
 print(f"\n[STEP 2b] Costruzione corpus completo ({MAX_N_DOCS:,} documenti) ed embeddings...")
 all_documents, all_metadata = build_corpus(df_shuffled, MAX_N_DOCS)
-all_embeddings = embedding_model.encode(
-    all_documents,
-    show_progress_bar=True,
-    batch_size=64,
-    convert_to_numpy=True,
-    normalize_embeddings=True
-).astype(np.float32)
-print(f"Embeddings calcolati: {all_embeddings.shape}")
+
+# cache su disco: lab5rag.py e lab5_hybrid.py usano stesso shuffle/MAX_N_DOCS/modello,
+# quindi producono lo stesso corpus e possono condividere gli embedding SciBERT invece
+# di ricodificare 44.949 abstract due volte (decine di minuti su CPU). La firma verifica
+# che la cache corrisponda davvero a questo corpus prima di riusarla.
+EMB_CACHE_PATH = f"scibert_embeddings_{MAX_N_DOCS}.npy"
+EMB_CACHE_META_PATH = f"scibert_embeddings_{MAX_N_DOCS}.meta.txt"
+emb_signature = f"{MAX_N_DOCS}|{RANDOM_STATE}|{EMBEDDING_MODEL}|{all_documents[0][:80]}|{all_documents[-1][:80]}"
+
+if (os.path.exists(EMB_CACHE_PATH) and os.path.exists(EMB_CACHE_META_PATH)
+        and open(EMB_CACHE_META_PATH, encoding="utf-8").read() == emb_signature):
+    print(f"Embeddings trovati in cache ({EMB_CACHE_PATH}), li ricarico...")
+    all_embeddings = np.load(EMB_CACHE_PATH)
+else:
+    all_embeddings = embedding_model.encode(
+        all_documents,
+        show_progress_bar=True,
+        batch_size=64,
+        convert_to_numpy=True,
+        normalize_embeddings=True
+    ).astype(np.float32)
+    np.save(EMB_CACHE_PATH, all_embeddings)
+    with open(EMB_CACHE_META_PATH, "w", encoding="utf-8") as f:
+        f.write(emb_signature)
+print(f"Embeddings disponibili: {all_embeddings.shape}")
 
 # ============================================================
 # STEP 3: Caricamento LLM - Phi-3.5-mini-instruct (una volta sola)
@@ -216,8 +233,10 @@ def retrieve(query, faiss_index, documents, metadata, k=5):
 
 def rag_answer(query, results):
     """Costruisce il prompt dai documenti recuperati e genera la risposta con Phi-3.5-mini."""
+    # niente titolo anteposto: r['document'] inizia gia' con "Title: ...", altrimenti
+    # il titolo comparirebbe due volte nel prompt
     context_parts = [
-        f"[Paper {r['rank']}] {r['metadata']['title']}\n{r['document'][:PER_DOC_CHARS]}"
+        f"[Paper {r['rank']}]\n{r['document'][:PER_DOC_CHARS]}"
         for r in results
     ]
     context = "\n\n".join(context_parts)
@@ -284,7 +303,9 @@ def faithfulness_proxy(answer, results):
 # ESPERIMENTO PRINCIPALE: variazione di N_DOCS e di k
 # ============================================================
 BERT_QUERY = "What is BERT and how does self-attention work?"
-all_results = []  # un dict per ogni N_DOCS
+all_results    = []  # un dict per ogni N_DOCS
+qa_rows        = []  # query/risposta generata, per esempi qualitativi nel report
+k_detail_rows  = []  # precision/context relevance per ogni (n_docs, k)
 
 for N_DOCS in N_DOCS_LIST:
 
@@ -299,22 +320,37 @@ for N_DOCS in N_DOCS_LIST:
     print(f"Indice FAISS creato con {faiss_index.ntotal} vettori")
 
     print("[2/2] Confronto k su 7 query eterogenee...")
-    k_summary = []
-    for k in K_VALUES:
-        p_list, cr_list, p_bert = [], [], None
-        for query, keywords in GOLD_STANDARD.items():
-            results = retrieve(query, faiss_index, documents, metadata, k=k)
-            p = precision_at_k(results, keywords)
-            p_list.append(p)
-            cr_list.append(context_relevance(query, results))
+    # con IndexFlatIP (ricerca esatta) i top-k per k piccolo sono un prefisso dei top-k
+    # per k grande: si recupera una sola volta a max(K_VALUES) e si fa slicing, invece
+    # di rifare retrieve()+encode() per ciascun valore di k (~4x ricerche/encode in meno)
+    max_k = max(K_VALUES)
+    per_k = {k: {'p': [], 'cr': [], 'p_bert': None} for k in K_VALUES}
+
+    for query, keywords in GOLD_STANDARD.items():
+        full_results = retrieve(query, faiss_index, documents, metadata, k=max_k)
+        qe = embedding_model.encode([query], convert_to_numpy=True, normalize_embeddings=True)
+        snip_embs = embedding_model.encode(
+            [r['document'][:200] for r in full_results],
+            convert_to_numpy=True, normalize_embeddings=True
+        )
+        for k in K_VALUES:
+            sliced = full_results[:k]
+            p = precision_at_k(sliced, keywords)
+            cr = float(np.mean(snip_embs[:k] @ qe.T))
+            per_k[k]['p'].append(p)
+            per_k[k]['cr'].append(cr)
             if query == BERT_QUERY:
-                p_bert = p
-        k_summary.append({
+                per_k[k]['p_bert'] = p
+
+    k_summary = [
+        {
             'k': k,
-            'precision': float(np.mean(p_list)),
-            'context_relevance': float(np.mean(cr_list)),
-            'precision_bert': p_bert,
-        })
+            'precision': float(np.mean(v['p'])),
+            'context_relevance': float(np.mean(v['cr'])),
+            'precision_bert': v['p_bert'],
+        }
+        for k, v in per_k.items()
+    ]
 
     print(f"\n  {'k':>4} {'Precision@k':>12} {'Context Rel.':>14} {'P@k (BERT)':>12}")
     print(f"  {'-' * 46}")
@@ -332,6 +368,13 @@ for N_DOCS in N_DOCS_LIST:
         answer  = rag_answer(query, results)
         ar_list.append(answer_relevance(query, answer))
         ff_list.append(faithfulness_proxy(answer, results))
+        qa_rows.append({
+            'n_docs': N_DOCS, 'k': best_k, 'query': query, 'answer': answer,
+            'answer_relevance': ar_list[-1], 'faithfulness': ff_list[-1],
+        })
+
+    for row in k_summary:
+        k_detail_rows.append({'n_docs': N_DOCS, **row})
 
     all_results.append({
         'n_docs':       N_DOCS,
@@ -365,3 +408,16 @@ print("\n  Nota: 'P@k (BERT)' è la Precision@k sulla sola query "
       "puro continua a perdere questo paper specifico al variare della "
       "dimensione del corpus (limite già osservato e motivante l'approccio "
       "ibrido di lab5_hybrid.py).")
+
+# ============================================================
+# SALVATAGGIO SU DISCO (numeri e risposte generate per la relazione,
+# senza doverli ricopiare a mano dallo stdout o rilanciare il run)
+# ============================================================
+summary_df = pd.DataFrame([{k: v for k, v in r.items() if k != 'k_summary'} for r in all_results])
+summary_df.to_csv('risultati_rag_base_ndocs.csv', index=False)
+
+pd.DataFrame(k_detail_rows).to_csv('risultati_rag_base_k_detail.csv', index=False)
+pd.DataFrame(qa_rows).to_csv('risultati_rag_base_risposte.csv', index=False)
+
+print("\n  Salvati: risultati_rag_base_ndocs.csv, risultati_rag_base_k_detail.csv, "
+      "risultati_rag_base_risposte.csv")

@@ -1,0 +1,277 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{parskip}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings,breakable,skins}
+\usepackage{enumitem}
+
+\geometry{
+  top=2.5cm, bottom=2.5cm,
+  left=2.5cm, right=2.5cm
+}
+
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{keywordcolor}{RGB}{0,0,180}
+\definecolor{commentcolor}{RGB}{0,128,0}
+\definecolor{stringcolor}{RGB}{163,21,21}
+\definecolor{codeframe}{RGB}{180,180,180}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{keywordcolor}\bfseries,
+  commentstyle=\color{commentcolor}\itshape,
+  stringstyle=\color{stringcolor},
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  tabsize=4,
+  xleftmargin=1.5em,
+  keepspaces=true,
+  columns=flexible,
+  frame=none,
+  aboveskip=0pt,
+  belowskip=0pt,
+}
+\lstset{style=python}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+\newtcblisting{pylisting}[1][]{
+  listing only,
+  enhanced,
+  colback=codebg,
+  colframe=codeframe,
+  coltitle=black,
+  fonttitle=\small\itshape,
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=codebg, colframe=codeframe, boxrule=0.5pt},
+  boxrule=0.5pt,
+  arc=2pt,
+  left=4pt, right=4pt, top=8pt, bottom=4pt,
+  listing options={style=python},
+  before upper={\vspace{-2pt}},
+  #1
+}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+\raggedbottom
+
+% ============================================================
+% FRONTESPIZIO
+% ============================================================
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+
+  {\Large\textbf{Universit\`a degli Studi di Torino}\\[0.3em]
+  Corso di Laurea Magistrale in Informatica}
+
+  \vspace{1cm}
+  \HRule\\[0.4em]
+  {\LARGE\textbf{Tecnologie del Linguaggio Naturale}}\\[0.3em]
+  {\large Parte 3 -- Prof.\ Luigi Di Caro}\\[0.2em]
+  \HRule
+
+  \vspace{1.2cm}
+  {\huge\textbf{Lab 2}}\\[0.5em]
+  {\LARGE Valutazione Content-to-Form: Ricerca Onomasiologica con WordNet}\\[0.4em]
+  {\large Genus extraction + iponimi WordNet + similarit\`a Sentence-BERT}
+
+  \vspace{2cm}
+
+  {\large\textbf{Gruppo di lavoro:}}\\[0.8em]
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Studente}    & \textbf{Matricola} \\
+    \midrule
+    Alessandro Olivero   & 915069  \\
+    Samuele Iudice       & 1235245 \\
+    Andrea Franco        & 1226739 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{1.5cm}
+  \begin{tabular}{ll}
+    \textbf{Docente:}          & Prof.\ Luigi Di Caro \\[0.3em]
+    \textbf{Anno Accademico:}  & 2025/2026 \\
+  \end{tabular}
+
+  \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introduzione}
+% ============================================================
+
+Il Lab~2 affronta la \textbf{ricerca onomasiologica}: data una definizione in linguaggio naturale (le stesse 4$\times$28 del Lab~1), risalire automaticamente al synset WordNet corretto, applicando concretamente il \textbf{principio del genus}: si estrae la testa nominale della definizione (il genus, es.\ ``a \underline{container} used to\ldots'') e si cerca il target solo fra i synset raggiungibili da quel genus in WordNet, non nell'intero vocabolario. Si inverte cos\`i la direzione tipica di un dizionario (forma$\to$contenuto), ponendo la domanda: \emph{quanto deve essere ``buona'' una definizione perch\'e permetta il recupero automatico del concetto giusto?}
+
+% ============================================================
+\section{Metodo}
+% ============================================================
+
+\begin{enumerate}[noitemsep]
+  \item \textbf{Estrazione del genus}: regex sul pattern copula (``is/are a(n) \underline{NOME}''); se assente, primo sostantivo della definizione via \texttt{pos\_tag}.
+  \item \textbf{Generazione dei candidati}: tutti i synset nominali del genus, pi\`u i loro iponimi fino a profondit\`a 3 (\texttt{Synset.closure(hyponyms, depth=3)}), con un cap di 300 candidati (uscita anticipata) per evitare l'esplosione combinatoria di generi troppo generici.
+  \item \textbf{Similarit\`a}: cosine similarity fra l'embedding SBERT (\texttt{all-MiniLM-L6-v2}) della definizione e quello della glossa di ciascun candidato; pareggio esatto o eccezione $\to$ nessuna predizione (contati come errore, nessun fallback che gonfi l'accuratezza).
+  \item \textbf{Diagnostica}: per ogni definizione si registra se il synset target fosse \emph{raggiungibile} fra i candidati generati al passo 2, indipendentemente da come poi \`e stato classificato il passo 3 -- questo separa un fallimento di \emph{retrieval} (target mai nei candidati) da uno di \emph{ranking} (target presente ma non vincente).
+\end{enumerate}
+
+\begin{pylisting}[title={Generazione dei candidati dal genus (con cap e uscita anticipata)}]
+def get_candidates_from_genus(genus, depth=GENUS_DEPTH, max_candidates=MAX_CANDIDATES):
+    genus_synsets = wn.synsets(genus, pos=wn.NOUN)
+    seen, unique = set(), []
+    def add(syn):
+        if syn.name() not in seen:
+            seen.add(syn.name()); unique.append(syn)
+    for syn in genus_synsets:
+        add(syn)
+        if len(unique) >= max_candidates: break
+        for hypo in syn.closure(lambda s: s.hyponyms(), depth=depth):
+            add(hypo)
+            if len(unique) >= max_candidates: break
+        if len(unique) >= max_candidates: break
+    return unique
+\end{pylisting}
+
+Esecuzione: $\sim$32 secondi per le 112 definizioni (4 concetti $\times$ 28), dominati dal caricamento di SBERT e dalla generazione delle closure WordNet per generi molto generici.
+
+% ============================================================
+\section{Risultati}
+% ============================================================
+
+\subsection{Risultati aggregati: la scomposizione retrieval/ranking}
+
+\begin{table}[H]
+  \centering
+  \caption{Accuratezza, coverage e accuratezza condizionata, per concetto (112 definizioni totali, dati reali)}
+  \begin{tabular}{llccc}
+    \toprule
+    \textbf{Concetto} & \textbf{Synset target} & \textbf{Coverage} & \textbf{Accuratezza} & \textbf{Acc.\ $\mid$ coverage} \\
+    \midrule
+    Music  & \texttt{music.n.01}                              & 1/28 (3.6\%) & 0/28 (0.0\%) & 0/1 \\
+    Ethics & \texttt{ethic/ethics/morality.n.01}               & 1/28 (3.6\%) & 1/28 (3.6\%) & 1/1 \\
+    Tree   & \texttt{tree.n.01}                                & 2/28 (7.1\%)$^*$ & 0/28 (0.0\%) & 0/2 \\
+    Teapot & \texttt{teapot.n.01}                              & 1/28 (3.6\%) & 1/28 (3.6\%) & 1/1 \\
+    \midrule
+    \textbf{Totale} & -- & \textbf{4/112 (3.57\%)} & \textbf{2/112 (1.79\%)} & \textbf{2/4 (50\%)} \\
+    \bottomrule
+  \end{tabular}
+  \\[0.3em]
+  {\footnotesize $^*$una delle due righe ``tree raggiungibile'' \`e in realt\`a la definizione di \textit{Tree} finita per errore nella colonna \textit{Music} (contaminazione, Sez.~\ref{sec:contaminazione}); il genus estratto \`e comunque ``tree'', quindi il target \emph{music.n.01} resta correttamente irraggiungibile.}
+\end{table}
+
+La scomposizione \`e il risultato pi\`u informativo del laboratorio: l'\textbf{accuratezza globale} (1.79\%) confonde due fallimenti concettualmente distinti. La \textbf{coverage} (3.57\%) misura quante volte il target \`e anche solo presente fra i candidati generati dal genus -- il vero collo di bottiglia. Condizionando sui soli 4 casi in cui il target \`e raggiungibile, l'\textbf{accuratezza sale al 50\%}: la similarit\`a SBERT, quando ha la possibilit\`a di scegliere il synset giusto, lo fa in met\`a dei casi -- una performance ben diversa (e pi\`u interpretabile) del 1.79\% aggregato.
+
+\subsection{Statistiche sui candidati}
+
+Numero medio di candidati generati per definizione: \textbf{169.9} (mediana 187); il cap di 300 viene raggiunto in \textbf{38/112 casi (33.9\%)} -- tipicamente per generi molto generici (\textit{object}, \textit{concept}, \textit{type}). Lo score di similarit\`a medio \`e \textbf{0.628} per le predizioni corrette contro \textbf{0.452} per quelle sbagliate: la metrica di similarit\`a distingue correttamente casi facili da casi difficili una volta che il target \`e in gioco, confermando che il ranking (fase 3) funziona ragionevolmente bene; il problema reale \`e a monte, nella fase 2 (generazione dei candidati).
+
+\begin{table}[H]
+  \centering
+  \caption{Distribuzione dello status di scoring}
+  \begin{tabular}{lr}
+    \toprule
+    \textbf{Status} & \textbf{Conteggio} \\
+    \midrule
+    \texttt{ok} (predizione prodotta) & 110 \\
+    \texttt{no\_candidates} (genus non estratto / vuoto) & 2 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+I 2 casi \texttt{no\_candidates} corrispondono alle due definizioni compilate in italiano invece che in inglese, gi\`a identificate nel Lab~1 (\textit{Music}, risposta 27: ``Insieme di suoni''; \textit{Ethics}, risposta 9: ``Etica: insieme di regole morali\ldots''): n\'e la regex sul pattern copula n\'e il PoS tagger inglese trovano un genus valido su testo italiano, e la pipeline fallisce in modo esplicito (\texttt{status=no\_candidates}) invece di produrre un risultato spurio.
+
+\subsection{Perch\'e la coverage \`e cos\`i bassa: tre meccanismi concreti, verificabili nei dati}
+
+\begin{itemize}
+  \item \textbf{Genus troppo generico}: 27/28 definizioni di \textit{Teapot} usano un genus diverso da ``teapot'' (\textit{container}: 9, \textit{concept}: 2, \textit{tool}: 2, \textit{type}: 2, \textit{object}: 2\ldots); \texttt{teapot.n.01} \`e per\`o a 3 salti di iponimia da \texttt{container.n.01} (\textit{container} $\to$ \textit{vessel.n.03} $\to$ \textit{pot.n.01} $\to$ \textit{teapot.n.01}), esattamente al limite della profondit\`a esplorata, e nella pratica i tre passaggi intermedi contengono cos\`i tanti fratelli (altri tipi di vessel/pot) che la ricerca a genus fisso raramente centra il ramo giusto.
+  \item \textbf{Genus polisemico che affoga il target nel cap}: 9/28 definizioni di \textit{Tree} usano il genus ``plant''. \texttt{wn.synsets('plant', pos=NOUN)} restituisce prima il senso industriale (\texttt{plant.n.01}, ``building for industrial labor'', closure di 35 synset) e poi il senso botanico (\texttt{plant.n.02}, che contiene davvero \texttt{tree.n.01} nella sua closure a profondit\`a 3, di 747 synset). Il target \`e per\`o alla posizione $\sim$667 nell'ordine di attraversamento -- ben oltre il cap di 300 -- quindi viene sistematicamente tagliato fuori nonostante sia strutturalmente raggiungibile. \`E un artefatto diretto della combinazione ordine-di-attraversamento + cap, non un limite concettuale del principio del genus.
+  \item \textbf{Genus semanticamente vicino ma tassonomicamente lontano}: 3/28 definizioni di \textit{Ethics} usano il genus ``philosophy''; verificando \texttt{wn.synsets('philosophy')} e le rispettive closure a profondit\`a 3, nessuna contiene \texttt{ethic.n.01}/\texttt{ethics.n.01}/\texttt{morality.n.01} -- la gerarchia degli iponimi di WordNet non colloca l'etica come discendente tassonomico della filosofia entro 3 livelli, anche se concettualmente ``etica'' \`e intuitivamente una branca della filosofia.
+\end{itemize}
+
+\subsection{I 4 casi con target raggiungibile, in dettaglio}
+
+\begin{table}[H]
+  \centering
+  \caption{I 4 casi in cui il target \`e raggiungibile: genus, numero candidati, sintesi predetto}
+  \small
+  \begin{tabular}{llrlr}
+    \toprule
+    \textbf{Concetto} & \textbf{Genus} & \textbf{N. candidati} & \textbf{Sintesi predetto} & \textbf{Score} \\
+    \midrule
+    music  & music      & 278 & \texttt{monophony.n.01} (errato) & 0.682 \\
+    ethics & principles &  65 & \texttt{ethic.n.01} (\textbf{corretto}) & 0.617 \\
+    tree   & tree       & 300 (cap) & \texttt{sissoo.n.01} (errato) & 0.557 \\
+    teapot & teapot     &   1 & \texttt{teapot.n.01} (\textbf{corretto}) & 0.638 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Il caso \textit{teapot} \`e degenere ma istruttivo: quando il genus estratto coincide esattamente con la testa lessicale del target, il numero di candidati collassa a 1 (lo stesso \texttt{teapot.n.01}), e la predizione \`e ovviamente corretta -- non per merito del ranking, ma perch\'e il retrieval ha gi\`a risolto il problema. Il caso \textit{tree} mostra invece un fallimento di \emph{ranking} genuino: con genus ``tree'' e 300 candidati (il cap viene raggiunto anche qui, segno che pure ``tree'' come genus produce un ventaglio molto ampio di iponimi), SBERT preferisce \texttt{sissoo.n.01} (un iponimo specifico di \textit{tree}, un tipo di albero indiano) al target generico \texttt{tree.n.01} -- probabilmente perch\'e la definizione dello studente conteneva dettagli specifici (dimensioni, forma) che si allineano lessicalmente meglio con la gloss di una specie particolare che con quella, pi\`u astratta, del genere.
+
+\subsection{Verifica di robustezza rispetto alla contaminazione del dataset}
+\label{sec:contaminazione}
+
+Come nel Lab~1, 5/28 risposte per concetto hanno le colonne astratto/concreto scambiate (Sez.~2.2 della Relazione Lab~1). Ricalcolando l'accuratezza escludendo queste 22 righe contaminate (23 definizioni invece di 28 per concetto):
+
+\begin{table}[H]
+  \centering
+  \caption{Accuratezza con e senza le risposte contaminate}
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Concetto} & \textbf{Acc.\ (28 def.)} & \textbf{Acc.\ (23 def., pulito)} & \textbf{Variazione} \\
+    \midrule
+    Ethics & 1/28 (3.57\%) & 1/23 (4.35\%) & +0.78 p.p. \\
+    Music  & 0/28 (0.00\%) & 0/23 (0.00\%) & 0 \\
+    Tree   & 0/28 (0.00\%) & 0/23 (0.00\%) & 0 \\
+    Teapot & 1/28 (3.57\%) & 1/23 (4.35\%) & +0.78 p.p. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Nessuna delle 22 righe contaminate \`e mai stata classificata correttamente (verificato esplicitamente incrociando gli ID delle risposte contaminate con \texttt{is\_correct}): la variazione dell'accuratezza rimuovendole \`e minima (al pi\`u $+0.78$ punti percentuali) e non altera il quadro complessivo. Questo \`e atteso: una definizione di \textit{Teapot} inserita per errore nella colonna \textit{Ethics} ha un genus (\textit{container}) strutturalmente lontanissimo dal target \texttt{ethic.n.01}, quindi la sua classificazione come ``errata'' \`e corretta indipendentemente dalla qualit\`a del metodo -- non un artefatto della contaminazione, ma un caso strutturalmente non recuperabile.
+
+% ============================================================
+\section{Discussione}
+% ============================================================
+
+\paragraph{Confronto con l'approccio precedente (glosse pre-selezionate).} Una versione precedente di questo laboratorio confrontava ciascuna definizione con 5 glosse candidate scelte a mano (incluso sempre il target) tramite TF-IDF, ottenendo accuratezze artificialmente alte (32--89\%): con soli 5 candidati pre-filtrati il problema di retrieval \`e gi\`a risolto in partenza, e resta solo il ranking -- il compito diventa incomparabilmente pi\`u facile della vera ricerca onomasiologica non vincolata. L'accuratezza dell'1.79\% ottenuta qui non \`e quindi un peggioramento del metodo, ma la misura \emph{onesta} di un compito molto pi\`u difficile: cercare in tutto WordNet raggiungibile da un genus estratto automaticamente, senza sapere a priori quale sia il synset giusto. La coverage al 3.57\% \`e il numero che rende esplicito quanto pi\`u difficile: un sistema ``fortunato'' che indovinasse sempre nei 4 casi raggiungibili otterrebbe comunque solo il 3.57\% di accuratezza massima teorica con questa configurazione di genus-extraction e profondit\`a.
+
+\paragraph{Il ranking non \`e il problema.} Il fatto che l'accuratezza condizionata alla raggiungibilit\`a sia del 50\% (2/4), e che lo score medio separi nettamente corretti (0.628) da errati (0.452), mostra che SBERT applicato alle glosse funziona ragionevolmente: il collo di bottiglia \`e strutturalmente a monte, nell'estrazione del genus e nella profondit\`a/ampiezza della ricerca tassonomica che ne deriva, non nella qualit\`a della misura di similarit\`a semantica.
+
+\paragraph{Limiti residui e possibili estensioni.} Il vincolo di profondit\`a 3 e il cap di 300 sono scelte di trade-off computazionale, esplorate esplicitamente sopra come causa diretta di due dei tre fallimenti di coverage (teapot, tree). Un cap adattivo (es.\ proporzionale al numero di sensi del genus) o un ordinamento per rilevanza semantica anzich\'e l'ordine restituito da NLTK (che sembra riflettere un ordinamento interno del database WordNet, non una priorit\`a semantica) probabilmente migliorerebbero la coverage senza dover rinunciare al limite di profondit\`a. Un'estensione naturale sarebbe estrarre \emph{pi\`u di un} candidato genus per definizione (es.\ sia la testa nominale immediatamente dopo la copula sia il primo sostantivo della frase, quando diversi) e unire i rispettivi insiemi di candidati.
+
+% ============================================================
+\section{Conclusioni}
+% ============================================================
+
+Il Lab~2 mostra empiricamente che la ricerca onomasiologica automatica basata su genus-extraction + iponimi WordNet, applicata senza vincoli artificiali sul numero di candidati (a differenza di una selezione manuale di poche glosse), \`e un compito genuinamente difficile: accuratezza globale 1.79\%, ma soprattutto \textbf{coverage} 3.57\% -- il target \`e presente fra i candidati generati automaticamente solo in 4 casi su 112. La scomposizione in coverage e accuratezza condizionata (50\% quando il target \`e raggiungibile) \`e il contributo metodologico principale: isola il problema di \emph{retrieval} (trovare i candidati giusti) da quello di \emph{ranking} (scegliere fra i candidati trovati), mostrando che il secondo -- la similarit\`a SBERT fra definizione e glosse -- funziona meglio di quanto l'accuratezza aggregata suggerisca. I tre meccanismi concreti identificati (genus troppo generico per \textit{teapot}, genus polisemico che affoga il target nel cap per \textit{tree}, genus tassonomicamente distante per \textit{ethics}) spiegano interamente i fallimenti di coverage osservati, e sono verificabili direttamente interrogando WordNet -- non ipotesi qualitative ma fatti computabili.
+
+\end{document}

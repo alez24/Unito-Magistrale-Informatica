@@ -1,0 +1,344 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{parskip}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings,breakable,skins}
+\usepackage{enumitem}
+
+\geometry{
+  top=2.5cm, bottom=2.5cm,
+  left=2.5cm, right=2.5cm
+}
+
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{keywordcolor}{RGB}{0,0,180}
+\definecolor{commentcolor}{RGB}{0,128,0}
+\definecolor{stringcolor}{RGB}{163,21,21}
+\definecolor{codeframe}{RGB}{180,180,180}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{keywordcolor}\bfseries,
+  commentstyle=\color{commentcolor}\itshape,
+  stringstyle=\color{stringcolor},
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  tabsize=4,
+  xleftmargin=1.5em,
+  keepspaces=true,
+  columns=flexible,
+  frame=none,
+  aboveskip=0pt,
+  belowskip=0pt,
+}
+\lstset{style=python}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+\newtcblisting{pylisting}[1][]{
+  listing only,
+  enhanced,
+  colback=codebg,
+  colframe=codeframe,
+  coltitle=black,
+  fonttitle=\small\itshape,
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=codebg, colframe=codeframe, boxrule=0.5pt},
+  boxrule=0.5pt,
+  arc=2pt,
+  left=4pt, right=4pt, top=8pt, bottom=4pt,
+  listing options={style=python},
+  before upper={\vspace{-2pt}},
+  #1
+}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+\raggedbottom
+
+% ============================================================
+% FRONTESPIZIO
+% ============================================================
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+
+  {\Large\textbf{Universit\`a degli Studi di Torino}\\[0.3em]
+  Corso di Laurea Magistrale in Informatica}
+
+  \vspace{1cm}
+  \HRule\\[0.4em]
+  {\LARGE\textbf{Tecnologie del Linguaggio Naturale}}\\[0.3em]
+  {\large Parte 3 -- Prof.\ Luigi Di Caro}\\[0.2em]
+  \HRule
+
+  \vspace{1.2cm}
+  {\huge\textbf{Lab 1}}\\[0.5em]
+  {\LARGE Complessit\`a Definizionale e Sovrapposizione Semantica}\\[0.4em]
+  {\large Confronto lessicale (Jaccard) e semantico (Sentence-BERT) fra definizioni indipendenti}
+
+  \vspace{2cm}
+
+  {\large\textbf{Gruppo di lavoro:}}\\[0.8em]
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Studente}    & \textbf{Matricola} \\
+    \midrule
+    Alessandro Olivero   & 915069  \\
+    Samuele Iudice       & 1235245 \\
+    Andrea Franco        & 1226739 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{1.5cm}
+  \begin{tabular}{ll}
+    \textbf{Docente:}          & Prof.\ Luigi Di Caro \\[0.3em]
+    \textbf{Anno Accademico:}  & 2025/2026 \\
+  \end{tabular}
+
+  \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introduzione}
+% ============================================================
+
+L'obiettivo del Lab~1 \`e misurare quanto le definizioni indipendenti, raccolte da studenti diversi per uno stesso concetto, si sovrappongano -- sia lessicalmente sia semanticamente -- per quattro concetti bilanciati lungo due dimensioni (concretezza e specificit\`a):
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Tree} (Albero): concreto, generico.
+  \item \textbf{Teapot} (Teiera): concreto, specifico.
+  \item \textbf{Music} (Musica): astratto, generico.
+  \item \textbf{Ethics} (Etica): astratto, specifico.
+\end{itemize}
+
+Il dataset (\texttt{Dataset definizioni-spurio.csv}) contiene 28 definizioni per ciascun concetto, una per ciascuno dei 28 rispondenti del questionario. Si applicano due metriche indipendenti -- \textbf{Simlex}, puramente lessicale, e \textbf{Simsem}, semantica -- a tutte le $\binom{28}{2}=378$ coppie di definizioni per concetto (1\,512 coppie totali), per rispondere alla domanda centrale della Fase~5 della consegna: \emph{la sovrapposizione semantica riflette meglio l'intuizione umana di quella lessicale?}
+
+% ============================================================
+\section{Dataset e Analisi Qualitativa Preliminare}
+% ============================================================
+
+\subsection{Esempi dal dataset}
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Tree (CG)}: ``A plant with roots, trunk, branches and foliage used to obtain timber and produce paper.''
+  \item \textbf{Ethics (AS)}: ``Philosophical thought aimed at explaining ideal human behavior, attempting to demonstrate what is right and what is wrong.''
+\end{itemize}
+
+Per i concetti concreti (\textit{Tree}, \textit{Teapot}) il lessico converge su componenti fisiche e funzionali (\textit{roots}, \textit{trunk}, \textit{container}); per i concetti astratti (\textit{Music}, \textit{Ethics}) il vocabolario si sposta sulla sfera cognitiva e valoriale (\textit{behavior}, \textit{sentiment}, \textit{right/wrong}). Lo schema aristotelico \emph{genus-differentia} \`e adottato spontaneamente per i concetti concreti (\textit{Tree = plant} [genus] \textit{+ trunk/branches} [differentia]); per i concetti astratti prevalgono parafrasi operative basate sull'effetto prodotto (\textit{Music = sequence of sounds that triggers emotions}).
+
+\subsection{Un'anomalia nei dati, scoperta ispezionando le coppie a similarit\`a minima}
+\label{sec:contaminazione}
+
+Calcolando, per ciascun concetto, la coppia di definizioni con \textbf{Simsem minima} (Sez.~\ref{sec:risultati-estesi}), emerge un pattern sistematico e non casuale:
+
+\begin{table}[H]
+  \centering
+  \caption{Coppie a similarit\`a semantica minima per concetto -- tutte spiegate dalla stessa anomalia}
+  \small
+  \begin{tabular}{lp{5.6cm}p{5.6cm}r}
+    \toprule
+    \textbf{Concetto} & \textbf{Definizione A} & \textbf{Definizione B} & \textbf{Simsem} \\
+    \midrule
+    Music  & ``A tree is a woody plant capable of growing in height\ldots'' & ``Insieme di suoni'' (IT) & $-0.035$ \\
+    Ethics & ``Etica: insieme di regole morali che una persona segue'' (IT) & ``A teapot is a container used mainly for infusions\ldots'' & $-0.135$ \\
+    Tree   & ``Organism covered in bark, leaves that cover the branches\ldots'' & ``Art that has no visual or tactile representation but seeks to express concepts through harmonies\ldots'' & $-0.034$ \\
+    Teapot & ``Container useful for holding and pouring tee'' & ``Ethics includes moral principles that must be respected when making choices.'' & $-0.151$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+In \textbf{ogni} concetto, la coppia meno simile in assoluto contiene una definizione ``intrusa'' che appartiene concettualmente a un \emph{altro} concetto del dataset: una definizione di \textit{Tree} compare come outlier nella colonna \textit{Music}, una definizione di \textit{Teapot} nella colonna \textit{Ethics}, una definizione di \textit{Music} nella colonna \textit{Tree}, una definizione di \textit{Ethics} nella colonna \textit{Teapot}. Verificando manualmente l'intero dataset (colonna per colonna, confrontando ogni definizione col proprio concetto dichiarato), risulta che \textbf{5 rispondenti su 28} (\texttt{Risposta numero} 7, 14, 20, 22, 23 -- il 17.9\% del campione) hanno le colonne \emph{Astratto} e \emph{Concreto} scambiate a coppie: la loro risposta nella colonna ``Music'' (AG, astratto-generico) \`e in realt\`a la loro definizione di \textit{Tree} (CG, concreto-generico), e quella nella colonna ``Ethics'' (AS, astratto-specifico) \`e la loro definizione di \textit{Teapot} (CS, concreto-specifico) -- e viceversa. Il pattern \`e identico e simmetrico per tutti e 5 i rispondenti (esempio, risposta 23: colonna Music $\to$ ``A tree is a woody plant\ldots''; colonna Ethics $\to$ ``A teapot is a container used mainly for infusions\ldots''), compatibile con un errore sistematico di compilazione del modulo (colonne astratto/concreto invertite) pi\`u che con risposte casuali -- coerentemente col nome del file (\texttt{definizioni-spurio.csv}). Si segnalano inoltre, isolatamente, due definizioni compilate in italiano invece che in inglese (\textit{Music}, risposta 27: ``Insieme di suoni''; \textit{Ethics}, risposta 9: ``Etica: insieme di regole morali\ldots''), un secondo tipo di rumore indipendente dalla contaminazione a colonne invertite.
+
+Queste 22 definizioni ``intruse'' (5 per ciascuno dei 4 concetti, escludendo sovrapposizioni) \textbf{restano nel dataset} per tutti i risultati aggregati riportati sotto -- coerentemente con l'indicazione della consegna di lavorare sul dataset cos\`i come raccolto in aula -- ma il loro effetto \`e quantificabile: non essendo mai lessicalmente o semanticamente vicine alle 23 definizioni genuine dello stesso concetto, abbassano leggermente le medie Simlex/Simsem per tutti e quattro i concetti in modo pressoch\'e uniforme (Sez.~\ref{sec:contaminazione-impatto}), senza alterare il confronto \emph{relativo} fra concetti che \`e l'oggetto principale di questa relazione.
+
+% ============================================================
+\section{Metodologia}
+% ============================================================
+
+\subsection{Pipeline di preprocessing (condivisa fra le due metriche, con un'eccezione voluta)}
+
+Il testo viene normalizzato con una pipeline unica: lowercase, rimozione di punteggiatura, filtraggio delle stopword (parole di lunghezza $<3$ o presenti nella stopword-list NLTK), e lemmatizzazione POS-aware (\texttt{pos\_tag} + \texttt{WordNetLemmatizer}, con mappatura Treebank$\to$WordNet per il tag di ciascun token).
+
+\begin{pylisting}[title={Pipeline di normalizzazione e lemmatizzazione POS-aware}]
+def preprocess_definition(text):
+    text = text.lower()
+    text = re.sub(f"[{re.escape(string.punctuation)}]", " ", text)
+    tokens = [t for t in text.split()
+              if t.isalpha() and t not in STOP_WORDS and len(t) > 2]
+    tagged = pos_tag(tokens)
+    lemmas = [LEMMATIZER.lemmatize(tok, _wordnet_pos(pos))
+              for tok, pos in tagged]
+    return " ".join(lemmas), set(lemmas)
+\end{pylisting}
+
+Un punto metodologico rilevante: i token \emph{lemmatizzati} vengono usati per Simlex (Jaccard), ma \textbf{non} per Simsem. SBERT \`e addestrato su frasi naturali; rimuovere stopword e sintassi (necessario per un confronto insiemistico come Jaccard) degraderebbe l'input rispetto a quanto il modello si aspetta. Simsem viene quindi calcolata sul testo \emph{grezzo} della definizione, allineato per indice alle stesse definizioni usate per Simlex (una definizione viene scartata da entrambe le metriche solo se il preprocessing la svuota completamente, cio\`e se non contiene nessun token alfabetico non-stopword).
+
+\subsection{Simlex: indice di Jaccard}
+
+\[
+  \text{Simlex}(d_1, d_2) = J(T_1, T_2) = \frac{|T_1 \cap T_2|}{|T_1 \cup T_2|}
+\]
+dove $T_1, T_2$ sono gli insiemi di lemmi delle due definizioni. Simlex $=0$ se gli insiemi sono disgiunti o vuoti, $=1$ se identici.
+
+\subsection{Simsem: cosine similarity su embedding Sentence-BERT}
+
+\[
+  \text{Simsem}(d_1, d_2) = \cos(\vec{e}_1, \vec{e}_2) = \frac{\vec{e}_1 \cdot \vec{e}_2}{\lVert \vec{e}_1 \rVert \, \lVert \vec{e}_2 \rVert}
+\]
+dove $\vec{e}_1, \vec{e}_2 \in \mathbb{R}^{384}$ sono gli embedding delle definizioni grezze prodotti da \texttt{all-MiniLM-L6-v2}. A differenza di Jaccard, Simsem pu\`o essere (leggermente) negativa: due embedding possono avere angolo $>90°$.
+
+\begin{pylisting}[title={Calcolo di Simlex e Simsem per un concetto}]
+processed = [preprocess_definition(d) for d in raw_definitions]
+valid = [(raw, toks) for raw, (cleaned, toks)
+         in zip(raw_definitions, processed) if cleaned]
+raw_for_sbert = [r for r, _ in valid]
+token_sets    = [t for _, t in valid]
+
+simlex_scores = [jaccard_similarity(token_sets[i], token_sets[j])
+                  for i, j in itertools.combinations(range(len(token_sets)), 2)]
+avg_simlex = np.mean(simlex_scores)
+
+embs = SBERT_MODEL.encode(raw_for_sbert, show_progress_bar=False)
+cos_sim_matrix = cosine_similarity(embs)
+upper_tri = cos_sim_matrix[np.triu_indices(cos_sim_matrix.shape[0], k=1)]
+avg_simsem = np.mean(upper_tri)
+\end{pylisting}
+
+Tempo di esecuzione totale: $\sim$11 secondi per i 4 concetti (dominati dal caricamento una tantum del modello SBERT; il calcolo delle similarit\`a sulle $4\times378=1\,512$ coppie \`e sub-secondo).
+
+% ============================================================
+\section{Risultati}
+% ============================================================
+
+\subsection{Risultati aggregati per concetto}
+
+\begin{table}[H]
+  \centering
+  \caption{Simlex e Simsem medi per concetto (dati reali, esecuzione corrente, $n=378$ coppie/concetto)}
+  \begin{tabular}{lllccc}
+    \toprule
+    \textbf{Concetto} & \textbf{Tipo} & \textbf{Specificit\`a} & \textbf{Simlex} & \textbf{Simsem} & \textbf{$\Delta$(Simsem$-$Simlex)} \\
+    \midrule
+    Tree   & Concreto & Generico  & 0.0807 & 0.3518 & 0.2711 \\
+    Teapot & Concreto & Specifico & 0.0672 & 0.3073 & 0.2401 \\
+    Music  & Astratto & Generico  & 0.0492 & 0.3296 & 0.2804 \\
+    Ethics & Astratto & Specifico & 0.0435 & 0.2974 & 0.2539 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{Aggregazione per dimensione (Tipo, Specificit\`a)}
+  \begin{tabular}{llccc}
+    \toprule
+    \textbf{Dimensione} & \textbf{Gruppo} & \textbf{Simlex} & \textbf{Simsem} & \textbf{$\Delta$} \\
+    \midrule
+    Tipo          & Concreto  & 0.0739 & 0.3296 & 0.2556 \\
+    Tipo          & Astratto  & 0.0464 & 0.3135 & 0.2672 \\
+    Specificit\`a & Generico  & 0.0649 & 0.3407 & 0.2758 \\
+    Specificit\`a & Specifico & 0.0554 & 0.3024 & 0.2470 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Statistiche estese: dispersione e coppie estreme}
+\label{sec:risultati-estesi}
+
+Le medie da sole nascondono la forma della distribuzione delle 378 coppie per concetto: la deviazione standard e i valori estremi mostrano quanto siano eterogenee.
+
+\begin{table}[H]
+  \centering
+  \caption{Statistiche estese sulle 378 coppie per concetto (media, deviazione standard, minimo, massimo)}
+  \small
+  \begin{tabular}{lrrrrrrrr}
+    \toprule
+    & \multicolumn{4}{c}{\textbf{Simlex}} & \multicolumn{4}{c}{\textbf{Simsem}} \\
+    \cmidrule(lr){2-5} \cmidrule(lr){6-9}
+    \textbf{Concetto} & \textbf{media} & \textbf{std} & \textbf{min} & \textbf{max} & \textbf{media} & \textbf{std} & \textbf{min} & \textbf{max} \\
+    \midrule
+    Music  & 0.0492 & 0.0671 & 0.000 & 0.333 & 0.3296 & 0.2307 & $-$0.035 & 0.890 \\
+    Ethics & 0.0435 & 0.0795 & 0.000 & 0.467 & 0.2974 & 0.2554 & $-$0.135 & 0.893 \\
+    Tree   & 0.0807 & 0.1147 & 0.000 & 0.714 & 0.3518 & 0.2193 & $-$0.034 & 0.817 \\
+    Teapot & 0.0672 & 0.0957 & 0.000 & 0.500 & 0.3073 & 0.2831 & $-$0.151 & 0.860 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Tre osservazioni tecniche da questa tabella:
+
+\begin{itemize}
+  \item \textbf{La deviazione standard di Simsem \`e sempre 3--6 volte quella di Simlex} in valore assoluto, ma va letta in proporzione alla scala: il \emph{coefficiente di variazione} (std/media) di Simlex \`e sistematicamente pi\`u alto (es.\ Ethics: $0.0795/0.0435=1.83$) di quello di Simsem (Ethics: $0.2554/0.2974=0.86$) -- Jaccard non \`e solo pi\`u basso in media, \`e anche relativamente pi\`u instabile, coerente con la sua natura di conteggio su insiemi piccoli (poche decine di lemmi per definizione) dove una singola parola in comune o mancante sposta il punteggio in modo sproporzionato.
+  \item \textbf{Teapot ha la Simsem con maggiore dispersione} (std$=0.2831$, la pi\`u alta fra i quattro concetti) nonostante il Simlex relativamente contenuto: le definizioni di teiera oscillano fra parafrasi molto simili al genus-differentia canonico (``container for tea'', Simsem fino a $0.860$) e definizioni idiosincratiche (dettagli su forma, materiale, uso) che se ne allontanano semanticamente pur restando corrette.
+  \item \textbf{Il minimo di Simsem \`e negativo in tutti i concetti tranne Music} (per un margine minimo, $-0.035$): conferma che SBERT non \`e vincolato in $[0,1]$ come Jaccard, e che le coppie contaminate (Sez.~\ref{sec:contaminazione}) producono coerentemente gli angoli pi\`u ampi nello spazio degli embedding.
+\end{itemize}
+
+\subsection{Impatto quantitativo della contaminazione}
+\label{sec:contaminazione-impatto}
+
+Per verificare che la contaminazione (Sez.~\ref{sec:contaminazione}) non alteri le conclusioni relative fra concetti, si ricalcolano Simlex/Simsem \textbf{escludendo} le 5 risposte contaminate per concetto (23 definizioni invece di 28, $\binom{23}{2}=253$ coppie):
+
+\begin{table}[H]
+  \centering
+  \caption{Simsem con e senza le risposte contaminate}
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Concetto} & \textbf{Simsem (28 def.)} & \textbf{Simsem (23 def., pulito)} & \textbf{Variazione} \\
+    \midrule
+    Music  & 0.3296 & 0.3499 & +0.0203 \\
+    Ethics & 0.2974 & 0.3183 & +0.0209 \\
+    Tree   & 0.3518 & 0.3712 & +0.0194 \\
+    Teapot & 0.3073 & 0.3277 & +0.0204 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+La rimozione delle definizioni contaminate alza Simsem di $\approx 0.02$ in \textbf{tutti e quattro} i concetti, in modo pressoch\'e uniforme (deviazione fra le quattro variazioni: $0.0006$): la contaminazione agisce come un abbassamento sistematico e costante, non selettivo per concetto, e l'ordinamento relativo fra i quattro concetti (Tree $>$ Music $>$ Teapot $>$ Ethics) \`e identico prima e dopo la pulizia. Questo giustifica quantitativamente, e non solo per argomentazione qualitativa, la scelta di riportare i risultati sul dataset completo: le conclusioni sul contrasto concreto/astratto non dipendono dalla presenza delle 22 definizioni intruse.
+
+% ============================================================
+\section{Discussione}
+% ============================================================
+
+\paragraph{Simlex separa nettamente concreto e astratto, Simsem molto meno.} Il rapporto fra Simlex medio concreto (0.0739) e astratto (0.0464) \`e $1.59\times$: quasi il 60\% di sovrapposizione lessicale in pi\`u per i concetti con referente fisico. Sullo stesso confronto, Simsem concreto (0.3296) supera l'astratto (0.3135) solo del 5\% relativo. La rappresentazione semantica di SBERT recupera quindi gran parte del gap lessicale fra le due categorie: parlanti diversi scelgono parole molto diverse per descrivere \textit{Music} o \textit{Ethics}, ma quelle parole restano concettualmente vicine nello spazio SBERT molto pi\`u di quanto non lo siano nell'insieme di token grezzi -- \`e questa la risposta quantitativa alla domanda della Fase~5: \emph{s\`i}, la sovrapposizione semantica riflette meglio l'intuizione umana, e lo si pu\`o misurare esattamente come il rapporto fra i due effect size ($1.59\times$ contro $1.05\times$).
+
+\paragraph{Il $\Delta$ \`e sistematicamente pi\`u alto per gli astratti.} Il concetto con $\Delta$ massimo \`e \textit{Music} (0.2804), quello con $\Delta$ minimo \`e \textit{Teapot} (0.2401); in aggregato $\Delta_{\text{Astratto}}=0.2672 > \Delta_{\text{Concreto}}=0.2556$ e $\Delta_{\text{Generico}}=0.2758 > \Delta_{\text{Specifico}}=0.2470$. Dove il lessico condiviso \`e pi\`u povero (concetti astratti, generici), c'\`e pi\`u ``spazio'' perch\'e la similarit\`a semantica aggiunga segnale rispetto a quella lessicale; dove il referente fisico gi\`a garantisce lessico condiviso (\textit{Teapot} ha il Simlex pi\`u alto dei quattro), il guadagno marginale di SBERT \`e minore in valore assoluto.
+
+\paragraph{Music sorprende: pi\`u vicino semanticamente di Teapot.} Nonostante \textit{Music} abbia il Simlex pi\`u basso dei quattro (0.0492), il suo Simsem (0.3296) supera quello di \textit{Teapot} (0.3073) -- l'unico caso in cui l'ordinamento concreto/astratto si inverte. Le definizioni genuine di \textit{Music} convergono spesso su una struttura comune (``sequenza di suoni che suscita emozioni''), che SBERT riconosce come semanticamente coerente pur con lessico superficiale molto vario: la coppia a Simsem massima del dataset intero (0.890, Tabella~6) \`e proprio una coppia \textit{Music}, fra due parafrasi quasi sinonime (``triggering emotions'' / ``arousing emotions\ldots in the listener'').
+
+\paragraph{Il ruolo stabilizzante del referente fisico.} \`E ridimensionato, ma non annullato, dal passaggio a Simsem: ricompare nel Lab~2 (coverage pi\`u alta per \textit{Teapot} che per \textit{Music}/\textit{Tree}) e nel Lab~3 (minore asimmetria cross-linguistica per sostantivi concreti come \textit{mouth} e \textit{table}).
+
+% ============================================================
+\section{Conclusioni}
+% ============================================================
+
+Il laboratorio mostra, con dati quantitativi su 1\,512 coppie di definizioni, che (1) la sovrapposizione puramente lessicale (Simlex) \`e sempre molto bassa (4--8\%) e fortemente polarizzata fra concreto e astratto ($1.59\times$); (2) la sovrapposizione semantica (Simsem) resta sostanzialmente pi\`u alta in valore assoluto (30--35\%) e quasi indipendente dal contrasto concreto/astratto ($1.05\times$), confermando che SBERT cattura una nozione di similarit\`a molto pi\`u vicina all'intuizione umana di quanto non faccia il solo conteggio insiemistico; (3) un difetto nei dati grezzi (5/28 risposte con colonne astratto/concreto scambiate) \`e stato identificato sistematicamente ispezionando le coppie a similarit\`a minima -- non un'osservazione aneddotica, ma il prodotto diretto dell'analisi quantitativa -- e il suo impatto sui risultati \`e stato misurato ($\approx +0.02$ di Simsem se rimosso, uniformemente sui quattro concetti) e giudicato non rilevante per le conclusioni relative.
+
+\end{document}

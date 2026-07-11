@@ -1,0 +1,311 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{parskip}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings,breakable,skins}
+\usepackage{enumitem}
+
+\geometry{
+  top=2.5cm, bottom=2.5cm,
+  left=2.5cm, right=2.5cm
+}
+
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{keywordcolor}{RGB}{0,0,180}
+\definecolor{commentcolor}{RGB}{0,128,0}
+\definecolor{stringcolor}{RGB}{163,21,21}
+\definecolor{codeframe}{RGB}{180,180,180}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{keywordcolor}\bfseries,
+  commentstyle=\color{commentcolor}\itshape,
+  stringstyle=\color{stringcolor},
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  tabsize=4,
+  xleftmargin=1.5em,
+  keepspaces=true,
+  columns=flexible,
+  frame=none,
+  aboveskip=0pt,
+  belowskip=0pt,
+}
+\lstset{style=python}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+\newtcblisting{pylisting}[1][]{
+  listing only,
+  enhanced,
+  colback=codebg,
+  colframe=codeframe,
+  coltitle=black,
+  fonttitle=\small\itshape,
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=codebg, colframe=codeframe, boxrule=0.5pt},
+  boxrule=0.5pt,
+  arc=2pt,
+  left=4pt, right=4pt, top=8pt, bottom=4pt,
+  listing options={style=python},
+  before upper={\vspace{-2pt}},
+  #1
+}
+
+\newtcolorbox{exbox}[1]{colback=green!5,colframe=green!50!black,fonttitle=\bfseries,title={#1},breakable}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+\raggedbottom
+
+% ============================================================
+% FRONTESPIZIO
+% ============================================================
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+
+  {\Large\textbf{Universit\`a degli Studi di Torino}\\[0.3em]
+  Corso di Laurea Magistrale in Informatica}
+
+  \vspace{1cm}
+  \HRule\\[0.4em]
+  {\LARGE\textbf{Tecnologie del Linguaggio Naturale}}\\[0.3em]
+  {\large Parte 3 -- Prof.\ Luigi Di Caro}\\[0.2em]
+  \HRule
+
+  \vspace{1.2cm}
+  {\huge\textbf{Lab 4}}\\[0.5em]
+  {\LARGE Topic Modeling con BERTopic}\\[0.4em]
+  {\large Confronto a variabile isolata: modello di embedding vs.\ parametri di clustering}
+
+  \vspace{2cm}
+
+  {\large\textbf{Studente:}}\\[0.8em]
+  Alessandro Olivero -- 915069
+
+  \vspace{1.5cm}
+  \begin{tabular}{ll}
+    \textbf{Docente:}          & Prof.\ Luigi Di Caro \\[0.3em]
+    \textbf{Anno Accademico:}  & 2025/2026 \\
+  \end{tabular}
+
+  \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Obiettivo}
+% ============================================================
+
+Costruire una pipeline completa di \textbf{topic modeling non supervisionato} sul dataset \texttt{MaartenGr/arxiv\_nlp} (44\,949 abstract di paper NLP da arXiv, senza etichette tematiche), confrontando almeno tre configurazioni che variano modello di embedding, parametri UMAP e parametri HDBSCAN. Il vincolo metodologico esplicito della consegna \`e di \textbf{non cambiare pi\`u parametri contemporaneamente}: ogni confronto a coppie deve isolare un solo fattore, cos\`i che l'effetto osservato sia attribuibile senza ambiguit\`a alla sua causa.
+
+% ============================================================
+\section{Architettura della Pipeline}
+% ============================================================
+
+\begin{enumerate}[noitemsep]
+  \item \textbf{Embedding}: ogni abstract \`e convertito in un vettore denso con un modello SentenceTransformer.
+  \item \textbf{UMAP}: riduzione dimensionale che preserva la struttura semantica locale/globale.
+  \item \textbf{HDBSCAN}: clustering density-based, etichetta $-1$ per gli outlier.
+  \item \textbf{BERTopic}: estrae parole rappresentative per ciascun cluster tramite c-TF-IDF (TF-IDF contestualizzato per cluster).
+\end{enumerate}
+
+% ============================================================
+\section{Configurazioni Testate}
+% ============================================================
+
+Le tre configurazioni sono costruite per isolare un solo fattore alla volta rispetto alla baseline:
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Le tre configurazioni confrontate -- un solo fattore cambia per riga}
+  \begin{tabular}{p{2.6cm}p{3.1cm}p{4.3cm}p{3.6cm}}
+    \toprule
+    \textbf{Config} & \textbf{Embedding} & \textbf{UMAP} & \textbf{HDBSCAN} \\
+    \midrule
+    1 -- Baseline        & \texttt{gte-small} (384d)          & n\_comp=5, n\_neigh=15  & min\_cluster=50 \\
+    2 -- solo modello     & \texttt{all-MiniLM-L6-v2} (384d)   & \textit{invariato}      & \textit{invariato} \\
+    3 -- solo clustering  & \textit{invariato (MiniLM)}        & n\_comp=10, n\_neigh=30 & min\_cluster=150 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{pylisting}[title={Le tre configurazioni: un solo campo cambia fra righe consecutive}]
+configurations = [
+    {"nome": "Config_1_baseline", "embedding_model": "thenlper/gte-small",
+     "umap_params": {"n_components": 5, "n_neighbors": 15, "min_dist": 0.0,
+                      "metric": "cosine", "random_state": 42},
+     "hdbscan_params": {"min_cluster_size": 50, "metric": "euclidean",
+                         "cluster_selection_method": "eom"}},
+    {  # Cambia SOLO il modello embedding rispetto alla baseline
+     "nome": "Config_2_model_only", "embedding_model": "all-MiniLM-L6-v2",
+     "umap_params": {...},      # identico a Config_1
+     "hdbscan_params": {...}},  # identico a Config_1
+    {  # Stesso embedding di Config_2, cambia SOLO UMAP/HDBSCAN
+     "nome": "Config_3_cluster_only", "embedding_model": "all-MiniLM-L6-v2",
+     "umap_params": {"n_components": 10, "n_neighbors": 30, ...},
+     "hdbscan_params": {"min_cluster_size": 150, ...}},
+]
+\end{pylisting}
+
+Gli embedding sono cachati per modello (\texttt{emb\_cache}): la Config~3 riusa gli embedding MiniLM gi\`a calcolati per la Config~2 invece di ricalcolarli, e UMAP/HDBSCAN vengono fittati una sola volta ciascuno, direttamente dentro \texttt{BERTopic.fit\_transform} (nessun fit standalone duplicato che raddoppierebbe inutilmente il tempo di calcolo).
+
+% ============================================================
+\section{Risultati Quantitativi}
+% ============================================================
+
+Esecuzione su CPU (nessuna GPU disponibile), 44\,949 abstract:
+
+\begin{table}[H]
+  \centering
+  \caption{Confronto quantitativo tra le tre configurazioni (dati reali, esecuzione corrente)}
+  \begin{tabular}{lrrrr}
+    \toprule
+    \textbf{Configurazione} & \textbf{\#Topic} & \textbf{Outlier} & \textbf{Outlier\%} & \textbf{Tempo totale} \\
+    \midrule
+    1 -- Baseline (gte-small)          & 151 & 14\,357 & 31.9\% & 7\,417 s ($\approx$2h 03m) \\
+    2 -- solo modello (MiniLM)         & 116 & 12\,375 & 27.5\% & 513 s ($\approx$8m 33s) \\
+    3 -- solo clustering (MiniLM)      &  46 & 15\,036 & 33.5\% & 35 s \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Top-10 topic per configurazione}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Config 1 (Baseline, gte-small) -- top-10 topic per numero di documenti}
+  \begin{tabular}{rrl}
+    \toprule
+    \textbf{ID} & \textbf{Count} & \textbf{Top parole} \\
+    \midrule
+    0 & 2235 & speech, asr, recognition, end, acoustic \\
+    1 & 2166 & question, qa, questions, answer \\
+    2 & 1603 & medical, clinical, biomedical, patient \\
+    3 &  886 & summarization, summaries, summary, abstractive \\
+    4 &  862 & translation, nmt, machine, bleu \\
+    5 &  670 & relation, extraction, re, relations \\
+    6 &  657 & gender, bias, biases, debiasing \\
+    7 &  581 & ner, entity, named, recognition \\
+    8 &  375 & parsing, dependency, parser, parsers \\
+    9 &  352 & law, frequency, zipf, words \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Config 2 (solo modello, MiniLM) -- top-10 topic per numero di documenti}
+  \begin{tabular}{rrl}
+    \toprule
+    \textbf{ID} & \textbf{Count} & \textbf{Top parole} \\
+    \midrule
+    0 & 2675 & dialogue, dialog, response, conversational \\
+    1 & 2446 & speech, asr, recognition, end \\
+    2 & 2379 & translation, nmt, machine, mt \\
+    3 & 1803 & question, answer, qa, questions \\
+    4 & 1614 & medical, clinical, biomedical, patient \\
+    5 &  958 & summarization, summaries, summary, abstractive \\
+    6 &  911 & hate, offensive, speech, detection \\
+    7 &  838 & image, visual, multimodal, images \\
+    8 &  719 & lingual, cross, languages, multilingual \\
+    9 &  713 & emotion, emotions, emotional, multimodal \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Config 3 (solo clustering pi\`u grossolano) -- top-10 topic, stopword in \textbf{grassetto}}
+  \begin{tabular}{rrl}
+    \toprule
+    \textbf{ID} & \textbf{Count} & \textbf{Top parole} \\
+    \midrule
+    0 & 2689 & dialogue, \textbf{the}, dialog, \textbf{to} \\
+    1 & 2411 & speech, asr, recognition, \textbf{the} \\
+    2 & 2163 & translation, machine, nmt, \textbf{the} \\
+    3 & 1746 & medical, clinical, \textbf{and}, \textbf{the} \\
+    4 & 1637 & question, answer, questions, qa \\
+    5 & 1426 & word, embeddings, similarity, semantic \\
+    6 & 1327 & transformer, attention, \textbf{the}, models \\
+    7 & 1165 & summarization, summaries, summary, abstractive \\
+    8 &  966 & image, visual, multimodal, images \\
+    9 &  859 & adversarial, attacks, attack, privacy \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{exbox}{Validazione qualitativa (Config 1, topic 0, documento pi\`u rappresentativo)}
+\textbf{Titolo}: ``End-to-end model for named entity recognition from speech without paired training data''\\
+\textbf{Abstract} (estratto): ``Recent works showed that end-to-end neural approaches tend to become very popular for spoken language understanding (SLU)\ldots''\\
+Coerente con le parole del topic (\textit{speech, asr, recognition, end, acoustic}): il documento pi\`u rappresentativo tratta esplicitamente di riconoscimento vocale e NER, confermando che il cluster \`e semanticamente compatto e non un artefatto del clustering.
+\end{exbox}
+
+% ============================================================
+\section{Analisi e Discussione}
+% ============================================================
+
+\subsection{Config 1 $\to$ 2: effetto isolato del modello di embedding}
+
+A parit\`a di UMAP/HDBSCAN, sostituire \texttt{gte-small} con \texttt{all-MiniLM-L6-v2} produce \textbf{35 topic in meno} (151$\to$116, $-23\%$), \textbf{4.4 punti percentuali in meno di outlier} (31.9\%$\to$27.5\%) e un tempo totale \textbf{14.5 volte inferiore} (7\,417s$\to$513s). Poich\'e questo \`e l'\emph{unico} parametro cambiato tra le due righe, l'attribuzione causale \`e diretta: su questo corpus, \texttt{gte-small} produce embedding che UMAP/HDBSCAN separano in pi\`u cluster pi\`u piccoli (pi\`u topic, pi\`u outlier), mentre MiniLM produce una geometria che il clustering density-based riassume in meno cluster pi\`u compatti -- a un costo computazionale drasticamente inferiore.
+
+Un esempio qualitativo del cambiamento di granularit\`a: nella Config~1 il topic 0 \`e speech/ASR generico (2\,235 documenti); nella Config~2 emerge un topic \emph{distinto} dedicato ai sistemi dialogici (\textit{dialogue, dialog, response, conversational}, 2\,675 documenti), separato dal topic ASR (2\,446 documenti). La Config~2 non \`e quindi solo ``pi\`u veloce'': separa sfumature tematiche che la Config~1, con lo stesso numero di cluster totali ma un embedding diverso, tende a fondere.
+
+\subsection{Config 2 $\to$ 3: effetto isolato di UMAP/HDBSCAN}
+
+A parit\`a di embedding (MiniLM), passare da \texttt{n\_neighbors=15}/\texttt{min\_cluster\_size=50} a \texttt{n\_neighbors=30}/\texttt{min\_cluster\_size=150} (proiezione pi\`u globale, cluster minimi pi\`u grandi) riduce i topic da 116 a \textbf{46} ($-60\%$) e \emph{aumenta} gli outlier di 5.9 punti (27.5\%$\to$33.5\%): soglie di densit\`a pi\`u alte lasciano fuori pi\`u punti come rumore invece di assorbirli in cluster piccoli.
+
+La Config~3 mostra inoltre un \textbf{failure mode} riproducibile: alcuni dei topic pi\`u popolosi (\textit{dialogue, \textbf{the}, dialog, \textbf{to}}; \textit{medical, clinical, \textbf{and}, \textbf{the}}; \textit{transformer, attention, \textbf{the}, models}) contengono esplicitamente stopword tra le prime parole c-TF-IDF, assente invece in Config~1 e Config~2. Cluster troppo eterogenei diluiscono il segnale lessicale specifico del topic fino a lasciar riemergere termini ad alta frequenza globale. Il fatto che la contaminazione compaia \emph{solo} nella Config~3, a parit\`a di embedding con la Config~2, isola inequivocabilmente la causa nei parametri di clustering, non nel modello -- questo \`e esattamente il valore del design a variabile isolata: senza di esso, non si potrebbe distinguere se la degradazione derivi dal modello o dal clustering.
+
+\subsection{Il costo computazionale \`e quasi interamente nell'embedding, non nel clustering}
+
+Il salto Config~2 (513s, include il calcolo di tutti gli embedding MiniLM per 44\,949 documenti) $\to$ Config~3 (35s, cache hit sugli stessi embedding) mostra che UMAP+HDBSCAN+BERTopic da soli, su embedding gi\`a calcolati, costano circa 35 secondi anche con impostazioni pi\`u onerose (\texttt{n\_neighbors=30}, cluster pi\`u grandi da esplorare); il grosso del tempo di Config~1 (7\,417s $\approx$ 2 ore) \`e quindi quasi certamente il calcolo degli embedding con \texttt{gte-small} su CPU, non UMAP/HDBSCAN. Questo ha un'implicazione pratica diretta: se si vogliono esplorare molte combinazioni di parametri UMAP/HDBSCAN, conviene fissare presto il modello di embedding pi\`u economico compatibile con la qualit\`a richiesta e sfruttare la cache, piuttosto che ricalcolare embedding costosi a ogni esperimento.
+
+\subsection{Confronto con un design non isolato (nota metodologica)}
+
+Una prima versione di questo esperimento cambiava simultaneamente modello, \texttt{n\_components}, \texttt{n\_neighbors} e \texttt{min\_cluster\_size} fra Config~1 e Config~2: un miglioramento osservato (pi\`u topic, meno outlier) non era quindi attribuibile n\'e al modello n\'e al clustering singolarmente. Nel design corrente, isolare i due fattori rivela che producono effetti \emph{opposti} sul numero di topic quando applicati in sequenza (il modello da solo li aumenta leggermente rispetto a un ipotetico MiniLM+HDBSCAN pi\`u fine; il clustering pi\`u grossolano da solo li riduce drasticamente): un risultato che il design confuso avrebbe potuto mascherare o invertire a seconda di quale effetto dominasse numericamente.
+
+% ============================================================
+\section{Configurazione Consigliata}
+% ============================================================
+
+La \textbf{Config~2} (MiniLM, parametri di clustering della baseline) \`e il miglior compromesso osservato: meno outlier della baseline (27.5\% vs 31.9\%), tempo di esecuzione praticabile su CPU (8m33s contro le 2 ore della Config~1), e nessuna contaminazione da stopword nei topic. Se la priorit\`a fosse invece un numero minore di topic pi\`u ampi (per un'esplorazione di alto livello del corpus), la Config~3 resterebbe utilizzabile solo dopo un post-processing che rimuova le stopword residue dalle rappresentazioni c-TF-IDF.
+
+% ============================================================
+\section{Conclusioni}
+% ============================================================
+
+Il laboratorio mostra, con un confronto a variabile isolata, come modello di embedding e parametri di clustering agiscano su assi indipendenti: il primo governa principalmente granularit\`a e velocit\`a (Config~1$\to$2: $-23\%$ topic, $14.5\times$ pi\`u veloce), il secondo governa principalmente granularit\`a e purezza semantica dei topic (Config~2$\to$3: $-60\%$ topic, comparsa di stopword). Un solo parametro impostato in modo troppo aggressivo (qui, soglie HDBSCAN troppo larghe) \`e sufficiente a degradare la qualit\`a dei topic in modo visibile e misurabile, anche mantenendo lo stesso modello di embedding di una configurazione che funziona bene -- una conferma diretta, con numeri, del principio metodologico (variare un solo fattore alla volta) richiesto dalla consegna.
+
+\end{document}

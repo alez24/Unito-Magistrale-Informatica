@@ -1,0 +1,14 @@
+def get_candidates_from_genus(genus, depth=GENUS_DEPTH, max_candidates=MAX_CANDIDATES):
+    genus_synsets = wn.synsets(genus, pos=wn.NOUN)
+    seen, unique = set(), []
+    def add(syn):
+        if syn.name() not in seen:
+            seen.add(syn.name()); unique.append(syn)
+    for syn in genus_synsets:
+        add(syn)
+        if len(unique) >= max_candidates: break
+        for hypo in syn.closure(lambda s: s.hyponyms(), depth=depth):
+            add(hypo)
+            if len(unique) >= max_candidates: break
+        if len(unique) >= max_candidates: break
+    return unique

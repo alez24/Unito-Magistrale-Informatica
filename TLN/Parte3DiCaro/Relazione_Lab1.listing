@@ -1,0 +1,14 @@
+processed = [preprocess_definition(d) for d in raw_definitions]
+valid = [(raw, toks) for raw, (cleaned, toks)
+         in zip(raw_definitions, processed) if cleaned]
+raw_for_sbert = [r for r, _ in valid]
+token_sets    = [t for _, t in valid]
+
+simlex_scores = [jaccard_similarity(token_sets[i], token_sets[j])
+                  for i, j in itertools.combinations(range(len(token_sets)), 2)]
+avg_simlex = np.mean(simlex_scores)
+
+embs = SBERT_MODEL.encode(raw_for_sbert, show_progress_bar=False)
+cos_sim_matrix = cosine_similarity(embs)
+upper_tri = cos_sim_matrix[np.triu_indices(cos_sim_matrix.shape[0], k=1)]
+avg_simsem = np.mean(upper_tri)
