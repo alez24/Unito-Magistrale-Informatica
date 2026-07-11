@@ -1,8 +1,6 @@
-# ============================================================
 # LAB 8 - Word Clustering Based on Word2Vec Representation
 # TLN - Daniele Radicioni, UNITO
 # Confronto: testi musicali anni 70 vs anni 2000
-# ============================================================
 
 import re
 import sys
@@ -46,18 +44,12 @@ print("LAB 8 - Word2Vec su testi musicali")
 print("Anni 70 vs Anni 2000")
 print("=" * 60)
 
-# ============================================================
-# STEP 1: Caricamento dataset
-# ============================================================
-print("\n[STEP 1] Caricamento dataset...")
+print("\nCaricamento dataset...")
 
 df = pd.read_csv('spotify_millsongdata.csv')
 print(f"Dataset: {df.shape[0]} canzoni, {df['artist'].nunique()} artisti")
 
-# ============================================================
-# STEP 2: Selezione artisti per era
-# ============================================================
-print("\n[STEP 2] Selezione artisti per era...")
+print("\nSelezione artisti per era...")
 
 artisti_70s = [
     'Black Sabbath', 'Pink Floyd', 'Queen',
@@ -91,10 +83,7 @@ if n_trovati_2000s != len(artisti_2000s):
     mancanti = set(artisti_2000s) - set(df_2000s['artist'].unique())
     print(f"ATTENZIONE: attesi {len(artisti_2000s)} artisti anni 2000, trovati {n_trovati_2000s}. Mancanti: {mancanti}")
 
-# ============================================================
-# STEP 3: Pulizia testi
-# ============================================================
-print("\n[STEP 3] Pulizia testi...")
+print("\nPulizia testi...")
 
 def pulisci_testo(testo):
     """Tokenizza un testo di canzone rimuovendo annotazioni, punteggiatura, stopword e parole corte."""
@@ -134,10 +123,7 @@ print("\nTop 15 parole anni 2000:")
 for p, c in freq_2000s.most_common(15):
     print(f"  {p:<15} → {c}")
 
-# ============================================================
-# STEP 4: Addestramento Word2Vec
-# ============================================================
-print("\n[STEP 4] Addestramento Word2Vec...")
+print("\nAddestramento Word2Vec...")
 
 params = dict(
     sg          = 1,     # Skip-gram (il default di gensim sarebbe CBOW, sg=0)
@@ -158,10 +144,7 @@ model_2000s = Word2Vec(sentences=df_2000s['tokens'].tolist(), **params)
 print(f"Vocabolario anni 70:   {len(model_70s.wv)} parole")
 print(f"Vocabolario anni 2000: {len(model_2000s.wv)} parole")
 
-# ============================================================
-# STEP 5: Parole simili
-# ============================================================
-print("\n[STEP 5] Parole simili per parola chiave...")
+print("\nParole simili per parola chiave...")
 
 parole_test = ['love', 'night', 'heart', 'world', 'time', 'life', 'feel']
 
@@ -175,10 +158,7 @@ for parola in parole_test:
                if parola in model_2000s.wv else ['---']
     print(f"{parola:<10} | {', '.join(sim_70):<35} | {', '.join(sim_2000)}")
 
-# ============================================================
-# STEP 6: Similarità tra coppie
-# ============================================================
-print("\n[STEP 6] Similarità coseno tra coppie di parole...")
+print("\nSimilarità coseno tra coppie di parole...")
 
 coppie = [
     ('love', 'heart'),
@@ -199,10 +179,7 @@ for w1, w2 in coppie:
             if w1 in model_2000s.wv and w2 in model_2000s.wv else "---"
     print(f"({w1}, {w2}){'':6} | {s70:>8} | {s2000:>10}")
 
-# ============================================================
-# STEP 7: Analisi vocabolario
-# ============================================================
-print("\n[STEP 7] Analisi vocabolario...")
+print("\nAnalisi vocabolario...")
 
 vocab_70s   = set(model_70s.wv.index_to_key)
 vocab_2000s = set(model_2000s.wv.index_to_key)
@@ -229,10 +206,7 @@ print(f"  {interessanti_70s[:20]}")
 print(f"\nParole caratteristiche anni 2000 (freq > 20):")
 print(f"  {interessanti_2000s[:20]}")
 
-# ============================================================
-# STEP 8: Analisi sistematica coppie di parole (deriva semantica)
-# ============================================================
-print("\n[STEP 8] Analisi sistematica coppie...")
+print("\nAnalisi sistematica coppie...")
 
 FREQ_COPPIE = 100
 # sorted(): l'intersezione fra due set ha un ordine di iterazione dipendente da
@@ -297,10 +271,7 @@ for r in coppie_sist[-10:][::-1]:
     coppia = f"({r['w1']}, {r['w2']})"
     print(f"{coppia:<26} {r['s70']:>8.4f} {r['s2000']:>10.4f} {r['delta']:>7.4f}")
 
-# ============================================================
-# STEP 9: Analisi sistematica vocabolario comune (deriva di contesto)
-# ============================================================
-print("\n[STEP 9] Analisi sistematica parole comuni...")
+print("\nAnalisi sistematica parole comuni...")
 
 FREQ_MINIMA   = 30
 TOP_N_VICINI  = 10
@@ -374,10 +345,7 @@ for r in risultati[-10:][::-1]:
     print(f"  {r['parola']:<12} overlap: {r['overlap']:.0%}  "
           f"| vicini comuni: {vicini_comuni_str}")
 
-# ============================================================
-# STEP 10: Clustering K-Means
-# ============================================================
-print("\n[STEP 10] Clustering K-Means...")
+print("\nClustering K-Means...")
 
 def fai_clustering(model, n_clusters=6, top_words=200):
     """Raggruppa le parole più frequenti in cluster semantici via KMeans sugli embedding."""
@@ -405,10 +373,7 @@ cl_2000s, par_2000s, vec_2000s, lbl_2000s = fai_clustering(model_2000s)
 for cid, parole_cl in sorted(cl_2000s.items()):
     print(f"  Cluster {cid}: {', '.join(parole_cl[:12])}")
 
-# ============================================================
-# STEP 11: Grafici
-# ============================================================
-print("\n[STEP 11] Generazione grafici...")
+print("\nGenerazione grafici...")
 
 def top_per_cluster(parole, labels, freq_dict, n=7):
     """Le n parole più frequenti di ciascun cluster, usate per etichettare i punti nel plot t-SNE."""
@@ -603,10 +568,7 @@ plt.savefig('word2vec_drift.png', dpi=150, bbox_inches='tight')
 print("  Salvato: word2vec_drift.png")
 plt.close()
 
-# ============================================================
-# STEP 12: Riepilogo
-# ============================================================
-print("\n[STEP 12] Riepilogo finale...")
+print("\nRiepilogo finale...")
 
 print("\n=== PAROLE PIU' VICINE A 'love' ===")
 if 'love' in model_70s.wv:
