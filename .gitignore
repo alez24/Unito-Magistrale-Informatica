@@ -47,3 +47,7 @@ wheels/
 *.swp
 *.swo
 *~
+
+# Cache locali (rigenerabili, troppo grandi per git / GitHub)
+TLN/Parte3DiCaro/scibert_embeddings_*.npy
+TLN/Parte3DiCaro/scibert_embeddings_*.meta.txt

@@ -152,7 +152,7 @@ L'analisi copre i seguenti aspetti:
   \item Classificazione di frasi tramite perplexity e log-likelihood.
 \end{enumerate}
 
-L'intero flusso sperimentale procede in tre fasi: i due corpus (Twitter e letterario) vengono puliti e tokenizzati separatamente, mantenendo ciascun tweet/frase come sequenza a sé (Sezione~\ref{sec:addestramento-lm} spiega perché questo passaggio è cruciale); le sequenze vengono usate per addestrare due coppie di modelli n-gram (MLE e Laplace) indipendenti; dai modelli addestrati si diramano infine i tre utilizzi a valle discussi nel resto della relazione: generazione di testo, classificazione di dominio tramite perplexity e classificazione tramite log-likelihood.
+L'intero flusso sperimentale procede in tre fasi: i due corpus (Twitter e letterario) vengono puliti e tokenizzati separatamente, mantenendo ciascun tweet/frase come sequenza a sé (Sezione~\ref{sec:addestramento-lm} approfondito nella sezione 5); le sequenze vengono usate per addestrare due coppie di modelli n-gram (MLE e Laplace) indipendenti; dai modelli addestrati si diramano infine i tre utilizzi a valle discussi nel resto della relazione: generazione di testo, classificazione di dominio tramite perplexity e classificazione tramite log-likelihood.
 
 % ============================================================
 \section{Background Teorico}
@@ -167,17 +167,17 @@ Un \textbf{N-gramma} è una sequenza contigua di $N$ token (parole) estratta da 
   \item \textbf{Trigramma} ($N=3$): tripletta di parole consecutive.
 \end{itemize}
 
-Gli N-grammi sono la base dei \textbf{modelli linguistici statistici}: stimano la probabilità di una parola dato il contesto delle $N{-}1$ parole precedenti.
+Gli N-grammi sono alla base dei \textbf{modelli linguistici statistici},stimanodo la probabilità di una parola dato il contesto delle $N{-}1$ parole precedenti.
 
 \subsection{Modello MLE (Maximum Likelihood Estimation)}
 
-Il modello MLE stima la probabilità condizionale con la frequenza relativa osservata nel corpus:
+Il modello MLE stima la probabilità condizionata alla frequenza relativa osservata nel corpus:
 
 \[
   P_{\text{MLE}}(w_i \mid w_{i-1}) = \frac{C(w_{i-1},\, w_i)}{C(w_{i-1})}
 \]
 
-dove $C(\cdot)$ indica il conteggio nel corpus. Il problema principale del MLE è che assegna probabilità \textbf{zero} a qualsiasi sequenza non vista durante il training: basta una parola fuori dal vocabolario per rendere l'intera frase impossibile secondo il modello.
+dove $C(\cdot)$ indica il conteggio nel corpus. Il problema principale del MLE è che assegna probabilità \textbf{zero} alle sequenze non viste nel training,è necessaria una singolaparola fuori dal vocabolario per rendere l'intera frase impossibile secondo il modello.
 
 \subsection{Smoothing di Laplace (Add-1)}
 
@@ -191,18 +191,18 @@ dove $|V|$ è la dimensione del vocabolario. In questo modo nessuna sequenza ha 
 
 \subsection{Perplexity}
 
-La \textbf{perplexity} misura quanto un modello è ``sorpreso'' da un testo di test. Un modello buono assegna alta probabilità al testo, producendo bassa perplexity.
+La \textbf{perplexity} misura quanto un modello è ``sorpreso'' da un testo di test.
 
 \[
   \text{PP}(W) = P(w_1 w_2 \cdots w_N)^{-\frac{1}{N}}
                = \left(\prod_{i=1}^{N} \frac{1}{P(w_i \mid w_{i-1})}\right)^{\frac{1}{N}}
 \]
 
-Più bassa è la perplexity, migliore è il modello per quel testo.
+Minore è la perplexity, migliore è il modello per quel testo.
 
 \subsection{Log-likelihood}
 
-La \textbf{log-likelihood} di una sequenza misura quanto il modello ``conosce'' quel testo. Si calcola come somma dei logaritmi delle probabilità dei singoli token:
+La \textbf{log-likelihood} di una sequenza misura quanto il modello ``conosce'' quel testo. Si calcola come somma dei logaritmi delle probabilità dati i singoli token:
 
 \[
   \ell(W) = \sum_{i=1}^{N} \log P(w_i \mid w_{i-1})
@@ -402,7 +402,7 @@ Il metodo \texttt{generate()} campiona parola per parola usando le probabilità 
 
 L'idea è usare la perplexity come classificatore: dato un testo, il modello che gli assegna \textbf{perplexity più bassa} è quello del dominio di appartenenza.
 
-Si usano 8 frasi di test (4 da Twitter, 4 letterarie) e si calcola la perplexity con entrambi i modelli Laplace. \texttt{perplexity()} di NLTK si aspetta in input una sequenza di n-grammi (non i token grezzi), quindi le frasi vengono prima riportate in bigrammi con padding tramite \texttt{pad\_both\_ends}. Poiché i vocabolari hanno dimensioni molto diverse, il verdetto si basa sulla perplexity normalizzata per la dimensione del vocabolario:
+Si usano 8 frasi di test (4 da Twitter, 4 letterarie) e si calcola la perplexity con entrambi i modelli Laplaciani. La Funzione \texttt{perplexity()} di NLTK si aspetta in input una sequenza di n-grammi (non i token grezzi), quindi le frasi vengono prima riportate in bigrammi con padding tramite \texttt{pad\_both\_ends}. Poiché i vocabolari hanno dimensioni molto diverse, il verdetto si basa sulla perplexity normalizzata per la dimensione del vocabolario:
 
 \begin{pylisting}[title={Classificazione tramite perplexity normalizzata}]
 def calcola_perplexity(modello, tokens, n=2):
@@ -425,7 +425,7 @@ for nome, frase in frasi_test.items():
 
 \begin{table}[H]
   \centering
-  \caption{Perplexity Laplace (non normalizzata) sulle 8 frasi di test}
+  \caption{Perplexity diLaplace (non normalizzata) sulle 8 frasi di test}
   \begin{tabular}{lrrc}
     \toprule
     \textbf{Frase} & \textbf{PP Twitter} & \textbf{PP Letterario} & \textbf{Verdetto} \\
@@ -479,7 +479,15 @@ for testo in testi_classificare:
     classifica_loglik(testo, modello_tweet_lp, modello_lett_lp)  # Laplace, non MLE
 \end{pylisting}
 
-\textbf{Nota su una correzione di correttezza}: in una prima versione \texttt{classifica\_loglik} veniva chiamato con i modelli MLE (\texttt{modello\_tweet}, \texttt{modello\_lett}), in contraddizione con la docstring della funzione, che assume uno smoothing di tipo Laplace. Con MLE, qualunque bigramma mai visto in training ha probabilità esattamente $0$, il floor manuale ($\log 10^{-10} \approx -23$) scatta e finisce per dominare l'intera somma: il classificatore diventava di fatto ``chi ha meno bigrammi mai visti vince'' invece di un confronto genuino di verosimiglianza. Usare i modelli Laplace (che non assegnano mai probabilità esattamente nulla) rende il floor un caso limite che in pratica non si attiva più. Si è inoltre normalizzato il punteggio dividendo per il numero di transizioni, per ottenere una log-likelihood media per token confrontabile anche tra frasi di lunghezza diversa.
+\textbf{Perché i modelli Laplace e la media per token.} Il classificatore
+usa i modelli Laplace, non MLE. Con MLE un bigramma mai visto in training
+ha probabilità esattamente $0$: scatterebbe il floor ($\log 10^{-10}
+\approx -23$), che pesa quanto $7$--$8$ bigrammi ordinari e finirebbe per
+decidere da solo il verdetto — il classificatore conterebbe i bigrammi
+sconosciuti invece di confrontare le verosimiglianze. Con Laplace la
+probabilità non è mai nulla e il floor non si attiva mai. Lo score è
+inoltre diviso per il numero di transizioni: una log-likelihood media per
+token è confrontabile anche fra frasi di lunghezza diversa.
 
 Il classificatore assegna il testo al modello con log-likelihood più alta (meno negativa). Rispetto alla perplexity normalizzata, questo approccio ha alcuni vantaggi metodologici:
 \begin{itemize}
