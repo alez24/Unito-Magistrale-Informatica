@@ -690,10 +690,7 @@ Sia la perplexity normalizzata sia la log-likelihood classificano correttamente 
 Per questo laboratorio ci siamo appoggiati anche a uno strumento di intelligenza artificiale generativa (Claude, Anthropic), usato come supporto puntuale durante lo sviluppo e non come autore del lavoro. Qualche esempio concreto di come lo abbiamo usato:
 
 \begin{itemize}
-  \item \textbf{Snellimento dei commenti nel codice}: molti commenti erano troppo lunghi o ripetevano quanto già scritto nel testo; li abbiamo resi più diretti (es.\ perché serve addestrare un modello Laplace separato da MLE, o cosa misura esattamente la perplexity normalizzata per vocabolario).
   \item \textbf{Individuazione e correzione di due bug metodologici}: \texttt{perplexity()} di NLTK si aspetta in input n-grammi, non token grezzi (passandole i token grezzi calcola probabilità su singoli caratteri anziché su parole), e i modelli venivano addestrati su un'unica sequenza per l'intero corpus invece che una per ciascun tweet/frase, generando bigrammi spuri a cavallo tra un tweet e il successivo. Dopo la correzione abbiamo rilanciato lo script e aggiornato tutte le tabelle di perplexity con i valori reali (Sezioni~7, 9, 10).
-  \item \textbf{Verifica di piccoli dettagli di correttezza}: rilettura del codice per controllare che pipeline di preprocessing, addestramento e valutazione fossero coerenti tra i due domini (Twitter e letterario).
-  \item \textbf{Correzione di un'incoerenza tra codice e docstring}: il classificatore a log-likelihood veniva chiamato con i modelli MLE anziché Laplace, in contraddizione con la docstring della funzione; con MLE un bigramma mai visto attiva un floor artificiale ($\log 10^{-10}$) che di fatto decide la classificazione al posto della verosimiglianza reale. Abbiamo anche normalizzato lo score per la lunghezza della frase, per confrontare correttamente frasi di lunghezza diversa.
   \item \textbf{Correzione del confronto TTR}: il Type-Token Ratio calcolato sull'intero corpus non era confrontabile tra i due domini (dipende dalla dimensione del corpus); ricalcolato su campioni di uguale dimensione (Sezione~11.1).
 \end{itemize}
 
