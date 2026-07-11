@@ -1,0 +1,26 @@
+n_docs,query,p5_base,p5_hyb
+1000,What is BERT and how does self-attention work?,0.0,0.6
+1000,How does word2vec represent word meaning?,0.2,0.4
+1000,What are the main challenges in machine translation?,0.2,0.4
+1000,How does topic modeling work?,0.0,0.4
+1000,What is named entity recognition?,0.4,0.6
+5000,What is BERT and how does self-attention work?,0.2,0.4
+5000,How does word2vec represent word meaning?,0.2,0.8
+5000,What are the main challenges in machine translation?,0.4,0.8
+5000,How does topic modeling work?,0.0,0.4
+5000,What is named entity recognition?,0.6,1.0
+15000,What is BERT and how does self-attention work?,0.0,0.4
+15000,How does word2vec represent word meaning?,0.4,0.6
+15000,What are the main challenges in machine translation?,0.4,0.6
+15000,How does topic modeling work?,0.0,0.4
+15000,What is named entity recognition?,0.2,0.8
+25000,What is BERT and how does self-attention work?,0.2,0.4
+25000,How does word2vec represent word meaning?,0.4,0.4
+25000,What are the main challenges in machine translation?,0.2,0.8
+25000,How does topic modeling work?,0.0,0.4
+25000,What is named entity recognition?,0.2,0.8
+44949,What is BERT and how does self-attention work?,0.0,0.4
+44949,How does word2vec represent word meaning?,0.0,0.4
+44949,What are the main challenges in machine translation?,0.0,0.4
+44949,How does topic modeling work?,0.0,0.4
+44949,What is named entity recognition?,0.2,0.8
