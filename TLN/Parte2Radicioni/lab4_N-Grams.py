@@ -1,7 +1,5 @@
-# ============================================================
 # LAB 4 - Modeling social media and literary language with N-grams
 # TLN - Daniele Radicioni, UNITO
-# ============================================================
 
 import nltk
 import re
@@ -30,9 +28,6 @@ from nltk.corpus import twitter_samples, gutenberg, stopwords
 
 print("Import completati!")
 
-# ============================================================
-# STEP 1: Carica i dati
-# ============================================================
 # due domini a confronto: social (breve/informale) vs letterario (lungo/formale)
 tweets_pos = twitter_samples.strings('positive_tweets.json')
 tweets_neg = twitter_samples.strings('negative_tweets.json')
@@ -44,9 +39,6 @@ print(f"Tweet caricati: {len(tweets_raw)}")
 print(f"Esempio positivo: {tweets_pos[0]}")
 print(f"Esempio negativo: {tweets_neg[0]}")
 
-# ============================================================
-# STEP 2: Pulizia
-# ============================================================
 def pulisci_tweet(testo):
     """Rimuove URL, menzioni e hashtag, che distorcerebbero le frequenze degli n-grammi."""
     testo = re.sub(r'http\S+', '', testo)
@@ -69,9 +61,6 @@ print("\n=== PULIZIA ===")
 print(f"Tweet PRIMA: {tweets_raw[0]}")
 print(f"Tweet DOPO:  {tweets_puliti[0]}")
 
-# ============================================================
-# STEP 3: Tokenizzazione
-# ============================================================
 testo_tweet_unito = ' '.join(tweets_puliti)
 tokens_tweet = word_tokenize(testo_tweet_unito)
 tokens_lett  = word_tokenize(testo_lett_pulito)
@@ -92,9 +81,6 @@ print(f"Token Letterario:         {len(tokens_lett)}")
 print(f"Parole uniche Twitter:    {len(vocab_tweet_set)}")
 print(f"Parole uniche Letterario: {len(vocab_lett_set)}")
 
-# ============================================================
-# STEP 4: Stopwords removal
-# ============================================================
 stop = set(stopwords.words('english'))
 
 tokens_tweet_filtrati = [t for t in tokens_tweet if t not in stop]
@@ -112,9 +98,6 @@ print("\nLETTERARIO (top 10):")
 for coppia, count in bi_lett_filtrati.most_common(10):
     print(f"  {str(coppia):<35} → {count} volte")
 
-# ============================================================
-# STEP 5: Analisi N-gram
-# ============================================================
 # stessa estrazione sul testo integrale, per confrontare lo stile sintattico
 bi_tweet  = Counter(ngrams(tokens_tweet, 2))
 bi_lett   = Counter(ngrams(tokens_lett,  2))
@@ -137,9 +120,6 @@ print("\nLETTERARIO:")
 for t, c in tri_lett.most_common(10):
     print(f"  {str(t):<42} → {c} volte")
 
-# ============================================================
-# STEP 6: Addestramento modelli
-# ============================================================
 print("\n=== ADDESTRAMENTO MODELLI ===")
 n = 2  # ordine del modello: n=2 -> bigrammi, P(parola | 1 parola di contesto)
 
@@ -176,9 +156,6 @@ print(f"  P('been'  | 'had')  = {modello_lett.score('been',  ['had']):.4f}")
 print(f"  P('love'  | 'i')    = {modello_lett.score('love',  ['i']):.4f}")
 print(f"  P('wait'  | 'cant') = {modello_lett.score('wait',  ['cant']):.4f}")
 
-# ============================================================
-# STEP 7: Generazione testo
-# ============================================================
 print("\n=== GENERAZIONE TESTO (MLE) ===")
 
 def genera_testo(modello, n_parole=30):
@@ -214,9 +191,6 @@ for seed in [42, 99, 7, 123]:
     print(f"    TWITTER:    {' '.join(tw_filt)}")
     print(f"    LETTERARIO: {' '.join(lt_filt)}")
 
-# ============================================================
-# STEP 8: Perplexity cross-domain
-# ============================================================
 print("\n=== PERPLEXITY CROSS-DOMAIN ===")
 
 def calcola_perplexity(modello, tokens, n=2):
@@ -265,9 +239,6 @@ for nome, frase in frasi_test.items():
 
 print(f"\nAccuratezza classificatore: {corretti}/{totale} = {corretti/totale*100:.0f}%")
 
-# ============================================================
-# STEP 9: Classificatore con log-likelihood
-# ============================================================
 print("\n=== CLASSIFICATORE CON LOG-LIKELIHOOD ===")
 print("Log-likelihood: più alta = il modello conosce meglio questo testo\n")
 
@@ -318,9 +289,6 @@ testi_classificare = [
 for testo in testi_classificare:
     classifica_loglik(testo, modello_tweet_lp, modello_lett_lp)
 
-# ============================================================
-# STEP 10: MLE vs Laplace
-# ============================================================
 print("\n=== MLE vs LAPLACE ===")
 
 # Confronto diretto sullo stesso caso limite: una parola mai vista in training.
@@ -337,9 +305,6 @@ pp_lap = calcola_perplexity(modello_tweet_lp, frase_rara, n)  # Laplace regge il
 print(f"\nPerplexity MLE     su frase con parola rara: {pp_mle}")
 print(f"Perplexity Laplace su frase con parola rara: {pp_lap:.2f}")
 
-# ============================================================
-# STEP 11: Confronto n=1,2,3
-# ============================================================
 print("\n=== CONFRONTO n=1, n=2, n=3 ===")
 
 frase_tw = word_tokenize("i love you so much thank you")   # tipica frase Twitter
@@ -358,9 +323,6 @@ for n_test in [1, 2, 3]:
     print(f"  PP su frase Twitter:    {pp_tw:.2f}")
     print(f"  PP su frase Letterario: {pp_lt:.2f}")
 
-# ============================================================
-# STEP 12: Analisi linguistica
-# ============================================================
 print("\n=== ANALISI LINGUISTICA ===")
 
 # TTR = parole uniche / parole totali: più alto = vocabolario più vario2
@@ -388,9 +350,6 @@ print(f"  Tweet:            {media_tw:.1f} parole")
 print(f"  Frase letteraria: {media_lt:.1f} parole")
 print(f"  → Frasi letterarie {media_lt - media_tw:.1f} parole più lunghe in media")
 
-# ============================================================
-# STEP 13: Grafici (Sostituzione Avanzata)
-# ============================================================
 print("\n=== GENERAZIONE GRAFICI AVANZATI ===")
 try:
     c_tw = '#2980b9'
@@ -498,9 +457,7 @@ try:
 
 except Exception as e:
     print(f"Errore durante la generazione del grafico dello Step 13: {e}")
-# ============================================================
-# STEP 14: Riepilogo
-# ============================================================
+
 print("\n=== RIEPILOGO FINALE ===")
 
 print(f"\nDataset:")
