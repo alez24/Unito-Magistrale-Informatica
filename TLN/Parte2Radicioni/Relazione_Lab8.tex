@@ -516,4 +516,17 @@ Interrogando lo spazio vettoriale su \textbf{singole parole isolate} (Sezioni~\r
 
 Il laboratorio ha mostrato come Word2Vec, su testi musicali, catturi differenze semantiche e culturali tra due ere, con affidabilit\`a maggiore su statistiche aggregate che su singole parole isolate. I cluster K-Means e t-SNE completano l'analisi mostrando una struttura legata soprattutto alla grammatica, non ai temi. Il risultato pi\`u solido -- e pi\`u sorprendente -- \`e che ci\`o che resta stabile nel lessico musicale a 30 anni di distanza non sono i temi, ma le \textbf{frasi fisse} della lingua (\textit{brand new}, \textit{every single}, \textit{sealed fate}). Questo tipo di analisi, applicabile a qualsiasi corpus che si estende nel tempo, mostra il potenziale delle rappresentazioni distribuzionali per lo studio dell'evoluzione del linguaggio nel tempo.
 
+% ============================================================
+\section{Dichiarazione sui Contributi di IA}
+% ============================================================
+
+Per questo laboratorio ci siamo appoggiati anche a uno strumento di intelligenza artificiale generativa (Claude, Anthropic), come supporto puntuale durante lo sviluppo:
+
+\begin{itemize}[itemsep=2pt]
+  \item \textbf{Bug Skip-gram vs.\ CBOW}: mancava \texttt{sg=1} esplicito, Gensim addestrava silenziosamente CBOW nonostante testo e relazione dichiarassero Skip-gram; corretto.
+  \item \textbf{Riproducibilit\`a}: con \texttt{workers=4} il training non era bit-esatto a parit\`a di seed; corretto con \texttt{workers=1}. K-Means produceva occasionalmente un cluster singoletto; risolto normalizzando i vettori a norma unitaria.
+  \item \textbf{Secondo bug di riproducibilit\`a}: la top-30 di Sezione~\ref{sec:vocab-shift} aveva un ordine dipendente da \texttt{PYTHONHASHSEED}, quindi cambiava a ogni esecuzione pur restando identico il modello; corretto ordinando esplicitamente le liste derivate da insiemi.
+  \item \textbf{Lettura dei risultati}: dopo il fix, il top-30 per cambiamento di contesto \`e risultato dominato dalle parole pi\`u frequenti del corpus, le stesse ispezionate in Sezione~\ref{sec:parole-simili} -- un collegamento tra le due sezioni non ovvio a prima vista, che rafforza invece di contraddire l'argomento centrale sul rumore statistico.
+\end{itemize}
+
 \end{document}
