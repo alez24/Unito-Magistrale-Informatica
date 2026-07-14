@@ -61,11 +61,10 @@ print("\n=== PULIZIA ===")
 print(f"Tweet PRIMA: {tweets_raw[0]}")
 print(f"Tweet DOPO:  {tweets_puliti[0]}")
 
-testo_tweet_unito = ' '.join(tweets_puliti)
+testo_tweet_unito = ' '.join(tweets_puliti) 
 tokens_tweet = word_tokenize(testo_tweet_unito)
 tokens_lett  = word_tokenize(testo_lett_pulito)
-
-vocab_tweet_set = set(tokens_tweet)
+vocab_tweet_set = set(tokens_tweet) 
 vocab_lett_set  = set(tokens_lett)
 
 # sequenze separate (un tweet/una frase = una sequenza) per l'addestramento: servono
