@@ -53,6 +53,7 @@ def pulisci_letterario(testo):
     testo = testo.lower().strip()
     return testo
 
+
 tweets_puliti     = [pulisci_tweet(t) for t in tweets_raw]
 tweets_puliti     = [t for t in tweets_puliti if len(t) > 0]  # scarta i tweet svuotati dalla pulizia (es. solo URL/menzioni)
 testo_lett_pulito = pulisci_letterario(testo_letterario_raw)
@@ -61,11 +62,14 @@ print("\n=== PULIZIA ===")
 print(f"Tweet PRIMA: {tweets_raw[0]}")
 print(f"Tweet DOPO:  {tweets_puliti[0]}")
 
+
 testo_tweet_unito = ' '.join(tweets_puliti) 
 tokens_tweet = word_tokenize(testo_tweet_unito)
 tokens_lett  = word_tokenize(testo_lett_pulito)
 vocab_tweet_set = set(tokens_tweet) 
 vocab_lett_set  = set(tokens_lett)
+
+
 
 # sequenze separate (un tweet/una frase = una sequenza) per l'addestramento: servono
 # a non far attraversare i bigrammi tra un tweet/frase e il successivo
@@ -179,7 +183,7 @@ print(f"  {genera_testo(modello_lett, 40)}")
 
 # seed diversi = campioni diversi dello stesso stile
 print("\nConfronto generazione per dominio:")
-for seed in [42, 99, 7, 123]:
+for seed in [42, 99, 7, 123]: 
     tw_raw  = modello_tweet.generate(15, random_seed=seed)
     lt_raw  = modello_lett.generate(15, random_seed=seed)
 
