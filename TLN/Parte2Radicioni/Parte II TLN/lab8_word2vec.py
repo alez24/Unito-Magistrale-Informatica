@@ -99,7 +99,7 @@ def pulisci_testo(testo):
 df_70s['tokens']   = df_70s['text'].apply(pulisci_testo)
 df_2000s['tokens'] = df_2000s['text'].apply(pulisci_testo)
 
-df_70s   = df_70s[df_70s['tokens'].map(len) > 5]#canzoni con 5 o più token rimasti dopo la pulizia
+df_70s   = df_70s[df_70s['tokens'].map(len) > 5]
 df_2000s = df_2000s[df_2000s['tokens'].map(len) > 5]
 
 tutti_70s   = [t for tok in df_70s['tokens']   for t in tok]
@@ -127,7 +127,7 @@ print("\nAddestramento Word2Vec...")
 
 params = dict(
     sg          = 1,     # Skip-gram (il default di gensim sarebbe CBOW, sg=0)
-    vector_size = 100,  
+    vector_size = 100,
     window      = 5,
     min_count   = 3,
     workers     = 1,     # riproducibilita' bit-esatta: con workers>1 l'ordine di
