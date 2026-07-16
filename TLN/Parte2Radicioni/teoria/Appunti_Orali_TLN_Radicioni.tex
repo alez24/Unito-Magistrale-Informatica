@@ -1,0 +1,305 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\geometry{a4paper,margin=2.2cm}
+\usepackage{enumitem}
+\setlist{itemsep=2pt,topsep=3pt,parsep=0pt}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{titlesec}
+\usepackage{mdframed}
+\usepackage{hyperref}
+
+\definecolor{headblue}{RGB}{31,73,125}
+\definecolor{formbg}{RGB}{234,246,255}
+\definecolor{formline}{RGB}{31,120,180}
+\definecolor{exbg}{RGB}{240,250,240}
+\definecolor{exline}{RGB}{60,140,60}
+
+\titleformat{\section}[block]{\normalfont\Large\bfseries\color{headblue}}{\thesection}{0.6em}{}[\vspace{-4pt}\rule{\linewidth}{0.8pt}]
+\titleformat{\subsection}{\normalfont\bfseries\large}{\thesubsection}{0.5em}{}
+\titlespacing{\section}{0pt}{10pt}{4pt}
+\titlespacing{\subsection}{0pt}{8pt}{3pt}
+
+\newmdenv[backgroundcolor=formbg,linecolor=formline,linewidth=1.1pt,
+  innertopmargin=5pt,innerbottommargin=5pt,innerleftmargin=7pt,innerrightmargin=7pt,
+  skipabove=6pt,skipbelow=6pt,nobreak=true]{formulabox}
+\newcommand{\formula}[2]{\begin{formulabox}\textbf{#1}\\[3pt]#2\end{formulabox}}
+
+\newmdenv[backgroundcolor=exbg,linecolor=exline,linewidth=0.9pt,
+  innertopmargin=4pt,innerbottommargin=4pt,innerleftmargin=7pt,innerrightmargin=7pt,
+  skipabove=5pt,skipbelow=6pt,nobreak=true]{esbox}
+\newcommand{\es}[1]{\begin{esbox}\textit{Esempio:} #1\end{esbox}}
+
+\hypersetup{colorlinks=true,linkcolor=headblue,urlcolor=headblue,
+  pdftitle={TLN -- Appunti orali compatti (Radicioni)},pdfauthor={}}
+
+\title{\vspace{-1.5cm}{\Large\bfseries Tecnologie del Linguaggio Naturale}\\[0.2cm]
+  {\large Appunti compatti per l'orale --- Prof.\ Daniele Radicioni}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+% ================================================================
+\section{Semantica Lessicale}
+% ================================================================
+
+La \textbf{semantica lessicale} studia il significato delle parole e le relazioni fra loro. Le lingue naturali sono \textbf{deformabili}: a differenza di matematica o chimica, dove i simboli hanno un significato fisso, il significato di una parola dipende dal contesto e si estende per polisemia e metafora. Non basta quindi un dizionario di forme: serve studiare la \emph{struttura} del significato.
+
+\begin{itemize}
+  \item \textbf{Ontologia}: due letture utili. (1) filosofica -- studio dell'essere e delle categorie fondamentali. (2) come \textbf{concettualizzazione} -- la specifica esplicita di come un agente percepisce e organizza un pezzo di realt\`a, indipendentemente dal vocabolario usato: situazioni descritte con parole diverse possono condividere la stessa concettualizzazione.
+  \item \textbf{Relazioni lessicali}: sinonimia (stesso significato); iponimia/iperonimia (sottoclasse/superclasse); meronimia/olonimia (parte-di/tutto); antonimia (significato opposto). Sono la spina dorsale di WordNet.
+  \item \textbf{Il lessico non \`e una tassonomia pulita}: c'\`e \textbf{sovrapposizione dei sensi} (i quasi-sinonimi, che in un'ontologia sarebbero mutuamente esclusivi), ci sono \textbf{buchi lessicali} (concetti senza una parola dedicata, serve una perifrasi), e i \textbf{lessici tecnici} sono invece molto pi\`u vicini all'ontologia del dominio, perch\'e i termini sono pensati apposta per corrispondere alle categorie.
+  \item \textbf{Ontologie fondazionali} (valide trasversalmente in domini diversi): DOLCE, SUMO, CYC.
+\end{itemize}
+
+\subsection*{DOLCE}
+\begin{itemize}
+  \item \textbf{Endurant}: presente per intero in ogni istante della sua esistenza, e pu\`o \emph{cambiare} nel tempo. Un oggetto fisico esiste sempre per intero e pu\`o assumere propriet\`a diverse.
+  \item \textbf{Perdurant}: si estende nel tempo, \`e presente solo \emph{parzialmente} in ogni istante (a met\`a del suo svolgersi \`e avvenuto solo in parte), e per questo non ``cambia'' propriamente: la sua collocazione spazio-temporale \`e gi\`a determinata dagli endurant che vi partecipano.
+  \item \textbf{Partecipazione}: la relazione che lega i due -- un endurant esiste partecipando a un perdurant.
+  \item \textbf{Quality}: propriet\`a misurabile di un individuo (es.\ il colore), da tenere distinta dal suo \emph{valore} (il particolare rosso di quella rosa).
+  \item \textbf{Criteri di identit\`a}: condizioni necessarie da condividere perch\'e $A$ sia sottoclasse di $B$.
+\end{itemize}
+\es{Una mela verde che diventa rossa \`e un endurant: cambia propriet\`a nel tempo. Una corsa non ``cambia'', semplicemente si estende nel tempo: \`e un perdurant.}
+
+% ================================================================
+\section{Knowledge Representation}
+% ================================================================
+
+Un sistema di conoscenza = \textbf{linguaggio di rappresentazione} (sintassi per codificare l'informazione) + \textbf{regole/operazioni} per manipolarlo. La sola logica proposizionale/predicativa non basta: non permette di aggregare in un unico blocco le formule relative allo stesso oggetto.
+
+\subsection*{Reti semantiche}
+Grafo: nodi = concetti, archi = relazioni. Relazione chiave: \textbf{isA} (eredit\`a per transitivit\`a).
+\begin{itemize}
+  \item \textbf{Grafo relazionale}: sottoinsieme del calcolo dei predicati (archi = predicati, nodi = termini). Limiti: la congiunzione \`e solo implicita, disgiunzione/implicazione/quantificazione universale sono difficili da esprimere, e le relazioni restano sempre binarie.
+  \item \textbf{Reti proposizionali}: i nodi possono essere intere proposizioni, quindi si pu\`o esprimere la \textbf{negazione} e, via De Morgan, anche la \textbf{disgiunzione}.
+\end{itemize}
+
+\subsection*{Eredit\`a delle propriet\`a}
+Le propriet\`a di un nodo valgono anche per i nodi sottostanti nella gerarchia isA: questo d\`a \textbf{economia di rappresentazione} (non serve ripetere ogni propriet\`a a ogni livello) e \textbf{manutenzione semplice}. Le eccezioni si gestiscono con la \textbf{validit\`a per default}: l'eccezione, essendo pi\`u vicina al nodo, prevale sul default ereditato dall'alto.
+\es{``Gli uccelli volano'' \`e il default, ma ``il pinguino non vola'' \`e un'eccezione specifica che prevale.}
+
+\textbf{Ereditariet\`a multipla} ($C$ isA $A$ e $C$ isA $B$): la struttura non \`e pi\`u un albero ma un grafo, la ricerca passa da lineare a esponenziale, e in caso di conflitto \textbf{non esiste un criterio generale} per risolverlo -- dipende dal tipo di visita, in profondit\`a o in ampiezza.
+
+\formula{Nixon Diamond (caso da manuale)}{Nixon \`e quacchero (isA $\to$ pacifista) \emph{e} repubblicano (isA $\to$ non-pacifista). Ricerca in profondit\`a: risultato arbitrario, dipende dall'ordine di visita. Ricerca in ampiezza: vince il cammino pi\`u corto. Via d'uscita pi\`u onesta: considerare la rete \textbf{ambigua} (\emph{dissonanza cognitiva}) invece di forzare un'unica risposta.}
+
+C'\`e un problema strutturale in pi\`u: le reti semantiche non distinguono \textbf{individuo} da \textbf{classe} (isA usato sia per appartenenza sia per inclusione), quindi non si distingue una propriet\`a vera per tutti i membri da una propriet\`a vera della classe come tale (``gli elefanti sono numerosi'' non vuol dire che ogni elefante sia numeroso).
+
+\subsection*{Frame (Minsky, 1975)}
+Struttura che rappresenta conoscenza generale su situazioni stereotipate, recuperata dalla memoria e adattata al caso specifico. Ha un nome univoco e degli \textbf{slot} (con eventuale \textbf{valore di default}), riempiti da procedure \emph{if-needed} (calcolano il valore solo quando serve) o \emph{if-added} (scattano quando lo slot viene riempito).
+\es{Frame del ristorante: ci aspettiamo tavoli, un cameriere, un conto -- anche senza esserci mai stati. Se aprendo la porta trovassimo un palombaro, la sorpresa nasce dalla violazione del frame.}
+
+\begin{itemize}
+  \item \textbf{Script}: struttura di livello pi\`u alto che collega intere sequenze di frasi (es.\ ``andare al ristorante''). Senza uno script condiviso, un testo pu\`o risultare incomprensibile anche se sintatticamente corretto.
+  \item \textbf{Livello di base}: la categorizzazione pi\`u naturale per un parlante.
+  \item \textbf{Superordinato / subordinato}: generalizzazioni e specializzazioni rispetto al livello di base.
+  \item \textbf{Prototipi}: i membri pi\`u tipici di una categoria; i nuovi casi vengono giudicati per somiglianza col prototipo.
+\end{itemize}
+\es{Il passero \`e un rappresentante migliore di ``uccello'' rispetto allo struzzo, pur essendo entrambi uccelli a pieno titolo.}
+
+\subsection*{Teorie del significato e della categorizzazione}
+\begin{itemize}
+  \item \textbf{Teoria classica} (Aristotele): condizioni necessarie e sufficienti, confini netti, nessun membro pi\`u tipico di un altro.
+  \item \textbf{Teoria dei prototipi} (Rosch): un concetto \`e rappresentato da un membro tipico; i nuovi casi si giudicano per somiglianza col prototipo.
+  \item \textbf{Teoria degli esempi}: il concetto non \`e un prototipo astratto ma l'insieme stesso degli esempi concreti gi\`a visti.
+  \item \textbf{Theory-theory}: i concetti sono incastonati in una teoria ingenua pi\`u ampia sul mondo (``uccello'' implica gi\`a sapere che vola, che fa il nido, che depone le uova).
+  \item \textbf{Dual process}: Sistema 1 (implicito, veloce, categorizzazione \textbf{non monotona} con eccezioni) vs.\ Sistema 2 (esplicito, lento, categorizzazione \textbf{monotona}, logicamente coerente).
+\end{itemize}
+
+\subsection*{Il significato delle parole}
+\begin{itemize}
+  \item \textbf{Ambiguit\`a contrastativa / omonimia}: sensi scollegati che condividono per caso la stessa forma (la ``riva'' del fiume e la voce del verbo ``arrivare'').
+  \item \textbf{Ambiguit\`a complementare / polisemia}: sensi correlati fra loro (``giornale'' oggetto fisico vs.\ istituzione). I verbi sono pi\`u polisemici dei nomi.
+  \item \textbf{Teoria referenziale}: il significato \`e la capacit\`a di riferirsi alla realt\`a (denotazione).
+  \item \textbf{Teoria mentalista}: il riferimento \`e mediato dal concetto nella mente del parlante, quindi si pu\`o parlare anche di cose astratte o immaginarie.
+  \item \textbf{Teoria strutturale}: il significato \`e il valore relazionale di una parola rispetto alle altre dello stesso campo semantico.
+  \item \textbf{Teoria distribuzionale}: il significato \`e l'insieme dei contesti in cui la parola compare -- \`e l'idea alla base di VSM e word embeddings.
+\end{itemize}
+
+\formula{Metafora geometrica del significato}{I significati sono punti in uno spazio multidimensionale: punti vicini = significati simili. \`E l'intuizione alla base della \textbf{cosine similarity} (Cap.~6).}
+
+Il significato di una frase nasce dal significato delle parti (\textbf{composizionalit\`a}) -- ma non sempre: idiomi, metafore e polisemia sono eccezioni. Meccanismi pi\`u fini di interazione semantica:
+\begin{itemize}
+  \item \textbf{Co-composizione}: il complemento specializza il significato del verbo. ``Tagliare i capelli'' = accorciare, ``tagliare il pane'' = affettare, ``tagliare l'erba'' = falciare -- stesso verbo, accezioni diverse selezionate dal complemento.
+  \item \textbf{Type coercion}: forzatura di tipo semantico.
+  \item \textbf{Legamento selettivo}: l'aggettivo seleziona solo una parte del significato del nome. ``Computer veloce'' riguarda la velocit\`a di calcolo, non le dimensioni fisiche.
+\end{itemize}
+
+% ================================================================
+\section{WordNet, FrameNet, WSD}
+% ================================================================
+
+\textbf{WordNet} (Princeton, 1985): database lessicale online, ispirato alla psicolinguistica della memoria lessicale. Organizza il lessico per \emph{significato}, non alfabeticamente. 4 categorie: nomi (organizzati in vera gerarchia), verbi (relazioni non gerarchiche), aggettivi, avverbi.
+
+\begin{itemize}
+  \item \textbf{Matrice lessicale}: colonne = \emph{word form}, righe = \emph{word meaning}. Stessa colonna $\to$ \textbf{polisemia}; stessa riga $\to$ \textbf{sinonimia}.
+  \item \textbf{Synset}: insieme di forme che esprimono lo stesso significato; se l'elenco dei sinonimi non basta a chiarire il senso, interviene la \textbf{gloss} (la definizione testuale).
+  \item \textbf{Relazioni semantiche} (fra synset, non fra parole): sinonimia; \textbf{antonimia} (relazione fra le \emph{forme}, non fra i concetti -- ``ricco''/``povero'' s\`i, ma ``ascesa''/``caduta'' no, pur essendo concettualmente opposte); \textbf{iponimia} (ako, transitiva asimmetrica); \textbf{meronimia} (hasa, transitiva ma pi\`u limitata).
+  \item \textbf{Nomi}: 25 gerarchie radice (``punti iniziali''), con un \textbf{livello di base} che concentra la maggior parte delle caratteristiche. 3 tipi: \textbf{attributi} (aggettivi), \textbf{parti} (meronimia), \textbf{funzioni} (verbi). L'esperimento di Collins\&Quillian mostra tempi di reazione pi\`u veloci per propriet\`a dirette (``il canarino canta'') che ereditate (``il canarino vola'', bisogna risalire a ``uccello'').
+  \item \textbf{Verbi}: pochi ma molto polisemici, senza vera iponimia; al suo posto la \textbf{troponimia} (un modo particolare di compiere la stessa azione).
+\end{itemize}
+\es{``Sussurrare'' \`e un troponimo di ``parlare'': \`e un modo specifico di parlare.}
+
+\subsection*{Conceptual similarity}
+\formula{Wu \& Palmer}{$cs(s_1,s_2) = \dfrac{2\cdot depth(LCS)}{depth(s_1)+depth(s_2)}$ \quad (LCS = Lowest Common Subsumer, il primo antenato comune)}
+\formula{Shortest Path}{$sim_{path}(s_1,s_2) = 2\cdot depthMax - len(s_1,s_2)$}
+\formula{Leacock \& Chodorow}{$sim_{LC}(s_1,s_2) = -\log\dfrac{len(s_1,s_2)}{2\cdot depthMax}$}
+\formula{Da sensi a termini}{$sim(w_1,w_2) = \max\limits_{c_1\in sensi(w_1),\,c_2\in sensi(w_2)} sim(c_1,c_2)$ -- si prende il massimo su tutte le combinazioni di sensi: i due termini si disambiguano a vicenda.}
+
+\subsection*{Word Sense Disambiguation (WSD)}
+Trovare il senso corretto di una parola polisemica dato il contesto.
+\begin{itemize}
+  \item \textbf{Lexical sample}: si disambiguano poche parole target selezionate. \textbf{All-words}: si disambigua ogni parola del testo.
+  \item \textbf{Feature collocazionali}: la posizione delle parole di contesto conta. \textbf{Feature bag-of-words}: conta solo presenza/assenza.
+\end{itemize}
+
+\formula{Algoritmo di Lesk}{Confronta l'insieme di parole del contesto con la \emph{signature} (parole della gloss + esempi) di ciascun senso candidato; vince il senso con overlap massimo.}
+\es{``The bank can guarantee deposits\ldots'' -- il contesto (\textit{deposits, invests, mortgage}) ha pi\`u overlap con la gloss di $bank_1$ (istituto finanziario) che con $bank_2$ (sponda del fiume) $\to$ si sceglie $bank_1$.}
+
+\textbf{Corpus Lesk}: arricchisce la signature con parole osservate in un corpus annotato, pesate con \textbf{IDF} $= \log\frac{N_{doc}}{n_{d_i}}$ invece che con conteggio semplice (le parole funzionali, molto frequenti ovunque, pesano poco).
+
+\subsection*{FrameNet}
+Collega le parole ai frame che evocano, con evidenze da corpus reali.
+\begin{itemize}
+  \item \textbf{Unit\`a lessicale} (LU): coppia parola+senso, non solo parola. In WordNet sensi diversi $\to$ synset diversi; in FrameNet sensi diversi $\to$ spesso frame diversi.
+  \item \textbf{Frame Element} (FE): i ruoli semantici propri del frame.
+\end{itemize}
+\es{Frame \textsc{Revenge}: FE = \emph{Avenger} (chi si vendica), \emph{Offender} (il colpevole), \emph{Injury} (il danno).}
+
+\textbf{Predicati} (evocano il frame, se ne cercano gli argomenti) vs.\ \textbf{filler} (riempiono un ruolo semantico). \textbf{Valenza} = numero/tipo di argomenti di un predicato (impersonale, intransitiva, transitiva, ditransitiva, tritransitiva).
+
+% ================================================================
+\section{NLTK e spaCy}
+% ================================================================
+
+\begin{itemize}
+  \item \textbf{Tokenizzazione}: separa il testo in unit\`a (parole/frasi). Primo passo di ogni pipeline.
+  \item \textbf{Stopword filtering}: rimuove parole a basso contenuto semantico (articoli, preposizioni) -- ma non \`e mai neutro, va calibrato sul task.
+  \item \textbf{Stemming}: riduce alla radice per regole (\textit{helping}, \textit{helper} $\to$ \textit{help}). Errori tipici: \textbf{understemming} (parole imparentate restano diverse) e \textbf{overstemming} (parole non imparentate diventano uguali).
+  \item \textbf{Lemmatizzazione}: riduce alla forma-dizionario (\textbf{lemma}), usando il vocabolario reale, non solo regole come lo stemming. Migliora molto se si fornisce il PoS: \textit{leaves} $\to$ \textit{leaf} (nome) o \textit{leave} (verbo) a seconda del contesto.
+  \item \textbf{PoS tagging}: etichetta ogni parola con la parte del discorso (Penn Treebank: DT, NNP, VBD, \ldots).
+  \item \textbf{NER}: individua frasi nominali che si riferiscono a entit\`a (persone, organizzazioni, luoghi, date\ldots) e ne determina il tipo.
+\end{itemize}
+
+\textbf{spaCy} vs.\ NLTK: pi\`u orientato alla produzione. Offre in pi\`u \textbf{entity linking} (entit\`a $\to$ ID in una KB esterna), \textbf{similarity}, \textbf{text classification}, \textbf{matching a regole} (come regex ma su token). La pipeline (\texttt{nlp(testo)}) restituisce un \texttt{Doc} con tutte le annotazioni; i componenti si possono \textbf{disable} (caricati ma non eseguiti) o \textbf{exclude} (non caricati) per velocit\`a.
+
+% ================================================================
+\section{Modelli di Linguaggio e N-grammi}
+% ================================================================
+
+Un \textbf{Language Model} assegna una probabilit\`a a una sequenza di parole. Utile per traduzione, correzione ortografica, speech recognition.
+
+\formula{Regola a catena}{$P(w_1,\ldots,w_N) = \prod_{i=1}^{N} P(w_i \mid w_{1:i-1})$}
+
+Calcolare esattamente ogni fattore \`e intrattabile su sequenze lunghe, quindi si usa l'\textbf{assunzione di Markov}: la probabilit\`a della parola successiva dipende solo da un numero fisso di parole precedenti, non da tutta la storia.
+
+\formula{Assunzione di Markov (bigramma)}{$P(w_i \mid w_{1:i-1}) \approx P(w_i \mid w_{i-1})$, quindi $P(w_{1:n}) \approx \prod_i P(w_i\mid w_{i-1})$}
+\formula{MLE (stima per conteggio)}{$P(w_i \mid w_{i-1}) = \dfrac{C(w_{i-1}w_i)}{C(w_{i-1})}$}
+
+Si usano \textbf{log-probabilit\`a} (somma invece di prodotto) per evitare underflow numerico: $\log(p_1\cdot p_2)=\log p_1+\log p_2$.
+
+\subsection*{Valutazione}
+\textbf{Estrinseca}: si misura l'effetto sull'applicazione finale. \textbf{Intrinseca}: si misura il modello da solo, su un test set separato dal training.
+
+\formula{Perplexity}{$\mathrm{PPL}(LM,W) = \exp\left(-\dfrac{1}{N}\sum_{i=1}^N \log P_{LM}(w_i\mid w_{1:i-1})\right)$ -- pi\`u bassa = modello migliore (meno ``sorpreso'' dal test set).}
+
+\subsection*{Smoothing}
+Serve a evitare probabilit\`a zero per bigrammi mai visti in training (altrimenti perplexity infinita).
+\formula{Laplace / add-one}{$P_{Lap}(w_i) = \dfrac{c_i+1}{N+V}$ \quad(unigrammi); \quad $P_{Lap}(w_i\mid w_{i-1}) = \dfrac{C(w_{i-1}w_i)+1}{C(w_{i-1})+V}$ \quad(bigrammi, $V$=vocabolario)}
+
+\begin{itemize}
+  \item \textbf{Backoff}: se manca l'n-gramma di ordine alto, si retrocede a un ordine inferiore (scelta discreta e un po' brusca).
+  \item \textbf{Interpolazione}: combina in modo continuo tutti gli ordini insieme, ed \`e generalmente preferita al backoff.
+\end{itemize}
+\formula{Interpolazione}{$P(w_n\mid w_{n-2}w_{n-1}) = \lambda_1 P(w_n) + \lambda_2 P(w_n\mid w_{n-1}) + \lambda_3 P(w_n\mid w_{n-2}w_{n-1})$, con $\sum\lambda_i=1$}
+
+% ================================================================
+\section{Vector Space Model, Rocchio, LDA}
+% ================================================================
+
+\textbf{VSM}: rappresenta ogni testo come vettore numerico. \textbf{Term-document matrix}: righe = termini, colonne = documenti, celle = conteggi. Un documento = vettore di lunghezza $|V|$ (vocabolario), tipicamente molto sparso.
+
+\formula{Cosine similarity}{$\cos(v,w) = \dfrac{v\cdot w}{|v||w|} = \dfrac{\sum_i v_i w_i}{\sqrt{\sum_i v_i^2}\sqrt{\sum_i w_i^2}}$ -- normalizza il prodotto scalare per la lunghezza dei vettori (altrimenti vincono sempre i documenti pi\`u lunghi). Range $[-1,1]$, ma $[0,1]$ con conteggi (mai negativi).}
+
+\formula{IDF e TF-IDF}{$idf_i = \log\dfrac{N}{n_i}$ ($N$=doc totali, $n_i$=doc con il termine $i$) \quad$\to$\quad $w_{i,j} = tf_{i,j}\cdot idf_i$. Premia termini frequenti nel documento \emph{e} rari nella collezione (le stop-word, presenti ovunque, ottengono IDF $\approx 0$).}
+
+\subsection*{Metodo di Rocchio}
+Si basa sul \textbf{centroide}, la media dei vettori di un insieme di documenti:
+\formula{Centroide}{$\vec{t}_X = \dfrac{1}{|X|}\sum_{\vec t_d \in X} \vec t_d$}
+Il profilo di una classe combina il centroide dei positivi e quello dei negativi:
+\formula{Profilo di classe (Rocchio)}{$f_k^i = \alpha\dfrac{1}{|POS_i|}\sum_{d_j\in POS_i} w_{kj} \;-\; \beta\dfrac{1}{|NEG_i|}\sum_{d_j\in NEG_i} w_{kj}$ -- premia la vicinanza ai positivi e la distanza dai negativi. Se $\alpha=1,\beta=0$: solo il centroide dei positivi.}
+
+\subsection*{Linear Discriminant Analysis (LDA)}
+Assume $x\mid y{=}k \sim \mathcal N(\mu_k,\Sigma)$: classi con media diversa ma \textbf{stessa covarianza}.
+\formula{Funzione discriminante}{$\delta_k(x) = x^T\Sigma^{-1}\mu_k - \frac12 \mu_k^T\Sigma^{-1}\mu_k + \log\pi_k$ -- si sceglie la classe con $\delta_k$ pi\`u alto. Nel caso binario \`e una regola lineare $w^Tx+b \gtrless 0$.}
+
+\es{Perch\'e non basta la differenza fra le medie, come in Rocchio? Se una feature ha varianza alta dentro le classi, \`e meno affidabile: $\Sigma^{-1}$ la ``pesa di meno'' automaticamente, anche se la sua differenza grezza fra le medie sembrava grande.}
+
+% ================================================================
+\section{Word Embeddings (Word2Vec)}
+% ================================================================
+
+I vettori VSM sono \textbf{lunghi e sparsi} (dim.\ = $|V|$). Le lingue sono \textbf{zipfiane}: poche parole frequenti, moltissime rare $\to$ problema per le feature sparse (una parola mai vista in training resta ignota al modello, anche se sinonimo di una parola nota).
+
+\textbf{Ipotesi distribuzionale} (Harris/Firth): ``a word is characterized by the company it keeps''. Gli \textbf{embedding} sono vettori \textbf{corti e densi} (dim.\ 50--1000): funzionano meglio delle feature sparse in quasi ogni task (meno parametri = meno overfitting).
+
+\textbf{Word2Vec}: invece di descrivere il contesto, lo \emph{predice}. Due architetture: \textbf{CBOW} (contesto $\to$ parola, il default di Gensim) e \textbf{Skip-gram} (parola $\to$ contesto, meglio su corpus piccoli/parole rare, \texttt{sg=1} in Gensim).
+
+\subsection*{Skip-gram with Negative Sampling (SGNS)}
+\begin{enumerate}
+  \item Parola target + vicino reale = esempio \textbf{positivo}.
+  \item Parole a caso fuori dal contesto = esempi \textbf{negativi} (\emph{negative sampling}).
+  \item Si allena una \textbf{regressione logistica} a distinguere i due casi.
+  \item I pesi appresi = gli embedding finali.
+\end{enumerate}
+Due matrici: \textbf{Embedding} (parola target) e \textbf{Context} (parole di contesto); l'embedding finale \`e spesso la somma delle due.
+
+\formula{Costo SGNS}{$C = -\sum_i\left[\sum_{w_j\in ctx(w_i)}\log\sigma(v^o_{w_j}\cdot v^i_{w_i}) + \sum_{w_j\notin ctx(w_i)}\log\sigma(-v^o_{w_j}\cdot v^i_{w_i})\right]$ -- sostituisce il softmax (troppo costoso su vocabolari enormi) con due termini sigmoidei: massimizza la vicinanza ai veri vicini, la minimizza rispetto ai negativi campionati.}
+
+\begin{itemize}
+  \item \textbf{Limiti}: parole \emph{out-of-vocabulary} (nessun embedding se mai viste in training); \textbf{meaning conflation problem} (un solo vettore per tutti i sensi di una parola polisemica, es.\ \textit{bank} finanza+fiume mescolati).
+  \item \textbf{FastText}: rappresenta la parola come somma degli embedding dei suoi n-grammi di caratteri $\to$ gestisce anche parole mai viste.
+  \item \textbf{GloVe}: usa statistiche globali di co-occorrenza invece di predizioni locali.
+\end{itemize}
+
+\es{Analogie: $\vec{king}-\vec{man}+\vec{woman}\approx \vec{queen}$. Ma occhio ai bias: $\vec{father}-\vec{doctor}\approx\vec{mother}-\vec{nurse}$ riflette stereotipi del corpus, non un fatto semantico neutro.}
+
+% ================================================================
+\section{Transformer}
+% ================================================================
+
+Gli algoritmi distribuzionali classici soffrono del \textbf{meaning conflation problem}. I \textbf{Transformer} imparano \textbf{contextualized embedding}: il vettore di una parola cambia in base al contesto della frase specifica.
+
+\begin{itemize}
+  \item \textbf{Architettura} (stack di strati, 2--24 tipicamente): \textbf{Encoder} (6 strati $\times$ self-attention multi-head + FFN, con \textbf{residual connection} + normalizzazione) e \textbf{Decoder} (6 strati $\times$ self-attention \emph{mascherata} + attention encoder-decoder + FFN).
+  \item \textbf{Encoder-only} (BERT): attenzione \textbf{bidirezionale}, capisce ma non genera bene.
+  \item \textbf{Decoder-only} (GPT): attenzione \textbf{causale/autoregressiva}, genera token per token.
+  \item \textbf{Encoder-decoder} (BART): mapping input$\to$output, es.\ traduzione.
+  \item \textbf{FFN}: trasformazione non lineare dopo l'attenzione, applicata posizione per posizione; aiuta ad apprendere feature astratte (ruoli sintattici/semantici).
+\end{itemize}
+
+\formula{Self/Multi-head Attention}{$\mathrm{Attention}(Q,K,V) = \mathrm{softmax}\!\left(\dfrac{QK^T}{\sqrt{d_k}}\right)V$ -- Query (cosa cerco), Key (cosa offro), Value (cosa restituisco se rilevante). 8 teste in parallelo nel Transformer originale, poi concatenate e riproiettate ($d_{model}=512$).}
+\es{Analogia panetteria: Query = cosa cerco, Key = nome dei prodotti, Value = il prezzo. Pi\`u il prodotto (Key) \`e vicino a quello che cerco (Query), pi\`u peso do al suo Value.}
+
+L'attenzione da sola non ha nozione dell'ordine delle parole: serve il \textbf{positional encoding}, deterministico e non appreso, sommato all'embedding.
+\formula{Positional Encoding}{$PE_{(pos,2i)} = \sin\!\left(\dfrac{pos}{10000^{2i/d_{model}}}\right)$, \quad $PE_{(pos,2i+1)} = \cos\!\left(\dfrac{pos}{10000^{2i/d_{model}}}\right)$ -- l'embedding finale \`e $x_t = w_t + p_t$.}
+
+\textbf{Sub-word tokenization (BPE)}: si parte dai singoli caratteri, si uniscono iterativamente le coppie di simboli pi\`u frequenti in nuovi simboli $\to$ vocabolario compatto, robusto a parole mai viste.
+
+\subsection*{Training}
+\textbf{Pre-training} (non supervisionato, su testo non etichettato):
+\begin{itemize}
+  \item \textbf{MLM} (Masked LM): $\sim$15\% dei token mascherati, il modello indovina; usa contesto sia a sinistra sia a destra $\to$ \textbf{bidirezionale}.
+  \item \textbf{NSP} (Next Sentence Prediction, tipico di BERT): predice se una frase segue l'altra. Introduce il token \texttt{[CLS]} (accumula info da tutta la sequenza via self-attention, usato per classificare) e i \textbf{segment embedding}.
+\end{itemize}
+\textbf{Fine-tuning} (supervisionato): si riparte dal modello pre-addestrato, si continua con una loss specifica del task (es.\ cross-entropy per classificazione), input con \texttt{[CLS]}\ldots\texttt{[SEP]}.
+
+\textbf{Limiti}: complessit\`a \textbf{quadratica} dell'attenzione nella lunghezza della sequenza (problema senza GPU); il positional encoding classico usa posizioni \textbf{assolute} (architetture pi\`u recenti preferiscono codifiche \textbf{relative}).
+
+\end{document}

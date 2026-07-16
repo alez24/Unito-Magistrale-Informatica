@@ -54,6 +54,7 @@ def pulisci_letterario(testo):
     testo = testo.lower().strip()
     return testo
 
+
 tweets_puliti     = [pulisci_tweet(t) for t in tweets_raw]
 tweets_puliti     = [t for t in tweets_puliti if len(t) > 0]  # scarta i tweet svuotati dalla pulizia (es. solo URL/menzioni) altrimenti li tiene se lunghezza > 0
 testo_lett_pulito = pulisci_letterario(testo_letterario_raw)
@@ -63,6 +64,7 @@ print("\n=== PULIZIA ===")
 print(f"Tweet PRIMA: {tweets_raw[0]}")
 print(f"Tweet DOPO:  {tweets_puliti[0]}")
 
+<<<<<<< HEAD
 testo_tweet_unito = ' '.join(tweets_puliti) #prendiamo i testi e li tokenizziamo in singole parole  che vengono unite in un listone di parole --- questo è il grezzo che ci serve solo per contare nella funzione len nel print f
 tokens_tweet = word_tokenize(testo_tweet_unito)
 tokens_lett  = word_tokenize(testo_lett_pulito)
@@ -75,6 +77,23 @@ sequenze_tweet = [word_tokenize(t) for t in tweets_puliti]#prendiamo tweet pulit
 frasi_lett_raw = sent_tokenize(testo_letterario_raw)#funzione natia nltk che considera le frasi in base alle stopword per poi creare una liste di liste formate dalle frasi del testo letterario 
 sequenze_lett  = [word_tokenize(pulisci_letterario(f)) for f in frasi_lett_raw]#sequenze_lett tokenizza il testo letterario scomposto in lista di liste
 sequenze_lett  = [s for s in sequenze_lett if s]#iterazione del processo
+=======
+
+testo_tweet_unito = ' '.join(tweets_puliti) 
+tokens_tweet = word_tokenize(testo_tweet_unito)
+tokens_lett  = word_tokenize(testo_lett_pulito)
+vocab_tweet_set = set(tokens_tweet) 
+vocab_lett_set  = set(tokens_lett)
+
+
+
+# sequenze separate (un tweet/una frase = una sequenza) per l'addestramento: servono
+# a non far attraversare i bigrammi tra un tweet/frase e il successivo
+sequenze_tweet = [word_tokenize(t) for t in tweets_puliti]
+frasi_lett_raw = sent_tokenize(testo_letterario_raw)
+sequenze_lett  = [word_tokenize(pulisci_letterario(f)) for f in frasi_lett_raw]
+sequenze_lett  = [s for s in sequenze_lett if s]
+>>>>>>> 69016fbaa8a1f0aa2f1e61b3924ff8442b0c7e13
 
 print("\n=== TOKENIZZAZIONE ===")
 print(f"Token Twitter:            {len(tokens_tweet)}")#len conta i singoli token dalla divisione grezza
@@ -181,7 +200,7 @@ print(f"  {genera_testo(modello_lett, 40)}")
 
 # seed diversi = campioni diversi dello stesso stile
 print("\nConfronto generazione per dominio:")
-for seed in [42, 99, 7, 123]:
+for seed in [42, 99, 7, 123]: 
     tw_raw  = modello_tweet.generate(15, random_seed=seed)
     lt_raw  = modello_lett.generate(15, random_seed=seed)
 

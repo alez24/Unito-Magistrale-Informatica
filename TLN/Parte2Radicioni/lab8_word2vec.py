@@ -127,14 +127,20 @@ print("\nAddestramento Word2Vec...")
 
 params = dict(
     sg          = 1,     # Skip-gram (il default di gensim sarebbe CBOW, sg=0)
+<<<<<<< HEAD
     vector_size = 100,  
     window      = 5,
     min_count   = 3,
+=======
+    vector_size = 100,   #embedding dimension
+    window      = 5,     #parole prima e dopo 
+    min_count   = 3,     #minimo numero di occorrenze per includere una parola nel vocabolario
+>>>>>>> 69016fbaa8a1f0aa2f1e61b3924ff8442b0c7e13
     workers     = 1,     # riproducibilita' bit-esatta: con workers>1 l'ordine di
                           # elaborazione tra thread varia e il training smette di essere
                           # deterministico anche a parita' di seed (costo trascurabile
                           # su un corpus di questa dimensione)
-    epochs      = 20,
+    epochs      = 20,      #quanita di volte che il modello passa sui dati
     seed        = 42
 )
 
@@ -156,7 +162,7 @@ for parola in parole_test:
                if parola in model_70s.wv else ['---']
     sim_2000 = [w for w,_ in model_2000s.wv.most_similar(parola, topn=3)] \
                if parola in model_2000s.wv else ['---']
-    print(f"{parola:<10} | {', '.join(sim_70):<35} | {', '.join(sim_2000)}")
+    print(f"{parola:<10} | {', '.join(sim_70):<35} | {', '.join(sim_2000)}")    
 
 print("\nSimilarità coseno tra coppie di parole...")
 
@@ -168,8 +174,7 @@ coppie = [
     ('war',  'peace'),
     ('free', 'soul'),
 ]
-
-print(f"\n{'Coppia':<22} | {'Anni 70':>8} | {'Anni 2000':>10}")
+#similarita tra parole confrotnate tra gli anni 70 e gli anni 2000 con cosine similarity 
 print("-" * 48)
 
 for w1, w2 in coppie:
@@ -192,11 +197,11 @@ print(f"Solo anni 70:   {len(solo_70s)} parole")
 print(f"Solo anni 2000: {len(solo_2000s)} parole")
 print(f"In comune:      {len(comuni)} parole")
 
-interessanti_70s = sorted(
+interessanti_70s = sorted( #senza il meno, otterresti le parole dalla meno frequente alla più frequente 
     [p for p in solo_70s   if freq_70s[p]   > 20],
     key=lambda x: (-freq_70s[x], x)
 )
-interessanti_2000s = sorted(
+interessanti_2000s = sorted( 
     [p for p in solo_2000s if freq_2000s[p] > 20],
     key=lambda x: (-freq_2000s[x], x)
 )
@@ -217,14 +222,14 @@ candidati = [
     if freq_70s[p] >= FREQ_COPPIE and freq_2000s[p] >= FREQ_COPPIE
 ]
 print(f"Parole candidate (freq >= {FREQ_COPPIE} in entrambe): {len(candidati)}")
-print(f"Coppie totali da confrontare: {len(candidati) * (len(candidati)-1) // 2}")
+print(f"Coppie totali da confrontare: {len(candidati) * (len(candidati)-1) // 2}") #245 x 244 / 2 = 29.890 coppie 
 
 # similarita' vettorizzata: una singola matrice N x N invece di N^2/2 chiamate
-# a .similarity() (rilevante quando i candidati salgono a qualche centinaio)
+# a .similarity() (rilevante quando i candidati salgono a qualche centinaio
 def matrice_coseno(model, parole):
     vettori = np.array([model.wv[p] for p in parole])
-    norme   = vettori / np.linalg.norm(vettori, axis=1, keepdims=True)
-    return norme @ norme.T
+    norme   = vettori / np.linalg.norm(vettori, axis=1, keepdims=True)#normalizza i vettori a norma unitaria perche' la cosine similarity e' il prodotto scalare tra vettori normalizzati
+    return norme @ norme.T #questa è la moltiplicazione tra matrici: il prodotto scalare tra tutti i vettori normalizzati genera la matrice di similarità coseno
 
 sim70  = matrice_coseno(model_70s,   candidati)
 sim2000 = matrice_coseno(model_2000s, candidati)
@@ -241,7 +246,7 @@ for i, w1 in enumerate(candidati):
             's70':       s70,
             's2000':     s2000,
             'delta':     abs(s70 - s2000),
-            'direzione': s2000 - s70,
+            'direzione': s2000 - s70, 
         })
 
 coppie_sist.sort(key=lambda x: (-x['delta'], x['w1'], x['w2']))
@@ -292,7 +297,7 @@ for parola in parole_frequenti_comuni:
     vicini_2000s = set(w for w,_ in model_2000s.wv.most_similar(parola, topn=TOP_N_VICINI))
 
     n_comuni_v  = len(vicini_70s & vicini_2000s)
-    overlap     = n_comuni_v / TOP_N_VICINI
+    overlap     = n_comuni_v / TOP_N_VICINI 
     cambiamento = 1 - overlap
 
     risultati.append({
@@ -333,14 +338,14 @@ for r in risultati[:10]:
 
     print(f"\n[ {p.upper()} ]  cambiamento: {r['cambiamento']:.0%}  "
           f"(freq: {r['freq_70s']} anni70 / {r['freq_2000s']} anni2000)")
-    print(f"  Vicini spariti  (solo anni 70):   {', '.join(sorted(solo_70s_v))}")
-    print(f"  Vicini nuovi    (solo anni 2000): {', '.join(sorted(solo_2000s_v))}")
-    print(f"  Rimasti stabili:                  {', '.join(sorted(rimasti)) or 'nessuno'}")
+    print(f"   spariti  (solo anni 70):   {', '.join(sorted(solo_70s_v))}")#vicini che erano presenti negli anni 70 ma non negli anni 2000
+    print(f"  Vicini nuovi    (solo anni 2000): {', '.join(sorted(solo_2000s_v))}")#vicini che erano presenti negli anni 2000 ma non negli anni 70
+    print(f"  Rimasti stabili:                  {', '.join(sorted(rimasti)) or 'nessuno'}")#vicini che erano presenti sia negli anni 70 che negli anni 2000
 
 print(f"\n{'='*70}")
 print(f"TOP 10 PAROLE PIU' STABILI (contesto quasi identico tra le ere)")
 print(f"{'='*70}")
-for r in risultati[-10:][::-1]:
+for r in risultati[-10:][::-1]:#qui si inverte la lista per mostrare prima le parole con overlap piu' alto
     vicini_comuni_str = ', '.join(sorted(r['vicini_70s'] & r['vicini_2000s']))
     print(f"  {r['parola']:<12} overlap: {r['overlap']:.0%}  "
           f"| vicini comuni: {vicini_comuni_str}")
@@ -349,7 +354,7 @@ print("\nClustering K-Means...")
 
 def fai_clustering(model, n_clusters=6, top_words=200):
     """Raggruppa le parole più frequenti in cluster semantici via KMeans sugli embedding."""
-    parole  = model.wv.index_to_key[:top_words]
+    parole  = model.wv.index_to_key[:top_words] #index_to_key lista di tutte le paroleordinate per frequenza decrescente
     vettori = np.array([model.wv[w] for w in parole])
     # KMeans usa distanza euclidea: senza normalizzare, un vettore con norma anomala
     # domina la distanza e finisce isolato in un cluster singoletto. Normalizzando a
@@ -386,7 +391,7 @@ def top_per_cluster(parole, labels, freq_dict, n=7):
 # --- FIGURA 1: t-SNE ---
 print("  Generazione t-SNE...")
 fig1, axes1 = plt.subplots(1, 2, figsize=(20, 9))
-fig1.suptitle('Clustering Word2Vec: Anni 70 vs Anni 2000',
+fig1.suptitle('Clustering Word2Vec  : Anni 70 vs Anni 2000',
               fontsize=16, fontweight='bold')
 
 def tsne_plot_v2(parole, vettori, labels, freq_dict, titolo, ax, n_clusters=6):
