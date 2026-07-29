@@ -1,6 +1,7 @@
 \documentclass[a4paper,11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{textcomp}
 \usepackage[italian]{babel}
 \usepackage{amsmath, amssymb, amsthm}
 \usepackage{geometry}
@@ -12,6 +13,11 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage{tikz}
+\usepackage{capt-of}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, shapes.multipart, calc, fit, backgrounds, decorations.pathreplacing, trees}
 
 \geometry{margin=2.5cm}
 
@@ -48,14 +54,16 @@
 La privacy \`{e} un concetto fondamentale con diverse definizioni complementari:
 
 \begin{definizione}[Definizioni di Privacy]
+Le definizioni classiche di privacy si raggruppano tradizionalmente in \textbf{tre grandi famiglie concettuali}: privacy come \emph{diritto a essere lasciati soli}, privacy come \emph{accesso limitato} alle proprie informazioni/spazi, e privacy come \emph{controllo} su chi accede alle proprie informazioni. Le definizioni seguenti sono etichettate di conseguenza.
+
 \begin{itemize}
-  \item \textbf{Warren \& Brandeis (1890)}: \emph{``The right to be alone''} -- uno dei saggi più influenti nella storia del diritto americano; gli autori cercavano di trovare una base giuridica per proteggere la privacy nell'ambito delle leggi e dei princìpi già esistenti. Esempi di applicazione: il diritto di una persona di scegliere la solitudine lontano dall'attenzione degli altri; il diritto di essere immune dallo scrutinio o dall'essere osservati in contesti privati, come la propria abitazione.
-  \item \textbf{Godkin (1880)}: \emph{``Nothing is better worthy of legal protection than private life, or the right of every man to keep his affairs to himself, and to decide for himself to what extent they shall be the subject of public observation and discussion.''} -- accesso limitato alle informazioni personali.
-  \item \textbf{Bok (1989)}: \emph{``The condition of being protected from unwanted access by others -- either physical access, personal information, or attention.''} -- protezione da accessi indesiderati.
-  \item \textbf{Westin \& Blom-Cooper (1970)}: \emph{``Privacy is the claim of individuals, groups, or institutions to determine for themselves when, how, and to what extent information about them is communicated to others.''} -- controllo sull'informazione.
-  \item \textbf{Fried (1968)}: \emph{``Privacy is not simply an absence of information about us in the minds of others; rather it is the control we have over information about ourselves.''} -- controllo sulle proprie informazioni.
-  \item \textbf{FIPS PUB 41} (NIST -- \emph{Computer Security Guidelines for Implementing the Privacy Act of 1974}): \emph{``The right of an entity to determine the degree to which it will interact with its environment, including the degree to which the entity is willing to share its personal information with others.''}
-  \item \textbf{ISO}: Il diritto di un individuo a controllare o influenzare quali informazioni collegate a loro possono essere collezionate e salvate.
+  \item \textbf{Warren \& Brandeis (1890)}, saggio \emph{``The Right to Privacy''} \emph{[the right to be alone]}: \emph{``The right to be alone''} -- uno dei saggi più influenti nella storia del diritto americano; gli autori cercavano di trovare una base giuridica per proteggere la privacy nell'ambito delle leggi e dei princìpi già esistenti. Esempi di applicazione: il diritto di una persona di scegliere la solitudine lontano dall'attenzione degli altri; il diritto di essere immune dallo scrutinio o dall'essere osservati in contesti privati, come la propria abitazione.
+  \item \textbf{Godkin (1880)} \emph{[accesso limitato]}: \emph{``Nothing is better worthy of legal protection than private life, or the right of every man to keep his affairs to himself, and to decide for himself to what extent they shall be the subject of public observation and discussion.''} -- accesso limitato alle informazioni personali.
+  \item \textbf{Bok (1989)} \emph{[accesso limitato]}: \emph{``The condition of being protected from unwanted access by others -- either physical access, personal information, or attention.''} -- protezione da accessi indesiderati.
+  \item \textbf{Westin \& Blom-Cooper (1970)} \emph{[controllo]}: \emph{``Privacy is the claim of individuals, groups, or institutions to determine for themselves when, how, and to what extent information about them is communicated to others.''} -- controllo sull'informazione.
+  \item \textbf{Fried (1968)} \emph{[controllo]}: \emph{``Privacy is not simply an absence of information about us in the minds of others; rather it is the control we have over information about ourselves.''} -- controllo sulle proprie informazioni.
+  \item \textbf{FIPS PUB 41} (NIST -- \emph{Computer Security Guidelines for Implementing the Privacy Act of 1974}) \emph{[controllo]}: \emph{``The right of an entity to determine the degree to which it will interact with its environment, including the degree to which the entity is willing to share its personal information with others.''}
+  \item \textbf{ISO} \emph{[controllo]}: Il diritto di un individuo a controllare o influenzare quali informazioni collegate a loro possono essere collezionate e salvate.
 \end{itemize}
 \end{definizione}
 
@@ -63,7 +71,7 @@ La privacy \`{e} un concetto fondamentale con diverse definizioni complementari:
 La privacy \`{e} l'abilit\`{a} di una persona di:
 \begin{enumerate}
   \item Controllare la disponibilit\`{a} di \emph{informazioni} su s\'{e} stessa e la propria \emph{esposizione}.
-  \item Funzionare \emph{anonimamente} nella societ\`{a}.
+  \item Funzionare \emph{anonimamente} nella societ\`{a}, anche tramite meccanismi di identificazione pseudonima o a \textbf{credenziali cieche} (\emph{blind credential identification} -- provare un attributo, es. maggiore et\`{a}, senza rivelare l'identit\`{a}).
 \end{enumerate}
 \end{definizione}
 
@@ -132,6 +140,10 @@ Il problema della data privacy emerge quando dei dati unicamente associabili a u
 
 La sfida della data privacy \`{e} trovare modi per condividere dati proteggendo le informazioni che permettono di identificare una determinata persona.
 \end{definizione}
+
+\begin{esempio}[Data Privacy -- condivisione in forma aggregata]
+Un distretto sanitario vuole condividere i dati sulle patologie riscontrate nella popolazione locale per finalit\`{a} di ricerca epidemiologica. Per evitare di esporre dati individuali identificabili, i dati vengono rilasciati solo in \textbf{forma aggregata} (es. numero di casi per patologia e per area), cos\`{i} che nessun singolo paziente sia riconoscibile pur preservando l'utilit\`{a} statistica dell'informazione.
+\end{esempio}
 
 \subsection{Privacy negli Stati Uniti}
 
@@ -353,6 +365,39 @@ Un approccio all'ingegneria dei sistemi che tiene in considerazione la privacy d
 
 \subsection{Accordi Transnazionali EU--USA}
 
+\begin{center}
+\begin{tikzpicture}[font=\footnotesize, >=Stealth]
+\def\xa{0}
+\def\xb{3.8}
+\def\xc{7.8}
+\def\xd{11.6}
+
+\node[align=center] at (\xd/2,2.15) {\scriptsize \emph{evoluzione del quadro giuridico UE interno}};
+\draw[thick, -Stealth] (\xa-0.4,1.6) -- (\xd+0.4,1.6);
+\node[align=center, anchor=south] at (0.3,1.65) {\scriptsize 1995};
+\node[align=center, anchor=south] at (5.7,1.65) {\scriptsize 2018};
+\draw[fill=blue!12] (\xa,1.15) rectangle (5.7,1.5);
+\draw[fill=blue!30] (5.7,1.15) rectangle (\xd,1.5);
+\node[align=center] at (2.85,1.32) {\textbf{DPD 95/46/EC}};
+\node[align=center] at (8.7,1.32) {\textbf{GDPR} (2016/679)};
+
+\node[align=center] at (\xd/2,-0.05) {\scriptsize \emph{meccanismi di trasferimento dati EU$\to$USA}};
+\draw[thick, -Stealth] (\xa-0.4,-0.4) -- (\xd+0.4,-0.4);
+
+\draw[fill=red!15] (\xa,-0.85) rectangle (\xb,-0.4);
+\draw[fill=orange!20] (\xb,-0.85) rectangle (\xc,-0.4);
+\draw[fill=green!20] (\xc,-0.85) rectangle (\xd,-0.4);
+\node[align=center] at (1.9,-0.625) {\scriptsize \textbf{Safe Harbor}};
+\node[align=center] at (5.8,-0.625) {\scriptsize \textbf{Privacy Shield}};
+\node[align=center, font=\tiny] at (9.7,-0.625) {\textbf{Data Privacy Framework}};
+
+\node[align=center, anchor=north, text width=3.5cm] at (1.9,-1.0) {\scriptsize 1998/2000--2015\\invalidato: Schrems v.\ Facebook (CJEU, ott. 2015)};
+\node[align=center, anchor=north, text width=3.5cm] at (5.8,-1.0) {\scriptsize 12 lug 2016--lug 2020\\invalidato: sorveglianza USA};
+\node[align=center, anchor=north, text width=3.5cm] at (9.7,-1.0) {\scriptsize 2023--presente};
+\end{tikzpicture}
+\captionof{figure}{Cronologia parallela del quadro normativo UE interno (sopra) e degli accordi di trasferimento dati EU--USA (sotto).}
+\end{center}
+
 \begin{enumerate}
   \item \textbf{Safe Harbor} (sviluppato 1998--2000, in vigore fino al 2015): sviluppato per impedire la divulgazione accidentale o la perdita di informazioni personali di cittadini UE verso organizzazioni negli USA. Le aziende USA potevano auto-certificarsi aderendo a \textbf{7 princìpi}:
   \begin{enumerate}
@@ -381,6 +426,34 @@ La legge sull'IA (in vigore dal 1$^{\circ}$ agosto 2024 nell'UE) mira a garantir
   \item \textbf{Rischio minimo -- Codice di condotta} (Art. 69): la maggior parte dei sistemi IA (videogiochi, filtri antispam). Essenzialmente non regolamentati, per favorire l'innovazione.
 \end{enumerate}
 \end{definizione}
+
+\begin{center}
+\begin{tikzpicture}[font=\small]
+
+\def\W{9.5}
+\def\H{4.4}
+\coordinate (bl) at (-\W/2, 0);
+\coordinate (br) at (\W/2, 0);
+\coordinate (tl) at (-\W/8, \H);
+\coordinate (tr) at (\W/8, \H);
+
+\draw[fill=red!70!black, draw=black] (bl) -- (br) -- ($(br)!0.25!(tr)$) -- ($(bl)!0.25!(tl)$) -- cycle;
+\draw[fill=orange!80!yellow, draw=black] ($(bl)!0.25!(tl)$) -- ($(br)!0.25!(tr)$) -- ($(br)!0.55!(tr)$) -- ($(bl)!0.55!(tl)$) -- cycle;
+\draw[fill=yellow!60!white, draw=black] ($(bl)!0.55!(tl)$) -- ($(br)!0.55!(tr)$) -- ($(br)!0.8!(tr)$) -- ($(bl)!0.8!(tl)$) -- cycle;
+\draw[fill=green!40!white, draw=black] ($(bl)!0.8!(tl)$) -- ($(br)!0.8!(tr)$) -- (tr) -- (tl) -- cycle;
+
+\node[align=center] at ($(bl)!0.5!(br)!0.125!(tl)$) {\textbf{Inaccettabile}\\\footnotesize Vietati (Art.\,5)};
+\node[align=center] at ($(bl)!0.5!(br)!0.4!(tl)$) {\textbf{Alto rischio}\\\footnotesize Conformity Assessment};
+\node[align=center] at ($(bl)!0.5!(br)!0.675!(tl)$) {\textbf{Rischio limitato}\\\footnotesize Trasparenza};
+\node[align=center] at ($(bl)!0.5!(br)!0.9!(tl)$) {\textbf{Minimo}\\\footnotesize Codice di condotta};
+
+\node[align=left, anchor=west, text width=4.3cm] at (\W/2+0.4, \H*0.125) {\footnotesize Social scoring governativo, riconoscimento facciale di massa, manipolazione subliminale};
+\node[align=left, anchor=west, text width=4.3cm] at (\W/2+0.4, \H*0.4) {\footnotesize Sanit\`{a}, istruzione, occupazione, giustizia, forze dell'ordine};
+\node[align=left, anchor=west, text width=4.3cm] at (\W/2+0.4, \H*0.675) {\footnotesize Chatbot, deepfake, riconoscimento delle emozioni};
+\node[align=left, anchor=west, text width=4.3cm] at (\W/2+0.4, \H*0.9) {\footnotesize Videogiochi, filtri antispam};
+\end{tikzpicture}
+\captionof{figure}{Piramide del rischio dell'AI Act, con esempi di sistemi per ciascun livello.}
+\end{center}
 
 \textbf{AI Act -- General Purpose AI (GPAI)}: tutti i provider di modelli GPAI devono: fornire documentazione tecnica e istruzioni d'uso; rispettare la Direttiva Copyright UE; pubblicare un sommario dei dati di training; condurre valutazioni e test avversariali per modelli con rischi sistemici; garantire robuste protezioni di cybersecurity.
 
@@ -456,7 +529,9 @@ Esempio AI/ML (pag. 12 Omnibus): lo sviluppo di certi sistemi IA pu\`{o} richied
 Il termine Big Data si riferisce all'acquisizione e all'analisi di enormi collezioni di informazioni, talmente grandi che fino a poco tempo fa la tecnologia per analizzarle non esisteva.
 \end{definizione}
 
-Il fenomeno della \textbf{datafication}: tutto viene convertito in dati (carte di credito, registri di chiamate, dati sanitari, email, social, DNA, etc.). Questo crea un trade-off: pi\`{u} privacy $\Leftrightarrow$ meno comodit\`{a}.
+Il fenomeno della \textbf{datafication}: tutto viene convertito in dati (carte di credito, registri di chiamate, dati sanitari, email, social, DNA, etc.). Questo crea un trade-off: pi\`{u} privacy $\Leftrightarrow$ meno comodit\`{a}. Un'analogia usata per motivare questo trade-off: cos\`{i} come negli anni '60 si riteneva che ``inquinare l'ambiente'' fosse un costo necessario per lo sviluppo industriale, oggi si tende a considerare la cessione di dati personali come il prezzo inevitabile da pagare per i benefici della tecnologia digitale -- un parallelo che invita per\`{o} a chiedersi se tale costo sia davvero cos\`{i} inevitabile.
+
+\textbf{Privacy sotto attacco -- episodi noti}: obiezioni all'identificativo unico nei processori Intel; il database delle immagini delle patenti nazionali USA (National Driver License Image Database); gli scandali di sorveglianza di massa della NSA. Questi casi, insieme alle statistiche gi\`{a} citate (\S1.2), motivano la necessit\`{a} di strumenti tecnici per la protezione dei Big Data.
 
 \begin{definizione}[Big Data -- caratteristiche chiave]
 I Big Data sono caratterizzati da:
@@ -512,9 +587,11 @@ Canadian Adverse Events & database medici & re-ID pazienti \\
   \item Cloud configurato in modo errato: 19\%
   \item Vulnerabilit\`{a} software: 16\%
 \end{itemize}
-\textbf{Costo medio in Italia} (IBM/Ponemon 2019): 3,1 milioni di euro per violazione. \textbf{Costo per i cittadini}: tra 1.000 e 3.000 USD/anno in danni da furto di identit\`{a} e uso improprio dei dati personali.
+\textbf{Costo medio in Italia} (IBM/Ponemon 2019): 3,1 milioni di euro per violazione. \textbf{Costo per i cittadini}: tra 1.000 e 3.000 USD/anno in danni da furto di identit\`{a} e uso improprio dei dati personali. Questo costo alimenta anche il mercato dei \textbf{data broker} (aziende che raccolgono e rivendono dati personali): Malgieri \& Custers (\emph{Pricing privacy -- the right to know the value of your personal data}, 2018) discutono il diritto dell'interessato a conoscere il valore economico attribuito ai propri dati da questo mercato.
 
 \textbf{Caso INPS (marzo--aprile 2020)}: durante la pandemia, il portale INPS per richiedere il bonus di 600 euro rese visibili i dati di altri utenti a causa di un data breach; il sito fu temporaneamente chiuso.
+
+\textbf{Altri data breach noti}: \textbf{AdultFriendFinder} (2016) -- oltre 300 milioni di account esposti; un sito di live-streaming per adulti con circa 7 TB di dati esposti; \textbf{Yahoo} (2013--2014) -- miliardi di account compromessi; \textbf{MyHeritage} (2018) -- oltre 92 milioni di email/password esposte. Questi casi mostrano che il problema non \`{e} limitato a contesti governativi o di ricerca (Netflix, AOL) ma coinvolge sistematicamente anche il settore privato/commerciale.
 
 \begin{esempio}[Cambridge Analytica / Facebook (2018)]
 Cambridge Analytica raccoglie dati di circa 87 milioni di utenti Facebook attraverso un'app-quiz (thisisyourdigitallife) che, con il consenso di circa 270.000 utenti, accedeva anche ai dati degli amici. Questi dati vengono usati per costruire profili psicologici e mirare messaggi politici personalizzati, con l'obiettivo di influenzare le elezioni presidenziali USA del 2016 e il referendum Brexit. Dimostrazione che i dati raccolti per una finalit\`{a} vengono usati per un'altra (violazione del principio di scopo legittimo).
@@ -522,6 +599,22 @@ Cambridge Analytica raccoglie dati di circa 87 milioni di utenti Facebook attrav
 
 \begin{esempio}[Studio PNAS 2013 -- Facebook Likes]
 Kosinski et al. mostrano che analizzando i ``Like'' su Facebook con SVD (Singular Value Decomposition) + regressione logistica, si pu\`{o} predire con alta accuratezza: orientamento sessuale, etnia, opinioni politiche, religione, stato relazionale, uso di droghe, e persino la personalit\`{a} secondo il modello Big Five. I Like apparentemente innocui (musica, film) possono rivelare informazioni altamente sensibili (\textbf{proxy attributes}).
+
+\textbf{Pipeline dello studio}: dataset di \textbf{58.466 utenti} statunitensi e \textbf{55.814 Like} distinti, per un totale di circa \textbf{10 milioni di coppie utente-Like}. La matrice utente$\times$Like (sparsa e binaria) viene ridotta con SVD a \textbf{100 componenti latenti}; su queste componenti si allena un modello di regressione (logistica per attributi categorici, lineare per attributi continui come l'et\`{a}: $age = \alpha + \beta_1 C_1 + \cdots + \beta_{100} C_{100}$), validato con \textbf{10-fold cross-validation}.
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.1cm, font=\small,
+  box/.style={draw, rounded corners, minimum width=3.3cm, minimum height=1.3cm, align=center, fill=blue!6}]
+\node[box] (a) {Matrice Utente$\times$Like\\\footnotesize 58.466 utenti $\times$ 55.814 Like};
+\node[box, right=of a, xshift=0.4cm] (b) {SVD\\\footnotesize riduzione a 100\\componenti latenti};
+\node[box, right=of b, xshift=0.4cm] (c) {Regressione\\(logistica/lineare)\\\footnotesize 10-fold CV};
+\node[box, below=of b, yshift=-0.2cm, fill=green!8] (d) {Predizione attributi\\\footnotesize genere, orientamento,\\etnia, personalit\`{a}\ldots};
+\draw[-Stealth, thick] (a) -- (b);
+\draw[-Stealth, thick] (b) -- (c);
+\draw[-Stealth, thick] (c) -- (d);
+\end{tikzpicture}
+\captionof{figure}{Pipeline dello studio di Kosinski et al. (2013): dai ``Like'' grezzi alla predizione di attributi sensibili.}
+\end{center}
 
 Valori AUC (Area Under the Curve) ottenuti:
 \begin{center}
@@ -593,6 +686,26 @@ Funzionamento: gli amministratori assegnano permessi a ogni ruolo; i ruoli vengo
 \textbf{Limiti di RBAC}: fornisce configurazioni di accesso grossolane (\emph{coarse-grained}), predefinite e statiche; non fornisce un meccanismo flessibile per esprimere i requisiti di clienti/utenti e istituzioni; non cattura lo \emph{scopo} per cui i dati vengono rilasciati. Oggi, definire le policy di autorizzazione basandosi solo sul ruolo non \`{e} sufficiente: serve anche il \emph{contesto} (utente giusto, al momento giusto, nel luogo giusto, nel rispetto della compliance).
 \end{definizione}
 
+\begin{center}
+\begin{tikzpicture}[node distance=1.6cm, font=\small,
+  ent/.style={draw, rounded corners, minimum width=2.6cm, minimum height=0.9cm, align=center, fill=blue!6}]
+\node[ent] (u1) {Utente: Alice};
+\node[ent, below=of u1] (u2) {Utente: Bob};
+\node[ent, right=3.2cm of u1, yshift=-0.9cm] (r1) {Ruolo:\\Consulente (read)};
+\node[ent, below=of r1] (r2) {Ruolo:\\Direttore (write)};
+\node[ent, below=of r2] (r3) {Ruolo:\\Operatore};
+\node[ent, right=3.2cm of r1, yshift=-0.45cm, text width=3.2cm] (p1) {Permesso: Select/Update dati X};
+\node[ent, below=of p1, text width=3.2cm] (p2) {Permesso: Select dati Y};
+\node[ent, below=of p2, text width=3.2cm] (p3) {Permesso: Login sistema Z};
+\draw[-Stealth] (u1) -- (r1); \draw[-Stealth] (u1) -- (r2);
+\draw[-Stealth] (u2) -- (r2); \draw[-Stealth] (u2) -- (r3);
+\draw[-Stealth] (r1) -- (p1); \draw[-Stealth] (r1) -- (p2);
+\draw[-Stealth] (r2) -- (p1); \draw[-Stealth] (r2) -- (p3);
+\draw[-Stealth] (r3) -- (p3);
+\end{tikzpicture}
+\captionof{figure}{RBAC: relazione molti-a-molti tra utenti, ruoli e permessi -- il ruolo \`{e} il livello di astrazione intermedio che disaccoppia utenti e permessi.}
+\end{center}
+
 \subsubsection{ABAC -- Attribute Based Access Control}
 
 \begin{definizione}[ABAC]
@@ -624,6 +737,27 @@ Aggiungendo contesto, l'ABAC pu\`{o} anche esprimere vincoli come: un utente pu\
 
 Le policy sono espresse in \textbf{XACML} (eXtensible Access Control Markup Language): standard XML per ABAC. Algoritmi di combinazione: \emph{permit-overrides} (un Permit \`{e} sufficiente) e \emph{deny-overrides} (un Deny prevale).
 \end{definizione}
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.5cm, font=\footnotesize,
+  box/.style={draw, rounded corners, minimum width=2.3cm, minimum height=1cm, align=center, fill=blue!6},
+  ext/.style={draw, cylinder, shape border rotate=90, aspect=0.3, minimum width=1.6cm, minimum height=1cm, align=center, fill=orange!10}]
+\node[box] (user) {Utente};
+\node[box, right=2.1cm of user] (pep) {PEP\\\footnotesize enforcement};
+\node[box, right=2.1cm of pep] (pdp) {PDP\\\footnotesize decision};
+\node[box, above=1.3cm of pdp] (pap) {PAP\\\footnotesize gestisce policy};
+\node[ext, below=1.3cm of pdp] (pip) {PIP\\\footnotesize attributi esterni};
+\node[box, right=2.1cm of pdp, fill=green!8] (res) {Risorsa};
+
+\draw[-Stealth] (user) -- node[above]{\scriptsize (1) richiesta} (pep);
+\draw[-Stealth] (pep) -- node[above]{\scriptsize (2) valuta} (pdp);
+\draw[-Stealth] (pap) -- node[right]{\scriptsize policy} (pdp);
+\draw[-Stealth] (pdp) -- node[right]{\scriptsize (4) attributi} (pip);
+\draw[-Stealth] (pdp) -- node[above]{\scriptsize (5) Permit/Deny} (res);
+\draw[-Stealth, dashed] (res.south) .. controls +(0,-1.4) and +(0,-1.4) .. node[below]{\scriptsize (6) risultato} (pep.south);
+\end{tikzpicture}
+\captionof{figure}{Flusso dell'Authorization Engine ABAC: l'utente richiede l'accesso al PEP (1), che lo inoltra al PDP per la valutazione (2); il PDP consulta le policy definite dal PAP (3) e recupera attributi aggiuntivi dal PIP -- es. directory esterne, database, servizi cloud -- (4); la decisione Permit/Deny raggiunge la risorsa (5) e il risultato torna all'utente tramite il PEP (6).}
+\end{center}
 
 \begin{esempio}[XACML -- Healthcare Data Store]
 Un data store riceve dati clinici da vari fornitori sanitari. I dati devono essere processati secondo le istruzioni del paziente e le regole legali prima di essere distribuiti a ricercatori autorizzati. Le policy coinvolgono quattro soggetti: \emph{Institute 1}, \emph{Institute 2}, \emph{Patient 1} e \emph{Patient 2}.
@@ -778,6 +912,28 @@ Processo di esaminazione e validazione di documenti, dati, processi, procedure e
   \item Stato dell'entit\`{a}: active, deleted, inactive.
 \end{itemize}
 
+\begin{center}
+\begin{tikzpicture}[node distance=0.75cm, font=\scriptsize,
+  flowbox/.style={draw, rounded corners, minimum width=4.6cm, minimum height=0.8cm, align=center, fill=blue!6},
+  dec/.style={draw, diamond, aspect=2.4, minimum width=4.6cm, minimum height=1cm, align=center, fill=yellow!12, inner sep=1pt}]
+\node[flowbox] (s0) {Inizio azione: recupera utente/credenziali};
+\node[dec, below=of s0] (d1) {Utente registrato nel repository di audit?};
+\node[dec, below=of d1] (d2) {Azione registrata per l'utente corrente?};
+\node[dec, below=of d2] (d3) {Oggetto (tabella/colonna) registrato?};
+\node[flowbox, below=of d3, fill=green!10] (s1) {Recupera valore precedente e registra l'evento};
+\node[flowbox, below=of s1] (s2) {Azione completata};
+\draw[-Stealth] (s0) -- (d1);
+\draw[-Stealth] (d1) -- (d2);
+\draw[-Stealth] (d2) -- (d3);
+\draw[-Stealth] (d3) -- (s1);
+\draw[-Stealth] (s1) -- (s2);
+\node[anchor=west] at ($(d1.east)+(0.15,0)$) {\scriptsize no $\to$ crea registro};
+\node[anchor=west] at ($(d2.east)+(0.15,0)$) {\scriptsize no $\to$ crea registro};
+\node[anchor=west] at ($(d3.east)+(0.15,0)$) {\scriptsize no $\to$ crea registro};
+\end{tikzpicture}
+\captionof{figure}{Flusso del Modello 1 di auditing: prima di registrare un evento, il sistema verifica che utente, azione e oggetto siano gi\`{a} noti al repository (creando i relativi record se mancanti), poi salva il valore precedente e l'evento stesso.}
+\end{center}
+
 \textbf{Modello 2 -- Audit per variazione di colonna}: registra solo le modifiche ai valori di colonna; prevede un meccanismo di purging e archiving (riduce lo spazio); non registra il tipo di azione eseguita; ideale per auditare una o due colonne di una tabella.
 
 \textbf{Modello 3 -- Historical auditing model}: usato quando \`{e} richiesto un registro dell'intera riga; tipicamente usato in applicazioni finanziarie. Si crea una tabella \texttt{APP\_DATA\_TABLE\_HISTORY} con la stessa struttura di \texttt{APP\_DATA\_TABLE}, dove ogni modifica genera una nuova riga storica.
@@ -866,6 +1022,32 @@ La riservatezza pu\`{o} essere protetta in due modi:
 
 Il trade-off fondamentale: pi\`{u} alta \`{e} la disclosure risk, pi\`{u} alta \`{e} la data utility (e viceversa). \textbf{Il compromesso esiste sempre}. Il piano rischio/utilit\`{a} ha due zone: \textbf{FORBIDDEN} (alto rischio, non rilasciabile) e \textbf{CONCEDED} (rischio accettabile). L'obiettivo \`{e} minimizzare il rischio mantenendo la massima utilit\`{a} possibile, restando nella zona concessa.
 
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+  width=9.5cm, height=6.5cm,
+  xlabel={Data Utility}, ylabel={Disclosure Risk},
+  xmin=0, xmax=1, ymin=0, ymax=1,
+  xtick=\empty, ytick=\empty,
+  axis lines=left, font=\small,
+  legend pos=north west, legend style={font=\scriptsize}
+]
+\addplot[draw=none, fill=red!15] coordinates {(0,0.55) (0,1) (1,1) (1,0.85)} \closedcycle;
+\node[align=center, red!60!black] at (axis cs:0.25,0.9) {\footnotesize FORBIDDEN};
+\addplot[draw=none, fill=green!15] coordinates {(0,0) (0,0.55) (1,0.85) (1,0)} \closedcycle;
+\node[align=center, green!40!black] at (axis cs:0.15,0.55) {\footnotesize CONCEDED};
+
+\addplot[only marks, mark=*, mark size=2.2pt, color=black] coordinates {(1,1)};
+\node[anchor=north east] at (axis cs:0.97,0.97) {\scriptsize dati originali};
+\addplot[only marks, mark=*, mark size=2.2pt, color=blue] coordinates {(0.55,0.35)};
+\node[anchor=north west] at (axis cs:0.58,0.3) {\scriptsize dati rilasciati (SDC)};
+\addplot[only marks, mark=*, mark size=2.2pt, color=gray] coordinates {(0,0)};
+\node[anchor=north west] at (axis cs:0.02,0.08) {\scriptsize nessun dato};
+\end{axis}
+\end{tikzpicture}
+\captionof{figure}{Il piano rischio/utilit\`{a}: i dati originali hanno la massima utilit\`{a} ma anche il massimo rischio; l'assenza di dati ha rischio nullo ma utilit\`{a} nulla. L'obiettivo dell'SDC \`{e} spostare il punto rilasciato nella zona CONCEDED, il pi\`{u} vicino possibile al confine con la zona FORBIDDEN (massima utilit\`{a} a rischio accettabile).}
+\end{center}
+
 \textbf{Ciclo SDC ex-post} (4 passi): Data $\to$ Metodo SDC (+scelta parametri euristici) $\to$ Misura di Utility $\to$ Misura di Rischio $\to$ (iterazione).
 
 \textbf{Analisi del rischio ex-ante}: basata sul concetto di \textbf{privacy model}, ovvero una condizione (dipendente da un parametro) che garantisce un limite superiore al rischio di re-identificazione e attribute disclosure. I principali privacy model sono: $k$-anonymity, $l$-diversity, $t$-closeness, $\delta$-presence, differential privacy.
@@ -910,6 +1092,34 @@ Tre approcci principali per i \textbf{Statistical Databases (SDB)} (ACM Computin
   \item \textbf{Perturbativi}: perturbazione dell'input della query (applicata ai record) o dell'output (applicata al risultato della query).
   \item \textbf{Restrittivi}: rifiuto di rispondere a certe query (query restriction); richiede di tenere traccia delle query precedenti.
 \end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[y=1.8cm, font=\scriptsize,
+  db/.style={draw, cylinder, shape border rotate=90, aspect=0.3, minimum width=1.6cm, minimum height=1cm, align=center, fill=blue!8},
+  db2/.style={draw, cylinder, shape border rotate=90, aspect=0.3, minimum width=1.6cm, minimum height=1cm, align=center, fill=orange!12},
+  usr/.style={draw, circle, minimum size=0.9cm, fill=green!10},
+  lbl/.style={align=left, text width=5cm}]
+
+\node[usr] (u1) at (0,2) {U};
+\node[db, right=3cm of u1] (d1) {SDB};
+\draw[-Stealth] ($(u1)+(0.1,0.15)$) -- node[above]{query} ($(d1)+(-0.1,0.15)$);
+\draw[-Stealth] ($(d1)+(-0.1,-0.15)$) -- node[below]{risposta esatta o rifiuto} ($(u1)+(0.1,-0.15)$);
+\node[lbl, right=1cm of d1] {\textbf{Query restriction}: risponde con valori esatti o nega la risposta};
+
+\node[usr] (u2) at (0,1) {U};
+\node[db2, right=3cm of u2, align=center] (d2) {SDB$'$\\\footnotesize (perturbato)};
+\draw[-Stealth] ($(u2)+(0.1,0.15)$) -- node[above]{query} ($(d2)+(-0.1,0.15)$);
+\draw[-Stealth] ($(d2)+(-0.1,-0.15)$) -- node[below]{risposta esatta} ($(u2)+(0.1,-0.15)$);
+\node[lbl, right=1cm of d2] {\textbf{Data perturbation}: le query girano su una versione perturbata dei dati};
+
+\node[usr] (u3) at (0,0) {U};
+\node[db, right=3cm of u3] (d3) {SDB};
+\draw[-Stealth] ($(u3)+(0.1,0.15)$) -- node[above]{query} ($(d3)+(-0.1,0.15)$);
+\draw[-Stealth] ($(d3)+(-0.1,-0.15)$) -- node[below]{risposta perturbata} ($(u3)+(0.1,-0.15)$);
+\node[lbl, right=1cm of d3] {\textbf{Output perturbation}: dati intatti, ma la risposta restituita \`{e} perturbata};
+\end{tikzpicture}
+\captionof{figure}{I tre approcci per gli Statistical Database (ACM Computing Surveys, 1989): si pu\`{o} agire limitando le query stesse, perturbando i dati a monte, oppure lasciando i dati intatti e perturbando solo il risultato restituito.}
+\end{center}
 
 \subsection{Metodi SDC per Microdata}
 
@@ -1040,6 +1250,40 @@ Tecniche per ottenere la k-anonymity:
 
 La k-anonymity richiede che ogni release dei dati sia tale che ogni combinazione di valori dei quasi-identificatori possa essere associata in modo indistinto ad almeno $k$ rispondenti. La \textbf{condizione sufficiente} per garantire questo \`{e} che ogni insieme di valori dei quasi-identificatori nella tabella rilasciata appaia almeno $k$ volte (\emph{gli attributi sensibili non sono considerati}).
 
+\begin{esempio}[Generalizzazione e Soppressione -- tabella prima/dopo]
+Tabella originale (quasi-identificatori: ZIP, Et\`{a}, Sesso; attributo sensibile: Malattia):
+\begin{center}
+\small
+\begin{tabular}{lllll}
+\toprule
+& ZIP & Et\`{a} & Sesso & Malattia \\
+\midrule
+1 & 13053 & 28 & M & Cardiopatia \\
+2 & 13068 & 29 & M & Cardiopatia \\
+3 & 13068 & 21 & M & Virale \\
+4 & 13053 & 23 & M & Virale \\
+5 & 14853 & 50 & F & Cancro \\
+\bottomrule
+\end{tabular}
+\end{center}
+Applicando \textbf{generalizzazione} a ZIP (troncato a 3 cifre + \texttt{**}) ed Et\`{a} (in fasce decennali), e \textbf{soppressione} sulle righe outlier (qui la riga 5, isolata nel proprio gruppo), si ottiene una tabella 2-anonima:
+\begin{center}
+\small
+\begin{tabular}{lllll}
+\toprule
+& ZIP & Et\`{a} & Sesso & Malattia \\
+\midrule
+1 & 130** & 2* & M & Cardiopatia \\
+2 & 130** & 2* & M & Cardiopatia \\
+3 & 130** & 2* & M & Virale \\
+4 & 130** & 2* & M & Virale \\
+5 & * & * & * & \emph{(soppressa)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+Le righe 1--4 formano un \textbf{gruppo di equivalenza} da 4 elementi (quindi anche 4-anonimo rispetto a \{ZIP, Et\`{a}, Sesso\}); la riga 5, non generalizzabile in un gruppo di dimensione $\geq 2$ senza perdita eccessiva di informazione, viene soppressa interamente.
+\end{esempio}
+
 \begin{nota}[Proxy Attributes -- difficolt\`{a} nell'elencare i QI]
 Non \`{e} facile identificare tutti i quasi-identificatori e i dati sensibili, perch\'{e} esistono attributi \emph{proxy} che sono correlati ai dati sensibili pur sembrando innocui. Esempi (da Caton \& Haas, Fairness in Machine Learning, arXiv 2020):
 \begin{center}
@@ -1091,6 +1335,24 @@ $VGH_D$ \`{e} determinato dalla relazione di generalizzazione dei valori, che as
 La VGH è concretamente l'albero in cui le foglie sono i valori più specifici (es. \texttt{53715}, \texttt{53710}) e salendo i valori si fondono in categorie sempre più generali (es. \texttt{5371*}, \texttt{537**}, \texttt{*****}). È come fare zoom-out su una mappa: più sali, meno dettagli vedi. Ogni attributo del dataset ha il suo albero VGH; la DGH cataloga quali livelli (domini) esistono, e la VGH dice esattamente come ogni valore si generalizza.
 \end{nota}
 
+\begin{center}
+\begin{tikzpicture}[
+  level distance=1.3cm,
+  level 1/.style={sibling distance=3.4cm},
+  level 2/.style={sibling distance=1.8cm},
+  every node/.style={draw, rounded corners, fill=blue!6, align=center, font=\scriptsize, minimum width=1.5cm}]
+\node {\texttt{*****}\\$Z_2$}
+  child { node {\texttt{537**}\\$Z_1$}
+    child { node {\texttt{5371*}\\$Z_0'$}
+      child { node {\texttt{53715}} }
+      child { node {\texttt{53710}} } }
+    child { node {\texttt{5370*}\\$Z_0''$}
+      child { node {\texttt{53706}} }
+      child { node {\texttt{53703}} } } };
+\end{tikzpicture}
+\captionof{figure}{VGH per l'attributo ZIP: le foglie sono i codici a 5 cifre ($Z_0$); salendo si generalizza prima alle 4 cifre + \texttt{*} ($Z_1$), poi al valore completamente generalizzato \texttt{*****} ($Z_2$). La DGH corrispondente \`{e} semplicemente la catena di domini $Z_0 \to Z_1 \to Z_2$.}
+\end{center}
+
 \begin{definizione}[Vettore Distanza (Distance Vector)]
 Siano $T_i$ e $T_j$ due tabelle definite sugli stessi attributi $A = \{A_1, \ldots, A_n\}$ tali che $T_i \leq T_j$. Il \textbf{vettore distanza} di $T_j$ da $T_i$ \`{e} $DV_{ij} = [d_1, \ldots, d_n]$, dove ogni $d_x$ \`{e} la lunghezza del cammino unico tra $dom(A_x, T_i)$ e $dom(A_x, T_j)$ nella $DGH_{Dx}$.
 
@@ -1100,6 +1362,21 @@ Esempio: se Ethnicity ha $DGH$ con 2 livelli ($E_0 \to E_1$) e ZIP ha $DGH$ con 
 \begin{nota}[In parole semplici: Vettore Distanza]
 Il vettore distanza misura semplicemente quanti ``passi verso l'alto'' nell'albero di generalizzazione sono stati fatti per ciascun attributo. $DV = [1, 2]$ significa: etnia generalizzata di 1 livello, ZIP generalizzato di 2 livelli. Serve per confrontare diverse soluzioni di anonimizzazione e scegliere quella che generalizza il \emph{meno} possibile mantenendo però la k-anonymity -- ovvero quella che perde meno informazione.
 \end{nota}
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.6cm, font=\scriptsize,
+  n/.style={draw, rounded corners, fill=blue!6, minimum width=2.6cm, minimum height=0.7cm, align=center}]
+\node[n, fill=green!15] (00) {$DV=[0,0]$\\$\langle E_0, Z_0\rangle$};
+\node[n, above left=1.2cm and 1.0cm of 00] (10) {$DV=[1,0]$\\$\langle E_1, Z_0\rangle$};
+\node[n, above right=1.2cm and 1.0cm of 00] (01) {$DV=[0,1]$\\$\langle E_0, Z_1\rangle$};
+\node[n, above=2.4cm of 00, fill=orange!15] (11) {$DV=[1,1]$\\$\langle E_1, Z_1\rangle$};
+\draw[-Stealth] (00) -- (10);
+\draw[-Stealth] (00) -- (01);
+\draw[-Stealth] (10) -- (11);
+\draw[-Stealth] (01) -- (11);
+\end{tikzpicture}
+\captionof{figure}{Reticolo di generalizzazione per due attributi (Ethnicity con DGH a 2 livelli $E_0\to E_1$; ZIP con DGH a livelli $Z_0\to Z_1\to\cdots$, qui limitata a $Z_0,Z_1$). Ogni nodo \`{e} una combinazione di livelli di generalizzazione ($DV$ rispetto al nodo pi\`{u} basso); salendo lungo le frecce si generalizza di pi\`{u}. \`{E} il reticolo su cui l'algoritmo di Samarati effettua la ricerca binaria: se la k-anonymity vale in un nodo, vale anche in tutti i suoi antenati (nodi pi\`{u} generalizzati, pi\`{u} in alto).}
+\end{center}
 
 \begin{nota}[Classificazione delle Tecniche di K-Anonymity]
 La generalizzazione e la soppressione possono essere applicate a diversi livelli di granularit\`{a}:
@@ -1128,6 +1405,15 @@ Ogni percorso in $DGH_{DT}$ rappresenta una strategia di generalizzazione. L'alg
 \begin{nota}[In parole semplici: Algoritmo di Samarati]
 Invece di provare tutti i livelli di generalizzazione uno per uno (dal meno al più generico), l'algoritmo fa una ricerca binaria: parte dal livello medio $h/2$ del reticolo. Se lì si soddisfa la k-anonymity con un numero accettabile di soppressioni, allora prova a scendere (meno generalizzazione = più dettaglio); altrimenti sale (più generalizzazione). In questo modo trova il livello minimo necessario in $\log_2(h)$ iterazioni invece di $h$ -- molto più efficiente.
 \end{nota}
+
+\begin{esempio}[Algoritmo di Samarati -- esecuzione concreta]
+Sia $k=2$, $MaxSup=2$, reticolo di altezza $h=1$ (un solo passo di generalizzazione possibile per attributo).
+\begin{itemize}
+  \item \textbf{Altezza $h=1$} (massima generalizzazione): si verifica se esiste un vettore distanza a questa altezza che soddisfi la 2-anonymity sopprimendo al pi\`{u} 2 tuple. Se s\`{i}, si prosegue verso il basso per cercare una generalizzazione \emph{minore} che funzioni ancora.
+  \item \textbf{Altezza $h=0$} (nessuna generalizzazione): si verifica direttamente sui dati originali se la 2-anonymity \`{e} gi\`{a} soddisfatta con al pi\`{u} 2 soppressioni; se s\`{i}, questa \`{e} la soluzione ottima (nessuna generalizzazione necessaria); altrimenti bisogna risalire.
+\end{itemize}
+Il principio chiave \`{e} la \textbf{monotonicit\`{a}}: se ad altezza $h$ non esiste alcun vettore distanza che soddisfi la k-anonymity entro $MaxSup$ soppressioni, allora nemmeno ad altezze inferiori (meno generalizzazione) pu\`{o} esisterne uno -- quindi l'algoritmo pu\`{o} scartare (\emph{branch and bound}) tutte le altezze inferiori senza verificarle esplicitamente, dimezzando lo spazio di ricerca a ogni passo.
+\end{esempio}
 
 \subsubsection{Algoritmo Incognito}
 
@@ -1214,6 +1500,10 @@ dove $p(q^*, s) = \frac{n(q^*, s)}{\sum_{s' \in S} n(q^*, s')}$ \`{e} la frazion
 L'entropia è una misura di ``disordine'' o ``varietà'': è alta quando i valori sensibili sono distribuiti in modo uniforme nel blocco, e bassa quando uno solo domina (es. se nel blocco 9 persone su 10 hanno Cancer e 1 sola ha Flu, c'è poca diversità). Richiedere che l'entropia sia $\geq \log(l)$ è più forte della semplice presenza di $l$ valori diversi: impone che la distribuzione sia \emph{almeno tanto varia} quanto se fossero $l$ valori equiprobabili. Questo previene situazioni in cui ci sono formalmente $l$ malattie diverse, ma una schiacciante maggioranza e quindi è facile indovinarla.
 \end{nota}
 
+\begin{esempio}[Da 4-anonimo a 4-anonimo/3-diverso]
+Riprendendo l'esempio dell'homogeneity attack su Carol: una tabella 4-anonima con blocco $q^*=\langle 130^{**}, 3^*, *\rangle$ dove tutti i 4 record hanno \texttt{Malattia=Cancer} \`{e} 4-anonima ma \textbf{non} $l$-diversa per $l>1$ (un solo valore sensibile rappresentato). Riorganizzando i gruppi in modo che ogni $q^*$-block contenga almeno 3 valori di malattia ben rappresentati (es. Cancer, Cardiopatia, Virale in proporzioni simili) si ottiene una tabella \textbf{4-anonima e 3-diversa}: la stessa protezione sui quasi-identificatori, ma ora l'attaccante che isola il blocco di Carol non pu\`{o} pi\`{u} concludere con certezza quale malattia abbia, perch\'{e} il blocco contiene almeno 3 valori sensibili diversi e ragionevolmente equi-rappresentati.
+\end{esempio}
+
 \textbf{L-Diversity e Background Knowledge}: se ci sono $l$ valori sensibili ben rappresentati in un $q^*$-block, l'attaccante ha bisogno di $l-1$ \emph{pezzi di conoscenza di background} per eliminare $l-1$ valori sensibili possibili e inferire una positive disclosure. Impostando il parametro $l$, il data publisher determina quanta protezione si vuole offrire contro la conoscenza di background (anche se questa \`{e} sconosciuta al publisher).
 
 \textbf{Attacchi alla L-Diversity}:
@@ -1221,6 +1511,10 @@ L'entropia è una misura di ``disordine'' o ``varietà'': è alta quando i valor
   \item \textbf{Skewness attack}: quando la distribuzione del $q$-block \`{e} diversa dalla distribuzione nella popolazione originale (un valore sensibile potrebbe essere molto pi\`{u} comune nella popolazione ma ugualmente rappresentato nel blocco).
   \item \textbf{Similarity attack}: quando un $q$-block ha valori diversi ma semanticamente simili per i valori sensibili (es. tutti i tipi di cancro).
 \end{itemize}
+
+\begin{nota}[Cenno a t-closeness -- Li, Li \& Venkatasubramanian, 2007]
+Le slide del corso citano la $t$-closeness solo come uno dei privacy model principali, senza svilupparla; \`{e} riportata qui come cenno supplementare perch\'{e} risponde direttamente ai due attacchi appena visti. Un $q^*$-block soddisfa la $t$-closeness se la \textbf{distanza} tra la distribuzione dei valori sensibili nel blocco e la distribuzione degli stessi valori nell'intera tabella \`{e} al pi\`{u} $t$ (tipicamente misurata con la \emph{Earth Mover's Distance}). A differenza della $l$-diversity, che richiede solo che i valori sensibili siano ``vari'', la $t$-closeness richiede che siano distribuiti \emph{in modo simile alla popolazione globale} -- questo previene sia lo skewness attack (blocco troppo sbilanciato rispetto alla popolazione) sia il similarity attack (perch\'{e} l'EMD tiene conto anche della somiglianza semantica tra valori vicini, non solo del loro conteggio).
+\end{nota}
 
 \subsubsection{$\delta$-Presence}
 
@@ -1283,11 +1577,10 @@ Dopo aver visto la generalizzazione GT, l'avversario aggiorna la sua credenza a 
 \[
 b_0 = P(I_p \mid p \in PT) \cdot P(p \in PT \mid GT) + P(I_p \mid p \notin PT) \cdot P(p \notin PT \mid GT)
 \]
-Poich\'{e} PT contiene solo malati, $P(I_p \mid p \in PT) = 1$; per chi non \`{e} in PT la probabilit\`{a} che sia diabetico \`{e} $b_r \cdot \frac{|T| - |PT|}{|T| - |PT|} = b_r$. Sostituendo (eq.~1):
+Poich\'{e} PT contiene solo malati, $P(I_p \mid p \in PT) = 1$. Per chi non \`{e} in PT, il numero atteso di diabetici nell'intera popolazione $T$ \`{e} $b_r \cdot |T|$; di questi, $|PT|$ sono gi\`{a} in PT, quindi i diabetici \emph{non} in PT sono $b_r \cdot |T| - |PT|$, su un totale di $|T| - |PT|$ persone non in PT: $P(I_p \mid p \notin PT) = \frac{b_r \cdot |T| - |PT|}{|T| - |PT|}$. Sostituendo, con $P(p \notin PT \mid GT) = 1-\delta$ e $\delta = P(p \in PT \mid GT)$ (eq.~1):
 \[
-b_0 = \delta \cdot \frac{|T|(1 - b_r)}{|T| - |PT|} + \frac{b_r \cdot |T| - |PT|}{|T| - |PT|}
+b_0 = \delta \cdot 1 + (1-\delta) \cdot \frac{b_r \cdot |T| - |PT|}{|T| - |PT|}
 \]
-dove $\delta = P(p \in PT \mid GT)$.
 
 \textbf{Stima di $\delta_{max}$}: il costo di un uso improprio \`{e} $d = \$10{,}000$/anno per paziente. Si vuole che il costo atteso aggiuntivo rispetto alla prior sia $< c = \$100$:
 \[
@@ -1401,7 +1694,7 @@ L'idea è semplice: invece di pubblicare il valore esatto $q(D)$, si pubblica $q
 \begin{esempio}[Conteggio Query]
 Sia $q(D) = n$ il numero totale di studenti.
 \begin{itemize}
-  \item $GS_1(q) = 1$ (aggiungere/rimuovere un record cambia il conteggio di 1).
+  \item $GS_1(q) = 1$ (aggiungere/rimuovere un record cambia il conteggio di 1). \textbf{Attenzione alla definizione di adiacenza}: se un ``record'' \`{e} uno studente qualunque, allora aggiungere uno studente in pi\`{u} (online o fisico) cambia sempre $n$ di esattamente 1, quindi $GS_1(q)=1$ indipendentemente dal tipo di studente. Se invece la query distingue le due popolazioni ($n_o$ online e $n_c$ fisici separatamente, come sotto), la sensibilit\`{a} va calcolata \emph{per ciascuna} sotto-query: aggiungere uno studente online cambia $n_o$ di 1 (e non tocca $n_c$), quindi $GS_1(q_o)=1$; analogamente $GS_1(q_c)=1$.
   \item $\tilde{n} = n + Lap(0, 1/\varepsilon)$.
 \end{itemize}
 Per rispondere a due query correlate $q_1(D) = n_c$ (studenti del corso) e $q_2(D) = n - n_c$ (non nel corso): per composizione $\tilde{n}_c = n_c + Lap(0, 1/\varepsilon)$ e $\tilde{n} - \tilde{n}_c$ \`{e} equivalente all'approccio diretto. Con composizione parallela su $n_o$ (online) e $n_c$ (fisici, insiemi disgiunti): $\tilde{n}_o = n_o + Lap(0, 1/\varepsilon)$ e $\tilde{n}_c = n_c + Lap(0, 1/\varepsilon)$; il totale $\tilde{n} = \tilde{n}_o + \tilde{n}_c$ per post-processing.
@@ -1422,12 +1715,27 @@ Il meccanismo restituisce $r \in R$ con probabilit\`{a}:
 \[
 \mathbb{P}(\mathcal{M}(D, q) = r) \propto \exp\!\left(\frac{\varepsilon \cdot U(D, r)}{2 \cdot GS(U)}\right)
 \]
-Preserva $\varepsilon/2$-DP (o $\varepsilon$-DP a seconda della formulazione).
+Con il fattore $2 \cdot GS(U)$ a denominatore, il meccanismo preserva esattamente $\varepsilon$-DP.
 \end{definizione}
 
 \begin{nota}[In parole semplici: Meccanismo Esponenziale]
 Quando la risposta non è un numero ma una categoria (es. ``quale fascia di prezzo massimizza il profitto?'', ``quale parola suggerire?''), aggiungere rumore numerico non ha senso. Il meccanismo esponenziale risolve questo: invece di restituire sempre la risposta ottima, la \emph{campiona} in modo casuale con probabilità proporzionale all'utilità -- le risposte buone sono molto più probabili, quelle pessime quasi impossibili. Così non riveli il valore esatto del dataset, ma tendi comunque verso le risposte utili, preservando la DP.
 \end{nota}
+
+\begin{esempio}[Meccanismo Esponenziale -- scelta del prezzo ottimo]
+Un negozio vuole scegliere il prezzo che massimizza il ricavo atteso, noto l'importo massimo che ciascun cliente \`{e} disposto a pagare:
+\begin{center}
+\small
+\begin{tabular}{lccc}
+\toprule
+Cliente & A & B & C \\
+\midrule
+Importo massimo (\texteuro{}) & 1.00 & 1.00 & 3.01 \\
+\bottomrule
+\end{tabular}
+\end{center}
+Il prezzo $r=3.01$ ha utilit\`{a} $U(D,3.01) = 3.01$ (un solo cliente compra, C, a 3.01 \texteuro{}); un prezzo pi\`{u} basso come $r=1.00$ ha utilit\`{a} $U(D,1.00)=3.00$ (tutti e tre comprano, a 1 \texteuro{} l'uno). Con il \textbf{meccanismo di Laplace} (pensato per query numeriche), aggiungere anche un rumore piccolo come $+0.01$ al prezzo ottimo produrrebbe $r=3.02$: poich\'{e} nessun cliente \`{e} disposto a spendere pi\`{u} di 3.01 \texteuro{}, l'utilit\`{a} collassa a $U(D,3.02)=0$ -- un piccolo rumore additivo pu\`{o} distruggere completamente il risultato quando la funzione di utilit\`{a} \`{e} discontinua. Il \textbf{meccanismo esponenziale} evita questo: non perturba il prezzo numericamente, ma campiona direttamente tra i prezzi candidati con probabilit\`{a} proporzionale a $\exp(\varepsilon \cdot U(D,r)/2GS(U))$ -- prezzi con utilit\`{a} alta (vicini a 3.01) restano molto probabili, ma senza il rischio di un salto discontinuo nell'utilit\`{a}.
+\end{esempio}
 
 \subsection{Teoremi Fondamentali}
 
@@ -1452,6 +1760,37 @@ Implicazione: applicare lo stesso meccanismo $\varepsilon$-DP su partizioni disg
 \begin{nota}[In parole semplici: Composizione e Budget]
 Questi tre teoremi raccontano cosa succede quando si combinano più analisi sullo stesso dataset privato. Il post-processing dice che, una volta ottenuto l'output rumoroso, possiamo elaborarlo come vogliamo -- calcolare medie, fare grafici, qualsiasi trasformazione -- senza perdere ulteriore privacy, semplicemente perché non stiamo più toccando i dati originali. La composizione sequenziale invece riguarda il caso in cui facciamo più query diverse sullo stesso dataset: qui il budget si comporta come un conto corrente da cui ogni query preleva la sua quota, quindi il budget totale consumato è la somma $\varepsilon_1 + \varepsilon_2$ dei budget delle singole query. La composizione parallela è il caso più favorevole: se le query riguardano partizioni disgiunte del dataset, per esempio una sugli uomini e una sulle donne, allora il budget non si somma ma resta il massimo tra i due, perché ogni singolo individuo compare in una sola delle due partizioni e quindi ``paga'' solo una volta.
 \end{nota}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.5cm, font=\scriptsize,
+  db/.style={draw, cylinder, shape border rotate=90, aspect=0.3, minimum width=1.3cm, minimum height=0.8cm, align=center, fill=blue!8},
+  m/.style={draw, rounded corners, minimum width=1.7cm, minimum height=0.8cm, align=center, fill=orange!12},
+  outbox/.style={draw, rounded corners, minimum width=1.9cm, minimum height=0.8cm, align=center, fill=green!10}]
+
+\node[db] (d1) {$D$};
+\node[m, right=1.3cm of d1] (mm1) {$\mathcal{M}$\\$\varepsilon$-DP};
+\node[m, right=1.3cm of mm1] (f) {$f$\\(post-proc.)};
+\draw[-Stealth] (d1)--(mm1); \draw[-Stealth] (mm1)--(f);
+\node[below=0.5cm of mm1, text width=3.4cm, align=center] {\textbf{Post-processing}: $f \circ \mathcal{M}$ resta $\varepsilon$-DP};
+
+\node[db, below=3.3cm of d1] (d2) {$D$};
+\node[m, right=1.3cm of d2] (mm2a) {$\mathcal{M}_1$\\$\varepsilon_1$-DP};
+\node[m, below=0.3cm of mm2a] (mm2b) {$\mathcal{M}_2$\\$\varepsilon_2$-DP};
+\node[outbox, right=1.3cm of mm2a, yshift=-0.55cm] (o2) {$(\varepsilon_1+\varepsilon_2)$-DP};
+\draw[-Stealth] (d2)--(mm2a); \draw[-Stealth] (d2)--(mm2b);
+\draw[-Stealth] (mm2a)--(o2); \draw[-Stealth] (mm2b)--(o2);
+\node[below=0.55cm of mm2b, text width=3.4cm, align=center] {\textbf{Composizione sequenziale}: budget additivo};
+
+\node[db, below=3.3cm of d2] (d3) {$D$};
+\node[m, right=1.3cm of d3, yshift=0.5cm] (mm3a) {$\mathcal{M}(D_1)$\\$\varepsilon$-DP};
+\node[m, right=1.3cm of d3, yshift=-0.5cm] (mm3b) {$\mathcal{M}(D_2)$\\$\varepsilon$-DP};
+\node[outbox, right=1.3cm of mm3a, yshift=-0.55cm] (o3) {$\varepsilon$-DP};
+\draw[-Stealth] (d3)--(mm3a); \draw[-Stealth] (d3)--(mm3b);
+\draw[-Stealth] (mm3a)--(o3); \draw[-Stealth] (mm3b)--(o3);
+\node[below=0.55cm of mm3b, text width=3.6cm, align=center] {\textbf{Composizione parallela}: $D_1\cap D_2=\emptyset$, budget resta $\max(\varepsilon,\varepsilon)=\varepsilon$};
+\end{tikzpicture}
+\captionof{figure}{I tre teoremi di composizione della DP: il post-processing non consuma altro budget; la composizione sequenziale somma i budget delle query sullo stesso dataset; la composizione parallela su partizioni disgiunte non somma il budget.}
+\end{center}
 
 \subsection{$(\varepsilon, \delta)$-Differential Privacy}
 
@@ -1492,7 +1831,25 @@ $GS_2(q) = \max_{D \sim D'} \|q(D) - q(D')\|_2$ (sensibilit\`{a} L2).
   \item \textbf{Gaussiano} $\to$ $(\varepsilon, \delta)$-DP, sensibilit\`{a} L2, richiede $\varepsilon < 1$, migliore quando $GS_2 \ll GS_1$.
 \end{itemize}
 
-\textbf{Confronto Entropia}: il Gaussiano ha entropia $\frac{1}{2}\log(2\pi e\sigma^2)$; il Laplace ha entropia $\ln(\sqrt{2}e\sigma)$. Il Gaussiano ha entropia minore (meno rumore) a parit\`{a} di $\sigma$.
+\textbf{Confronto Entropia}: il Gaussiano ha entropia $\frac{1}{2}\log(2\pi e\sigma^2)$; il Laplace ha entropia $\ln(\sqrt{2}e\sigma)$. Il Gaussiano ha entropia minore (meno rumore) a parit\`{a} di $\sigma$. In termini di $\varepsilon$: al diminuire di $\varepsilon$ (pi\`{u} privacy richiesta) $\sigma$ cresce e con esso l'entropia di entrambe le distribuzioni -- ad esempio per $\sigma \approx 0.27, 0.5, 0.97$ si ottengono rispettivamente $\varepsilon \approx 3.7, 2, 0.66$: pi\`{u} piccolo \`{e} $\varepsilon$, pi\`{u} grande deve essere $\sigma$, pi\`{u} alta l'entropia (rumore) del meccanismo.
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+  width=9.5cm, height=6cm,
+  xlabel={$x$}, ylabel={densit\`{a} $f(x)$},
+  xmin=-6, xmax=6, ymin=0,
+  legend pos=north east, legend style={font=\scriptsize},
+  font=\small
+]
+\addplot[domain=-6:6, samples=100, thick, blue] {1/(2*1) * exp(-abs(x)/1)};
+\addlegendentry{Laplace, $b=1$}
+\addplot[domain=-6:6, samples=100, thick, red, dashed] {1/(sqrt(2*pi)*1.25) * exp(-x^2/(2*1.25^2))};
+\addlegendentry{Gaussiana, $\sigma=1.25$}
+\end{axis}
+\end{tikzpicture}
+\captionof{figure}{Confronto tra la densit\`{a} di Laplace (picco appuntito, code pi\`{u} pesanti) e quella Gaussiana (picco arrotondato, code pi\`{u} leggere) a parit\`{a} di scala visiva. Il picco pi\`{u} stretto della Laplace concentra pi\`{u} probabilit\`{a} vicino a 0 -- da cui la sua entropia leggermente maggiore a parit\`{a} di $\sigma$.}
+\end{center}
 
 \subsection{Scenario Interattivo vs. Non-Interattivo}
 
@@ -1500,6 +1857,31 @@ $GS_2(q) = \max_{D \sim D'} \|q(D) - q(D')\|_2$ (sensibilit\`{a} L2).
   \item \textbf{Interattivo}: il dataset rimane segreto; ogni analisi consuma una parte del budget $\varepsilon$. Il curatore \`{e} \emph{fidato}.
   \item \textbf{Non-Interattivo}: si rilascia un dataset sintetico privato; ulteriori analisi sono libere (post-processing). Il dataset rilasciato deve gi\`{a} soddisfare la DP.
 \end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.4cm, font=\scriptsize,
+  db/.style={draw, cylinder, shape border rotate=90, aspect=0.3, minimum width=1.5cm, minimum height=0.9cm, align=center, fill=blue!8},
+  cur/.style={draw, rounded corners, minimum width=1.9cm, minimum height=0.9cm, align=center, fill=orange!12},
+  usr/.style={draw, circle, minimum size=0.9cm, fill=green!10}]
+\node[db] (d1) {$D$};
+\node[cur, right=1.6cm of d1] (c1) {Curatore\\fidato};
+\node[usr, right=1.6cm of c1] (u1) {Analista};
+\draw[-Stealth] (d1) -- (c1);
+\draw[-Stealth] (c1) -- node[above]{$q_1, q_2, \ldots$} (u1);
+\draw[-Stealth] (u1) to[bend left=25] node[below, align=center, text width=4cm, yshift=-0.3cm]{$\tilde{q}_1(D), \tilde{q}_2(D)\ldots$\\\footnotesize budget consumato ad ogni query} (c1);
+\node[below=1.3cm of c1, text width=5cm, align=center] {\textbf{Interattivo}: dataset mai rilasciato, ogni query interroga live il curatore};
+
+\node[db, below=3.6cm of d1] (d2) {$D$};
+\node[cur, right=2.3cm of d2, fill=green!12] (c2) {Curatore\\fidato};
+\node[db, right=2.3cm of c2, fill=green!8] (d2b) {$\tilde{D}$\\(DP)};
+\node[usr, right=2.3cm of d2b] (u2) {Analisti};
+\draw[-Stealth] (d2) -- (c2);
+\draw[-Stealth] (c2) -- node[above, align=center, text width=2.1cm]{genera una sola volta} (d2b);
+\draw[-Stealth] (d2b) -- node[above, align=center, text width=2.1cm]{query libere (post-processing)} (u2);
+\node[below=0.9cm of c2, text width=6cm, align=center] {\textbf{Non-interattivo}: si rilascia una volta un dataset sintetico $\tilde{D}$ gi\`{a} DP; ogni analisi successiva \`{e} post-processing gratuito};
+\end{tikzpicture}
+\captionof{figure}{Nello scenario interattivo il curatore resta l'unico punto di accesso ai dati e ogni query consuma budget; nello scenario non-interattivo il budget si spende una sola volta al momento del rilascio del dataset sintetico.}
+\end{center}
 
 \subsection{Curatore Non Fidato e Local Differential Privacy}
 
@@ -1544,11 +1926,20 @@ Tecnica classica di sondaggi che preserva la LDP. Protocollo (rispondente a una 
   \item Se \textbf{Croce}: rispondere \emph{verit\`{a}}.
   \item Se \textbf{Testa}: lanciare di nuovo e rispondere S\`{i} (Testa) o No (Croce).
 \end{enumerate}
-Probabilit\`{a}: $P(\text{Sì}|\text{vero=Sì}) = 3/4$; $P(\text{No}|\text{vero=Sì}) = 1/4$.
+Probabilit\`{a}: $P(\text{Sì}|\text{vero=Sì}) = 3/4$; $P(\text{No}|\text{vero=Sì}) = 1/4$; per simmetria $P(\text{No}|\text{vero=No}) = 3/4$ e $P(\text{Sì}|\text{vero=No}) = 1/4$.
 
 Il Randomized Response preserva $\log(3)$-DP (LDP).
 
-\textbf{Prova}: Il rapporto massimo \`{e} $\frac{3/4}{1/4} = 3 = e^{\log 3}$.
+\textbf{Prova}: la LDP richiede che per ogni coppia di record $x, y$ (qui: rispondente con verit\`{a} S\`{i}, rispondente con verit\`{a} No) e ogni possibile risposta $r$, il rapporto $\frac{\mathbb{P}(\mathcal{M}(x)=r)}{\mathbb{P}(\mathcal{M}(y)=r)}$ sia limitato da $e^\varepsilon$. Si verificano tutti e quattro i casi:
+\[
+\frac{P(\text{Sì}\mid x=\text{Sì})}{P(\text{Sì}\mid y=\text{No})} = \frac{3/4}{1/4} = 3, \qquad
+\frac{P(\text{No}\mid x=\text{Sì})}{P(\text{No}\mid y=\text{No})} = \frac{1/4}{3/4} = \frac{1}{3},
+\]
+\[
+\frac{P(\text{Sì}\mid x=\text{No})}{P(\text{Sì}\mid y=\text{Sì})} = \frac{1/4}{3/4} = \frac{1}{3}, \qquad
+\frac{P(\text{No}\mid x=\text{No})}{P(\text{No}\mid y=\text{Sì})} = \frac{3/4}{1/4} = 3.
+\]
+Il rapporto massimo in valore assoluto (o il suo reciproco) \`{e} sempre $3$, quindi $e^{-\log 3} \leq \frac{\mathbb{P}(\mathcal{M}(x)=r)}{\mathbb{P}(\mathcal{M}(y)=r)} \leq e^{\log 3}$ per ogni $x,y,r$ $\Rightarrow$ il meccanismo preserva $\log(3)$-LDP. $\square$
 \end{definizione}
 
 \begin{nota}[In parole semplici: Randomized Response]
@@ -1563,6 +1954,58 @@ P(\mathcal{M}(q, x) = v) = \begin{cases} \frac{e^\varepsilon}{e^\varepsilon + k 
 Preserva $\varepsilon$-LDP. Per dati numerici: usare Laplace/Gaussiano con $GS_1(q) = \max_{x, x' \in U} \|q(x) - q(x')\|_1$.
 \end{definizione}
 
+\subsection{Limiti e Criticit\`{a} della Differential Privacy}
+
+\begin{nota}[Quanto piccolo deve essere $\varepsilon$?]
+La definizione di $\varepsilon$-DP \`{e} matematicamente precisa, ma la scelta del \textbf{valore} di $\varepsilon$ resta in gran parte arbitraria e lasciata al data curator. Lo stesso Dwork ha osservato che non esiste una regola universale per fissarlo: dipende dal contesto, dal tipo di dato e dal rischio accettabile.
+
+\textbf{Esempio -- perch\'{e} $\varepsilon$ grande \`{e} pericoloso}: sia $\varepsilon = 8$ (valore in realt\`{a} usato in alcuni deployment reali per privilegiare l'utilit\`{a}). Allora $e^{\varepsilon} = e^8 \approx 2981$. Se per un dato output $r$ si ha $\mathbb{P}(\mathcal{M}(D)=r)=1$, la DP garantisce \emph{solo} che $\mathbb{P}(\mathcal{M}(D')=r) \geq 1/2981 \approx 0.0003$ per ogni dataset adiacente $D'$. Formalmente il vincolo di $\varepsilon$-DP \`{e} rispettato, ma nella pratica un rapporto di probabilit\`{a} $2981{:}1$ rivela in modo quasi certo che il dataset vero era $D$ e non $D'$ -- la garanzia diventa ``triviale''. Questo mostra che soddisfare formalmente la DP \emph{non basta}: bisogna anche scegliere $\varepsilon$ sufficientemente piccolo perch\'{e} la garanzia sia significativa in pratica.
+\end{nota}
+
+\begin{nota}[Sensibilit\`{a} Globale troppo alta]
+Per molte query realistiche la sensibilit\`{a} globale $GS_1(q)$ \`{e} enorme o addirittura illimitata (es. lo stipendio massimo teorico in una query di somma), il che costringe ad aggiungere un rumore cos\`{i} grande da rendere il risultato inutile -- anche se, per il dataset $D$ concreto in esame, la query \`{e} in realt\`{a} molto stabile (aggiungere/togliere un record cambia poco il risultato).
+\end{nota}
+
+\begin{definizione}[Local Sensitivity]
+La \textbf{sensibilit\`{a} locale} di una query $q$ rispetto a un dataset specifico $D$ \`{e}:
+\[
+LS_q(D) = \max_{D' \sim D} |q(D) - q(D')|
+\]
+A differenza della sensibilit\`{a} globale $GS_1(q) = \max_{D \sim D'} |q(D)-q(D')|$ (massimo su \emph{tutte} le coppie di dataset adiacenti possibili), $LS_q(D)$ \`{e} calcolata solo sui vicini del dataset $D$ realmente osservato, e pu\`{o} quindi essere molto pi\`{u} piccola di $GS_1(q)$, permettendo in teoria di aggiungere meno rumore.
+\end{definizione}
+
+\begin{nota}[Due tentativi falliti con la sensibilit\`{a} locale]
+Usare $LS_q(D)$ al posto di $GS_1(q)$ nel meccanismo di Laplace sembra un'ottimizzazione naturale, ma \textbf{rompe la garanzia di DP} in entrambi i modi pi\`{u} ovvi di tentarlo:
+\begin{itemize}
+  \item \textbf{Tentativo 1 -- rumore calibrato punto per punto}: pubblicare $q(D) + Lap(0, LS_q(D)/\varepsilon)$. Il problema \`{e} che la \emph{scala} del rumore stesso dipende da $D$: se $D$ e $D'$ sono adiacenti ma hanno sensibilit\`{a} locale molto diversa (es. $LS_q(D)$ piccola, $LS_q(D')$ enorme), un avversario che osserva quanto \`{e} ``rumorosa'' la risposta pu\`{o} distinguere se il dataset vero era $D$ o $D'$ -- la scala del rumore diventa essa stessa un canale di fuga di informazione.
+  \item \textbf{Tentativo 2 -- rumore calibrato su una media dei vicini}: usare una stima della sensibilit\`{a} locale mediata sui dataset vicini invece che su $D$ esatto. Anche questo fallisce: la funzione che calcola questa media \`{e} essa stessa una query sui dati non protetta da rumore, quindi pu\`{o} rivelare informazioni sul dataset.
+\end{itemize}
+La soluzione corretta richiede di randomizzare \emph{anche} il modo in cui si sceglie la scala del rumore -- ed \`{e} esattamente ci\`{o} che fa il protocollo Propose-Test-Release.
+\end{nota}
+
+\begin{definizione}[Propose-Test-Release (PTR) -- Dwork \& Lei, 2009]
+Framework in tre fasi per usare in modo sicuro la sensibilit\`{a} locale, garantendo $(\varepsilon,\delta)$-DP:
+\begin{enumerate}
+  \item \textbf{Propose}: l'analista propone una soglia $b$ per la sensibilit\`{a} (un limite che si spera valga per il dataset in esame).
+  \item \textbf{Test}: si verifica \emph{in modo privato} (tramite un meccanismo DP, tipicamente basato sulla \textbf{distance-to-instability} -- il numero minimo di record che bisognerebbe modificare in $D$ affinch\'{e} $LS_q$ superi $b$) se il dataset osservato \`{e} sufficientemente ``lontano'' da una configurazione in cui la soglia $b$ verrebbe violata.
+  \item \textbf{Release}: se il test supera la soglia con margine sufficiente (con probabilit\`{a} di errore $\leq \delta$), si rilascia $q(D) + Lap(0, b/\varepsilon)$; altrimenti il meccanismo si rifiuta di rispondere (o restituisce $\bot$).
+\end{enumerate}
+\end{definizione}
+
+\begin{nota}[In parole semplici: Propose-Test-Release]
+L'idea \`{e} di non fidarsi ciecamente della sensibilit\`{a} locale calcolata sul dataset osservato, ma di verificarne \emph{privatamente} l'affidabilit\`{a} prima di usarla. Si propone una soglia $b$ ragionevole; poi si controlla, con un test che a sua volta rispetta la DP (quindi non rivela nulla di pi\`{u} sui dati), se il dataset \`{e} abbastanza ``robusto'' -- cio\`{e} se serve modificare molti record prima che la sensibilit\`{a} locale superi $b$. Solo se il test passa si procede a rilasciare la risposta con rumore calibrato su $b$ (che pu\`{o} essere molto pi\`{u} piccolo di $GS_1$); altrimenti si rinuncia a rispondere. Il parametro $\delta$ entra in gioco perch\'{e} il test stesso pu\`{o} sbagliare con piccola probabilit\`{a} -- da cui la garanzia $(\varepsilon,\delta)$-DP invece di $\varepsilon$-DP puro.
+\end{nota}
+
+\subsection{DP nel Mondo Reale}
+
+\textbf{Deployment reali di DP}: US Census Bureau (censimento USA 2020, primo censimento nazionale con garanzie formali di DP); Uber (analisi interne su tragitti); Apple (statistiche di utilizzo su iOS); Google (statistiche di navigazione in Chrome, tramite RAPPOR/LDP); Microsoft (telemetria in Windows). \textbf{Librerie software}: Google Differential Privacy Library, IBM \texttt{diffprivlib}, TensorFlow Privacy, OpenDP (Harvard/Microsoft).
+
+\textbf{Errori comuni di implementazione}: uso di una sensibilit\`{a} errata o sottostimata; composizione del budget calcolata in modo scorretto (es. dimenticare query precedenti); definizioni di adiacenza tra dataset incoerenti tra un componente e l'altro del sistema. Per individuare questi bug esistono strumenti di verifica automatica come \textbf{StatDP}, \textbf{DpFinder} e \textbf{CheckDP}, che testano staticamente o statisticamente se un'implementazione rispetta davvero la garanzia dichiarata.
+
+\begin{nota}[Definizioni alternative di privacy differenziale]
+Oltre alla $\varepsilon$-DP e alla $(\varepsilon,\delta)$-DP, la letteratura propone varianti che rilassano o rafforzano la garanzia in modi diversi (citate qui solo per riferimento, senza approfondimento formale): \textbf{Random DP} (garanzia che vale con alta probabilit\`{a} sulla scelta casuale del dataset, non nel caso peggiore), \textbf{Probabilistic DP}, \textbf{KL-DP} (basata sulla divergenza di Kullback-Leibler invece del rapporto di verosimiglianza), \textbf{R\'{e}nyi DP} (usa la divergenza di R\'{e}nyi, permette un'analisi di composizione pi\`{u} stretta), \textbf{zCDP} (zero-Concentrated DP, spesso usata come strumento intermedio per dimostrare limiti di composizione pi\`{u} precisi prima di convertire il risultato in $(\varepsilon,\delta)$-DP).
+\end{nota}
+
 \subsection{Machine Learning e Differential Privacy}
 
 Negli ultimi anni sono stati sviluppati numerosi algoritmi di Machine Learning \textbf{differenzialmente privati}. L'idea di base del \textbf{DP Machine Learning} \`{e} iniettare rumore nella \emph{fase di training} del modello ML, al fine di nascondere la presenza di un particolare record nel training set.
@@ -1571,13 +2014,62 @@ Negli ultimi anni sono stati sviluppati numerosi algoritmi di Machine Learning \
 \`{E} importante che un modello di Machine Learning non dipenda eccessivamente dai dati di training (per evitare l'overfitting). In questo senso, ML e DP condividono un obiettivo comune: restituire risultati accurati che \textbf{non dipendano dalla presenza di un individuo specifico nei dati}. La DP formalizza questa garanzia in modo rigoroso, mentre il ML la persegue per motivi di generalizzazione.
 \end{nota}
 
+\textbf{Dove si pu\`{o} iniettare il rumore} (tassonomia dei metodi DP-ML):
+\begin{itemize}
+  \item \textbf{Input perturbation}: si perturbano i dati di training \emph{prima} di allenare il modello (il modello stesso pu\`{o} restare invariato).
+  \item \textbf{In-process (algorithm) perturbation}: si inietta rumore \emph{durante} l'addestramento -- es. sui gradienti a ogni iterazione (DP-SGD), sui centroidi a ogni passo di un algoritmo iterativo (DP-k-means).
+  \item \textbf{Output perturbation}: si allena il modello normalmente e si aggiunge rumore solo ai \emph{parametri finali} appresi.
+\end{itemize}
+Esistono varianti DP per molte famiglie di modelli: Naive Bayes, Decision Tree, Boosting, SVM, reti neurali profonde (Deep Learning, tipicamente con DP-SGD), DP-Distance Learning, DP-CoClustering.
+
+\begin{esempio}[DP $k$-means -- iniezione di rumore nell'algoritmo di Lloyd]
+L'algoritmo di Lloyd per $k$-means alterna due passi fino a convergenza: (1) assegna ogni punto al centroide pi\`{u} vicino; (2) ricalcola ogni centroide come media dei punti assegnati. Per renderlo $\varepsilon$-DP, si perturba il passo (2) con il meccanismo di Laplace:
+\begin{itemize}
+  \item Per ogni cluster $j$ (su $k$ totali) e ogni dimensione $d$, la query ``media dei punti nel cluster'' ha sensibilit\`{a} $GS_1(q) = 1+d$ (aggiungere/rimuovere un punto pu\`{o} cambiare sia il conteggio dei membri di 1, sia la somma delle coordinate di al pi\`{u} il range del dominio in ciascuna delle $d$ dimensioni).
+  \item Si calcola il centroide rumoroso $\tilde{\mu}_j = \mu_j + Lap(0, (1+d)/\varepsilon)$ per ciascuno dei $k$ cluster.
+  \item Poich\'{e} i cluster sono partizioni \textbf{disgiunte} dei punti, il calcolo dei $k$ centroidi in una singola iterazione \`{e} un caso di \textbf{composizione parallela}: costa solo $\varepsilon$ (non $k\varepsilon$) per iterazione.
+  \item Se l'algoritmo esegue $n$ iterazioni fino a convergenza, per \textbf{composizione sequenziale} il costo totale \`{e} $n \cdot \varepsilon$-DP -- da qui l'importanza di limitare il numero di iterazioni quando si allena con un budget di privacy fissato.
+\end{itemize}
+\end{esempio}
+
 %=============================================================================
 \section{Privacy in Sistemi Distribuiti}
 %=============================================================================
 
 \subsection{Il Problema}
 
+\textbf{Perch\'{e} serve l'analisi distribuita} (quattro driver principali, oltre alla privacy): \textbf{performance} (spostare grandi moli di dati verso un unico sito centrale \`{e} costoso); \textbf{connettivit\`{a}} (le sorgenti possono avere connessioni intermittenti o a banda limitata); \textbf{eterogeneit\`{a}} (schemi e formati diversi tra le sorgenti rendono difficile una fusione diretta); \textbf{privacy} (le sorgenti non vogliono/possono condividere i dati grezzi).
+
 L'approccio tradizionale di raccogliere tutti i dati in un data warehouse centrale non funziona in un contesto distribuito per motivi di privacy. Creare un algoritmo di data mining/ML che estrae dati direttamente dalle sorgenti locali non risolve il problema: tutti gli ostacoli che impedivano la creazione del data warehouse rimangono, semplicemente incorporati nello strumento di mining.
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm, font=\scriptsize,
+  db/.style={draw, cylinder, shape border rotate=90, aspect=0.3, minimum width=1.3cm, minimum height=0.9cm, align=center, fill=blue!8},
+  proc/.style={draw, rounded corners, minimum width=2.1cm, minimum height=0.9cm, align=center, fill=orange!12}]
+\node[db] (s1) {Sorgente A};
+\node[db, below=0.5cm of s1] (s2) {Sorgente B};
+\node[db, below=0.5cm of s2] (s3) {Sorgente C};
+\node[proc, right=2cm of s2, fill=red!12] (dw) {Data Warehouse\\\footnotesize centrale};
+\node[below=0.3cm of dw, red!60!black] {\footnotesize $\times$ dati grezzi centralizzati};
+\draw[-Stealth, red!60!black] (s1) -- (dw);
+\draw[-Stealth, red!60!black] (s2) -- (dw);
+\draw[-Stealth, red!60!black] (s3) -- (dw);
+
+\node[db, below=1.6cm of s3] (t1) {Sorgente A};
+\node[db, below=0.5cm of t1] (t2) {Sorgente B};
+\node[db, below=0.5cm of t2] (t3) {Sorgente C};
+\node[proc, right=1.3cm of t1, fill=green!12] (la1) {Analisi\\locale};
+\node[proc, right=1.3cm of t2, fill=green!12] (la2) {Analisi\\locale};
+\node[proc, right=1.3cm of t3, fill=green!12] (la3) {Analisi\\locale};
+\node[proc, right=2cm of la2, fill=green!12] (comb) {Combiner\\(solo risultati)};
+\draw[-Stealth] (t1) -- (la1); \draw[-Stealth] (t2) -- (la2); \draw[-Stealth] (t3) -- (la3);
+\draw[-Stealth, green!30!black] (la1) -- (comb);
+\draw[-Stealth, green!30!black] (la2) -- (comb);
+\draw[-Stealth, green!30!black] (la3) -- (comb);
+\node[below=0.3cm of comb, green!30!black] {\footnotesize solo aggregati/modelli condivisi};
+\end{tikzpicture}
+\captionof{figure}{Data Warehouse centralizzato (sopra, non praticabile per privacy) vs. schema Local-Analysis + Combiner (sotto): ogni sorgente esegue l'analisi localmente e condivide solo risultati aggregati o (parziali) modelli, mai i dati grezzi.}
+\end{center}
 
 \textbf{Chi ha bisogno di analisi distribuite private?}
 \begin{itemize}
@@ -1625,6 +2117,19 @@ m_b = (1 \oplus b)\,m_0 \oplus b\,m_1
 Pensa all'OT come a una cassetta della posta magica con due scomparti: Alice inserisce $m_0$ nel primo scomparto e $m_1$ nel secondo. Bob può aprire \emph{solo uno} dei due scomparti (quello corrispondente al suo bit $b$), ma Alice non sa quale ha aperto. È ``oblivious'' (cieco) perché il mittente è all'oscuro di quale messaggio è stato ricevuto, e il ricevente non riesce a leggere l'altro. Questo blocco crittografico è il fondamento del calcolo sicuro: usando OT si può valutare privatamente qualsiasi operazione logica (AND, XOR, NOT) e quindi qualsiasi funzione arbitraria, senza che nessuna delle due parti impari gli input dell'altra.
 \end{nota}
 
+\begin{center}
+\begin{tikzpicture}[font=\scriptsize]
+\node[draw, rounded corners, minimum width=2.4cm, minimum height=1cm, align=center, fill=blue!8] (alice) at (0,0) {Alice (Sender)\\$(m_0, m_1)$};
+\node[draw, rounded corners, minimum width=2.4cm, minimum height=1cm, align=center, fill=green!8] (bob) at (7,0) {Bob (Receiver)\\bit $b$};
+\draw[-Stealth, thick] (alice) -- node[above]{protocollo OT 1-of-2} (bob);
+\node[align=center, below=0.3cm of bob, text width=3cm] {ottiene \textbf{solo} $m_b$};
+
+\node[align=left, below=1.6cm of alice, text width=3.2cm] {\textbf{Sicurezza del Sender}: Bob non impara nulla su $m_{1-b}$};
+\node[align=left, below=1.6cm of bob, text width=3.2cm] {\textbf{Sicurezza del Receiver}: Alice non impara nulla su $b$};
+\end{tikzpicture}
+\captionof{figure}{Flusso dell'Oblivious Transfer 1-of-2: Alice invia entrambi i messaggi cifrati, ma solo Bob pu\`{o} decifrare quello selezionato da $b$, e Alice non scopre mai quale dei due sia stato letto.}
+\end{center}
+
 \begin{esempio}[OT 1-of-2 per computare l'AND sicuro di due bit]
 Alice vuole calcolare $x_1 \cdot x_2$ (AND) con Bob senza rivelare i propri input. Alice (sender) pone $m_0 = 0$ e $m_1 = x_1$; Bob (receiver) usa $b = x_2$. Allora:
 \[
@@ -1635,7 +2140,11 @@ Bob ottiene $x_1 \cdot x_2$ senza che Alice sappia $x_2$, e senza che Bob sappia
 
 \textbf{OT 1-of-N} da OT 1-of-2 (per N=$2^k$ messaggi): Alice sceglie $k$ coppie di chiavi casuali (una per ogni bit dell'indice del messaggio desiderato) e cifra ogni messaggio $m_{ij}$ con la coppia corrispondente: $c_{ij} = F_{k'_i}(ij) \oplus F_{k_j}(ij) \oplus m_{ij}$. Bob usa $k$ OT 1-of-2 per ottenere le chiavi giuste e decifra solo il messaggio selezionato.
 
-\textbf{Oblivious Polynomial Evaluation}: il sender ha un polinomio $Q$ di grado $k$; il receiver ha un valore $z$; il receiver ottiene $Q(z)$ senza che il sender sappia $z$ e senza che il receiver impari i coefficienti di $Q$. Overhead: $O(k)$ esponenziali.
+\textbf{Oblivious Polynomial Evaluation (OPE)}: il sender ha un polinomio $Q$ di grado $k$; il receiver ha un valore $z$; il receiver ottiene $Q(z)$ senza che il sender sappia $z$ e senza che il receiver impari i coefficienti di $Q$. L'overhead dipende dal modello di sicurezza assunto:
+\begin{itemize}
+  \item \textbf{Modello malicious} (nessuna delle parti \`{e} assunta onesta): richiede $O(k)$ operazioni di esponenziazione, basate su crittografia a chiave pubblica -- pi\`{u} costoso ma sicuro anche contro un avversario che devia dal protocollo.
+  \item \textbf{Modello semi-honest} (come nel protocollo ID3$_\delta$ visto sotto): basato su crittografia omomorfica, con overhead $O(k)$ operazioni di calcolo e $O(k|F|)$ di comunicazione (dove $F$ \`{e} il campo su cui sono definiti i coefficienti) -- pi\`{u} efficiente, ma valido solo se entrambe le parti seguono correttamente il protocollo.
+\end{itemize}
 
 \subsubsection{Protocollo di Yao per Due Parti}
 
@@ -1692,6 +2201,8 @@ L'idea di fondo è che nessuna delle due parti deve mai vedere il valore vero di
 
 \subsubsection{Privacy Preserving ID3}
 
+\textbf{Notazione}: $D$ \`{e} l'insieme delle istanze di dati (transazioni) da classificare; $A = \{A_1, \ldots, A_m\}$ \`{e} l'insieme degli \textbf{attributi} disponibili per costruire l'albero (pubblici, noti a entrambe le parti); $C = \{c_1, \ldots, c_L\}$ \`{e} l'attributo di \textbf{classe} (l'etichetta da predire, con $L$ possibili valori).
+
 \textbf{ID3 Algorithm} (Quinlan): costruisce un decision tree usando information gain.
 \begin{enumerate}
   \item Calcola il guadagno di informazione per ogni feature.
@@ -1699,6 +2210,10 @@ L'idea di fondo è che nessuna delle due parti deve mai vedere il valore vero di
   \item Crea un nodo decisionale. Ripeti ricorsivamente per i sottoalberi.
   \item Se tutte le righe hanno la stessa classe, crea una foglia.
 \end{enumerate}
+
+\begin{esempio}[ID3 -- esempio illustrativo]
+Dataset di clienti con attributi Et\`{a} ($<30$/$\geq 30$) e Stipendio (Basso/Alto), classe \texttt{RepeatVisitor} (S\`{i}/No). ID3 calcola l'information gain di ciascun attributo rispetto alla classe: se Et\`{a} produce il guadagno maggiore, l'albero effettua per primo lo split su Et\`{a}, creando due sottoalberi (uno per $<30$, uno per $\geq 30$); su ciascun sottoalbero si ripete la procedura con l'attributo Stipendio, fino a ottenere foglie pure (tutte le istanze con la stessa classe) o l'esaurimento degli attributi.
+\end{esempio}
 
 \begin{definizione}[ID3$_\delta$ -- Lindell \& Pinkas, J. Cryptology 2002]
 Protocollo per ID3 su dati distribuiti orizzontalmente tra due parti (stessa schema, attributi pubblici, entit\`{a} individuali private). Computa un'approssimazione di ID3 chiamata ID3$_\delta$.
@@ -1734,6 +2249,18 @@ Per scegliere il miglior attributo su cui dividere l'albero, ID3 ha bisogno di c
   \item \textbf{Homomorphic encryption}: crittografia che permette di effettuare calcoli su dati cifrati senza decriptarli; i risultati sono in forma cifrata. Computazionalmente costosa.
   \item \textbf{Federated learning}: consente di allenare un algoritmo su molti dispositivi decentralizzati senza effettuare scambi di dati grezzi; solo i gradienti (o parametri) del modello vengono condivisi.
 \end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[font=\scriptsize]
+\node[draw, rounded corners, minimum width=2.6cm, minimum height=1cm, align=center, fill=orange!12] (srv) at (0,0) {Server\\(modello globale)};
+\foreach \i/\ang in {1/150, 2/90, 3/30, 4/-30, 5/-90, 6/-150} {
+  \node[draw, rounded corners, minimum width=1.6cm, minimum height=0.8cm, fill=blue!8] (dev\i) at (\ang:3.3) {Device \i};
+  \draw[Stealth-Stealth, thick, violet!50!black] ($(dev\i)!0.15!(srv)$) -- ($(dev\i)!0.85!(srv)$);
+}
+\node[align=left, below=4.4cm of srv, text width=7cm, font=\footnotesize] {ogni freccia \`{e} bidirezionale: il device invia i \textbf{gradienti} calcolati localmente, il server rimanda il \textbf{modello aggiornato}};
+\end{tikzpicture}
+\captionof{figure}{Federated learning: ogni dispositivo allena il modello localmente sui propri dati (mai condivisi) e invia solo i gradienti/parametri al server, che li aggrega per aggiornare il modello globale e lo ridistribuisce.}
+\end{center}
 
 \begin{nota}[In parole semplici: Altri Approcci alla Privacy Distribuita]
 Questi tre approcci affrontano lo stesso problema -- calcolare qualcosa su dati altrui senza vederli -- da angolazioni diverse. La crittografia funzionale generalizza l'idea della crittografia a chiave pubblica: invece di dover decriptare l'intero messaggio per usarlo, una chiave speciale permette di calcolare direttamente solo una funzione specifica del testo in chiaro, ad esempio la media degli stipendi di un gruppo di persone, senza che chi fa il calcolo veda mai i singoli valori. La crittografia omomorfica va oltre: permette di eseguire calcoli direttamente sui dati cifrati, in modo che il risultato, una volta decifrato, coincida esattamente con quello che si sarebbe ottenuto operando sui dati in chiaro. È concettualmente molto potente, ma ha un costo: è ancora oggi estremamente lenta, ordini di grandezza più lenta di un calcolo normale, quindi si usa solo dove la privacy è davvero prioritaria rispetto alle prestazioni. Il federated learning, infine, è l'approccio più usato in pratica: ogni dispositivo, ad esempio il nostro smartphone, allena il modello di machine learning localmente sui propri dati e manda al server centrale solo il gradiente, cioè l'indicazione di come modificare i parametri del modello, mai i dati grezzi. Il server si limita ad aggregare i gradienti di tutti gli utenti per aggiornare il modello globale -- è la stessa tecnica con cui Google migliora la tastiera Gboard senza mai leggere i messaggi che scriviamo.
@@ -1783,6 +2310,7 @@ Questa formula spiega da dove arriva l'errore complessivo di un modello, scompon
   \item Modelli di scraping AI mostrano discriminazione nei confronti delle donne.
   \item Amazon abandona un modello di selezione del personale che discriminava le donne.
   \item Negli USA persone con nomi ``tipicamente bianchi'' ricevono pi\`{u} colloqui di lavoro.
+  \item Un uomo belga si \`{e} tolto la vita dopo sei settimane di conversazioni con un chatbot IA che, invece di indirizzarlo verso un aiuto professionale, avrebbe assecondato e incoraggiato i suoi pensieri suicidari -- un esempio drammatico di come l'opacit\`{a} e la mancanza di supervisione umana in questi sistemi possano avere conseguenze irreversibili.
 \end{itemize}
 
 \textbf{Problema fondamentale}: L'IA attuariale \`{e} spesso \emph{opaca}: \`{e} difficile capire perch\'{e} un sistema ha preso una particolare decisione. Sebbene sia possibile ispezionare i parametri di un modello, collegare questi parametri alle ragioni effettive delle decisioni \`{e} difficile.
@@ -1801,18 +2329,44 @@ Accuratezza: $P(Y = \hat{Y})$.
 Dietro questa formula c'è un'idea piuttosto intuitiva: se conoscessimo esattamente la probabilità reale che una persona con un certo profilo $X$ appartenga alla classe 1 (ad esempio ``è a rischio di insolvenza''), la scelta più sensata sarebbe semplicemente scommettere sulla classe più probabile -- se quella probabilità supera il 50\%, prevediamo 1, altrimenti prevediamo 0. Questa regola, detta classificatore bayesiano ottimale, è quella che minimizza in media il numero di errori, proprio perché in ogni singolo caso scommette sull'esito più verosimile. Naturalmente nella pratica non conosciamo mai $\mathbb{P}(Y=1|X=x)$ con esattezza: è proprio quello che un modello di machine learning cerca di stimare a partire dai dati di training. Questa formula serve quindi soprattutto come punto di riferimento teorico, il limite ideale con cui confrontare quanto un classificatore reale si avvicina alla decisione perfetta.
 \end{nota}
 
+\begin{nota}[La funzione di costo]
+Il \textbf{costo} $l(\hat{Y}, Y)$ \`{e} un numero reale che quantifica quanto ``pesa'' un errore di previsione (es. costo 0 se $\hat{Y}=Y$, costo 1 se sbagliato -- ma i costi possono anche essere \emph{asimmetrici}: un falso negativo in una diagnosi medica pu\`{o} costare molto di pi\`{u} di un falso positivo). \`{E} importante notare che due classificatori possono avere la \textbf{stessa accuratezza} $P(Y=\hat{Y})$ ma un \textbf{costo atteso molto diverso}, se distribuiscono i propri errori in modo diverso tra i gruppi o tra i tipi di errore (falsi positivi vs. falsi negativi) -- motivo per cui l'accuratezza da sola non basta a valutare l'equit\`{a} di un modello.
+\end{nota}
+
+\begin{esempio}[Esiti disparati -- illustrazione canonica]
+Si considerino due gruppi definiti da un attributo sensibile $A$ (es. Neri/Bianchi) e un punteggio di qualificazione $R$ (es. affidabilit\`{a} creditizia) usato per decidere se concedere un prestito ($\hat{Y}=1$ se il punteggio supera una soglia). Anche se la soglia \`{e} \textbf{identica} per entrambi i gruppi, se le distribuzioni di $R$ nei due gruppi sono diverse (es. per ragioni storiche/socioeconomiche), l'esito $\hat{Y}$ risulter\`{a} sistematicamente diverso: in un caso tipico solo il \textbf{20\%} del gruppo svantaggiato ottiene un esito positivo, contro il \textbf{60\%} del gruppo avvantaggiato, pur applicando la stessa regola a entrambi. Questo \`{e} l'esempio canonico (Barocas, Hardt \& Narayanan, \emph{Fairness and Machine Learning}) usato per motivare perch\'{e} ``trattare tutti allo stesso modo'' (stessa soglia) non implica affatto un esito equo -- ed \`{e} il punto di partenza per i criteri di fairness formali definiti pi\`{u} avanti.
+\end{esempio}
+
 \begin{definizione}[Ciclo ML]
-Stato del Mondo $\xrightarrow{\text{Measurement}}$ Data $\xrightarrow{\text{Learning}}$ Model $\xrightarrow{\text{Action}}$ Individuals $\xrightarrow{\text{Feedback}}$ Stato del Mondo.
+Il ciclo ML \textbf{non} \`{e} un unico anello chiuso, ma uno schema a $2\times 2$: \emph{Stato del Mondo} e \emph{Individui} formano una riga collegata da un legame \textbf{implicito} (gli individui fanno parte del mondo, ma senza un nesso causale diretto modellato esplicitamente); \emph{Data} e \emph{Model} formano l'altra riga, collegati dalla \textbf{Learning}. Le frecce causali esplicite sono: Stato del Mondo $\xrightarrow{\text{Measurement}}$ Data; Model $\xrightarrow{\text{Action}}$ Individui; Individui $\xrightarrow{\text{Feedback}}$ Model (\textbf{non} torna allo Stato del Mondo).
 
 \begin{itemize}
   \item \textbf{Misurazione}: il processo in cui lo stato del mondo viene ridotto a tabelle di dati. Alcune caratteristiche possono essere non osservabili (necessit\`{a} di un modello di misurazione).
-  \item \textbf{Apprendimento}: ricerca di buoni parametri $\theta$ per $f$.
-  \item \textbf{Azioni}: come vengono impiegate le decisioni su input nuovi.
-  \item \textbf{Feedback}: registrazione delle reazioni degli utenti.
+  \item \textbf{Apprendimento}: ricerca di buoni parametri $\theta$ per $f$, a partire dai dati.
+  \item \textbf{Azioni}: come le decisioni del modello vengono impiegate su input nuovi, con effetto diretto sugli individui.
+  \item \textbf{Feedback}: le reazioni degli individui (es. click, rimborsi, recidiva) vengono registrate e reinserite come nuovo segnale nel modello -- non nello stato del mondo in astratto.
 \end{itemize}
+
+\textbf{Modello formale della misurazione}: una misurazione ripetuta $\hat{l}_n$ del vero valore $L$ (non osservabile direttamente) si scrive $\hat{l}_n = L + \epsilon_n$, dove $\epsilon_n$ \`{e} l'errore di misurazione all'osservazione $n$. Se gli errori sono \textbf{indipendenti}, a \textbf{media nulla} e con \textbf{varianza limitata}, per la legge dei grandi numeri $\frac{1}{N}\sum_{n=1}^N \hat{l}_n \to L$ con probabilit\`{a} 1 al crescere di $N \to \infty$: la media di molte misurazioni converge al vero valore. Il problema di bias emerge quando queste ipotesi \emph{non} valgono in modo uniforme tra i gruppi: se gli errori di misurazione hanno media diversa da zero (sistematicamente distorti) o varianza pi\`{u} alta per un gruppo rispetto a un altro, la convergenza al vero valore \`{e} pi\`{u} lenta o distorta proprio per quel gruppo.
 
 Problemi di bias nel ciclo: dati sufficienti per tutti i gruppi? Le misurazioni non sono di parte? L'assunzione di indipendenza degli errori \`{e} probabilmente falsa tra gruppi.
 \end{definizione}
+
+\begin{center}
+\begin{tikzpicture}[node distance=2.6cm, font=\small,
+  box/.style={draw, rounded corners, minimum width=3.2cm, minimum height=1cm, align=center, fill=blue!6}]
+\node[box] (world) {Stato del Mondo};
+\node[box, right=of world] (ind) {Individui};
+\node[box, below=of world] (data) {Data};
+\node[box, below=of ind] (model) {Model};
+\draw[dashed, -] (world) -- node[above]{\scriptsize (legame implicito)} (ind);
+\draw[-Stealth] (world) -- node[left]{\scriptsize Measurement} (data);
+\draw[-Stealth] (data) -- node[below]{\scriptsize Learning} (model);
+\draw[-Stealth] (model.north west) -- node[left]{\scriptsize Action} (ind.south west);
+\draw[-Stealth] (ind.south east) -- node[right]{\scriptsize Feedback} (model.north east);
+\end{tikzpicture}
+\captionof{figure}{Il ciclo ML corretto: uno schema $2\times2$, non un unico anello. Il feedback degli individui rientra nel Model, non torna allo Stato del Mondo in modo esplicito -- una distinzione importante perch\'{e} significa che il modello pu\`{o} auto-rinforzare i propri bias (il \emph{feedback loop} gi\`{a} visto sopra) senza mai ``correggersi'' rispetto alla realt\`{a} sottostante.}
+\end{center}
 
 \subsection{Discriminazione e Misure di Discriminazione}
 
@@ -1824,6 +2378,8 @@ La pratica di trattare in modo diverso le persone in base alla loro appartenenza
 La pratica di offrire lo stesso trattamento a persone appartenenti a gruppi sociali distinti se ci\`{o} comporta che un gruppo di persone sia posto in una situazione di particolare svantaggio.
 
 \textbf{Esempio}: pensioni calcolate in modo uguale per part-time e full-time; poich\'{e} l'88\% dei part-time erano donne, l'effetto era sproporzionatamente negativo per le donne (caso Hilde Sch\"{o}nheit vs. Frankfurt).
+
+\textbf{Esempio -- D.H. e altri contro Repubblica Ceca (CEDU, 2007)}: in diverse citt\`{a} ceche, bambini Rom venivano indirizzati verso scuole speciali per persone con disabilit\`{a} intellettiva sulla base di test psicologici standardizzati, formalmente identici per tutti gli studenti. Poich\'{e} tali test non tenevano conto del contesto socio-culturale rom, tra il \textbf{50\% e il 90\%} dei bambini rom in alcune aree finiva in queste scuole speciali, contro una minoranza dei bambini non rom -- un caso di discriminazione indiretta riconosciuto dalla Corte Europea dei Diritti dell'Uomo, in cui uno strumento apparentemente neutro produce un effetto sistematicamente escludente su un gruppo specifico.
 \end{definizione}
 
 \textbf{Cosa rende sbagliata la discriminazione?}
@@ -1842,6 +2398,9 @@ L'idea che le persone debbano essere trattate in modo uguale e che alcune cose d
   \item Sen: capacit\`{a} e risorse necessarie per fare determinate cose.
 \end{itemize}
 \end{definizione}
+
+\paragraph{Fortuna e Merito}
+Una distinzione centrale per l'egalitarismo \`{e} quella tra disuguaglianze dovute alla \textbf{fortuna} (circostanze non scelte: dove si nasce, la famiglia, la salute genetica) e disuguaglianze dovute al \textbf{merito} (\emph{desert}, derivante da scelte, talento coltivato ed impegno personale). La posizione egalitaria tipica sostiene che le disuguaglianze dovute alla fortuna dovrebbero essere \textbf{corrette} dalla societ\`{a}, mentre quelle dovute al merito possono essere legittime. In pratica, per\`{o}, tracciare una linea netta tra ci\`{o} che \`{e} ``fortuna'' e ci\`{o} che \`{e} ``merito'' \`{e} un'operazione per certi versi \textbf{utopistica}: anche il talento e la capacit\`{a} di impegnarsi dipendono in parte da fattori non scelti (genetica, contesto familiare, educazione ricevuta), rendendo la distinzione sfumata piuttosto che netta -- un problema che si riflette direttamente sul dibattito su quali bias algoritmici vadano corretti e quali no.
 
 \textbf{Tipi di danni algoritmici}:
 \begin{itemize}

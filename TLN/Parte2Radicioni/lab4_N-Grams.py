@@ -129,7 +129,7 @@ n = 2  # ordine del modello: n=2 -> bigrammi, P(parola | 1 parola di contesto)
 # aggiunge i marcatori <s>/</s> per ogni sequenza e genera gli n-grammi per l'addestramento
 train_tw_mle, vocab_tw_mle = padded_everygram_pipeline(n, sequenze_tweet)
 train_lt_mle, vocab_lt_mle = padded_everygram_pipeline(n, sequenze_lett)
-modello_tweet = MLE(n)
+modello_tweet = MLE(n)#qua si crea il modello MLE (Maximum Likelihood Estimation) per i bigrammi del dominio Twitter 
 modello_tweet.fit(train_tw_mle, vocab_tw_mle)
 modello_lett = MLE(n)
 modello_lett.fit(train_lt_mle, vocab_lt_mle)
