@@ -39,7 +39,6 @@ print(f"Tweet caricati: {len(tweets_raw)}")
 print(f"Esempio positivo: {tweets_pos[0]}")
 print(f"Esempio negativo: {tweets_neg[0]}")
 
-#pulizia del testo
 def pulisci_tweet(testo):
     """Rimuove URL, menzioni e hashtag, che distorcerebbero le frequenze degli n-grammi."""
     testo = re.sub(r'http\S+', '', testo)
@@ -54,38 +53,20 @@ def pulisci_letterario(testo):
     testo = testo.lower().strip()
     return testo
 
-
 tweets_puliti     = [pulisci_tweet(t) for t in tweets_raw]
-tweets_puliti     = [t for t in tweets_puliti if len(t) > 0]  # scarta i tweet svuotati dalla pulizia (es. solo URL/menzioni) altrimenti li tiene se lunghezza > 0
+tweets_puliti     = [t for t in tweets_puliti if len(t) > 0]  # scarta i tweet svuotati dalla pulizia (es. solo URL/menzioni)
 testo_lett_pulito = pulisci_letterario(testo_letterario_raw)
-
 
 print("\n=== PULIZIA ===")
 print(f"Tweet PRIMA: {tweets_raw[0]}")
 print(f"Tweet DOPO:  {tweets_puliti[0]}")
 
-<<<<<<< HEAD
-testo_tweet_unito = ' '.join(tweets_puliti) #prendiamo i testi e li tokenizziamo in singole parole  che vengono unite in un listone di parole --- questo è il grezzo che ci serve solo per contare nella funzione len nel print f
+testo_tweet_unito = ' '.join(tweets_puliti)
 tokens_tweet = word_tokenize(testo_tweet_unito)
 tokens_lett  = word_tokenize(testo_lett_pulito)
 
-vocab_tweet_set = set(tokens_tweet)# set elimina i duplicati
+vocab_tweet_set = set(tokens_tweet)
 vocab_lett_set  = set(tokens_lett)
-
-# sequenze separate (un tweet/una frase = una sequenza) per l'addestramento: servono a non far attraversare i bigrammi tra un tweet/frase e il successivo
-sequenze_tweet = [word_tokenize(t) for t in tweets_puliti]#prendiamo tweet puliti e creiamo lista di liste dei tweet tokenizzati 
-frasi_lett_raw = sent_tokenize(testo_letterario_raw)#funzione natia nltk che considera le frasi in base alle stopword per poi creare una liste di liste formate dalle frasi del testo letterario 
-sequenze_lett  = [word_tokenize(pulisci_letterario(f)) for f in frasi_lett_raw]#sequenze_lett tokenizza il testo letterario scomposto in lista di liste
-sequenze_lett  = [s for s in sequenze_lett if s]#iterazione del processo
-=======
-
-testo_tweet_unito = ' '.join(tweets_puliti) 
-tokens_tweet = word_tokenize(testo_tweet_unito)
-tokens_lett  = word_tokenize(testo_lett_pulito)
-vocab_tweet_set = set(tokens_tweet) 
-vocab_lett_set  = set(tokens_lett)
-
-
 
 # sequenze separate (un tweet/una frase = una sequenza) per l'addestramento: servono
 # a non far attraversare i bigrammi tra un tweet/frase e il successivo
@@ -93,24 +74,23 @@ sequenze_tweet = [word_tokenize(t) for t in tweets_puliti]
 frasi_lett_raw = sent_tokenize(testo_letterario_raw)
 sequenze_lett  = [word_tokenize(pulisci_letterario(f)) for f in frasi_lett_raw]
 sequenze_lett  = [s for s in sequenze_lett if s]
->>>>>>> 69016fbaa8a1f0aa2f1e61b3924ff8442b0c7e13
 
 print("\n=== TOKENIZZAZIONE ===")
-print(f"Token Twitter:            {len(tokens_tweet)}")#len conta i singoli token dalla divisione grezza
+print(f"Token Twitter:            {len(tokens_tweet)}")
 print(f"Token Letterario:         {len(tokens_lett)}")
 print(f"Parole uniche Twitter:    {len(vocab_tweet_set)}")
 print(f"Parole uniche Letterario: {len(vocab_lett_set)}")
 
-stop = set(stopwords.words('english'))#rimozione stopword dal testo
+stop = set(stopwords.words('english'))
 
-tokens_tweet_filtrati = [t for t in tokens_tweet if t not in stop]#salviamo i token ripuliti dalle stopword
+tokens_tweet_filtrati = [t for t in tokens_tweet if t not in stop]
 tokens_lett_filtrati  = [t for t in tokens_lett  if t not in stop]
 
 # senza stopword: piu informativi sui temi ricorrenti
-bi_tweet_filtrati = Counter(ngrams(tokens_tweet_filtrati, 2))#conta le apparizioni dei diversi bigrammi nel testo filtrato
+bi_tweet_filtrati = Counter(ngrams(tokens_tweet_filtrati, 2))
 bi_lett_filtrati  = Counter(ngrams(tokens_lett_filtrati,  2))
 
-print("\n=== BIGRAMMI SENZA STOPWORDS ===")#dati rilevati dall'estrazione dei bigrammi puliti dalle stopwords
+print("\n=== BIGRAMMI SENZA STOPWORDS ===")
 print("\nTWITTER (top 10):")
 for coppia, count in bi_tweet_filtrati.most_common(10):
     print(f"  {str(coppia):<35} → {count} volte")
@@ -118,13 +98,13 @@ print("\nLETTERARIO (top 10):")
 for coppia, count in bi_lett_filtrati.most_common(10):
     print(f"  {str(coppia):<35} → {count} volte")
 
-# stessa estrazione sul testo integrale con le stopwords, per confrontare lo stile sintattico
-bi_tweet  = Counter(ngrams(tokens_tweet, 2))#bigrammi
+# stessa estrazione sul testo integrale, per confrontare lo stile sintattico
+bi_tweet  = Counter(ngrams(tokens_tweet, 2))
 bi_lett   = Counter(ngrams(tokens_lett,  2))
-tri_tweet = Counter(ngrams(tokens_tweet, 3))#trigrammi
+tri_tweet = Counter(ngrams(tokens_tweet, 3))
 tri_lett  = Counter(ngrams(tokens_lett,  3))
 
-print("\n=== BIGRAMMI CON STOPWORDS (top 10) ===")#dati rilevati dall'estrazione dei bigrammi non puliti dalle stopwords
+print("\n=== BIGRAMMI CON STOPWORDS (top 10) ===")
 print("TWITTER:")
 for coppia, count in bi_tweet.most_common(10):
     print(f"  {str(coppia):<30} → {count} volte")
@@ -132,7 +112,7 @@ print("\nLETTERARIO:")
 for coppia, count in bi_lett.most_common(10):
     print(f"  {str(coppia):<30} → {count} volte")
 
-print("\n=== TRIGRAMMI (top 10) ===")#dati rilevati dall'estrazione dei bigrammi non puliti dalle stopwords
+print("\n=== TRIGRAMMI (top 10) ===")
 print("TWITTER:")
 for t, c in tri_tweet.most_common(10):
     print(f"  {str(t):<42} → {c} volte")
@@ -143,14 +123,10 @@ for t, c in tri_lett.most_common(10):
 print("\n=== ADDESTRAMENTO MODELLI ===")
 n = 2  # ordine del modello: n=2 -> bigrammi, P(parola | 1 parola di contesto)
 
-# aggiunge i marcatori <s>/</s> di padding per ogni sequenza e genera gli n-grammi ( da 1 a n=2 ) per l'addestramento del modello 
+# aggiunge i marcatori <s>/</s> per ogni sequenza e genera gli n-grammi per l'addestramento
 train_tw_mle, vocab_tw_mle = padded_everygram_pipeline(n, sequenze_tweet)
 train_lt_mle, vocab_lt_mle = padded_everygram_pipeline(n, sequenze_lett)
-<<<<<<< HEAD
-modello_tweet = MLE(n)#qua si crea il modello MLE (Maximum Likelihood Estimation) per i bigrammi del dominio Twitter 
-=======
-modello_tweet = MLE(n)#stima la prob condizionata alla frequenza relativa stimata nel corpus
->>>>>>> 98e7dc17f9842e34b1ad02203adca01080d557c4
+modello_tweet = MLE(n)
 modello_tweet.fit(train_tw_mle, vocab_tw_mle)
 modello_lett = MLE(n)
 modello_lett.fit(train_lt_mle, vocab_lt_mle)
@@ -159,12 +135,12 @@ modello_lett.fit(train_lt_mle, vocab_lt_mle)
 train_tw_lp, vocab_tw_lp = padded_everygram_pipeline(n, sequenze_tweet)
 train_lt_lp, vocab_lt_lp = padded_everygram_pipeline(n, sequenze_lett)
 
-modello_tweet_lp = Laplace(n)  # Laplace: aggiunge +1 fittizio al numeratore e al denominatore cardinalità univoca del vocabolario a ogni conteggio (smoothing)
+modello_tweet_lp = Laplace(n)  # Laplace: aggiunge +1 fittizio a ogni conteggio (smoothing)
 modello_tweet_lp.fit(train_tw_lp, vocab_tw_lp)
 modello_lett_lp = Laplace(n)
 modello_lett_lp.fit(train_lt_lp, vocab_lt_lp)
 
-print(f"Vocabolario Twitter:    {len(modello_tweet.vocab)} parole")  #risultati del fitting sul modello, includendo i token di padding
+print(f"Vocabolario Twitter:    {len(modello_tweet.vocab)} parole")  # include i token di padding
 print(f"Vocabolario Letterario: {len(modello_lett.vocab)} parole")
 
 # .score(parola, [contesto]) = P(parola | contesto), stimata dalle frequenze osservate
@@ -180,7 +156,7 @@ print(f"  P('been'  | 'had')  = {modello_lett.score('been',  ['had']):.4f}")
 print(f"  P('love'  | 'i')    = {modello_lett.score('love',  ['i']):.4f}")
 print(f"  P('wait'  | 'cant') = {modello_lett.score('wait',  ['cant']):.4f}")
 
-print("\n=== GENERAZIONE TESTO (MLE) ===")#grazie alle prob ottenute dalla mle del modello basandosi sui bigrammi visti in addestramento
+print("\n=== GENERAZIONE TESTO (MLE) ===")
 
 def genera_testo(modello, n_parole=30):
     """Campiona n_parole token dal modello e rimuove gli artefatti tipici dei bigrammi (padding, lettere isolate)."""
@@ -190,21 +166,21 @@ def genera_testo(modello, n_parole=30):
     for token in testo_raw:
         if token in ['<s>', '</s>', '<UNK>']:
             continue
-        if len(token) == 1 and token not in ['i', 'a']: #eccezione per la i e la nella pulizia della frase
+        if len(token) == 1 and token not in ['i', 'a']:
             continue
         testo_filtrato.append(token)
 
-    return ' '.join(testo_filtrato) #costruzione della frase pulita
+    return ' '.join(testo_filtrato)
 
 print("\nStile TWITTER:")
-print(f"  {genera_testo(modello_tweet, 40)}")#
+print(f"  {genera_testo(modello_tweet, 40)}")
 
 print("\nStile LETTERARIO:")
 print(f"  {genera_testo(modello_lett, 40)}")
 
 # seed diversi = campioni diversi dello stesso stile
 print("\nConfronto generazione per dominio:")
-for seed in [42, 99, 7, 123]: 
+for seed in [42, 99, 7, 123]:
     tw_raw  = modello_tweet.generate(15, random_seed=seed)
     lt_raw  = modello_lett.generate(15, random_seed=seed)
 
@@ -215,13 +191,13 @@ for seed in [42, 99, 7, 123]:
     print(f"    TWITTER:    {' '.join(tw_filt)}")
     print(f"    LETTERARIO: {' '.join(lt_filt)}")
 
-print("\n=== PERPLEXITY CROSS-DOMAIN ===")#confrontiamo il modello tweetter e il modello letterario su delle frasi prestabilite per valutarne la perplexity dei modelli
+print("\n=== PERPLEXITY CROSS-DOMAIN ===")
 
 def calcola_perplexity(modello, tokens, n=2):
     """perplexity() si aspetta n-grammi (tuple), non token grezzi: senza questa conversione
     indicizza per errore i caratteri delle stringhe invece di calcolare probabilita' reali."""
-    ngr = list(ngrams(pad_both_ends(tokens, n=n), n))#fai padding sulle frasi pre-impostate, dopodichè crea n-grammi con n= 2
-    return modello.perplexity(ngr)#calcolo della perplexity dei bi-grammi creati con la funzione ngrams sul modello con smoohing di laplace
+    ngr = list(ngrams(pad_both_ends(tokens, n=n), n))
+    return modello.perplexity(ngr)
 
 frasi_test = {
     "tw_pos_1": "i love you so much thank you",
@@ -241,20 +217,20 @@ corretti = 0
 totale   = 0
 
 for nome, frase in frasi_test.items():
-    tokens_frase = word_tokenize(frase) #tokenizzazione frasi pre impostate
+    tokens_frase = word_tokenize(frase)
     # perplexity bassa = frase piu prevedibile per quel dominio
-    pp_tw   = calcola_perplexity(modello_tweet_lp, tokens_frase, n)#calcola la perplexiy dei modelli di laplace sulle frasi pre-impostate, n = 2 lunghezza degli n-grammi
+    pp_tw   = calcola_perplexity(modello_tweet_lp, tokens_frase, n)
     pp_lett = calcola_perplexity(modello_lett_lp, tokens_frase, n)
 
-    # normalizzazione empirica per |vocabolario| per consentire un confronto tra i dati coerente alle grandezze dei vocabolari(la perplexity e' gia' normalizzata
+    # normalizzazione empirica per |vocabolario| (la perplexity e' gia' normalizzata
     # per token: dividere anche per |V| non e' prassi standard, ma qui serve a rendere
     # confrontabili domini con vocabolari di dimensione molto diversa)
     pp_tw_n   = pp_tw   / len(modello_tweet_lp.vocab)
     pp_lett_n = pp_lett / len(modello_lett_lp.vocab)
 
-    verdetto_atteso = "TW" if nome.startswith("tw") else "LT" #expectation
-    verdetto        = "TW" if pp_tw_n < pp_lett_n else "LT"   #predizione
-    corretto        = "✓" if verdetto == verdetto_atteso else "✗" #etichetta congrua a predizione
+    verdetto_atteso = "TW" if nome.startswith("tw") else "LT" 
+    verdetto        = "TW" if pp_tw_n < pp_lett_n else "LT"   
+    corretto        = "✓" if verdetto == verdetto_atteso else "✗"
     if verdetto == verdetto_atteso:
         corretti += 1
     totale += 1
@@ -274,15 +250,15 @@ def log_likelihood(modello, tokens):
 
     # catena di Markov di ordine 1: ogni parola dipende solo dalla precedente
     for i in range(1, len(tokens)):
-        contesto = [tokens[i-1]]# prendo la parola prima della i-esima parola token
-        parola   = tokens[i]#prende il token nella i-esima posizione
-        prob = modello.score(parola, contesto)# assegno uno scor alla dupla di parola e contesto secondo il modello addestrato
+        contesto = [tokens[i-1]]
+        parola   = tokens[i]
+        prob = modello.score(parola, contesto)
         if prob > 0:
-            score += math.log(prob)#log della probabilità
+            score += math.log(prob)
         else:
-            # backoff di sicurezza: con Laplace non dovrebbe mai attivarsi (score sempre maggiore 0)
-            score += math.log(1e-10)# lo riempiamo di rumore pur di non avere uno zero nel rapporto
-    return score / (len(tokens) - 1)#aggiorna il valore score che sarà il punteggio di probabilità lewgato alla frase i-esima nel ciclo delle frasi analizzate con uno score medio calcolato su tutti i bigrammi-1 della frase
+            # backoff di sicurezza: con Laplace non dovrebbe mai attivarsi (score sempre > 0)
+            score += math.log(1e-10)
+    return score / (len(tokens) - 1)
 
 def classifica_loglik(testo, mod_tw, mod_lt):
     """Assegna il testo al dominio (Twitter o Letterario) il cui modello lo spiega meglio."""
@@ -349,7 +325,7 @@ for n_test in [1, 2, 3]:
 
 print("\n=== ANALISI LINGUISTICA ===")
 
-# TTR (type token ratio) = parole uniche / parole totali: più alto = vocabolario più vario2
+# TTR = parole uniche / parole totali: più alto = vocabolario più vario2
 N = min(len(tokens_tweet), len(tokens_lett))
 ttr_tweet = len(set(tokens_tweet[:N])) / N
 ttr_lett  = len(set(tokens_lett[:N]))  / N
