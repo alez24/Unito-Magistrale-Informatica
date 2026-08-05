@@ -1,0 +1,1527 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage[italian]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage{tikz}
+\usepackage{capt-of}
+\usepackage{listings}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, backgrounds, trees}
+\usepackage{titlesec}
+
+\geometry{margin=2.5cm}
+
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+\definecolor{iablue}{RGB}{25,55,110}
+\definecolor{codebg}{RGB}{245,245,248}
+
+\titleformat{\section}
+  {\normalfont\huge\bfseries\color{iablue}}
+  {\tikz[baseline=-0.9ex]{\node[fill=iablue, text=white, rounded corners=3pt, inner sep=5pt, font=\bfseries\Large]{\thesection};}}
+  {0.9em}{}[{\vspace{3pt}\color{iablue}\titlerule[2.2pt]\vspace{2pt}}]
+\titlespacing*{\section}{0pt}{10pt}{26pt}
+
+\titleformat{\subsection}
+  {\normalfont\Large\bfseries\color{iablue!85!black}}{\thesubsection}{0.7em}{}[{\color{iablue!60!black}\titlerule[0.6pt]}]
+\titlespacing*{\subsection}{0pt}{20pt}{10pt}
+
+\titleformat{\subsubsection}
+  {\normalfont\large\bfseries\color{iablue!75!black}}{\thesubsubsection}{0.6em}{}
+\titlespacing*{\subsubsection}{0pt}{14pt}{6pt}
+
+\newcommand{\keyeq}[1]{{\setlength{\fboxsep}{6pt}\setlength{\fboxrule}{1.3pt}\fcolorbox{iablue}{iablue!12}{\boldmath$\displaystyle #1$}}}
+
+\lstdefinestyle{code}{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{iablue!40},
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  xleftmargin=4pt, xrightmargin=4pt,
+  framexleftmargin=6pt, framexrightmargin=6pt,
+}
+\lstset{style=code}
+
+\title{\textbf{Intelligenza Artificiale}\\[0.5em]
+\large Note Complete del Corso\\[0.3em]
+\normalsize Università di Torino -- Magistrale Informatica\\
+Prof. Gian Luca Pozzato -- Prof. Roberto Micalizio}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\part{Programmazione Logica e Ragionamento (Prof. Gian Luca Pozzato)}
+
+%=============================================================================
+\section{Introduzione}
+%=============================================================================
+
+L'\textbf{intelligenza artificiale} è una disciplina dell'informatica che studia i fondamenti teorici, le metodologie e le tecniche che consentono di progettare sistemi hardware e software capaci di fornire prestazioni che, a un osservatore comune, sembrerebbero di pertinenza esclusiva dell'intelligenza umana (definizione di Marco Somalvico). In modo più operativo, l'IA si occupa di \textbf{problemi "intelligenti"}: problemi per cui non esiste, o non è noto, un algoritmo di risoluzione esplicito -- si pensi alla differenza tra risolvere un cubo di Rubik seguendo una guida passo-passo (un algoritmo noto) e riconoscere un oggetto in un'immagine (nessun algoritmo esplicito, serve un sistema che "impari" o "ragioni").
+
+Le principali sotto-aree di ricerca dell'IA sono la rappresentazione della conoscenza e il ragionamento, l'interpretazione e la sintesi del linguaggio naturale, l'apprendimento automatico, la pianificazione e la robotica; la disciplina attinge inoltre a filosofia, fisica e psicologia. Questa prima parte del corso si concentra sui \textbf{formalismi logici per la rappresentazione della conoscenza e il ragionamento}: meccanismi di ragionamento basati sul calcolo dei predicati del primo ordine, programmazione logica, ragionamento non monotono e Answer Set Programming, sperimentati concretamente in Prolog e in Clingo.
+
+Vale la pena motivare fin da subito perché un corso del 2025/26 dedichi tempo a strumenti "classici" come Prolog e la logica, piuttosto che (solo) alle tecniche sub-simboliche oggi di moda. Un semplice esperimento chiarisce il punto: chiedendo a un moderno modello linguistico (LLM) di citare testualmente un'ottava della \emph{Gerusalemme Liberata} di Tasso, il sistema produce con sicurezza tre citazioni diverse, tutte plausibili nello stile ma tutte inventate e diverse dal testo originale, anche dopo essere stato corretto ripetutamente dall'utente -- un esempio di \emph{allucinazione} sicura di sé, difficile da correggere dall'interno del sistema stesso. I metodi simbolici che vedremo in questa parte del corso (Prolog, risoluzione, ASP) hanno il pregio opposto: ogni risposta è tracciabile, verificabile e spiegabile passo per passo a partire da una base di conoscenza esplicita.
+
+Un secondo esempio, complementare, mostra invece i limiti della logica classica (non probabilistica, non graduata) di fronte al \textbf{ragionamento di default}: "i lavoratori normalmente pagano l'IRPEF; gli studenti normalmente non la pagano; Gianni è uno studente lavoratore: Gianni paga l'IRPEF?" Le due regole di default sono in conflitto su Gianni, e senza un meccanismo che stabilisca una priorità tra regole (es. "più specifica vince") non c'è una risposta univoca. Questo è esattamente il tipo di ragionamento -- \textbf{non monotono}, con regole di default che possono essere ritrattate alla luce di nuova informazione -- che la logica classica non gestisce nativamente, e che motiva gli strumenti più espressivi (in particolare l'Answer Set Programming) che vedremo più avanti.
+
+\newpage
+%=============================================================================
+\section{Ricerca nello Spazio degli Stati}
+%=============================================================================
+
+\subsection{Formalizzazione del Problema di Ricerca}
+
+Un problema di ricerca è definito da: uno \textbf{stato iniziale}; un insieme di \textbf{azioni} (ciascuna fa passare da uno stato a un altro); una specifica dell'\textbf{obiettivo} (goal); il \textbf{costo} di ogni azione. Lo \textbf{spazio degli stati} è definito \emph{implicitamente} da stato iniziale e azioni: è l'insieme di tutti gli stati raggiungibili a partire da quello iniziale. Un \textbf{cammino} è una sequenza di stati collegati da una sequenza di azioni, e il suo \textbf{costo} è la somma dei costi delle azioni che lo compongono. Una \textbf{soluzione} è un cammino dallo stato iniziale a uno stato goal; una \textbf{soluzione ottima} è una soluzione di costo minimo tra tutte le soluzioni.
+
+In Prolog, gli stati si rappresentano come termini (dipendenti dal problema: ad esempio \texttt{on(a,b)} nel mondo dei blocchi, oppure una lista ordinata per il puzzle dell'8). Le azioni si specificano tramite due predicati standard: \texttt{applicabile(Az,S)} (l'azione \texttt{Az} è eseguibile nello stato \texttt{S}) e \texttt{trasforma(Az,S,NuovoS)} (se \texttt{Az} è applicabile a \texttt{S}, \texttt{NuovoS} è il risultato). Un'istanza di problema è definita da \texttt{iniziale(S)} e \texttt{finale(S)}.
+
+Un caso di studio ricorrente è la ricerca di un cammino in un \textbf{labirinto} rappresentato come griglia con ostacoli: la posizione è \texttt{pos(Riga,Colonna)}, gli ostacoli sono \texttt{occupata(pos(Riga,Colonna))}, e le azioni sono i quattro spostamenti cardinali. Un'azione è applicabile quando non porta l'agente fuori dalla griglia né su una cella occupata:
+
+\begin{lstlisting}
+num_col(10).
+num_righe(10).
+occupata(pos(2,5)).  occupata(pos(7,4)).
+occupata(pos(3,5)).  occupata(pos(5,7)).
+% ... altri ostacoli ...
+iniziale(pos(4,2)).
+finale(pos(7,9)).
+
+applicabile(nord,pos(R,C)) :-
+    R>1, R1 is R-1, \+ occupata(pos(R1,C)).
+applicabile(sud,pos(R,C)) :-
+    num_righe(NR), R<NR, R1 is R+1, \+ occupata(pos(R1,C)).
+applicabile(ovest,pos(R,C)) :-
+    C>1, C1 is C-1, \+ occupata(pos(R,C1)).
+applicabile(est,pos(R,C)) :-
+    num_col(NC), C<NC, C1 is C+1, \+ occupata(pos(R,C1)).
+
+trasforma(est,pos(R,C),pos(R,C1))   :- C1 is C+1.
+trasforma(ovest,pos(R,C),pos(R,C1)) :- C1 is C-1.
+trasforma(sud,pos(R,C),pos(R1,C))   :- R1 is R+1.
+trasforma(nord,pos(R,C),pos(R1,C))  :- R1 is R-1.
+\end{lstlisting}
+
+Il codice sopra usa già due costrutti Prolog che formalizzeremo solo più avanti (Sezione~\ref{sec:prolog-lang}), ma che è utile capire subito per leggere il codice: \texttt{is/2} valuta \emph{aritmeticamente} l'espressione a destra e unifica il risultato con il termine a sinistra (es. \texttt{R1 is R-1} calcola \texttt{R-1} e lega \texttt{R1} al risultato numerico -- a differenza di \texttt{=}, che farebbe solo unificazione simbolica senza fare alcun calcolo); \texttt{\textbackslash+ G} è la \textbf{negazione per fallimento}: ha successo se e solo se il goal \texttt{G} \emph{fallisce} (non è dimostrabile dal programma corrente), quindi \texttt{\textbackslash+ occupata(pos(R1,C))} ha successo esattamente quando la cella non è nella lista degli ostacoli.
+
+\subsection{Strategie di Ricerca non Informata}
+
+Il vantaggio di Prolog è che la \textbf{ricerca in profondità} (DFS) è, in un certo senso, "gratuita": l'interprete realizza di per sé una ricerca in profondità con backtracking sfruttando il proprio nondeterminismo nativo. Una versione minimale, che non controlla i cicli, è:
+
+\begin{lstlisting}
+ric_prof(S,[]) :- finale(S), !.
+ric_prof(S,[Az|Resto]) :-
+    applicabile(Az,S),
+    trasforma(Az,S,Nuovo_S),
+    ric_prof(Nuovo_S,Resto).
+\end{lstlisting}
+
+Il secondo argomento accumula la sequenza di azioni (il piano soluzione). Il taglio \texttt{!} nella prima clausola non è decorativo: senza di esso, una volta trovato un successo con \texttt{finale(S)}, un successivo backtracking (ad esempio richiesto da chi ha invocato \texttt{ric\_prof}) proverebbe comunque anche la seconda clausola a partire da uno stato che è già finale, producendo rami di ricerca inutili o ulteriori soluzioni ridondanti; il cut congela la scelta "se lo stato è finale, il piano è \texttt{[]} e basta" impedendo di esplorare oltre. Per evitare cicli infiniti (rivisitare uno stato già incontrato) si mantiene esplicitamente una lista \texttt{Visitati} (l'analogo di una \emph{closed list}):
+
+\begin{lstlisting}
+ric_prof_cc(S,_,[]) :- finale(S),!.
+ric_prof_cc(S,Visitati,[Az|Resto]) :-
+    applicabile(Az,S),
+    trasforma(Az,S,Nuovo_S),
+    \+ member(Nuovo_S,Visitati),
+    ric_prof_cc(Nuovo_S,[Nuovo_S|Visitati],Resto).
+\end{lstlisting}
+
+Qui \texttt{member(Elemento,Lista)} è un predicato built-in che ha successo se \texttt{Elemento} compare in \texttt{Lista} (lo si vedrà formalmente in Sezione~\ref{sec:prolog-lang}): la condizione \texttt{\textbackslash+ member(Nuovo\_S,Visitati)} scarta quindi ogni successore già visitato, prima ancora di proseguire la ricorsione.
+
+Oltre alla DFS pura, si distinguono altre strategie non informate: la \textbf{ricerca a profondità limitata} (come la DFS, ma con un limite massimo $\ell$ alla profondità oltre il quale i nodi non vengono espansi) è \textbf{non completa}; l'\textbf{iterative deepening} (o approfondimento iterativo) ripete la ricerca a profondità limitata incrementando $\ell$ ad ogni iterazione, ed è \textbf{ottima nel caso di azioni a costo unitario}; la \textbf{ricerca in ampiezza} (BFS) usa una \textbf{coda FIFO} (il nodo in testa viene espanso, i successori vanno in fondo alla coda) -- va notato che, a differenza della DFS, la BFS \emph{non} è "gratuita" sfruttando il solo backtracking di Prolog: richiede di generare esplicitamente \emph{tutti} i successori di un nodo (tipicamente con \texttt{findall}) prima di espandere il nodo successivo in coda; inoltre è ottima solo alla stessa condizione di costo uniforme/unitario dell'iterative deepening, non in generale. Infine la \textbf{ricerca in ampiezza su grafi} aggiunge una \textbf{lista chiusa} dei nodi già espansi, analoga al meccanismo \texttt{Visitati} visto per la DFS.
+
+Per riferimento, valgono le proprietà standard di completezza/ottimalità e complessità (con $b$ fattore di ramificazione, $d$ profondità della soluzione, $m$ profondità massima dell'albero di ricerca, $\ell$ limite di profondità imposto):
+
+\begin{center}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Strategia} & \textbf{Completa} & \textbf{Ottima} & \textbf{Tempo} & \textbf{Spazio} \\
+\midrule
+BFS (costo unitario) & sì & sì & $O(b^d)$ & $O(b^d)$ \\
+DFS & no (spazi infiniti) & no & $O(b^m)$ & $O(bm)$ \\
+Profondità limitata & no & no & $O(b^\ell)$ & $O(b\ell)$ \\
+Iterative deepening & sì & sì (costo unit.) & $O(b^d)$ & $O(bd)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+%=============================================================================
+\section{Ricerca Euristica}
+%=============================================================================
+
+Una \textbf{funzione euristica} $h(n)$ stima il costo del cammino più conveniente dal nodo $n$ a uno stato finale; $g(n)$ è il costo effettivo del cammino trovato dal nodo iniziale a $n$; la \textbf{funzione di valutazione} è $f(n)=g(n)+h(n)$. L'algoritmo \textbf{A*} usa $f(n)$ per scegliere quale nodo espandere (il minimo tra quelli in frontiera); \textbf{IDA*} (Iterative Deepening A*) applica la stessa idea dell'iterative deepening ma con una soglia stimata anziché un limite di profondità intero: al primo passo la soglia è $h(s_i)$ (stato iniziale), e ad ogni iterazione la nuova soglia è il minimo $f(n)=g(n)+h(n)$ tra i nodi che avevano superato la soglia precedente.
+
+\subsection{Perché un Nodo Già Visitato Può Dover Essere Riaperto}
+
+Un nodo può essere raggiunto da più cammini diversi, con costi $g$ diversi. Se l'euristica usata garantisce solo l'ammissibilità (non la consistenza, vedi sotto), un nodo già espanso con un certo $f$ può in seguito rivelarsi raggiungibile con un $f$ migliore attraverso un cammino alternativo: va allora \textbf{riaperto} (rimesso in frontiera), e l'aggiornamento si propaga anche ai suoi discendenti già generati. Concretamente: un nodo radice con $h=7$ genera due figli, uno con $g{+}\text{arco}{+}h=0{+}4{+}2=6$ (il migliore secondo $f$) e uno con $0{+}1{+}6=7$; espandendo il primo si arriva a un discendente con $f=4{+}2{+}1=7$. Se successivamente si scopre che lo stesso discendente è raggiungibile anche passando dal secondo figlio con $g$ inferiore (ad esempio $f=1{+}2{+}2=5$, contro il precedente $f=6$ del suo genitore ricalcolato), il nodo genitore va aggiornato da $f=6$ a $f=5$, e il discendente da $f=7$ a $f=6$: entrambi vanno \emph{riaperti} nonostante fossero già stati chiusi.
+
+\subsection{Ammissibilità e Consistenza}
+
+Sia $d(s)$ la distanza minima \emph{effettiva} (non nota, altrimenti la seguiremmo direttamente) tra lo stato $s$ e il goal:
+\[
+\keyeq{h(s) \text{ è ammissibile} \iff 0\leq h(s)\leq d(s)}
+\]
+e vale il teorema (senza dimostrazione sulle slide del corso): \textbf{A* è ottimale se $h$ è ammissibile}.
+
+$h(s)$ è \textbf{consistente} (o \textbf{monotona}) se, per ogni coppia $s,s'$ con $s'$ successore di $s$,
+\[
+\keyeq{h(s) \leq c(s,s') + h(s')}
+\]
+dove $c(s,s')$ è il costo per passare da $s$ a $s'$. Se $h$ è consistente allora è anche ammissibile, e \textbf{A* è ottimale se $h$ è consistente} -- con il vantaggio pratico che, in questo caso, \textbf{non è mai necessario riaprire} uno stato già visitato (la consistenza garantisce che il primo cammino trovato verso un nodo sia già quello di costo minimo).
+
+\textbf{Esempio -- distanza di Manhattan in un labirinto.} Se le azioni hanno tutte lo stesso costo e non sono ammessi movimenti diagonali, la distanza di Manhattan è monotona (consistente). Se invece sono ammesse anche mosse diagonali, non lo è più: si consideri un nodo con euristica $h=6$; una mossa diagonale verso il goal può ridurre la distanza di Manhattan di 2 in una sola mossa di costo 1, portando a un figlio con $h=4$. La condizione di consistenza richiederebbe $h(s)\leq c(s,s')+h(s')$, cioè $6\leq 1+4=5$, che è \textbf{falsa}: la distanza di Manhattan con mosse diagonali resta ammissibile ma non è più consistente, e può quindi richiedere la riapertura di nodi già visitati.
+
+\newpage
+%=============================================================================
+\section{Il Linguaggio Prolog}
+\label{sec:prolog-lang}
+%=============================================================================
+
+\subsection{Programmazione Dichiarativa}
+
+Prolog (\emph{PRO}gramming in \emph{LOG}ic) è un \textbf{linguaggio dichiarativo}: non si descrive \emph{cosa fare} per risolvere un problema (come nel paradigma imperativo/procedurale, che specifica una sequenza di passi), ma si descrive la situazione reale tramite \textbf{fatti} e \textbf{regole}, chiedendo poi all'interprete di verificare se un \textbf{goal} segue logicamente, secondo la logica classica.
+
+Un \textbf{fatto} rappresenta un'informazione del dominio, ad esempio \texttt{piuCalorico(wurstel,banana).} (il würstel è più calorico della banana). Una \textbf{regola} rappresenta un'inferenza possibile, nella forma di una \textbf{clausola di Horn}:
+\begin{lstlisting}
+testa :- corpo1, corpo2, ..., corpoN.
+\end{lstlisting}
+ad esempio \texttt{felino(X) :- gatto(X).} (i gatti sono felini). L'interprete analizza fatti e regole nell'ordine in cui compaiono nel programma, usando il \textbf{pattern matching} (unificazione) per confrontare un goal con le teste di fatti/regole; nel caso di una regola, il matching genera \textbf{sotto-goal} dal corpo. Fatti e regole insieme sono \textbf{clausole}; un \textbf{programma Prolog} è un insieme finito di clausole, che viene interrogato con un goal.
+
+\subsection{Termini}
+
+Un programma Prolog è costruito da: \textbf{atomi} (costanti, come \texttt{verza}, \texttt{a}, o numeri); \textbf{variabili} (identificate dall'iniziale maiuscola); \textbf{termini composti}, ottenuti applicando un \textbf{funtore} ad altri termini, ad esempio \texttt{sopra(penna,tavolo)} o \texttt{nato(giovanni,data(torino,'12/07/1995'))} (si noti che una data va quotata come atomo se contiene caratteri come \texttt{/}, altrimenti Prolog la interpreta come un'espressione aritmetica).
+
+\subsection{Liste}
+
+Le \textbf{liste} sono la struttura dati principale di Prolog: \texttt{[1, ciao, 2]} è una lista di tre elementi; \texttt{[]} è la lista vuota; gli elementi possono a loro volta essere liste (liste annidate), es. \texttt{[23, [], ciao, [21, saluti], 11]}. Ogni lista non vuota è caratterizzata da una \textbf{testa} (il primo elemento) e una \textbf{coda} (il resto), rappresentata con la notazione \texttt{[Head|Tail]}. Questa scomposizione è alla base della programmazione ricorsiva su liste:
+\begin{lstlisting}
+?- [1,2,3,4,5] = [Head|Tail].
+Head = 1
+Tail = [2,3,4,5]
+\end{lstlisting}
+la query unifica la lista concreta con il pattern \texttt{[Head|Tail]}: l'interprete lega \texttt{Head} al primo elemento e \texttt{Tail} al resto, e stampa i binding trovati. Alcuni predicati built-in fondamentali: \texttt{length(Lista,N)} (ha successo se \texttt{Lista} contiene \texttt{N} elementi) e \texttt{member(Elemento,Lista)} (ha successo se \texttt{Lista} contiene \texttt{Elemento}). Come ogni altra operazione su liste, anche il calcolo di una somma si scrive per ricorsione su testa/coda:
+\begin{lstlisting}
+somma([],0).
+somma([Head|Tail],S) :- somma(Tail,S1), S is S1+Head.
+\end{lstlisting}
+(caso base: lista vuota, somma 0; passo ricorsivo: la somma è la testa più la somma ricorsiva della coda.) Il predicato \texttt{is/2} è l'operatore di \textbf{valutazione aritmetica}: \texttt{Risultato is Espressione} calcola il valore numerico di \texttt{Espressione} (che deve essere già completamente istanziata, cioè senza variabili libere) e lo unifica con \texttt{Risultato}. È diverso dall'unificazione pura \texttt{=}: la query \texttt{X = 2+3} lega semplicemente \texttt{X} al termine simbolico \texttt{2+3} (senza calcolarlo), mentre \texttt{X is 2+3} lega \texttt{X} al numero \texttt{5}. Nell'esempio di \texttt{somma}, invocando \texttt{somma([1,2,3],S)} l'interprete scende ricorsivamente fino al caso base (\texttt{somma([],0)}, che lega \texttt{S1=0} al livello più interno), e poi, risalendo, ogni chiamata calcola con \texttt{is} la propria somma parziale (\texttt{0+3=3}, poi \texttt{3+2=5}, infine \texttt{5+1=6}), fino a legare l'argomento \texttt{S} della chiamata originale a \texttt{6}. Predicati simili, costruiti con lo stesso schema testa/coda, permettono di rimuovere un elemento (\texttt{select}), invertire una lista o concatenarne due (\texttt{append}).
+
+\newpage
+%=============================================================================
+\section{Unificazione}
+%=============================================================================
+
+L'\textbf{unificazione} è il meccanismo che permette a Prolog di confrontare due termini e trovare, se esiste, un modo di renderli identici. Una \textbf{sostituzione} è una funzione da variabili a termini, rappresentata come insieme finito di coppie $\sigma=\{x_1/t_1,\ldots,x_n/t_n\}$ con le $x_i$ variabili distinte. L'\textbf{applicazione} di $\sigma$ a un termine $t$ (notazione $t\sigma$) sostituisce \emph{simultaneamente} ogni occorrenza di $x_i$ con $t_i$: ad esempio, con $t=f(x_1,g(x_2),a)$ e $\sigma=\{x_1/h(x_2),x_2/b\}$, si ottiene $t\sigma=f(h(x_2),g(b),a)$ (la $x_2$ dentro $h(x_2)$ non viene ri-sostituita nello stesso passo, essendo l'applicazione simultanea).
+
+Due termini $t_1,t_2$ sono \textbf{unificabili} se esiste una sostituzione $\sigma$ (un \textbf{unificatore}) tale che $t_1\sigma=t_2\sigma$. Se due termini sono unificabili, esiste sempre un \textbf{unificatore più generale} (\emph{most general unifier}, \textbf{mgu}), unico a meno di ridenominazione delle variabili: una sostituzione $\theta$ è più generale di $\sigma$ se esiste $\lambda$ tale che $\sigma=\theta\lambda$ (composizione, cioè applicazione in sequenza).
+
+\subsection{L'Algoritmo di Unificazione}
+
+Un problema di unificazione si formula come un insieme di equazioni $\{t'_j=t''_j\}$; la soluzione, se esiste, è l'mgu che le rende tutte vere. Si applicano ripetutamente due trasformazioni fino a raggiungere una \textbf{forma risolta} (equazioni tutte del tipo $x_j=t_j$, con ogni $x_j$ che compare solo lì):
+\begin{itemize}
+  \item \textbf{Term reduction}: data $f(t'_1,\ldots,t'_n)=f(t''_1,\ldots,t''_n)$ (stesso funtore), la si sostituisce con $\{t'_1=t''_1,\ldots,t'_n=t''_n\}$.
+  \item \textbf{Variable elimination}: data $x=t$ ($x$ variabile), si applica $\{x/t\}$ a \emph{tutte le altre} equazioni (l'equazione $x=t$ resta).
+\end{itemize}
+Regole complete dell'algoritmo (non deterministico nella scelta dell'equazione su cui operare, termina con successo o fallimento):
+\begin{enumerate}[label=(\alph*)]
+  \item se un'equazione ha forma $t=x$ con $t$ non-variabile e $x$ variabile, la si riscrive $x=t$;
+  \item se un'equazione ha forma $x=x$, la si cancella;
+  \item se un'equazione ha forma $t'=t''$ con entrambi non-variabili: fallimento se i funtori principali differiscono, altrimenti term reduction;
+  \item se un'equazione ha forma $x=t$ con $x$ altrove nel sistema e $t\neq x$: fallimento se $x$ occorre in $t$ (\textbf{occur-check}), altrimenti variable elimination.
+\end{enumerate}
+
+\textbf{Esempio completo.} Insieme di partenza $\{g(x_2)=x_1,\ f(x_1,h(x_1),x_2)=f(g(x_3),x_4,x_3)\}$:
+\begin{align*}
+&\{g(x_2)=x_1,\ f(x_1,h(x_1),x_2)=f(g(x_3),x_4,x_3)\}\\
+\xrightarrow{\text{term reduction}}\quad&\{g(x_2)=x_1,\ x_1=g(x_3),\ h(x_1)=x_4,\ x_2=x_3\}\\
+\xrightarrow{\text{var.\ elim.\ su }x_1=g(x_3)}\quad&\{g(x_2)=g(x_3),\ x_1=g(x_3),\ h(g(x_3))=x_4,\ x_2=x_3\}\\
+\xrightarrow{\text{term reduction su }g(x_2)=g(x_3)}\quad&\{x_2=x_3,\ x_1=g(x_3),\ x_4=h(g(x_3)),\ x_2=x_3\}\\
+\xrightarrow{\text{var.\ elim.\ su }x_2=x_3}\quad&\{x_2=x_3,\ x_1=g(x_3),\ x_4=h(g(x_3))\}
+\end{align*}
+Forma risolta raggiunta, con mgu
+\[
+\keyeq{\theta = \{x_1/g(x_3),\ x_2/x_3,\ x_4/h(g(x_3))\}}.
+\]
+
+Per ragioni di efficienza, l'unificazione \emph{standard di Prolog non esegue l'occur-check}: una variabile $X$ unifica con $f(X)$, producendo potenzialmente termini circolari/infiniti. Questa è, esplicitamente, una strategia \emph{non corretta} rispetto alla nozione logica di unificazione, accettata per ragioni prestazionali.
+
+\newpage
+%=============================================================================
+\section{Risoluzione SLD e l'Interprete Prolog}
+%=============================================================================
+
+\subsection{Richiami: Risoluzione Classica}
+
+Una formula $F$ è \textbf{conseguenza logica} di una base di conoscenza $K$ (notazione $K\models F$) se $F$ è vera in tutti i modelli di $K$; verificarlo con le tavole di verità è laborioso già con poche formule, da cui la necessità della \textbf{risoluzione}. La risoluzione si applica a formule in \textbf{forma di clausole} (disgiunzioni di letterali): date $C_1=A_1\vee\cdots\vee A_n$ e $C_2=B_1\vee\cdots\vee B_m$, se esistono $A_i,B_j$ con $A_i=\neg B_j$, si deriva il \textbf{risolvente} (la disgiunzione di tutti i letterali di $C_1,C_2$ tranne $A_i,B_j$), conseguenza logica di $C_1\wedge C_2$. Una \textbf{dimostrazione per refutazione} mostra che $K\wedge\neg F$ è inconsistente, risolvendo iterativamente coppie di clausole fino a ottenere la \textbf{clausola vuota} $\Box$. In presenza di variabili, i letterali risolti vanno resi unificabili tramite un mgu $\sigma$, e il risolvente è $[\ldots]\sigma$.
+
+\subsection{Unificazione nel Pattern Matching}
+
+Per l'efficienza dell'interprete Prolog è utile classificare tutti i casi di unificazione tra due termini $c_1$ (righe) e $c_2$ (colonne):
+
+\begin{center}
+\small
+\begin{tabular}{lccc}
+\toprule
+ & \textbf{costante $c_2$} & \textbf{variabile $x_2$} & \textbf{composto $s_2$} \\
+\midrule
+\textbf{costante $c_1$} & unificano sse $c_1{=}c_2$ & unificano, $x_2/c_1$ & non unificano \\
+\textbf{variabile $x_1$} & unificano, $x_1/c_2$ & unificano, $x_1/x_2$ & unificano, $x_1/s_2$ \\
+\textbf{composto $s_1$} & non unificano & unificano, $x_2/s_1$ & unificano sse stesso funtore e argomenti unificano \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Risoluzione SLD}
+
+\textbf{SLD} = \textbf{L}inear resolution with \textbf{S}election function for \textbf{D}efinite clauses. Si applica quando $K$ contiene solo \textbf{clausole definite} (clausole di Horn con al più un letterale non negato). Nella strategia \emph{linear input}, ad ogni passo di risoluzione una \textbf{variante} (clausola con variabili rinominate) è sempre scelta dalla $K$ di partenza, mentre l'altra è sempre il risolvente del passo precedente (al primo passo, la negazione del goal). SLD \textbf{non è completa in generale}, ma è \textbf{completa per clausole di Horn}.
+
+Una \textbf{derivazione SLD} per un goal $G_0$ da $K$ è una sequenza di goal $G_0,G_1,\ldots,G_n$, una sequenza di varianti di clausole $C_1,\ldots,C_n$ e una sequenza di mgu $\sigma_1,\ldots,\sigma_n$, tali che $G_{i+1}$ è derivato da $G_i$ e $C_{i+1}$ tramite $\sigma_{i+1}$. Una derivazione può avere \textbf{successo} ($G_n=\Box$), \textbf{fallimento finito} (nessun risolvente possibile, $G_n\neq\Box$), o \textbf{fallimento infinito} (non termina mai).
+
+Ci sono \textbf{due forme distinte di nondeterminismo}: (1) la \textbf{regola di calcolo} (o \emph{selection rule}), che seleziona quale atomo del goal risolvere ad ogni passo -- non influenza correttezza e completezza; (2) la scelta di \emph{quale clausola} di $K$ usare tra quelle unificabili con l'atomo selezionato. Data una regola di calcolo, si rappresentano tutte le derivazioni possibili con un \textbf{albero SLD}: la radice è $G_0$; ogni nodo $\leftarrow A_1,\ldots,A_m,\ldots,A_k$ (con $A_m$ atomo selezionato) ha un figlio per ogni clausola $A\leftarrow B_1,\ldots,B_k$ di $K$ tale che $A$ e $A_m$ unificano con mgu $\sigma$, etichettato $\leftarrow[A_1,\ldots,A_{m-1},B_1,\ldots,B_k,A_{m+1},\ldots,A_k]\sigma$.
+
+\subsection{Esempio: Leftmost vs. Rightmost}
+
+Si considerino le clausole (con la corrispondente sintassi Prolog):
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+\# & Clausola & Prolog \\
+\midrule
+C1 & $\neg PosaFacile(x)\vee\neg Economico(x)\vee Acquisto(x)$ & \texttt{acquisto(X):-posaFacile(X),economico(X).} \\
+C2 & $\neg InOfferta(x)\vee Acquisto(x)$ & \texttt{acquisto(X):-inOfferta(X).} \\
+C3 & $\neg InMagazzino(x)\vee Disponibile(x)$ & \texttt{disponibile(X):-inMagazzino(X).} \\
+C4 & $InOfferta(mosaico)$ & \texttt{inOfferta(mosaico).} \\
+C5 & $Disponibile(laminato)$ & \texttt{disponibile(laminato).} \\
+C6 & $PosaFacile(laminato)$ & \texttt{posaFacile(laminato).} \\
+C7 & $Economico(laminato)$ & \texttt{economico(laminato).} \\
+\midrule
+GOAL & $\neg Disponibile(x)\vee\neg Acquisto(x)$ & \texttt{disponibile(X), acquisto(X).} \\
+\bottomrule
+\end{tabular}
+\end{center}
+Con regola di calcolo \textbf{leftmost} (sempre l'atomo più a sinistra), dal goal si seleziona \emph{Disponibile}: il ramo C3 fallisce subito (nessun fatto \emph{InMagazzino}); il ramo C5 lega $x{=}laminato$ e passa a $\neg Acquisto(laminato)$, dove il ramo C1 (via C6, C7) porta a $\Box$ in tre passi, mentre il ramo C2 fallisce (nessuna offerta su \emph{laminato}). Con regola \textbf{rightmost} (atomo più a destra) l'ordine di esplorazione è completamente diverso: dal goal si seleziona per prima \emph{Acquisto}, che si scinde nei rami C1 e C2. Il ramo C2 richiede $\neg InOfferta(x)$: unifica con C4 ($x{=}mosaico$), ma a quel punto resta da provare $\neg Disponibile(mosaico)$, che fallisce (nessun fatto \emph{InMagazzino(mosaico)} né \emph{Disponibile(mosaico)}) -- l'intero ramo C2 fallisce. Il ramo C1 richiede invece $\neg PosaFacile(x)\vee\neg Economico(x)$: selezionando ancora da destra si prova prima C7 ($Economico(laminato)$, quindi $x{=}laminato$), poi C6 ($PosaFacile(laminato)$, verificato), e infine resta da provare $\neg Disponibile(laminato)$, soddisfatto direttamente da C5 -- il ramo C1 porta a $\Box$. Il risultato è quindi lo stesso della regola leftmost (un solo ramo di successo, via C1/C5/C6/C7), ma raggiunto attraversando l'albero SLD in un ordine completamente diverso: conferma pratica che la regola di calcolo non altera correttezza e completezza.
+
+Ciò che rende Prolog \textbf{deterministico} è la combinazione di tre scelte fisse: regola di calcolo \textbf{leftmost}, clausole nell'\textbf{ordine in cui sono scritte} nel programma, ricerca \textbf{in profondità con backtracking}. Questo rende Prolog \textbf{non completo} in pratica: se un ramo infinito precede (a sinistra) un ramo di successo, l'interprete vi resta intrappolato e non trova mai la soluzione.
+
+\subsection{L'Interprete Prolog: Ciclo Risolutivo}
+
+L'interprete Prolog esegue un \textbf{backward chaining in profondità}, in forma non deterministica:
+\begin{lstlisting}
+interprete(G)
+if G vuoto
+  then successo
+  else sia G = G1, G2, ..., Gn
+       sia R l'insieme delle clausole applicabili a G1
+       if R vuoto
+         then fallimento
+         else scegliere una clausola A :- B1, ..., Bm in R
+              sia sigma il MGU di G1 e A
+              interprete(B1*sigma, ..., Bm*sigma, G2*sigma, ..., Gn*sigma)
+\end{lstlisting}
+Una regola $A\leftarrow B_1,\ldots,B_m$ è \emph{applicabile} a $G_1$ se le sue variabili vengono rinominate (standardizzazione apart) e $A$ unifica con $G_1$. La computazione ha successo se \emph{esiste} una computazione che termina con successo (da qui il nondeterminismo); l'interprete Prolog reale, come visto, fissa deterministicamente quale scelta esplorare per prima.
+
+Applicando questo ciclo, passo dopo passo, al goal \texttt{disponibile(X), acquisto(X)} dell'esempio precedente: (1) $G_1=$\texttt{disponibile(X)}, l'unica clausola applicabile in ordine di programma con testa unificabile è C3 (\texttt{disponibile(X):-inMagazzino(X)}), che sostituisce il goal con \texttt{inMagazzino(X), acquisto(X)}; (2) $G_1=$\texttt{inMagazzino(X)} non ha alcuna clausola applicabile ($R$ vuoto): \textbf{fallimento}, e l'interprete fa backtracking sulla scelta (1); (3) tornando al passo (1), la clausola successiva con testa unificabile è C5 (\texttt{disponibile(laminato).}, un fatto), che lega $X{=}laminato$ e riduce il goal a \texttt{acquisto(laminato)}; (4) $G_1=$\texttt{acquisto(laminato)}, si prova prima C1 (\texttt{acquisto(X):-posaFacile(X),economico(X).}), che riduce il goal a \texttt{posaFacile(laminato), economico(laminato)}; (5) entrambi sono fatti (C6, C7): il goal diventa vuoto, \textbf{successo}, con risposta $X{=}laminato$. Si noti che l'interprete non ha mai dovuto considerare C2 né la clausola C1 fallita in altri contesti: il backtracking è scattato una sola volta, al passo (2), esattamente come previsto dal ciclo \texttt{interprete(G)}.
+
+\newpage
+%=============================================================================
+\section{Il Cut (!) in Prolog}
+%=============================================================================
+
+Il \textbf{cut} (\texttt{!}) è un predicato \textbf{extra-logico}: sempre vero se eseguito, ma con l'effetto collaterale di \textbf{bloccare il backtracking}, cioè di rendere definitive le scelte fatte. È utile modellare l'esecuzione Prolog con due stack: uno di \textbf{esecuzione} (i record di attivazione dei predicati correnti) e uno di \textbf{backtracking} (i punti di scelta, o \emph{choice point}, ancora aperti) -- in pratica un unico stack con alternanza di questi due tipi di elementi.
+
+\subsection{Semantica del Cut}
+
+Data una regola $p:-q_1,\ldots,q_i,\,!,\,q_{i+1},\ldots,q_n$, quando l'esecuzione raggiunge il cut: la sua valutazione ha sempre successo; il cut viene ignorato in fase di backtracking; \textbf{tutte le scelte fatte nella valutazione di $q_1,\ldots,q_i$ e nella scelta della clausola per $p$ vengono rese definitive} (i relativi choice point sono rimossi dallo stack di backtracking). Le alternative per i goal \emph{successivi} al cut ($q_{i+1},\ldots,q_n$) restano invece disponibili per il normale backtracking. Conseguenza importante: se la valutazione di $q_{i+1},\ldots,q_n$ fallisce, \textbf{fallisce l'intera valutazione di $p$}, anche se esisterebbero altre soluzioni logicamente valide -- perché quelle alternative sono state irrevocabilmente tagliate dal cut. In breve: \textbf{il cut taglia rami dell'albero SLD}, e per questo può causare una \textbf{perdita di completezza} (rami che porterebbero a successo diventano irraggiungibili) oltre a una \textbf{perdita di dichiaratività} (il comportamento del programma dipende ora dall'ordine di scrittura e dal cut, non solo dalla logica).
+
+\subsection{Un Esempio Completo: il Cambio di Semantica}
+
+Si considerino le clausole:
+\begin{lstlisting}
+g :- a.
+g :- s.
+a :- p, !, b.
+a :- r.
+p :- q.
+p :- r.
+r.
+\end{lstlisting}
+Query \texttt{:- g.} Senza cut, il backtracking esplorerebbe: \texttt{a} via \texttt{p} (che fallisce su \texttt{q} ma ha successo via \texttt{r}), poi \texttt{b} (che fallisce); a questo punto, \emph{senza} cut, Prolog ritenterebbe la seconda clausola di \texttt{a} (\texttt{a:-r.}), che ha successo tramite il fatto \texttt{r.}, rendendo vero \texttt{a} e quindi \texttt{g} (tramite la prima clausola di \texttt{g}). \textbf{Con} il cut nella clausola \texttt{a:-p,!,b.}, invece, una volta che \texttt{p} ha successo (tramite \texttt{r}, dopo che \texttt{q} è fallito) e si raggiunge \texttt{!}, vengono rimossi \emph{sia} gli eventuali choice point residui per \texttt{p} (se ce ne fossero ancora allocati -- in questa traccia \texttt{p} ha già esaurito entrambe le clausole) \emph{sia}, soprattutto, quelli per \texttt{a} (la scelta tra le due clausole di \texttt{a}, inclusa l'alternativa \texttt{a:-r.}): quando poi \texttt{b} fallisce, non c'è più modo di ritentare \texttt{a:-r.} -- proprio quella scelta è stata tagliata -- e l'intero predicato \texttt{a} fallisce. Si risale quindi a \texttt{g}, che ritenta la sua seconda clausola \texttt{g:-s.}, anch'essa fallimentare (nessuna clausola per \texttt{s}): il risultato finale è un \textbf{fallimento totale}, mentre \emph{senza} il cut la query \texttt{:-g.} avrebbe avuto successo. Questo è un esempio da manuale di come il cut possa cambiare la semantica logica del programma (un "cut rosso", nel gergo standard, anche se questa terminologia non viene usata esplicitamente a lezione).
+
+\subsection{Direzionalità del Cut}
+
+Il cut taglia le alternative "all'indietro" (la clausola corrente e i goal che lo precedono nel corpo), ma \emph{non} quelle "in avanti" (i goal successivi). Lo mostra questo esempio:
+\begin{lstlisting}
+a(X,Y):- b(X),!,c(Y).
+a(0,0).
+b(1). b(2).
+c(1). c(2).
+
+?- a(X,Y).
+X = 1, Y = 1 ;
+X = 1, Y = 2 ;
+no
+\end{lstlisting}
+Il cut, eseguito dopo \texttt{b(X)}, taglia sia l'alternativa di clausola \texttt{a(0,0)} per la testa \texttt{a/2}, sia l'alternativa \texttt{X=2} (cioè \texttt{b(2)}) per il goal \texttt{b(X)} che lo precede -- entrambi \emph{prima} del cut. Non taglia invece le alternative di \texttt{c(Y)}, che segue il cut: il backtracking su \texttt{c(Y)} produce infatti entrambe le soluzioni \texttt{Y=1} e \texttt{Y=2}, con \texttt{X=1} fissato. Risultato: solo due soluzioni, poi \texttt{no} -- le soluzioni potenziali con \texttt{X=2} o con la clausola \texttt{a(0,0)} restano irraggiungibili.
+
+\newpage
+%=============================================================================
+\section{Answer Set Programming}
+%=============================================================================
+
+L'\textbf{Answer Set Programming} (ASP) nasce dal dibattito (la "\emph{war of semantics}") su come dare una semantica formale rigorosa alla negazione per fallimento usata dagli interpreti Prolog, ed è oggi il fondamento di un paradigma di programmazione a sé: le soluzioni di un programma ASP sono i suoi \textbf{modelli} (\emph{answer set}), non più le \emph{prove} come in Prolog. È particolarmente adatto a problemi combinatori (soddisfacimento di vincoli, planning). Solver diffusi: DLV, smodels, \textbf{clingo}, cmodels.
+
+\subsection{ASP vs. Prolog}
+
+In ASP l'\textbf{ordine dei letterali non ha importanza} (in Prolog conta, per via del backtracking SLD); \textbf{Prolog è \emph{goal-directed}, ASP no} (ASP calcola i modelli stabili dell'intero programma, non risponde a una query specifica); la risoluzione SLD di Prolog può \textbf{andare in loop}, mentre gli ASP-solver non lo consentono; \textbf{Prolog ha il cut, ASP no}.
+
+\subsection{Sintassi}
+
+Un programma ASP è un insieme finito di regole
+\begin{lstlisting}
+a :- b1, ..., bn, not c1, ..., not cm.
+\end{lstlisting}
+dove $a,b_i,c_j$ sono letterali della forma $p$ o $-p$ ($-$ è la \textbf{negazione classica}, \texttt{not} è la \textbf{negazione per fallimento}); la testa $a$ è opzionale, e in sua assenza si ha un \textbf{integrity constraint} \texttt{:- a1,...,ak.}, che significa "è inconsistente che $a_1,\ldots,a_k$ siano tutti veri" (elimina gli answer set candidati che soddisfano tutto il corpo). ASP si applica formalmente a programmi \textbf{ground} (proposizionali); l'uso di variabili è comodo mnemonicamente, ma un programma con variabili deve poter essere ridotto a un numero finito di clausole ground (\emph{grounding}).
+
+La differenza tra le due negazioni è sostanziale: \texttt{attraversa :- -treno.} richiede una prova esplicita che il treno \emph{non} sta arrivando (negazione classica, più forte); \texttt{attraversa :- not treno.} permette di attraversare semplicemente in assenza di informazione sul treno (chiusura del mondo, negazione per fallimento). Un letterale negato classicamente $-p$ non ha proprietà speciali: è trattato come un nuovo atomo positivo distinto da $p$, e la coerenza tra $p$ e $-p$ va imposta esplicitamente con un vincolo \texttt{:- p, -p.}
+
+\subsection{Semantica: Answer Set come Modello Minimale/Stabile}
+
+Un programma ASP \textbf{privo di \texttt{not}} ha un unico modello minimale, che è il suo answer set: ad esempio \texttt{p:-q. q.} ha answer set $\{p,q\}$, mentre \texttt{p:-q,r. q.} ha answer set $\{q\}$ (poiché $r$ non è derivabile). In presenza di \texttt{not}, si usa il \textbf{ridotto} (reduct di Gelfond-Lifschitz) $P^S$ di un programma $P$ rispetto a un insieme di atomi $S$: (1) si rimuove ogni regola il cui corpo contiene \texttt{not L} con $L\in S$; (2) si rimuovono tutti i \texttt{not L} residui (con $L\notin S$) dai corpi delle regole rimanenti. Il ridotto $P^S$, privo di negazione, ha un unico answer set; \textbf{se questo coincide con $S$, allora $S$ è un answer set di $P$}.
+
+\textbf{Esempio completo.} Programma \texttt{p:-a. a:-not b. b:-not a.} Applicando la definizione: la regola \texttt{p:-a.} non ha negazione e resta sempre; la regola \texttt{a:-not b.} viene \emph{rimossa} se $b\in S$ (passo 1), altrimenti resta come fatto \texttt{a.} (passo 2, il \texttt{not b} viene tolto); simmetricamente la regola \texttt{b:-not a.} viene rimossa se $a\in S$, altrimenti resta come fatto \texttt{b.} Testando tutti gli 8 sottoinsiemi di $\{a,b,p\}$:
+
+\begin{center}
+\small
+\begin{tabular}{lp{4.3cm}p{2.6cm}c}
+\toprule
+$S$ & Ridotto $P^S$ & Answer set $M$ di $P^S$ & $M=S$? \\
+\midrule
+$\emptyset$ & \texttt{p:-a. a. b.} (nessuna regola rimossa: $a,b\notin S$) & $\{a,b,p\}$ & \textbf{no} \\
+$\{a\}$ & \texttt{p:-a. a.} (regola di \texttt{b} rimossa: $a\in S$) & $\{a,p\}$ & \textbf{no} \\
+$\{b\}$ & \texttt{p:-a. b.} (regola di \texttt{a} rimossa: $b\in S$) & $\{b\}$ & \textbf{sì} \\
+$\{p\}$ & \texttt{p:-a. a. b.} (nessuna regola rimossa: $a,b\notin S$) & $\{a,b,p\}$ & \textbf{no} \\
+$\{a,b\}$ & \texttt{p:-a.} (entrambe le regole rimosse: $a,b\in S$) & $\emptyset$ & \textbf{no} \\
+$\{a,p\}$ & \texttt{p:-a. a.} (regola di \texttt{b} rimossa: $a\in S$) & $\{a,p\}$ & \textbf{sì} \\
+$\{b,p\}$ & \texttt{p:-a. b.} (regola di \texttt{a} rimossa: $b\in S$) & $\{b\}$ & \textbf{no} \\
+$\{a,b,p\}$ & \texttt{p:-a.} (entrambe le regole rimosse: $a,b\in S$) & $\emptyset$ & \textbf{no} \\
+\bottomrule
+\end{tabular}
+\end{center}
+Solo due candidati superano la verifica $M=S$: $S=\{b\}$ (il ridotto \texttt{p:-a. b.} ha come unico modello minimale $\{b\}$, dato che \texttt{a} non è più un fatto e quindi \texttt{p} non si deriva) e $S=\{a,p\}$ (il ridotto \texttt{p:-a. a.} deriva \texttt{a} come fatto e poi \texttt{p} da \texttt{a}). Risultato: \textbf{answer set $=\{b\}$ e $\{a,p\}$} -- coerente con l'intuizione che il programma descrive una scelta esclusiva tra "credere $a$" (e di conseguenza $p$) e "credere $b$".
+
+Un programma può anche avere un modello classico ma \textbf{nessun answer set}: \texttt{p:-not p, d. d.} ha come modello classico $\{p,d\}$, ma sia $S=\{d\}$ (ridotto $\{p{:-}d.\ d.\}$, answer set $\{d,p\}\neq\{d\}$) sia $S=\{p,d\}$ (ridotto $\{d.\}$, answer set $\{d\}\neq\{p,d\}$) falliscono la verifica: nessuno dei due candidati è un answer set. È il caso classico di un \textbf{ciclo dispari attraverso la negazione} (\emph{odd loop}), che invalida la stabilità pur ammettendo un modello classico.
+
+\subsection{Risolvere Problemi con ASP: Generate-and-Test}
+
+ASP risolve un problema con un approccio \textbf{generate-and-test}: si descrive un problema caratterizzandone le soluzioni, in modo che ogni answer set del programma sia una soluzione, trovata dal solver nello stesso momento in cui calcola gli answer set. In due fasi: (1) si descrive con delle regole un insieme di \textbf{soluzioni candidate} (fase "generate"); (2) si introducono \textbf{vincoli} (regole senza testa) che scartano gli answer set non accettabili come soluzione (fase "test").
+
+Un costrutto avanzato utile in questa fase sono gli \textbf{aggregati} (\emph{choice/cardinality constraints}):
+\begin{lstlisting}
+n { p(X) : q(X) } m.
+\end{lstlisting}
+seleziona answer set contenenti da $n$ a $m$ atomi \texttt{p}, i cui possibili valori sono presi da \texttt{q}. Ad esempio, per imporre che ogni variabile abbia un solo tipo:
+\begin{lstlisting}
+1 { ha_tipo(V,T) : tipo(T) } 1 :- variabile(V).
+\end{lstlisting}
+
+Gli esercizi ASP del corso si svolgono con \textbf{clingo} (\url{https://potassco.org/clingo/}), la cui guida utente dettagliata è disponibile sulla pagina Moodle del corso.
+
+\newpage
+\part{Planning, Sistemi a Regole e Incertezza (Prof. Roberto Micalizio)}
+
+%=============================================================================
+\section{Fondamenti del Planning Automatico}
+%=============================================================================
+
+Il \textbf{planning} (pianificazione automatica) è, nelle parole di Patrik Haslum, "l'arte e la pratica di pensare prima di agire"; più operativamente (Jörg Hoffmann), è la selezione di un corso d'azione che conduce a un obiettivo, a partire da una descrizione ad alto livello del mondo. È un \textbf{processo deliberativo} che sceglie e organizza le azioni in base all'effetto atteso, e l'\emph{AI planning} ne studia la calcolabilità.
+
+\subsection{Il Modello Concettuale: State Transition System}
+
+Un dominio di pianificazione si modella con uno \textbf{State Transition System} (STS):
+\[
+\keyeq{\Sigma = (S,A,E,\gamma)}
+\]
+dove $S$ è un insieme finito di \textbf{stati}, $A$ un insieme finito di \textbf{azioni}, $E$ un insieme finito di \textbf{eventi} (accadimenti fuori dal controllo dell'esecutore), e $\gamma:S\times(A\cup E)\to 2^S$ è la \textbf{relazione di transizione di stato}. Un'azione $a$ è \emph{applicabile} in $s$ se $\gamma(s,a)\neq\emptyset$; applicarla causa una transizione a un $s'\in\gamma(s,a)$. Un STS è naturalmente un \textbf{grafo diretto} $G=(S,E_G)$, con un arco $s\to s'$ etichettato $u\in A\cup E$ se $s'=\gamma(s,u)$: un \textbf{piano}, in prima approssimazione, è un cammino da uno stato iniziale $I$ a un goal $G$ in questo grafo.
+
+L'esecuzione reale di un piano richiede un'architettura a due componenti: un \textbf{Planner}, che dati $\Sigma$, lo stato iniziale e il goal genera un piano; e un \textbf{Controller}, che dato il piano e lo stato corrente (osservato tramite una funzione $\eta:S\to O$) seleziona ed esegue un'azione. Nello schema più semplice si assume che gli eventi non interferiscano con le azioni del controller; nel \textbf{continual planning}, più realistico, pianificazione ed esecuzione si intrecciano (\emph{plan supervision}, \emph{plan revision/diagnosis}, \emph{re-planning}) proprio perché il mondo reale può divergere dal modello $\Sigma$ usato per pianificare.
+
+\subsection{Le Assunzioni del Planning Classico}
+
+Il \textbf{planning classico} adotta otto assunzioni semplificative (A0--A7), ciascuna rilassabile a costo di una maggiore complessità:
+
+\begin{center}
+\small
+\begin{tabular}{p{2.7cm}p{5.3cm}p{6.8cm}}
+\toprule
+\textbf{Assunzione} & \textbf{Definizione} & \textbf{Conseguenze del rilassamento} \\
+\midrule
+A0 -- Dominio finito & $\Sigma$ ha un numero finito di stati & problemi di decidibilità/terminazione \\
+A1 -- Osservabilità completa & $\eta$ è la funzione identità & osservazioni ambigue $\Rightarrow$ \emph{belief state}; \emph{conformant planning} \\
+A2 -- Determinismo & $|\gamma(s,u)|\leq1$ per ogni $s,u$ & piani con rami condizionali; \emph{conditional planning} con sensing actions \\
+A3 -- Staticità & $E=\emptyset$ & mondo non deterministico dal punto di vista del planner; \emph{continual planning} \\
+A4 -- Goal semplici & goal = stato/insieme di stati da raggiungere & vincoli su piani, funzioni di utilità/costo \\
+A5 -- Piani sequenziali & il piano è una sequenza totalmente ordinata & azioni parallele, strutture più complesse \\
+A6 -- Tempo implicito & azioni/eventi istantanei & azioni durative, concorrenza, deadline \\
+A7 -- Single agent & un solo planner e un solo controller & \emph{multi-agent planning}: coordinazione, negoziazione \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Il Problema di Planning Classico}
+
+Sotto le assunzioni A0--A7, un \textbf{problema di pianificazione classica} è la tripla
+\[
+\keyeq{P = (\Sigma,\,s_0,\,S_g)}
+\]
+con $\Sigma=(S,A,\gamma)$ (niente eventi, per A3), $s_0\in S$ stato iniziale, $S_g\subset S$ insieme di stati goal. Una \textbf{soluzione} $\pi$ è una sequenza totalmente ordinata di azioni ground $\pi=\langle a_1,\ldots,a_n\rangle$ che genera una sequenza di transizioni $\langle s_0,s_1,\ldots,s_n\rangle$ con $s_1=\gamma(s_0,a_1)$, $s_k=\gamma(s_{k-1},a_k)$ per $k=2,\ldots,n$, e $s_n\in S_g$.
+
+Restano aperte tre grandi domande, che guidano il resto di questa parte: (1) come rappresentare stati e azioni senza dover enumerare esplicitamente $S,A,\gamma$? (2) come cercare una soluzione in modo efficiente, con quali algoritmi ed euristiche? (3) come generalizzare le soluzioni a contesti più realistici, rilassando A0--A7?
+
+\subsection{Complessità}
+
+Il planning classico è computazionalmente costoso. Si definiscono due problemi decisionali: \textbf{PlanSAT} (esiste un piano soluzione?) e \textbf{Bounded PlanSAT} (esiste un piano di lunghezza $\leq k$?). Per il planning classico entrambi sono \textbf{decidibili} (spazio di ricerca finito); estendendo il linguaggio con simboli di funzione lo spazio diventa infinito, PlanSAT diventa solo \textbf{semidecidibile} mentre Bounded PlanSAT resta decidibile. In generale, PlanSAT e Bounded PlanSAT sono in \textbf{PSPACE}, e in molti casi pratici Bounded PlanSAT è \textbf{NP-completo} mentre PlanSAT è in \textbf{P}: trovare \emph{una} soluzione è quindi tipicamente meno costoso che trovarne una \emph{ottima} -- da cui la necessità di euristiche, possibilmente \emph{domain-independent}.
+
+\subsection{Proprietà di un Buon Algoritmo di Pianificazione}
+
+Un pianificatore è \textbf{sound} (corretto) se ogni soluzione trovata è realmente eseguibile: tutti i goal sono soddisfatti, nessuna precondizione resta \emph{open} (non fornita da $s_0$ o da un'azione precedente), nessun vincolo è violato. È \textbf{completo} se trova sempre una soluzione quando il problema è risolubile, ed è \textbf{strettamente completo} se nessuna operazione di pruning scarta soluzioni valide. È \textbf{ottimo} se l'ordine con cui trova le soluzioni è coerente con una misura di qualità del piano (lunghezza, costo).
+
+\newpage
+%=============================================================================
+\section{Rappresentazione a Variabili di Stato e Ricerca nello Spazio degli Stati}
+%=============================================================================
+
+\subsection{State-Variable Representation}
+
+\emph{Nota:} questo formalismo con terminologia \textbf{rigid}/\textbf{varying} è quello del testo di riferimento (Ghallab, Nau, Traverso, \emph{Automated Planning}) più che delle slide del corso, che usano direttamente la notazione insiemistica precondizioni/effetti positivi e negativi ripresa nella sottosezione successiva (Progression) e in STRIPS. È comunque un buon modo per capire in astratto perché convenga sostituire una logica del primo ordine (FOL) completa -- che si vedrà formalizzata più avanti, in Sezione~\ref{sec:strips} -- con una rappresentazione più snella: per evitare di enumerare esplicitamente $S,A,\gamma$, conviene una \textbf{rappresentazione a variabili di stato}. Dato l'insieme $B$ degli oggetti rilevanti del dominio, le proprietà si distinguono in \textbf{rigid} (relazioni invarianti, es. \texttt{adjacent(d1,d2)}, rappresentate come costanti booleane) e \textbf{varying} (fluenti che cambiano per effetto delle azioni, es. \texttt{loc(r1)}, rappresentate come \textbf{variabili} cui si assegna un valore -- analogia OO: equivale a scrivere \texttt{r1.loc}). Un insieme prefissato di variabili di stato $X=\{loc(r_1),loc(r_2),cargo(r_1),\ldots\}$, ciascuna con un dominio (\emph{Range}), definisce lo spazio: uno \textbf{stato} $s_i$ è semplicemente una funzione $X\to\text{valori}$, equivalentemente un insieme di coppie $(x,w)$.
+
+Uno \textbf{schema di azione} specifica precondizioni come relazioni costanti ($rel(t_1,\ldots,t_k)$ o la sua negazione) o test su variabili di stato ($sv(t_1,\ldots,t_k)=t_0$ o $\neq t_0$), ed effetti come assegnamenti $sv(t_1,\ldots,t_k)\leftarrow t_0$:
+\begin{lstlisting}
+move(r,l,m)                    take(r,l,c)
+pre: loc(r)=l, adjacent(l,m)   pre: cargo(r)=nil, loc(r)=l, loc(c)=l
+eff: loc(r) <- m                eff: cargo(r) <- c, loc(c) <- r
+\end{lstlisting}
+La transizione di stato per un'azione applicabile è $\gamma(s,a)=s'$, con $s'=\{(x,w)\mid x{\leftarrow}w\in\text{eff}(a)\}\cup\{(x,w)\in s\mid x\text{ non occorre in eff}(a)\}$. La rappresentazione FOL classica (predicati) e quella a variabili di stato sono \textbf{equivalenti} (stesso potere espressivo, $P(b_1,\ldots,b_k)\rightsquigarrow x_P(b_1,\ldots,b_k){=}true$ e viceversa); quella a variabili di stato è però più sintetica e si presta meglio a estensioni non classiche (osservabilità parziale, fluenti numerici, euristiche).
+
+\subsection{Progression: Ricerca in Avanti}
+
+Un'azione ground $a$ è applicabile in $s$ se ogni precondizione positiva è in $s$ e ogni precondizione negativa non lo è; la transizione (con precondizioni ed effetti espressi in termini insiemistici $effects^+/effects^-$) è
+\[
+\gamma(s,a) = (s\setminus effects^-(a))\cup effects^+(a).
+\]
+La \textbf{progression} (ricerca in avanti) parte da $s_0$ e applica iterativamente azioni applicabili fino a raggiungere uno stato che soddisfa il goal:
+\begin{lstlisting}
+function fwdSearch(O, s0, sg)
+  state <- s0
+  pi <- <>
+  loop
+    if state.satisfies(sg) then return pi
+    applicables <- {istanze ground da O applicabili in state}
+    if applicables.isEmpty() then return failure
+    action <- applicables.chooseOne()   % scelta non deterministica esaustiva
+    state <- gamma(state, action)
+    pi <- pi . <action>
+  return failure
+\end{lstlisting}
+\texttt{fwdSearch} è \textbf{sound} (se termina con un piano, è una soluzione valida) e \textbf{completo} (se esiste una soluzione, esiste una traccia che la trova). Il vantaggio è l'estrema intuitività dell'implementazione.
+
+\subsection{Regression: Ricerca all'Indietro}
+
+Il numero di azioni applicabili a uno stato è spesso molto grande, con branching factor elevato: la \textbf{regression} attacca il problema partendo dal goal e regredendo all'indietro. Il \textbf{regresso} di un goal $g$ attraverso un'azione ground $a$ tale che $g_i\in effects^+(a)$ per qualche $g_i\in g$ è
+\[
+g' = \gamma^{-1}(g,a) = (g\setminus effects^+(a))\cup pre(a)
+\]
+(gli effetti negativi non intervengono nel calcolo del predecessore). Pseudocodice:
+\begin{lstlisting}
+function bwdSearch(O, s0, g)
+  subgoal <- g
+  pi <- <>
+  loop
+    if s0.satisfies(subgoal) then return pi
+    relevants <- {istanze ground da O rilevanti per subgoal}
+    if relevants.isEmpty() then return failure
+    action <- relevants.chooseOne()
+    subgoal <- gamma_inv(subgoal, action)
+    pi <- <action> . pi
+  return failure
+\end{lstlisting}
+Un'azione è \textbf{rilevante} per un sottogoal se produce almeno uno degli atomi del goal e non ne nega nessuno. Il vantaggio della regression è un fattore di ramificazione più contenuto; lo svantaggio è che, per gestire correttamente più stati goal candidati simultaneamente (\emph{belief state}), le strutture dati diventano più costose. Nonostante il vantaggio teorico, \textbf{in pratica la ricerca in avanti è preferita}.
+
+\begin{center}
+\small
+\begin{tabular}{p{6.8cm}p{6.8cm}}
+\toprule
+\textbf{Progression} & \textbf{Regression} \\
+\midrule
+Parte da un singolo stato iniziale & Parte da un insieme di stati goal \\
+Un operatore genera un unico stato successore & Un passo all'indietro può avere più predecessori \\
+Spazio di ricerca $\approx$ spazio degli stati & Ogni stato di ricerca è un insieme di stati del dominio \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Alcuni pianificatori reali, classificati secondo direzione/rappresentazione/algoritmo/tecnica di controllo: \textbf{FF} (Hoffmann \& Nebel, 2001, avanti, esplicito, hill-climbing, euristica inammissibile con pruning, subottimo); \textbf{LAMA} (Richter \& Westphal, 2008, avanti, variante di A*, euristica FF + landmark non ammissibile, subottimo); \textbf{Fast Downward} (Helmert et al., 2011, avanti, A*, euristiche ammissibili come LM-cut e merge-and-shrink, ottimo).
+
+\newpage
+%=============================================================================
+\section{STRIPS}
+\label{sec:strips}
+%=============================================================================
+
+\textbf{STRIPS} (STanford Research Institute Problem Solver, Fikes \& Nilsson 1971) introduce una rappresentazione esplicita degli operatori di pianificazione, operazionalizzando la distinzione tra stati, sotto-goal e applicazione di un operatore, e gestendo il \emph{frame problem}. Si basa su due idee: il \textbf{linear planning} (risolvere un goal alla volta, tramite uno \textbf{stack dei goal}, passando al successivo solo quando il precedente è raggiunto) e la \textbf{means-end analysis} (analizzare la differenza tra stato corrente e goal, e trovare un operatore che la riduce, ripetendo l'analisi sui sotto-goal per regressione).
+
+\subsection{Stati e Operatori}
+
+Il linguaggio STRIPS è un frammento di FOL: numero finito di predicati e costanti, \textbf{senza} simboli di funzione né quantificatori. Uno stato è una congiunzione di \textbf{atomi ground}, sotto la \textbf{closed world assumption} (assunzione di mondo chiuso): un atomo vale in $s$ se e solo se vi compare esplicitamente. Le relazioni si distinguono in \textbf{fluenti} (possono cambiare, es. \texttt{On}, \texttt{OnTable}) e \textbf{persistenti} (\emph{state invariant}, es. \texttt{Block()}, mai modificate da alcuna azione).
+
+Un \textbf{plan operator} è la tripla $o:(name(o),precond(o),effects(o))$, dove $precond(o)$ si divide in $precond^+(o)$ e $precond^-(o)$, ed $effects(o)$ in $effects^+(o)$ (l'\textbf{add-list}) ed $effects^-(o)$ (la \textbf{delete-list}); una variabile può comparire negli effetti solo se già presente nelle precondizioni. Esempio nel mondo dei blocchi:
+\begin{lstlisting}
+Pick_Block(?b, ?c)
+Pre: Block(?b), Handempty, Clear(?b), On(?b,?c), Block(?c)
+Eff: Holding(?b), Clear(?c), not(Handempty), not(On(?b,?c))
+
+Put_Block(?b, ?c)
+Pre: Block(?b), Holding(?b), Clear(?c), Block(?c)
+Eff: not(Holding(?b)), not(Clear(?c)), Handempty, On(?b,?c)
+\end{lstlisting}
+(un'azione STRIPS è un'istanziazione ground di un plan operator; questi due soli operatori, richiedendo entrambi \texttt{Block(?c)} tra le precondizioni, non permettono di interagire col tavolo -- serve estenderli con operatori dedicati a prelevare/posare un blocco sul tavolo, come si vede nell'esempio completo sotto).
+
+\subsection{L'Algoritmo STRIPS}
+
+\begin{lstlisting}
+STRIPS(initState, goals)
+  state = initState; plan = []; stack = []
+  Push goals on stack
+  Repeat until stack is empty
+    - Se in cima allo stack c'e' un goal g gia' soddisfatto in state -> pop
+    - Se in cima c'e' un goal congiuntivo g -> scegli un ordine per i
+      sotto-goal e mettili sullo stack (linearizzazione)
+    - Se in cima c'e' un goal atomico sg -> scegli un operatore o la cui
+      effects+ soddisfa sg (means-end analysis); sostituisci sg con o;
+      metti le precondizioni di o sullo stack
+    - Se in cima c'e' un operatore o completamente istanziato -> esegui
+      o (state = apply(o,state), progression) e aggiungilo al piano
+\end{lstlisting}
+
+\subsection{Esempio Completo: Blocks World}
+
+Goal $On(A,C)\wedge On(C,B)$, con stato iniziale (torre C su A, B separato)
+\[
+Clear(B),\ Clear(C),\ On(C,A),\ On(A,Table),\ On(B,Table),\ Handempty.
+\]
+Traccia (con \texttt{Pick}/\texttt{Put} per prelevare/posare su un blocco, \texttt{PickT}/\texttt{PutT} per prelevare/posare sul tavolo): si sceglie di risolvere prima $On(C,B)$: serve $Holding(C)$, ottenuto con \texttt{Pick(C)} (le sue precondizioni, incluso $On(C,A)$, sono già vere); si esegue quindi \texttt{Put(C,B)}. Resta $On(A,C)$: serve $Holding(A)$, ma $A$ è sul tavolo, quindi si usa \texttt{PickT(A)} (precondizioni verificate) seguito da \texttt{Put(A,C)}. Piano finale:
+\[
+\pi = [\,\texttt{Pick(C)};\ \texttt{Put(C,B)};\ \texttt{PickT(A)};\ \texttt{Put(A,C)}\,].
+\]
+
+\subsection{Limiti del Linear Planning}
+
+Lo STRIPS planner, essendo \emph{lineare}, è sound e ha un vantaggio di ricerca notevole quando i goal sono indipendenti, ma \textbf{può produrre piani subottimi} e \textbf{non è completo}.
+
+\textbf{Subottimalità -- Sussman's Anomaly.} Con goal $On(A,B)\wedge On(B,C)$ (stesso stato iniziale di prima) e ordine "prima $On(A,B)$": per rendere $A$ prendibile occorre liberarlo da $C$ (\texttt{Pick(C,A)}, \texttt{PutT(C)}), poi \texttt{PickT(A)}, \texttt{Put(A,B)} -- ma per il secondo goal $On(B,C)$ serve $Holding(B)$, e $B$ non è più libero perché $A$ vi è appena stato posato: occorre \textbf{disfare} $On(A,B)$ (\texttt{Pick(A,B)}, \texttt{PutT(A)}), completare $On(B,C)$ (\texttt{PickT(B)}, \texttt{Put(B,C)}), e infine \textbf{ripristinare} $On(A,B)$ (\texttt{PickT(A)}, \texttt{Put(A,B)}): un piano di 10 azioni invece delle 4 dell'esempio precedente, per l'interdipendenza dei due sotto-goal combinata con un ordinamento sfavorevole.
+
+\textbf{Incompletezza.} Dominio logistico con \texttt{Load/Unload/Fly}, dove \texttt{Fly} consuma \texttt{HaveFuel} (effetto non reversibile): stato iniziale con due pacchi e un aereo a \emph{LocA}, goal entrambi a \emph{LocB}. Risolvendo linearmente il primo pacco (\texttt{Load}, \texttt{Fly}, \texttt{Unload}), il carburante si esaurisce e il planner lineare, non tornando mai sui propri passi, \textbf{non riesce più a raggiungere il secondo goal} -- un'incompletezza che nasce direttamente dalla non reversibilità di alcune azioni in certi domini.
+
+\newpage
+%=============================================================================
+\section{PDDL}
+%=============================================================================
+
+\textbf{PDDL} (Planning Domain Definition Language) è lo standard de facto per l'input dei pianificatori nelle competizioni internazionali; PDDL 1.0 coincide sostanzialmente col linguaggio STRIPS. Un task di pianificazione è definito da \textbf{oggetti}, \textbf{predicati}, \textbf{stato iniziale}, \textbf{specifica del goal} e \textbf{azioni/operatori}, separati in due file: il \textbf{domain file} (predicati e azioni, conoscenza indipendente dal problema) e il \textbf{problem file} (oggetti, stato iniziale, goal, conoscenza specifica del problema):
+\begin{lstlisting}
+(define (domain <domain-name>)
+    <predicati>
+    <azione 1> ... <azione N>)
+
+(define (problem <problem-name>)
+    (:domain <domain-name>)
+    <oggetti> <stato iniziale> <goal>)
+\end{lstlisting}
+
+\subsection{Esempio Completo: Gripper}
+
+Un robot con due bracci sposta palloni tra due stanze. Predicati: \texttt{ROOM}, \texttt{BALL}, \texttt{GRIPPER}, \texttt{at-robby(x)}, \texttt{at(b,r)}, \texttt{free(g)}, \texttt{carry(o,g)}. Azioni \texttt{move}, \texttt{pick}, \texttt{drop}:
+\begin{lstlisting}
+(define (domain gripper-strips)
+    (:predicates (room ?r) (ball ?b) (gripper ?g) (at-robby ?r)
+                 (at ?b ?r) (free ?g) (carry ?o ?g))
+    (:action move
+        :parameters (?from ?to)
+        :precondition (and (room ?from) (room ?to) (at-robby ?from))
+        :effect (and (at-robby ?to) (not (at-robby ?from))))
+    (:action pick
+        :parameters (?obj ?room ?gripper)
+        :precondition (and (ball ?obj) (room ?room) (gripper ?gripper)
+                (at ?obj ?room) (at-robby ?room) (free ?gripper))
+        :effect (and (carry ?obj ?gripper) (not (at ?obj ?room))
+                (not (free ?gripper))))
+    (:action drop
+        :parameters (?obj ?room ?gripper)
+        :precondition (and (ball ?obj) (room ?room) (gripper ?gripper)
+                (carry ?obj ?gripper) (at-robby ?room))
+        :effect (and (at ?obj ?room) (free ?gripper)
+                (not (carry ?obj ?gripper)))))
+\end{lstlisting}
+\begin{lstlisting}
+(define (problem strips-gripper2)
+    (:domain gripper-strips)
+    (:objects rooma roomb ball1 ball2 ball3 ball4 left right)
+    (:init
+        (room rooma) (room roomb)
+        (ball ball1) (ball ball2) (ball ball3) (ball ball4)
+        (gripper left) (gripper right)
+        (at-robby rooma) (free left) (free right)
+        (at ball1 rooma) (at ball2 rooma)
+        (at ball3 rooma) (at ball4 rooma))
+    (:goal (and (at ball1 roomb) (at ball2 roomb)
+                (at ball3 roomb) (at ball4 roomb))))
+\end{lstlisting}
+
+Leggendo le tre azioni riga per riga: \texttt{move} ha come unico parametro le due stanze coinvolte; la precondizione richiede che entrambe siano stanze valide e che il robot sia attualmente in \texttt{?from}; l'effetto è la coppia \emph{add/delete} tipica di STRIPS, scritta esplicitamente con \texttt{and}/\texttt{not}: \texttt{(at-robby ?to)} è l'\textbf{effetto positivo} (aggiunto allo stato), \texttt{(not (at-robby ?from))} è l'\textbf{effetto negativo} (rimosso dallo stato) -- PDDL non ha "liste" add/delete separate come STRIPS classico, ma codifica la stessa informazione con la presenza o meno di \texttt{not} davanti a ciascun letterale dell'effetto. Analogamente, \texttt{pick} richiede che il pallone e il robot siano nella stessa stanza e che il gripper sia libero (\texttt{free ?gripper}); l'effetto aggiunge \texttt{(carry ?obj ?gripper)} e rimuove sia \texttt{(at ?obj ?room)} (il pallone non è più a terra) sia \texttt{(free ?gripper)} (il gripper è ora occupato). \texttt{drop} è l'azione simmetrica: richiede di avere già in mano il pallone (\texttt{carry ?obj ?gripper}) ed essere nella stanza di destinazione, e nell'effetto scambia esattamente add e delete rispetto a \texttt{pick} (il pallone torna a terra, il gripper torna libero, la presa viene rimossa).
+
+\subsection{Requirements}
+
+PDDL è cresciuto in complessità nel tempo: la clausola \texttt{(:requirements ...)} dichiara quali estensioni del linguaggio sono usate, così un planner può verificare se è in grado di risolvere il problema (o se può limitarsi al frammento "core"). Le principali:
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{4.6cm}p{9.5cm}@{}}
+\toprule
+\textbf{Requirement} & \textbf{Significato} \\
+\midrule
+\texttt{:strips} & effetti add/delete in stile STRIPS di base \\
+\texttt{:typing} & tipi nelle dichiarazioni di variabili \\
+\texttt{:disjunctive-\allowbreak preconditions} & \texttt{or} nelle precondizioni \\
+\texttt{:equality} & predicato built-in \texttt{=} \\
+\texttt{:existential/\allowbreak universal-\allowbreak preconditions} & \texttt{exists}/\texttt{forall} nelle precondizioni \\
+\texttt{:conditional-\allowbreak effects} & \texttt{when} negli effetti \\
+\texttt{:negative-\allowbreak preconditions} & \texttt{not} diretto nelle precondizioni (senza, si assume closed-world) \\
+\texttt{:fluents} & funzioni/valori numerici (usati dai costi e dalle risorse) \\
+\texttt{:domain-\allowbreak axioms} & assiomi di dominio, necessari per dare semantica agli effetti condizionali con \texttt{forall} \\
+\texttt{:adl} & unione di strips, typing, disjunctive, equality, quantified, conditional \\
+\bottomrule
+\end{tabular}
+\end{center}
+Queste sono le più usate in pratica; lo standard ne definisce altre più specialistiche (\texttt{:action-expansions}, \texttt{:foreach-expansions}, \texttt{:safety-constraints}, \texttt{:open-world}, \texttt{:true-negation}, \ldots), in genere legate a estensioni storiche poco diffuse nei planner moderni.
+
+\subsection{Tipi e Gerarchie}
+
+Sono predefiniti i tipi \texttt{object} e \texttt{number}; si possono definire gerarchie con radice uno dei due, es. \texttt{(:types integer float - number physob)}. Il dominio Gripper tipizzato (che richiede \texttt{:typing}):
+\begin{lstlisting}
+(define (domain gripper-typed)
+    (:requirements :typing)
+    (:types room ball gripper)
+    (:constants left right - gripper)
+    (:predicates (at-robby ?r - room) (at ?b - ball ?r - room)
+                 (free ?g - gripper) (carry ?o - ball ?g - gripper))
+    (:action move
+        :parameters (?from ?to - room)
+        :precondition (at-robby ?from)
+        :effect (and (at-robby ?to) (not (at-robby ?from)))))
+\end{lstlisting}
+con vincoli di tipo `?from ?to - room` nei parametri che sostituiscono il controllo esplicito del predicato `ROOM(x)` visto nella versione non tipizzata.
+
+\subsection{Effetti Condizionali e Quantificatori}
+
+Il dominio logistico ad ADL mostra entrambi i costrutti avanzati insieme -- \texttt{forall} nell'effetto, con un \texttt{when} annidato, per spostare \emph{tutti} i pacchi contenuti in un camion quando questo si sposta:
+\begin{lstlisting}
+(:action drive-truck
+  :parameters (?truck - truck ?loc-from ?loc-to - location ?city - city)
+  :precondition (and (at ?truck ?loc-from) (in-city ?loc-from ?city)
+                      (in-city ?loc-to ?city))
+  :effect (and (at ?truck ?loc-to) (not (at ?truck ?loc-from))
+               (forall (?x - obj)
+                       (when (in ?x ?truck)
+                             (and (not (at ?x ?loc-from))
+                                  (at ?x ?loc-to))))))
+\end{lstlisting}
+Il costrutto \texttt{(forall (?x - obj) EFFETTO)} itera concettualmente su \emph{tutti} gli oggetti di tipo \texttt{obj} esistenti nel problema, applicando \texttt{EFFETTO} a ciascuno; da solo, però, applicherebbe l'effetto anche ai pacchi che non sono sul camion, il che sarebbe errato. Per questo è annidato dentro \texttt{(when CONDIZIONE EFFETTO)}: la condizione \texttt{(in ?x ?truck)} viene valutata nello stato \emph{prima} dell'esecuzione dell'azione (non in quello risultante), e l'effetto tra parentesi si applica a \texttt{?x} solo se la condizione era vera per quel particolare oggetto. La combinazione \texttt{forall+when} realizza quindi "per ogni pacco che si trova nel camion (e solo per quelli), spostalo insieme al camion" -- senza \texttt{when} il quantificatore da solo non potrebbe filtrare gli oggetti da un insieme più ampio.
+
+\subsection{Due Problemi di Modellazione Ricorrenti}
+
+Nel mondo dei blocchi in PDDL, esprimere "$b$ non ha nulla sopra" richiederebbe in FOL un quantificatore ($\neg\exists x\,On(x,b)$); PDDL di base non ha quantificatori, e la soluzione standard è introdurre esplicitamente un predicato \texttt{Clear(b)} mantenuto dagli effetti delle azioni. Un secondo problema nasce trattando il tavolo come un oggetto ordinario: \texttt{Clear(Table)} o richiederlo come precondizione di \texttt{Move} non ha senso (il tavolo non "si libera" mai davvero); la soluzione standard è introdurre un operatore dedicato \texttt{MoveToTable(b,x)} che tratta il tavolo come caso speciale, non come parametro generico dell'operatore \texttt{Move}. Lo stesso genere di problema si ripresenta nel dominio logistico (Figure 10.1 di AIMA): serve distinguere \texttt{In(c,p)} (un carico a bordo di un aereo) da \texttt{At(x,a)} (un oggetto -- aereo o carico -- in un aeroporto), e va vincolato esplicitamente \texttt{from}$\neq$\texttt{to} in \texttt{Fly} per evitare voli spuri verso lo stesso aeroporto.
+
+\subsection{Estensioni di PDDL}
+
+Oltre a quanto visto: gli \textbf{effetti condizionali} \texttt{(when <condizione> <effetto>)}; le \textbf{azioni durative} (\texttt{:durative-actions}), suddivise in evento iniziale, evento finale e condizione invariante per tutta la durata; i \textbf{fluenti numerici}, utili per tracciare il consumo di risorse; i \textbf{quantificatori} \texttt{(forall (?v...) ...)} e \texttt{(exists (?v...) ...)}.
+
+\newpage
+%=============================================================================
+\section{Pianificazione nello Spazio dei Piani}
+%=============================================================================
+
+Formulare il planning come un \textbf{CSP} (Constraint Satisfaction Problem) permette di \textbf{ritardare le decisioni} finché non sono strettamente necessarie: è il \textbf{principio least-commitment}, applicato a due tipi di scelte rimandabili -- gli \textbf{ordinamenti} tra azioni (non ordinarle finché non serve) e i \textbf{bindings} delle variabili (non vincolarle a costanti finché non serve). Ne nasce la \textbf{ricerca nello spazio dei piani} (\emph{Plan-Space Planning}, PSP): ogni nodo di ricerca è un \textbf{piano parzialmente ordinato} con dei \textbf{difetti} (\emph{flaws}); ad ogni passo si rimuove un difetto con un raffinamento incrementale. Se l'algoritmo termina con successo, il piano risultante è completamente istanziato ma solo \emph{parzialmente} ordinato.
+
+\subsection{Formalizzazione del Piano Parziale}
+
+Un piano parziale è la quadrupla $\pi=\langle A,O,B,L\rangle$: $A$ è l'insieme di azioni (anche solo parzialmente istanziate), che include sempre un'azione fittizia $a_0$ (senza precondizioni, con $effects^+(a_0)\equiv s_0$) e $a_\infty$ (senza effetti, con $pre(a_\infty)\equiv s_{goal}$); $O$ è un insieme di vincoli di ordinamento $(a_i\prec a_j)$, solo parzialmente definito; $B$ è un insieme di vincoli sulle variabili ($v_i{=}C$, $v_i{\neq}C$, $v_i{=}v_j$, $v_i{\neq}v_j$); $L$ è un insieme di \textbf{causal link} $a_i\xrightarrow{p} a_j$, che registrano che un effetto di $a_i$ soddisfa la precondizione $p$ di $a_j$.
+
+\subsection{Flaws: Open Goal}
+
+Una precondizione $p$ di un'azione $b$ è un \textbf{open goal} se manca un causal link a suo supporto. Per risolverla: si trova un'azione $a$ (già in $\pi$, o da aggiungere) tale che $p$ possa appartenere a $effects^+(a)$ e $a$ possa precedere $b$; la si istanzia al minimo indispensabile (least-commitment); si aggiunge $a\prec b$ a $O$; si aggiunge $a\xrightarrow{p} b$ a $L$.
+
+\subsection{Flaws: Threat}
+
+Dato un causal link $l:a\xrightarrow{p}b\in L$, un'azione $c$ (detta \emph{clobberer}) \textbf{minaccia} $l$ se può modificare il valore di verità di $p$ posizionandosi tra $a$ e $b$. Tre modi per risolvere la minaccia:
+\begin{itemize}
+  \item \textbf{Promotion}: impone $c\prec a$ (anticipa $c$ prima di $a$);
+  \item \textbf{Demotion}: impone $b\prec c$ (posticipa $c$ dopo $b$);
+  \item \textbf{Separation}: impone un vincolo di non-codesignazione (es. $x\neq Block1$) che impedisce all'effetto di $c$ di unificare con $p$.
+\end{itemize}
+
+\subsection{Algoritmo PSP}
+
+\begin{lstlisting}
+PSP(Sigma, pi)                    % pi = <A,O,B,L>
+    Flaws(pi) <- OpenGoals(pi) unione Threats(pi)
+    if Flaws(pi) = vuoto then return pi
+    scegli un f in Flaws(pi)
+    R <- {tutti i resolver possibili per f}
+    if R = vuoto then return failure
+    scegli (non deterministicamente) un rho in R
+    pi' <- rho(pi)
+    return PSP(Sigma, pi')
+\end{lstlisting}
+Si parte da $\pi^1=(\langle a_0,a_\infty\rangle,\{a_0\prec a_\infty\},\emptyset,\emptyset)$. \textbf{PSP è sound e completo}: restituisce un piano parzialmente ordinato tale che \emph{qualunque} ordinamento totale delle sue azioni raggiunge il goal; dove il dominio lo consente, le azioni non strettamente sequenziali possono essere eseguite in parallelo.
+
+\subsection{Esempio Completo: Scambio di Posizione tra Due Robot}
+
+Due robot $r_1,r_2$ devono scambiarsi di posizione tra tre depositi $d_1,d_2,d_3$, con l'unica azione \texttt{move(r,d,d')}, precondizione $loc(r){=}d\wedge occupied(d'){=}nil$ ed effetto
+\[
+loc(r)\leftarrow d',\qquad occupied(d)\leftarrow nil,\qquad occupied(d')\leftarrow r.
+\]
+Stato iniziale e goal:
+\begin{align*}
+s_0 &= \{loc(r_1){=}d_1,\ loc(r_2){=}d_2,\ occupied(d_1){=}T,\ occupied(d_2){=}T,\ occupied(d_3){=}F\}\\
+g &= \{loc(r_1){=}d_2,\ loc(r_2){=}d_1\}
+\end{align*}
+
+Si parte da $a_0\to a_\infty$. Per risolvere i due open goal di $a_\infty$ si introducono $a_1{=}move(r_1,d,d_2)$ e $a_2{=}move(r_2,d',d_1)$ (con $d,d'$ ancora libere). Risolvendo gli open goal di $a_1$: $loc(r_1){=}d$ si unifica con l'effetto di $a_0$ ($d{=}d_1$); ma $occupied(d_2){=}nil$ non è soddisfatta da $a_0$ (che ha $occupied(d_2){=}r_2$), quindi si introduce $a_3{=}move(r,d_2,d'')$. Risolvendo gli open goal di $a_2$: $loc(r_2){=}d'$ si unifica con l'effetto di $a_3$ ($r{=}r_2,d''{=}d'$). Risolvendo infine gli open goal di $a_3$: $occupied(d_3){=}nil$ è soddisfatta da $a_0$ (unico deposito libero), quindi $d'{=}d_3$; con questo, $a_3{=}move(r_2,d_2,d_3)$ e $a_2{=}move(r_2,d_3,d_1)$ (con precondizione $occupied(d_1){=}nil$ ora soddisfatta dall'effetto di $a_1$). Il piano finale, parzialmente ordinato $a_0\prec a_3\prec a_1\prec a_2\prec a_\infty$:
+\[
+a_3{=}move(r_2,d_2,d_3)\ \to\ a_1{=}move(r_1,d_1,d_2)\ \to\ a_2{=}move(r_2,d_3,d_1)
+\]
+($r_2$ si sposta prima nel deposito libero $d_3$, liberando $d_2$ per $r_1$; poi $r_2$ si sposta da $d_3$ nel deposito ormai libero $d_1$).
+
+\subsection{Glossario}
+
+Un piano è \textbf{totalmente ordinato} se $O$ ordina ogni coppia di azioni; è \textbf{parzialmente ordinato} se, pur non essendolo, è privo di difetti (ogni sua linearizzazione è una soluzione valida); è un \textbf{piano parziale} se contiene ancora difetti e/o azioni non completamente istanziate. Un \textbf{open goal} è una precondizione non ancora supportata da alcun causal link; un \textbf{threat} è un'azione che minaccia un causal link esistente.
+
+\newpage
+%=============================================================================
+\section{Grafi di Pianificazione e l'Algoritmo GraphPlan}
+%=============================================================================
+
+Il \textbf{planning graph} (GP) è una struttura dati, costruibile in \textbf{tempo polinomiale}, utile sia per definire euristiche \emph{domain-independent} sia per estrarne direttamente un piano (algoritmo GraphPlan). È un grafo \textbf{orientato, aciclico, organizzato a livelli} che si alternano: un livello di \textbf{proposizioni} $S_i$ e uno di \textbf{azioni} $A_i$. $S_0$ contiene un nodo per ogni fluente vero nello stato iniziale; $A_0$ contiene le azioni ground applicabili a $S_0$ più una speciale \textbf{azione no-op} per ogni proposizione (persistenza); ogni $S_i$ contiene tutti i letterali che \emph{potrebbero} valere al tempo $i$ (anche $P$ e $\neg P$ insieme: ogni $S_i$ è un \emph{belief state}) e ogni $A_i$ tutte le azioni le cui precondizioni \emph{potrebbero} essere soddisfatte al tempo $i$. Il grafo cresce monotonicamente e prima o poi \textbf{si livella} (due livelli consecutivi diventano identici).
+
+\subsection{Mutua Esclusione (Mutex)}
+
+Il GP traccia un sottoinsieme delle interazioni negative tramite link di \textbf{mutua esclusione}. Tra due azioni in uno stesso $A_i$: \textbf{effetti inconsistenti} (una nega gli effetti dell'altra); \textbf{interferenza} (l'effetto di una nega una precondizione dell'altra); \textbf{competizione delle precondizioni} (una precondizione di una è mutex con una precondizione dell'altra). Tra due letterali in uno stesso $S_i$: \textbf{complementarità} (uno è la negazione dell'altro); \textbf{supporto inconsistente} (ogni coppia di azioni di $A_{i-1}$ che li producono è mutex). I mutex tra letterali possono \emph{sparire} a livelli successivi (proprietà di monotonicità): un caso tipico è quando emerge una seconda via, non in conflitto, per produrre uno dei due letterali.
+
+Per rendere concrete le tre condizioni tra azioni, si anticipi il dominio "have-cake" usato nell'esempio della sezione successiva (\texttt{Eat(Cake)}, precondizione $Have(Cake)$, effetti $\neg Have(Cake)\wedge Eaten(Cake)$; \texttt{Bake(Cake)}, precondizione $\neg Have(Cake)$, effetto $Have(Cake)$; più la no-op di persistenza per ogni fluente, con precondizione ed effetto identici al fluente stesso). In $A_1$, la coppia \texttt{Eat(Cake)} e la \textbf{no-op di persistenza} di $Have(Cake)$ (precondizione ed effetto $Have(Cake)$) è mutex per \emph{due} motivi contemporaneamente: \textbf{effetti inconsistenti} (l'effetto di \texttt{Eat(Cake)} è $\neg Have(Cake)$, quello della no-op è $Have(Cake)$: effetti direttamente opposti sullo stesso fluente) \emph{e}, equivalentemente, \textbf{interferenza} (l'effetto $\neg Have(Cake)$ di \texttt{Eat(Cake)} nega proprio la precondizione $Have(Cake)$ richiesta dalla no-op) -- in domini così piccoli le due condizioni spesso coincidono sulla stessa coppia di azioni, perché la no-op ha precondizione ed effetto uguali. La terza condizione, \textbf{competizione delle precondizioni}, si vede invece sulla coppia \texttt{Eat(Cake)}/\texttt{Bake(Cake)}: la precondizione di \texttt{Eat(Cake)} è $Have(Cake)$, quella di \texttt{Bake(Cake)} è $\neg Have(Cake)$ -- sono l'una la negazione dell'altra, dunque mutex tra loro in $S_0$, il che rende mutex anche le due azioni in $A_1$.
+
+La costruzione ha complessità $O(n(a+l)^2)$, con $l$ numero di letterali, $a$ numero di azioni, $n$ numero di livelli: ogni $S_i$ ha $\leq l$ nodi e $\leq l^2$ mutex, ogni $A_i$ ha $\leq(l{+}a)$ nodi e $\leq(a{+}l)^2$ mutex.
+
+\subsection{GraphPlan come Euristica}
+
+Se un letterale del goal non compare mai nel GP, il goal è certamente irraggiungibile; se invece tutti compaiono, il problema \emph{potrebbe} essere risolubile (non è garantito). Da qui euristiche per il costo di un letterale (profondità del suo primo livello di comparsa, ammissibile ma poco precisa) e per una congiunzione di letterali: \textbf{max-level} (il massimo dei livelli, poco preciso); \textbf{somma dei livelli} (assume indipendenza, \textbf{non ammissibile}); \textbf{set-level} (il primo livello in cui tutti i letterali compaiono \emph{senza} mutex tra loro a coppie -- \textbf{ammissibile}, ma ignora dipendenze tra tre o più letterali).
+
+\subsection{L'Algoritmo GraphPlan}
+
+\textbf{Teorema}: se esiste un piano valido, questo è un sottografo del planning graph.
+\begin{lstlisting}
+function GRAPHPLAN(problem) returns solution or failure
+   graph <- INITIAL-PLANNING-GRAPH(problem)
+   goals <- CONJUNCTS(problem.GOAL)
+   nogoods <- tabella hash vuota
+   for tl = 0 to infinito do
+      if goals tutti non-mutex in S_tl del grafo then
+         solution <- EXTRACT-SOLUTION(graph, goals, NUMLEVELS(graph), nogoods)
+         if solution != failure then return solution
+      if graph e nogoods si sono entrambi livellati then return failure
+      graph <- EXPAND-GRAPH(graph, problem)
+\end{lstlisting}
+
+\textbf{Extract-Solution} cerca un piano con una ricerca backward su un sottografo AND/OR del GP (rami OR: le azioni che producono un letterale goal; rami AND: le precondizioni di un'azione scelta), tramite due funzioni mutuamente ricorsive:
+\begin{lstlisting}
+Extract-Solution(G, g, i)
+   if i = 0 then return <>
+   if g in no-good(i) then return failure
+   pi <- GP-Search(G, g, {}, i-1)
+   if pi != failure then return pi
+   no-good(i) <- no-good(i) unione {g}
+   return failure
+
+GP-Search(G, g, pi_i, i)
+   if g = {} then
+       Pi <- Extract-Solution(G, unione{precond(a) : a in pi_i}, i)
+       if Pi = failure then return failure
+       return Pi unione pi_i
+   else
+       scegli un p in g
+       resolvers <- {a in A_i : p in effects+(a), nessun b in pi_i e' mutex con a}
+       if resolvers = {} then return failure
+       scegli (non det.) un resolver a per p
+       return GP-Search(G, g - effects+(a), pi_i unione {a}, i)
+\end{lstlisting}
+Ogni fallimento di \texttt{Extract-Solution} su una coppia $(L,i)$ viene ricordato nella tabella \textbf{no-good}: un meccanismo di \textbf{memoization} che evita di ripetere ricerche già fallite.
+
+\subsection{Esempio: "Have Cake and Eat It Too"}
+
+\begin{lstlisting}
+Init(Have(Cake))
+Goal(Have(Cake) and Eaten(Cake))
+Action(Eat(Cake))  Pre: Have(Cake)     Eff: not Have(Cake), Eaten(Cake)
+Action(Bake(Cake)) Pre: not Have(Cake) Eff: Have(Cake)
+\end{lstlisting}
+Al livello $S_1$, $Have(Cake)$ (via persistenza) e $Eaten(Cake)$ (via \texttt{Eat(Cake)}) sono \textbf{mutex} (l'unico modo di produrre l'uno è mutex con l'unico modo di produrre l'altro); in $S_2$ non lo sono più, perché compare anche \texttt{Bake(Cake)} come via alternativa per $Have(Cake)$, non mutex con la persistenza di $Eaten(Cake)$. \texttt{Extract-Solution} può quindi avere successo solo a partire da $S_2$: in termini dello pseudocodice, \texttt{GP-Search} riceve $g=\{Have(Cake),Eaten(Cake)\}$ e $\pi_i=\emptyset$. Primo tentativo: sceglie da $g$ il letterale $Eaten(Cake)$, il cui unico \texttt{resolver} in $A_1$ è $a=$\texttt{Eat(Cake)}; pone $\pi_i=\{$\texttt{Eat(Cake)}$\}$ e ricorre su $g=\{Have(Cake)\}$. Qui i possibili \texttt{resolvers} per $Have(Cake)$ sono \texttt{Bake(Cake)} e la persistenza di $Have(Cake)$, ma \emph{entrambi} risultano mutex con l'azione già scelta in $\pi_i$ (\texttt{Eat(Cake)}): dopo il filtro \texttt{resolvers}$=\emptyset$, quindi \textbf{fallimento} -- che si propaga fino alla scelta iniziale del resolver per $Eaten(Cake)$. Poiché anche quella era l'unica opzione disponibile, il fallimento risale fino a \texttt{Extract-Solution}, che lo registra in \texttt{no-good} e forza a backtrackare sulla \emph{scelta del letterale} da risolvere per primo. Secondo tentativo: si sceglie da $g$ il letterale $Have(Cake)$ per primo, con resolver $a=$\texttt{Bake(Cake)} (non mutex con nulla, $\pi_i=\{$\texttt{Bake(Cake)}$\}$); si ricorre poi su $g=\{Eaten(Cake)\}$, il cui resolver è ora la \textbf{persistenza} di $Eaten(Cake)$ (compatibile con \texttt{Bake(Cake)}, a differenza di quanto accadeva con \texttt{Eat(Cake)}): $\pi_i=\{$\texttt{Bake(Cake)}, persistenza$\}$, $g=\emptyset$, e il regresso sulle precondizioni di $\pi_i$ porta a un sottogoal risolvibile interamente in $A_0$. Il piano estratto è
+\[
+\pi = [\texttt{Eat(Cake)};\ \texttt{Bake(Cake)}],
+\]
+che infatti realizza correttamente $\neg Have\wedge Eaten$ dopo il primo passo e $Have\wedge Eaten$ dopo il secondo.
+
+\subsection{Terminazione}
+
+Perché continuare a espandere il grafo anche dopo che si è livellato in termini di letterali? Perché, con esecuzione sequenziale (non parallela), l'applicazione di più azioni indipendenti a un livello può comunque richiedere più passi per essere serializzata (es. trasportare $n$ pacchi uno alla volta con un solo aereo, dove il grafo si livella già a profondità 4 ma servono $4n{-}1$ espansioni per estrarre un piano fattibile). Il criterio corretto si basa su proprietà \textbf{monotone}: letterali e azioni crescono monotonicamente (una volta comparsi, restano per sempre); mutex e no-good \textbf{decrescono} monotonicamente. Ne segue che deve esistere un livello in cui letterali e azioni coincidono con quelli del livello precedente, e un livello in cui mutex e no-good coincidono con quelli precedenti: quando \emph{entrambe} le condizioni si verificano senza che una soluzione sia stata trovata, si può concludere con \textbf{fallimento} definitivo.
+
+\subsection{Proprietà}
+
+\textbf{GraphPlan è corretto e completo}: restituisce \emph{failure} solo se il problema non è risolubile, altrimenti una soluzione come sequenza di insiemi di azioni, e termina sempre. GraphPlan è anche un \textbf{Partial-Order Planner}: le azioni allo stesso livello (non mutex per costruzione) possono eseguire in parallelo, e ogni linearizzazione compatibile con l'ordine dei livelli è una soluzione classica valida.
+
+\newpage
+%=============================================================================
+\section{Euristiche per la Pianificazione}
+%=============================================================================
+
+Molti pianificatori combinano un algoritmo di ricerca con una \textbf{funzione euristica} che stima la "bontà" di una scelta (in progression, la distanza dallo stato scelto al goal; in regression, la distanza dal sotto-goal scelto allo stato iniziale). Il principio generale è il \textbf{relaxing}: si definisce un problema \emph{rilassato} (semplificato) analogo all'originale, lo si risolve (magari in modo approssimato), e si usa il costo di quella soluzione come euristica. Tecniche di rilassamento: \textbf{delete relaxation} (si cancellano gli effetti negativi delle azioni); \textbf{astrazione} (si riduce il problema, es. con meno oggetti); \textbf{landmark} (un insieme di azioni/fatti di cui ogni soluzione deve contenerne almeno uno, utile per un \emph{pruning sicuro}).
+
+\subsection{Euristiche per la Ricerca in Avanti}
+
+Ignorando gli effetti negativi, la transizione rilassata è $\gamma^*(s,a)=s\cup effects^+(a)$. La distanza rilassata tra $s$ e una proposizione $p$ è $\Delta_0(s,p)=0$ se $p\in s$, altrimenti $\Delta_0(s,p)=\min_a\{1+\Delta_0(s,precond(a))\mid p\in effects^+(a)\}$ (o $\infty$ se nessuna azione produce $p$); per una congiunzione $g=p_1\wedge\cdots\wedge p_n$, $\Delta_0(s,g)=\sum_{p_i\in g}\Delta_0(s,p_i)$, da cui $h_0(s)=\Delta_0(s,g)$. Questa somma \textbf{non è ammissibile} (può contare più volte lo stesso costo condiviso tra sotto-obiettivi che interagiscono positivamente), ed è anche costosa da calcolare (un problema rilassato per ogni stato visitato). La stessa idea si applica simmetricamente alla \textbf{ricerca all'indietro} (regressione): ignorando gli effetti negativi anche lì, si precompila una volta sola la distanza rilassata $\Delta_0(s_0,p)$ di \emph{ogni} proposizione $p$ dallo stato iniziale $s_0$, e si usa per stimare, tra i possibili resolver di un sotto-goal, quello che minimizza $\Delta_0(s_0,precond(a))$ -- un vantaggio pratico notevole, perché $s_0$ è fisso per tutta la ricerca e quindi queste distanze vanno calcolate una sola volta, non ad ogni stato come in avanti.
+
+Raffinamenti più accurati considerano il \textbf{massimo} anziché la somma: $\Delta_1(s,p)=\min_a\{1+\max\{\Delta_1(s,q)\mid q\in precond(a)\}\mid p\in effects^+(a)\}$, con $h_1(s,g)=\max\{\Delta_1(s,p)\mid p\in g\}$ -- a parole, il costo per produrre $p$ è dominato dalla sua precondizione \emph{più costosa} da soddisfare (più 1 per l'azione stessa), e tra tutte le azioni che potrebbero produrre $p$ si sceglie la più economica secondo questo criterio; $h_1$ è ammissibile ma poco informativa, perché considera solo la distanza dal singolo letterale del goal più lontano, ignorando gli altri. $h_2$ raffina ulteriormente considerando la massima distanza di ogni \textbf{coppia} di proposizioni del goal, definita ricorsivamente in modo analogo a $\Delta_1$ ma su coppie: $\Delta_2(s,\{p,q\})=0$ se $\{p,q\}\subseteq s$, altrimenti
+\[
+\Delta_2(s,\{p,q\}) = \min_{a\,:\,\{p,q\}\subseteq effects^+(a)}\Big(1+\max\{\Delta_2(s,\{r,r'\})\mid r,r'\in precond(a)\}\Big),
+\]
+cioè -- proprio come $\Delta_1$ considerava la precondizione singola più costosa -- $\Delta_2$ considera, tra le sole azioni che producono \emph{entrambi} $p$ e $q$ insieme come effetto, quella la cui coppia di precondizioni più costosa (nel senso di $\Delta_2$ stesso, applicato ricorsivamente) è minima; $h_2(s,g)=\max\{\Delta_2(s,\{p,q\})\mid p,q\in g\}$. Rispetto a $h_1$ (che valuta un letterale alla volta), $h_2$ cattura così le interazioni tra coppie di sotto-obiettivi che devono essere prodotte "in sinergia" dalla stessa azione: è ammissibile e più informativa di $h_1$, ma più costosa da calcolare; l'idea si generalizza a un $k$ qualsiasi, con costo crescente in $k$.
+
+Un'euristica particolarmente efficace, usata da pianificatori come FF, è costruire un \textbf{planning graph rilassato} (senza effetti negativi né mutex): il costo $h_G$ di un goal è la profondità del primo livello in cui tutti i suoi letterali compaiono insieme. È ammissibile, simile a $h_2$ ma più economica da calcolare e precompilare (dipende solo da dominio e stato iniziale, quindi riusabile per goal diversi con lo stesso $s_0$).
+
+Un concetto trasversale, già anticipato a proposito dei landmark, è il \textbf{safe pruning} (potatura sicura): se si conosce già una soluzione di costo $k$ (ad esempio la prima trovata da una ricerca greedy), qualunque nodo $u$ della frontiera con $h(u)>k$ può essere scartato senza rischio, perché nessun suo completamento potrà mai migliorare la soluzione già nota -- a differenza di un pruning euristico generico, questo è "sicuro" nel senso che non può mai eliminare per errore l'unica soluzione ottima.
+
+\subsection{Euristiche per la Ricerca nello Spazio dei Piani}
+
+Il Least-Commitment Planning si può vedere come una \textbf{ricerca AND/OR}: i \textbf{flaw} sono rami AND (vanno risolti tutti), i possibili \textbf{resolver} per un flaw sono rami OR (ne basta uno). L'ordine di selezione dei flaw non cambia la forma finale della soluzione, ma cambia drasticamente la dimensione dell'albero esplorato: la strategia \textbf{FAF} (\emph{Fewer Alternatives First}) preferisce sempre il flaw con \textbf{meno resolver}, perché riduce i costi di un eventuale backtracking e rende più facile scoprire presto un flaw irrisolvibile -- con un vantaggio empirico marcato rispetto a scegliere prima i flaw con molti resolver. Per la scelta del resolver, un'euristica tipica stima per regressione (con al più $k$ passi) la distanza del sotto-goal residuo dallo stato iniziale, preferendo il resolver che la minimizza.
+
+\newpage
+%=============================================================================
+\section{Hierarchical Task Networks (HTN)}
+%=============================================================================
+
+I piani reali hanno spesso una \textbf{struttura regolare} (in un dominio logistico, un \texttt{load} è sempre seguito, prima o poi, da un \texttt{unload}): questa struttura si può catturare come \textbf{piani astratti} o \textbf{macro-azioni}, tipicamente indipendenti tra loro. Le \textbf{HTN} sfruttano questa indipendenza cercando in uno \textbf{spazio astratto} di task, anziché nello spazio degli stati. Esempio (pianificare un viaggio per una conferenza): il task "vai in aeroporto" si decompone in "se hai tempo, mezzi pubblici, altrimenti macchina"; "prendi l'aereo" si decompone in check-in, sicurezza, gate; "vai all'hotel" si decompone in "se hai soldi, taxi, altrimenti biglietto mezzi pubblici + fermata".
+
+Gli elementi di un sistema HTN sono i \textbf{primitive operator} (plan operator alla STRIPS, direttamente eseguibili) e i \textbf{compound operator} o \textbf{metodi} (hanno precondizioni ed effetti, e codificano la decomposizione di un task in sotto-task); una soluzione è un piano completamente istanziato che contiene solo operatori primitivi. L'algoritmo, per intuizione, prende in input un \textbf{task astratto} (non un goal) e ripete: seleziona un metodo applicabile, usa il metodo per espandere il piano corrente scegliendo uno dei suoi sotto-piani -- concettualmente simile al Least-Commitment Planning, dove un flaw è ora un sub-task non ancora risolto.
+
+I \textbf{vantaggi}: i metodi codificano sia conoscenza di dominio sia conoscenza di problem-solving; HTN è teoricamente più espressivo del planning classico, ed è \textbf{Turing completo} (loop tramite invocazione ricorsiva dello stesso metodo, scelte if-then tramite decomposizioni alternative dello stesso metodo). Gli \textbf{svantaggi}: resta \textbf{NP-completo} nel caso peggiore, e richiede un maggiore sforzo di modellazione (non basta definire gli operatori, occorre anche definire come un metodo si decompone).
+
+\newpage
+%=============================================================================
+\section{Sistemi Esperti}
+%=============================================================================
+
+Un \textbf{sistema esperto} (o \emph{knowledge-based system}) è "un sistema che emula la capacità decisionale di un esperto umano in un dominio ristretto" [Giarratano \& Riley]; più precisamente, "un programma intelligente che usa conoscenza e procedure di inferenza per risolvere problemi difficili abbastanza da richiedere una significativa competenza umana". La potenza di un tale sistema, per Feigenbaum, dipende primariamente dalla \textbf{quantità e qualità della conoscenza} che possiede sul problema, non dalla sofisticazione dell'algoritmo: il programma non è una sequenza fissa di istruzioni, ma un \textbf{ambiente} in cui rappresentare, usare (\emph{reasoning}) e modificare una base di conoscenza. Cinque proprietà lo caratterizzano: specificità del dominio, rappresentazione esplicita della conoscenza, meccanismi di ragionamento, capacità di spiegazione, capacità di operare in domini poco strutturati.
+
+\subsection{Architettura}
+
+\begin{center}
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Componente} & \textbf{Ruolo} \\
+\midrule
+Knowledge-Base (KB) & regole condizione-azione (\emph{if-then}, o premessa-conseguenza) \\
+Working Memory (WM) & fatti iniziali e quelli generati dalle inferenze \\
+Inference Engine & pattern matching + agenda + execution (vedi sotto) \\
+Explanation Facility & giustifica le soluzioni tramite la catena di regole attivate \\
+Knowledge Acquisition & assiste l'integrazione/manutenzione di nuove regole \\
+User Interface & pone problemi e restituisce risposte \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Il motore inferenziale procede in tre fasi cicliche: \textbf{pattern matching} (confronta la parte \emph{if} di ogni regola con i fatti della WM; le regole soddisfatte sono \emph{attivabili} e finiscono nell'\textbf{agenda}); l'\textbf{agenda}, lista ordinata di regole attivabili (per priorità o altra strategia di preferenza); l'\textbf{execution}, che esegue (\emph{fire}) la regola in cima all'agenda.
+
+\subsection{Forward vs. Backward Chaining}
+
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+ & \textbf{Forward chaining} & \textbf{Backward chaining} \\
+\midrule
+Tipo & \emph{data-driven} & \emph{goal-driven} \\
+Meccanismo & dai fatti alle conclusioni & da un'ipotesi, si cercano fatti/regole a supporto \\
+Uso tipico & monitoraggio/controllo real-time & sistemi diagnostici \\
+Esempi & CLIPS, OPS5 & MYCIN, Prolog \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Domini Applicativi}
+
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Compito} & \textbf{Descrizione} & \textbf{Esempio} \\
+\midrule
+Interpretazione & analisi di dati rumorosi per determinarne il significato & Dendral, Hearsay-II \\
+Diagnosi & analisi di dati per identificare malattie/errori & Mycin \\
+Monitoring & interpretazione continua, allarmi in tempo reale & VM \\
+Planning \& Scheduling & sequenza intelligente di azioni per un obiettivo & Molgen \\
+Previsione & prevedere il futuro da un modello del passato & Prospector \\
+Progetto/configurazione & progettare sistemi da specifiche & R1/XCON \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Un sistema esperto \textbf{non} è indicato quando: esistono algoritmi tradizionali efficienti per il problema; l'aspetto centrale è la computazione, non la conoscenza; la conoscenza non è modellabile/elicitabile efficientemente; l'utente finale è comprensibilmente riluttante per la criticità del task (es. dosaggi medici, pilotaggio). Un sistema a regole di produzione ha la stessa potenza espressiva di una macchina di Turing (può quindi in linea di principio risolvere qualsiasi problema calcolabile), ma non è sempre il formalismo più adatto.
+
+\newpage
+%=============================================================================
+\section{CLIPS}
+%=============================================================================
+
+\textbf{CLIPS} ('C' Language Integrated Production System) è un motore forward-chaining sviluppato dalla NASA tra il 1985 e il 1996 (tuttora mantenuto), ideale quando un problema complesso può sfruttare conoscenza esplicita, anche euristica. È detto \textbf{eterarchico} (piatto: nessuna gerarchia di controllo imposta a priori). Il ciclo di esecuzione realizza esattamente il forward chaining descritto sopra:
+\begin{enumerate}
+  \item determina tutte le regole \textbf{attivabili} (antecedente soddisfatto);
+  \item le ordina in \textbf{agenda};
+  \item esegue (\emph{fire}) la regola in cima, modificando i fatti in WM;
+  \item ripete finché non ci sono più regole attivabili.
+\end{enumerate}
+Il risultato è ottenuto per \textbf{concatenazione di regole}, che è essa stessa una spiegazione della conclusione: i fatti generati da una regola diventano input per il pattern matching di regole successive.
+
+\subsection{Fatti}
+
+Un \textbf{fatto} è un'unità indivisibile di informazione, identificata da un nome di relazione con zero o più \textbf{slot}. I fatti \textbf{ordinati} non hanno slot dichiarati; quelli \textbf{non ordinati} si dichiarano con \texttt{deftemplate}:
+\begin{lstlisting}
+; fatto ordinato
+(person-name Franco L Verdi)
+
+; deftemplate e fatto non ordinato
+(deftemplate person "commento opzionale"
+    (slot name)
+    (slot age (type INTEGER) (default 18) (range 0 ?VARIABLE))
+    (slot gender (type SYMBOL) (allowed-symbols male female)))
+
+(person (name "Franco L. Verdi") (age 46)
+        (eye-color brown) (hair-color brown))
+\end{lstlisting}
+\texttt{(range 0 ?VARIABLE)} indica nessun limite superiore; \texttt{allowed-symbols} restringe i valori ammessi. Un \texttt{multislot} accetta più valori, eventualmente con \texttt{cardinality} minima/massima: \texttt{(multislot player (type STRING) (cardinality 6 6))}.
+
+Il costrutto \texttt{deffacts} definisce l'insieme di fatti veri all'avvio: sono effettivamente asseriti in WM solo dopo il comando \texttt{(reset)}. Comandi principali: \texttt{(assert <fatto>+)} aggiunge fatti; \texttt{(retract <indice>+)} li rimuove; \texttt{(modify <indice> (slot valore)+)} equivale a un retract seguito da un nuovo assert (con indice incrementato); \texttt{(facts)} elenca i fatti in WM; \texttt{(watch facts)}/\texttt{(unwatch facts)} tracciano i cambiamenti.
+
+\subsection{Regole}
+
+\begin{lstlisting}
+(defrule <nome-regola> ["commento"]
+   <pattern>*      ; antecedente (LHS)
+=>
+   <azione>*)      ; conseguente (RHS)
+\end{lstlisting}
+Esempio con pattern completamente istanziato:
+\begin{lstlisting}
+(defrule birthday-FLV
+   (person (name "Luigi") (age 46) (eye-color brown) (hair-color brown))
+   (date-today April-13-02)
+=>
+   (printout t "Happy birthday, Luigi!")
+   (assert (there-s-a-party)))
+\end{lstlisting}
+Questa regola non ha variabili: il suo antecedente matcha solo ed esclusivamente un fatto \texttt{person} con \emph{esattamente} quei valori (Luigi, 46 anni, occhi e capelli castani) insieme al fatto \texttt{(date-today April-13-02)}; se in WM esistono entrambi, la regola si attiva, ed eseguendola stampa il messaggio e asserisce un nuovo fatto \texttt{(there-s-a-party)} (che a sua volta potrebbe attivare altre regole a valle). È un caso limite, utile solo per introdurre la sintassi: nella pratica una regola così rigida (nessuna variabile) è utile solo per un singolo fatto specifico, mentre l'utilità di CLIPS emerge con le variabili, che permettono a una regola di scattare per interi insiemi di fatti diversi.
+
+In generale si usano \textbf{variabili} (simboli che iniziano con \texttt{?}): ogni occorrenza della stessa variabile in una regola deve avere lo stesso valore (determinato dalla prima occorrenza, più a sinistra), e il binding è locale alla regola. Le \textbf{wildcard} \texttt{?} (un singolo valore qualsiasi) e \texttt{\$?} (zero o più valori, in un multislot) non catturano un nome. Una variabile può anche fungere da "maniglia" su un intero fatto, per poterlo poi modificare:
+\begin{lstlisting}
+(defrule birthday-FLV
+   ?person <- (person (name "Luigi") (age 46) ...)
+   (date-today April-13-02)
+=>
+   (printout t "Happy birthday, Luigi!")
+   (modify ?person (age 47)))
+\end{lstlisting}
+Qui \texttt{?person} non contiene il \emph{valore} di uno slot, ma è legata all'intero fatto \texttt{person} che ha soddisfatto il pattern (il suo indice/handle in WM): quando la regola scatta, \texttt{(modify ?person (age 47))} ritira quel fatto e ne asserisce uno identico tranne che per lo slot \texttt{age}, ora a 47 -- realizzando così il "compleanno" senza dover riscrivere l'intero fatto a mano. Da notare una conseguenza pratica della rifrazione: dopo il \texttt{modify}, il fatto (con nuovo indice) non matcha più il pattern originale \texttt{(age 46)}, quindi la regola non può ri-scattare all'infinito sullo stesso Luigi.
+
+Un meccanismo fondamentale è la \textbf{rifrazione}: impedisce che una regola scatti due volte sugli stessi identici fatti, anche se il pattern matcha più fatti (es. una regola che stampa "X ha gli occhi blu" scatta una volta per ciascuna persona con occhi blu, non all'infinito). Comandi utili: \texttt{(rules)}, \texttt{(ppdefrule nome)}, \texttt{(agenda)}, \texttt{(watch rules)}, \texttt{(watch activations)}; per il debug, \texttt{(dribble-on file)}/\texttt{(dribble-off)} e \texttt{(set-break regola)}/\texttt{(remove-break regola)}/\texttt{(show-breaks)}.
+
+\subsection{Un Esempio Completo: Caricamento ed Esecuzione}
+
+\begin{lstlisting}
+(defrule start
+  (greet) => (printout t "hello" crlf))
+(deffacts MyFacts (greet))
+\end{lstlisting}
+\begin{lstlisting}
+CLIPS> (load today.clp)
+CLIPS> (facts)
+f-0 (initial-fact)
+CLIPS> (reset)
+CLIPS> (facts)
+f-0 (initial-fact)
+f-1 (greet)
+CLIPS> (run)
+hello
+\end{lstlisting}
+\texttt{(run)} esegue il motore fino a quando l'agenda si svuota o una regola esegue \texttt{(halt)}; \texttt{(run n)} limita l'esecuzione a $n$ attivazioni.
+
+\subsection{Pattern Matching Avanzato}
+
+Oltre al matching diretto, i \textbf{field constraint} filtrano il valore di un singolo campo: \texttt{\&} (and, es. \texttt{?name\&Harvey}), \texttt{\textasciitilde} (not, es. \texttt{\textasciitilde Simpson}), \texttt{|} (or, es. \texttt{Simpson|Oswald}), \texttt{:} (vincolo generico via espressione, es. \texttt{?age\&:(> ?age 20)}). In alternativa, la clausola \texttt{(test <espressione-booleana>)} esprime lo stesso vincolo in modo indipendente dal pattern:
+\begin{lstlisting}
+(defrule adult-blue-eyes
+   (person (name ?name) (age ?age&:(>= ?age 18)))
+   (eye-color ?eyes&blue|green)
+=>
+   (printout t ?name " e' maggiorenne con occhi chiari" crlf))
+\end{lstlisting}
+Per ogni fatto \texttt{person} in WM, il vincolo \texttt{?age\&:(>= ?age 18)} lega prima \texttt{?age} al valore dello slot \texttt{age}, poi verifica la condizione \texttt{(>= ?age 18)}: solo se vera il matching prosegue; il secondo pattern richiede inoltre un fatto \texttt{eye-color} con valore \texttt{blue} o \texttt{green}. Se entrambi i pattern trovano riscontro, la regola scatta stampando, per ogni \texttt{?name} che soddisfa la congiunzione, la frase "\texttt{?name} e' maggiorenne con occhi chiari". Il field constraint e la clausola \texttt{(test ...)} equivalente (\texttt{(person (name ?name) (age ?age)) (test (>= ?age 18))}) sono semanticamente intercambiabili, ma il field constraint ha un vantaggio pratico: legando il vincolo direttamente al campo, il motore può usarlo per indicizzare/filtrare il pattern matching più efficacemente (scartando subito i fatti che non soddisfano il vincolo), mentre un \texttt{test} separato viene valutato solo dopo che tutti i pattern precedenti hanno già trovato un match.
+
+Sui \textbf{multislot}: il pattern \texttt{(data \$?multi)} cattura l'intera coda; pattern come \texttt{(data ? blue red \$?)} o \texttt{(data \$?prima blue \$?dopo)} permettono di cercare un valore fisso in mezzo a un multislot di lunghezza variabile.
+
+Funzioni built-in fondamentali sui multislot/multifield: \texttt{length\$} (numero di elementi), \texttt{member\$} (appartenenza) e \texttt{delete-member\$} (rimozione), \texttt{insert\$} (inserimento in posizione), \texttt{first\$}/\texttt{rest\$} (primo elemento / resto), \texttt{replace\$} (sostituzione di un intervallo), \texttt{nth\$} (elemento in posizione $n$), \texttt{delete\$} (rimozione di un intervallo), \texttt{explode\$} (multifield da stringa), \texttt{subsetp} (test sottoinsieme), \texttt{subseq\$} (estrazione di sottosequenza):
+\begin{lstlisting}
+CLIPS> (first$ (create$ a b c))
+(a)
+CLIPS> (rest$ (create$ a b c))
+(b c)
+CLIPS> (replace$ (create$ drill wrench pliers) 3 3 machete)
+(drill wrench machete)
+CLIPS> (delete$ (create$ hammer drill saw pliers wrench) 3 4)
+(hammer drill wrench)
+CLIPS> (subsetp (create$ hammer saw) (create$ hammer drill saw pliers))
+TRUE
+\end{lstlisting}
+
+\subsection{Strategie di Conflict Resolution}
+
+L'\textbf{agenda} funziona come uno stack (la regola in cima è la prima eseguita); ogni modulo (vedi sotto) ha la propria. La posizione di una regola attiva è determinata, in ordine: (a) \textbf{salience} (priorità esplicita, intervallo $[-10000,10000]$, dichiarata con \texttt{(declare (salience N))} -- non è buona norma usarla per forzare un ordine preciso); (b) a parità di salience, la \textbf{strategia di conflict resolution}; (c) a parità di tutto, l'ordine di scrittura delle regole. Le strategie disponibili (\texttt{(set-strategy <nome>)}, \texttt{(get-strategy)}):
+
+\begin{center}
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Strategia} & \textbf{Criterio} \\
+\midrule
+\texttt{depth} (default) & regole attivate da fatti più recenti in cima \\
+\texttt{breadth} & regole attivate da fatti più recenti in fondo \\
+\texttt{simplicity} & a parità di salience, meno specifiche prima \\
+\texttt{complexity} & a parità di salience, più specifiche prima \\
+\texttt{lex} & confronta i \emph{time-tag} di tutti i fatti che attivano la regola \\
+\texttt{mea} (\emph{means-ends analysis}) & confronta prima il time-tag del fatto che soddisfa il \emph{primo} pattern \\
+\texttt{random} & valore casuale assegnato a ogni nuova attivazione \\
+\bottomrule
+\end{tabular}
+\end{center}
+dove la \textbf{specificity} è determinata dal numero di confronti/binding nella LHS della regola.
+
+Il meccanismo di \texttt{lex} e \texttt{mea} in dettaglio: ogni fatto in WM riceve un \textbf{time-tag} crescente (un contatore incrementato a ogni \texttt{assert}/\texttt{modify}, che indica quanto è "recente"); per ogni attivazione si costruisce la lista dei time-tag dei fatti che l'hanno generata, \textbf{ordinata dal più recente al meno recente}. Con \texttt{lex}, due attivazioni si confrontano scorrendo entrambe le liste ordinate in parallelo, posizione per posizione: vince (va in cima all'agenda) l'attivazione che ha il time-tag più alto alla prima posizione in cui le due liste differiscono. Con \texttt{mea} si confronta invece \emph{solo} il time-tag del fatto che soddisfa il primo pattern della LHS -- se questo basta a decidere si conclude subito, altrimenti si passa alla strategia successiva a parità. Esempio: siano attive due regole, \texttt{rule1} innescata dai fatti con time-tag $(f\text{-}3, f\text{-}1)$ e \texttt{rule2} dai fatti $(f\text{-}2, f\text{-}5)$; ordinando dal più recente: \texttt{rule1}$\to(3,1)$, \texttt{rule2}$\to(5,2)$. Con \texttt{lex}, si confronta la prima posizione: $5>3$, quindi \texttt{rule2} vince ed esegue per prima. Con \texttt{mea}, si guarda invece solo il time-tag del fatto che soddisfa il \emph{primo pattern scritto nella regola} (non necessariamente il più recente della lista): se per \texttt{rule1} è $f\text{-}1$ e per \texttt{rule2} è $f\text{-}5$, allora $5>1$ e vince ancora \texttt{rule2} -- ma con altri fatti l'esito di \texttt{lex} e \texttt{mea} può facilmente divergere, proprio perché guardano criteri diversi.
+
+\subsection{Espressioni Antecedenti Complesse}
+
+Per default i pattern nella LHS sono in congiunzione implicita (\texttt{and}); sono disponibili anche:
+\begin{lstlisting}
+(defrule celebrate
+   (or (birthday) (anniversary)) => (printout t "Festa!" crlf))
+
+(defrule working-day
+   (not (birthday)) (not (anniversary)) => (printout t "Si lavora." crlf))
+
+(defrule emergency-report
+   (exists (or (emergency (type fire)) (emergency (type bomb))))
+=> (printout t "C'e' un'emergenza." crlf))
+
+(defrule evacuated-all
+   (forall (emergency (type fire|bomb) (location ?b))
+           (evacuated (building ?b)))
+=> (printout t "Tutti gli edifici in emergenza sono evacuati." crlf))
+\end{lstlisting}
+\texttt{or} scatta se \emph{almeno uno} dei pattern al suo interno matcha (nell'esempio, \texttt{celebrate} si attiva se in WM c'è un fatto \texttt{birthday} \emph{oppure} un fatto \texttt{anniversary}, non necessariamente entrambi); \texttt{not} scatta se il pattern al suo interno \emph{non} matcha alcun fatto (\texttt{working-day} si attiva solo quando né \texttt{birthday} né \texttt{anniversary} sono presenti in WM -- è la negazione per fallimento, analoga concettualmente a \texttt{\textbackslash+} in Prolog). \texttt{exists} scatta (una sola volta, per rifrazione) se \emph{almeno un} fatto soddisfa il pattern; \texttt{forall} scatta solo se, per \emph{ogni} fatto che soddisfa il primo pattern, vale anche il secondo (utile per verificare condizioni universali sulla WM). Ad esempio, con i fatti \texttt{(emergency (type fire) (location west-wing))} e \texttt{(evacuated (building west-wing))} in WM, \texttt{evacuated-all} scatta (l'unico edificio in emergenza è anche evacuato); se invece in WM ci fosse anche \texttt{(emergency (type bomb) (location east-wing))} senza un corrispondente \texttt{(evacuated (building east-wing))}, la regola \emph{non} scatterebbe, perché esiste un edificio in emergenza (\texttt{east-wing}) per cui il secondo pattern non trova riscontro.
+
+\subsection{Modellare un Mondo Dinamico}
+
+I fatti non possono essere annidati (uno slot non può contenere un altro fatto): per collegare informazioni correlate (es. una persona e il suo indirizzo, o più fatti che descrivono lo \emph{stesso stato} in una ricerca) si usa un \textbf{identificatore comune}, spesso generato con \texttt{(gensym)} (simbolo \texttt{genN}, non garantito univoco) o \texttt{(gensym*)} (garantito univoco, controlla la WM):
+\begin{lstlisting}
+(deftemplate block (slot state-id) (slot name) (slot on-top-of) (slot below-of))
+
+(defrule grasp-on-top-of
+  (current-state-id ?id)
+  ?h  <- (hand (state-id ?id) (holding NONE))
+  ?b1 <- (block (state-id ?id) (name ?block) (on-top-of ?bl&~?block) (below-of NONE))
+  ?b2 <- (block (state-id ?id) (name ?bl) (on-top-of ?x) (below-of ?block))
+=>
+  (retract ?h ?b1 ?b2)
+  (bind ?new (gensym*))
+  (assert (next-state-id ?new)
+          (hand (state-id ?new) (holding ?block))
+          (block (state-id ?new) (name ?block) (on-top-of GRASPED) (below-of NONE))
+          (block (state-id ?new) (name ?bl) (on-top-of ?x) (below-of NONE))))
+\end{lstlisting}
+Questa regola dice però \emph{solo cosa cambia}: senza altro, tutto ciò che non compare esplicitamente andrebbe perso nel nuovo stato -- il classico \textbf{frame problem}. Si risolve con regole di \textbf{persistenza}, che ricopiano nel nuovo stato tutto ciò che non è stato toccato:
+\begin{lstlisting}
+(defrule persistency-block (declare (salience 10))
+    (next-state-id ?new) (current-state-id ?id)
+    ?b <- (block (state-id ?id) (name ?block))
+    (not (block (state-id ?new) (name ?block)))
+=> (duplicate ?b (state-id ?new)))
+
+(defrule persistency-end (declare (salience 5))
+  ?n <- (next-state-id ?new)  ?o <- (current-state-id ?id)
+=> (retract ?n ?o) (assert (current-state-id ?new)))
+\end{lstlisting}
+Il comando \texttt{(duplicate ?fatto (slot valore)+)} crea una \textbf{copia} del fatto legato a \texttt{?fatto}, identica in tutti gli slot tranne quelli esplicitamente sovrascritti: \texttt{(duplicate ?b (state-id ?new))} duplica quindi il blocco \texttt{?b} dello stato vecchio, cambiando solo il suo \texttt{state-id} al nuovo stato -- è il modo naturale per "copiare tutto ciò che non cambia" senza riscrivere a mano ogni slot. La condizione \texttt{(not (block (state-id ?new) (name ?block)))} è la guardia che rende la regola \emph{sicura da rieseguire}: senza di essa, \texttt{persistency-block} scatterebbe per ogni blocco vecchio a ogni ciclo, duplicando anche i blocchi che la regola di dominio (\texttt{grasp-on-top-of}) ha \emph{già} asserito esplicitamente nel nuovo stato (con valori \emph{diversi}, es. \texttt{on-top-of GRASPED}), sovrascrivendoli erroneamente con la versione vecchia. La guardia verifica quindi, per ogni blocco del vecchio stato, che \emph{non esista già} un blocco con lo stesso nome nel nuovo stato: solo in quel caso lo copia inalterato; i blocchi già ridefiniti dalla regola di dominio vengono correttamente lasciati come sono. La \texttt{salience} più alta garantisce che tutti gli elementi persistenti siano copiati \emph{prima} che il nuovo stato diventi quello corrente. Il comando \texttt{(bind ?var espressione)} lega esplicitamente un valore a una variabile, anche "nuova" (non presente nella LHS), nel conseguente di una regola.
+
+\subsection{Input/Output}
+
+\begin{lstlisting}
+(open "example.dat" my-file "r")   ; "w" per scrivere
+(bind ?input (read my-file))       ; legge un token
+(bind $?input (readline my-file))  ; legge un'intera riga (multifield)
+(close my-file)
+\end{lstlisting}
+
+\subsection{Programmazione Modulare}
+
+In programmi con migliaia di regole, la \textbf{conoscenza di controllo} (che regola il comportamento) interlacciata con la \textbf{conoscenza di dominio} rende la manutenzione difficile. Un tipico problema a fasi (es. diagnosi: \emph{detection} $\to$ \emph{isolation} $\to$ \emph{recovery} $\to$ di nuovo \emph{detection}) potrebbe usare solo la \texttt{salience} per separare le fasi, ma questo \textbf{non garantisce} l'ordine corretto (se in WM manca il fatto della fase più prioritaria, regole di fasi successive scattano comunque per prime). Un miglioramento è usare \textbf{fatti di controllo} espliciti (\texttt{(phase detection)}, ecc., con regole a bassa salience che avanzano la fase), ma anche questo approccio ha svantaggi strutturali: la WM resta comunque unica e non partizionata realmente, e tornare a una fase precedente ri-asserendo il suo fatto di controllo rischia di riattivare troppe regole (la rifrazione impedirebbe di rieseguire quelle già scattate in precedenza sugli stessi fatti).
+
+La soluzione strutturale sono i \textbf{moduli}:
+\begin{lstlisting}
+(defmodule DETECTION)
+(defmodule ISOLATION)
+(defmodule RECOVERY)
+(defrule DETECTION::rule-1 ... => ...)
+\end{lstlisting}
+Ogni modulo ha la propria WM e la propria agenda. I costrutti \texttt{defrule}/\texttt{deffacts} sono privati; i \texttt{deftemplate} possono essere condivisi tra moduli con \texttt{export}/\texttt{import}:
+\begin{lstlisting}
+(defmodule module-name (export deftemplate ?ALL))
+(defmodule module-name (import in-module deftemplate ?ALL))
+\end{lstlisting}
+Le regole prese in considerazione sono solo quelle del modulo che ha il \textbf{focus} in cima a uno stack dedicato: \texttt{(focus modulo)} lo impila; un modulo viene tolto dallo stack (pop) quando non ci sono più regole eseguibili, o esplicitamente con \texttt{(pop-focus)}/\texttt{(return)}. \texttt{(reset)} e \texttt{(clear)} riportano il focus su \texttt{MAIN}. L'\textbf{auto-focus} (\texttt{(declare (auto-focus TRUE))}) permette a una regola di essere considerata anche quando il suo modulo non ha il focus -- utile per regole che riconoscono violazioni di vincoli e devono scattare comunque. Sostituendo i fatti di controllo con moduli+focus:
+\begin{lstlisting}
+(deffacts MAIN::control-information
+    (phase-sequence DETECTION ISOLATION RECOVERY))
+(defrule MAIN::change-phase
+  ?list <- (phase-sequence ?next $?others)
+=> (focus ?next) (retract ?list) (assert (phase-sequence $?others ?next)))
+\end{lstlisting}
+molte meno regole, e il round-robin tra fasi è gestito naturalmente dallo stack del focus.
+
+\subsection{Ricerca con Backtracking in CLIPS}
+
+Le strutture stesse di CLIPS si prestano a implementare una \textbf{ricerca in profondità con backtracking}: uno \textbf{stato} è identificato da un id condiviso (come sopra); il \textbf{cammino aperto} è rappresentato dalla WM (fatti di più stati coesistono); le \textbf{alternative non ancora esplorate} sono rappresentate dall'\textbf{agenda} stessa. Con la strategia \texttt{depth}, le attivazioni sono stratificate per stato: far scattare una regola genera un nuovo stato successore, mentre le opzioni aperte restano in agenda; quando non ci sono più regole applicabili per lo stato corrente, l'esecuzione passa automaticamente alla prossima regola in cima allo stack -- che riguarda uno stato antenato: un \textbf{backtracking implicito}, senza bisogno di codificarlo esplicitamente.
+
+\textbf{Esempio}: assegnazione di $N$ ospiti a sedie, vincolando sesso alternato e almeno un hobby condiviso coi vicini. Con un buon ordinamento delle scelte l'assegnazione può procedere senza mai bloccarsi; in generale, però, si arriva spesso a un vicolo cieco (nessuna regola applicabile per il prossimo posto): a quel punto "non essendoci altre regole applicabili da questo cammino, CLIPS riconsidera altri cammini aperti rimasti in WM" -- il motore riprende automaticamente da un'alternativa lasciata in agenda a un passo precedente, eventualmente ripetendo il processo più volte prima di trovare un'assegnazione completa valida.
+
+In termini di strutture CLIPS, il problema si modella con un fatto per ogni ospite ancora da sistemare e un fatto \texttt{seated} per ogni sedia già assegnata, tutti taggati con lo stesso \texttt{state-id} visto nell'esempio dei blocchi:
+\begin{lstlisting}
+(deftemplate guest (slot state-id) (slot name) (slot sex) (multislot hobbies))
+(deftemplate seated (slot state-id) (slot chair) (slot name))
+
+(defrule seat-guest
+    (current-state-id ?id)
+    ?g <- (guest (state-id ?id) (name ?n) (sex ?s) (hobbies $?h))
+    ?prev <- (seated (state-id ?id) (chair ?c) (name ?pn))
+    (guest (state-id ?id) (name ?pn) (sex ?ps&~?s) (hobbies $?ph))
+    (test (> (length$ (intersect$ ?h ?ph)) 0))  ; almeno un hobby in comune
+=>
+    (bind ?new (gensym*))
+    (assert (next-state-id ?new)
+            (seated (state-id ?new) (chair (+ ?c 1)) (name ?n))))
+\end{lstlisting}
+Ogni istanziazione di \texttt{seat-guest} compatibile con l'ultima sedia occupata (\texttt{?prev}) genera un \emph{nuovo} stato successore, esattamente come \texttt{grasp-on-top-of} nell'esempio dei blocchi; più ospiti compatibili in un dato momento significano più attivazioni in agenda, cioè più cammini alternativi non ancora esplorati. Se a un certo punto nessun ospite rimasto soddisfa il vincolo di sesso alternato e hobby condiviso rispetto all'ultima sedia occupata dello stato corrente, la regola \texttt{seat-guest} non ha più istanziazioni per quello stato: l'agenda passa automaticamente all'attivazione successiva rimasta, che corrisponde a uno stato-antenato con una scelta di ospite diversa -- il backtracking, di nuovo, senza alcuna riga di codice dedicata a "tornare indietro".
+
+\subsection{Incertezza nei Sistemi a Regole: i Certainty Factor}
+
+CLIPS non ha un meccanismo nativo per il ragionamento incerto; si può però replicare l'approccio storico di \textbf{MYCIN}. Un \textbf{Certainty Factor} (Carnap, 1950) è definito come differenza tra una misura di crescita del \emph{belief} e una di \emph{disbelief}:
+\[
+\keyeq{CF(H,E) = MB(H,E) - MD(H,E)}
+\]
+con valore in $[-1,+1]$: $+1$ = vero per certo, $0$ = incertezza massima, $-1$ = falso per certo. A differenza della probabilità, un CF non presuppone che l'evidenza a favore di $H$ dica nulla sul complementare $\neg H$: i medici, tipicamente, ragionano per evidenze qualitative a favore di un'ipotesi, non per distribuzioni di probabilità complete.
+
+Per combinare i CF: nell'\textbf{antecedente}, $CF(P_1\text{ and }P_2)=\min\{CF(P_1),CF(P_2)\}$, $CF(P_1\text{ or }P_2)=\max\{CF(P_1),CF(P_2)\}$, $CF(\text{not }P)=-CF(P)$ (con la regola pratica che, se il CF risultante è $<0.2$, la regola è considerata inapplicabile); il \textbf{CF del fatto prodotto} è il CF dell'antecedente moltiplicato per il CF "a priori" della regola. Quando la stessa conclusione è raggiunta da più cammini di ragionamento con CF diversi $CF_1,CF_2$, si fondono con
+\[
+NewCF = \begin{cases}
+(CF_1+CF_2)-(CF_1\cdot CF_2) & \text{se entrambi} \geq 0\\
+(CF_1+CF_2)+(CF_1\cdot CF_2) & \text{se entrambi} < 0\\
+\dfrac{CF_1+CF_2}{1-\min\{|CF_1|,|CF_2|\}} & \text{se di segno opposto}
+\end{cases}
+\]
+(verifica: $CF_1{=}0.7,CF_2{=}0.5\Rightarrow(0.7{+}0.5)-(0.7{\times}0.5)=1.2-0.35=0.85$). In CLIPS si rappresentano i fatti nel formato \textbf{object-attribute-value} (OAV) con un campo CF:
+\begin{lstlisting}
+(deftemplate OAV::oav (multislot object) (multislot attribute) (multislot value)
+    (slot CF (type FLOAT) (range -1.0 +1.0)))
+
+(defrule OAV::combine-certainties-both-positive
+    (declare (auto-focus TRUE))
+    ?f1 <- (oav (object $?o) (attribute $?a) (value $?v) (CF ?C1&:(>= ?C1 0)))
+    ?f2 <- (oav (object $?o) (attribute $?a) (value $?v) (CF ?C2&:(>= ?C2 0)))
+    (test (neq ?f1 ?f2))
+=>
+    (retract ?f1)
+    (bind ?C3 (- (+ ?C1 ?C2) (* ?C1 ?C2)))
+    (modify ?f2 (CF ?C3)))
+\end{lstlisting}
+\texttt{auto-focus TRUE} garantisce che due OAV identici vengano fusi prima di essere usati da altre regole (richiede anche \texttt{(set-fact-duplication TRUE)}, perché CLIPS per default non permette fatti duplicati).
+
+\subsection{Caso di Studio: Sistema Esperto per la Scelta del Vino}
+
+Un caso di studio completo (architettura a moduli \texttt{QUESTIONS}, \texttt{RULES}, \texttt{CHOOSE-QUALITIES}, \texttt{WINES}, \texttt{PRINT-RESULTS} -- rispettivamente: porre le domande, applicare le regole di dominio, scegliere gli attributi con CF più alto, proporre i vini compatibili, stampare il risultato) mostra i CF applicati in scala $[0,100]$ anziché $[-1,+1]$ (formule equivalenti a meno di riscalatura). Le regole di dominio sono \textbf{fatti}, non clausole CLIPS dirette, per poterle interpretare uniformemente:
+\begin{lstlisting}
+(deftemplate RULES::rule (slot certainty (default 100.0)) (multislot if) (multislot then))
+
+(rule (if tastiness is average)
+      (then best-body is light with certainty 30 and
+            best-body is medium with certainty 60 and
+            best-body is full with certainty 30))
+\end{lstlisting}
+Le domande da porre all'utente sono anch'esse fatti (\texttt{QUESTIONS::question}, con attributo, testo, risposte valide, ed eventuali \texttt{precursors} che ne condizionano l'attivazione); una regola generica le pone tramite una funzione di validazione dell'input:
+\begin{lstlisting}
+(defrule QUESTIONS::ask-a-question
+    ?f <- (question (already-asked FALSE) (precursors) (the-question ?q)
+                     (attribute ?attr) (valid-answers $?va))
+=>
+    (modify ?f (already-asked TRUE))
+    (assert (attribute (name ?attr) (value (ask-question ?q ?va)))))
+\end{lstlisting}
+Il modulo \texttt{RULES} "consuma" progressivamente l'antecedente di ogni regola man mano che le condizioni sono soddisfatte dagli attributi noti, accumulando il CF con \texttt{min} (congiunzione), e quando l'antecedente è vuoto asserisce la prima conseguenza (con CF proporzionale al prodotto tra CF accumulato e CF della singola conseguenza, diviso 100):
+\begin{lstlisting}
+(defrule RULES::remove-is-condition-when-satisfied
+    ?f <- (rule (certainty ?c1) (if ?attr is ?val $?rest))
+    (attribute (name ?attr) (value ?val) (certainty ?c2))
+=> (modify ?f (certainty (min ?c1 ?c2)) (if ?rest)))
+
+(defrule RULES::perform-rule-consequent-with-certainty
+    ?f <- (rule (certainty ?c1) (if) (then ?attr is ?val with certainty ?c2 $?rest))
+=>
+    (modify ?f (then ?rest))
+    (assert (attribute (name ?attr) (value ?val) (certainty (/ (* ?c1 ?c2) 100)))))
+\end{lstlisting}
+Infine, il modulo \texttt{WINES} propone i vini compatibili con gli attributi dedotti (colore, corpo, dolcezza preferiti), con CF pari al minimo dei CF dei singoli attributi -- lo stesso principio di combinazione visto per l'antecedente delle regole:
+\begin{lstlisting}
+(defrule WINES::generate-wines
+    (wine (name ?name) (color $? ?c $?) (body $? ?b $?) (sweetness $? ?s $?))
+    (attribute (name best-color) (value ?c) (certainty ?c1))
+    (attribute (name best-body) (value ?b) (certainty ?c2))
+    (attribute (name best-sweetness) (value ?s) (certainty ?c3))
+=> (assert (attribute (name wine) (value ?name) (certainty (min ?c1 ?c2 ?c3)))))
+\end{lstlisting}
+Resta un ultimo caso da gestire: nel modulo \texttt{RULES}, più regole di dominio \emph{distinte} possono dedurre lo stesso attributo con lo stesso valore (es. due indizi diversi che portano entrambi a "best-body is full"), ciascuna asserendo un proprio fatto \texttt{attribute} col proprio CF. Questi vanno fusi con la stessa formula di combinazione vista sopra (in scala 0--100 anziché $[-1,+1]$), tramite una regola generica analoga a \texttt{OAV::combine-certainties-both-positive} ma applicata ai fatti \texttt{attribute}:
+\begin{lstlisting}
+(defrule MAIN::combine-certainties
+    (declare (auto-focus TRUE))
+    ?f1 <- (attribute (name ?n) (value ?v) (certainty ?c1))
+    ?f2 <- (attribute (name ?n) (value ?v) (certainty ?c2))
+    (test (neq ?f1 ?f2))
+=>
+    (retract ?f1)
+    (modify ?f2 (certainty (- (+ ?c1 ?c2) (/ (* ?c1 ?c2) 100)))))
+\end{lstlisting}
+La formula è concettualmente identica a quella del caso "entrambi positivi" già vista per l'OAV, riscalata per lavorare in $[0,100]$ invece che in $[-1,+1]$ (da cui il termine \texttt{(/ (* ?c1 ?c2) 100)} al posto di \texttt{(* ?c1 ?c2)}): senza questa fusione, il sistema tratterebbe erroneamente due conferme indipendenti dello stesso fatto come se fossero informazioni scorrelate da usare separatamente, anziché rafforzare la fiducia in un'unica conclusione.
+
+\newpage
+%=============================================================================
+\section{Incertezza e Ragionamento Probabilistico}
+%=============================================================================
+
+\subsection{Perché la Logica Classica non Basta}
+
+Un piano $A_t$ per arrivare in aeroporto $t$ minuti prima del decollo è minato da osservabilità parziale (traffico, meteo), osservazioni imprecise, incertezza sul risultato delle azioni (l'auto potrebbe non partire), e dalla difficoltà di modellare l'intero sistema. Un approccio puramente logico ha due esiti negativi: asserire con certezza "$A_{25}$ funziona" porta a decisioni sbagliate; oppure si arriva a conclusioni troppo deboli per essere utili ("$A_{25}$ funziona, se il ponte non è bloccato, se non piove, se..."), e persino $A_{1440}$ (aspettare un giorno intero) non darebbe garanzie assolute.
+
+Il problema non è solo pratico ma strutturale: nel dominio medico, la regola "$\forall p$, il sintomo mal di denti implica la malattia carie" è falsa (non ogni mal di denti è carie); estenderla con una disgiunzione di tutte le possibili cause è impraticabile (lista lunga, forse incompleta); e nemmeno la direzione opposta ("$\forall p$, la carie implica il sintomo mal di denti") è vera in generale. La relazione tra sintomo e malattia è \emph{causale}, non di implicazione logica certa. I limiti della logica del primo ordine hanno tre cause: \textbf{pigrizia} (enumerare tutte le premesse/conseguenze è troppo oneroso), \textbf{ignoranza teorica} (non si conosce tutto il dominio), \textbf{ignoranza pratica} (anche conoscendo la teoria, possono mancare dati sul caso specifico).
+
+\subsection{La Probabilità come Soluzione}
+
+La probabilità riassume l'incertezza dovuta a pigrizia e ignoranza: assegnare una probabilità a un enunciato esprime un \textbf{grado di credenza} (\emph{belief}) nella sua verità -- non un grado di verità come nella logica fuzzy, e sempre relativo alle prove disponibili (\textbf{probabilità a priori} in assenza di prove, \textbf{a posteriori/condizionata} dopo osservazioni). Le decisioni razionali richiedono anche una nozione di utilità: $\textbf{Teoria delle decisioni} = \textbf{Teoria delle Probabilità} + \textbf{Teoria dell'Utilità}$, e un agente razionale massimizza l'utilità attesa (un'opzione con probabilità di successo maggiore non è automaticamente la scelta migliore).
+
+\subsection{Notazione e Assiomi}
+
+Una variabile casuale rappresenta una parte del mondo inizialmente sconosciuta, con un dominio (\emph{range}) discreto o continuo; per convenzione le minuscole denotano variabili/valori generici, le maiuscole variabili specifiche, con l'abbreviazione booleana $cavity\equiv(Cavity{=}true)$. Gli \textbf{assiomi di Kolmogorov}: per ogni proposizione $a,b$,
+\[
+\keyeq{0\leq P(a)\leq1,\qquad P(true)=1,\ P(false)=0,\qquad P(a\vee b)=P(a)+P(b)-P(a\wedge b)}
+\]
+La loro giustificazione (argomento di \emph{De Finetti}, o \emph{Dutch book}): un agente i cui gradi di credenza violano questi assiomi è soggetto a una strategia di scommesse che gli fa perdere sistematicamente, qualunque cosa accada.
+
+Un \textbf{evento atomico} è un assegnamento di valori a \emph{tutte} le variabili casuali del dominio; gli eventi atomici sono mutuamente esclusivi ed esaustivi, e ogni proposizione è equivalente alla disgiunzione di tutti gli eventi atomici che la implicano, da cui
+\[
+P(a) = \sum_{e_i\in\mathbf{e}(a)} P(e_i).
+\]
+La \textbf{distribuzione di probabilità a priori} di una variabile è il vettore di probabilità per ciascun valore del suo dominio (normalizzato a somma 1); la \textbf{distribuzione congiunta} assegna una probabilità a ogni combinazione di valori di più variabili; la \textbf{congiunta completa} è costruita su tutte le variabili del dominio.
+
+\subsection{Probabilità Condizionata}
+
+\[
+\keyeq{P(a|b) = \frac{P(a\wedge b)}{P(b)}} \quad (P(b)\neq0)
+\]
+da cui la \textbf{regola del prodotto}:
+\[
+P(a\wedge b)=P(a|b)P(b)=P(b|a)P(a).
+\]
+Attenzione: $P(a|b)$ \emph{non} è un'implicazione logica probabilizzata -- non coincide con $P(b\to a)$ (che ha senso solo in assenza di informazione su $b$), e non è monotona come l'implicazione (aggiungendo ulteriore informazione $c$, $P(a|b,c)$ può differire anche molto da $P(a|b)$, in entrambe le direzioni).
+
+\textbf{Esempio numerico} (dentista: \emph{toothache} = mal di denti, \emph{catch} = lo strumento "prende", \emph{Cavity} = carie), a partire dalla congiunta completa:
+
+\begin{center}
+\small
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{toothache} & \multicolumn{2}{c}{$\neg$toothache} \\
+ & catch & $\neg$catch & catch & $\neg$catch \\
+\midrule
+cavity & 0.108 & 0.012 & 0.072 & 0.008 \\
+$\neg$cavity & 0.016 & 0.064 & 0.144 & 0.576 \\
+\bottomrule
+\end{tabular}
+\end{center}
+si ottiene $P(cavity\vee toothache)=0.28$; $P(cavity)=0.108{+}0.012{+}0.072{+}0.008=0.2$ (la \textbf{probabilità marginale}, ottenuta sommando su tutte le altre variabili -- \textbf{regola di marginalizzazione} generale $\mathbf{P}(Y)=\sum_z\mathbf{P}(Y,z)$); e per condizionamento,
+\[
+P(\neg cavity\,|\,toothache) = \frac{0.016+0.064}{0.108+0.012+0.016+0.064} = \frac{0.08}{0.2} = 0.4.
+\]
+Questo tipo di calcolo, detto \textbf{inferenza per enumerazione}, si generalizza a $\mathbf{P}(X|\mathbf{e})=\alpha\,\mathbf{P}(X,\mathbf{e})=\alpha\sum_{\mathbf{y}}\mathbf{P}(X,\mathbf{e},\mathbf{y})$ (con $\alpha$ costante di \textbf{normalizzazione} che riporta la somma a 1, $E$ variabili di evidenza, $Y$ variabili nascoste), ma ha due svantaggi: è costoso ($O(2^n)$ per $n$ variabili booleane), e richiede comunque, in linea di principio, l'intera distribuzione congiunta.
+
+\subsection{Regola di Bayes}
+
+Dalla regola del prodotto:
+\[
+\keyeq{P(b|a) = \frac{P(a|b)\,P(b)}{P(a)}}
+\]
+Perché è utile, se richiede comunque tre probabilità? Perché nei casi reali si dispone spesso dell'informazione nella forma "naturale" $P(\text{effetto}|\text{causa})$ (es. probabilità del sintomo data la malattia, nota dall'epidemiologia), mentre si vuole calcolare $P(\text{causa}|\text{effetto})$ (la diagnosi): anche se un sintomo è molto comune in una malattia rara, la probabilità che un paziente con quel sintomo abbia proprio quella malattia resta bassa, un effetto che Bayes cattura correttamente.
+
+\subsection{Indipendenza e Indipendenza Condizionale}
+
+$a$ e $b$ sono \textbf{indipendenti} se $P(a|b){=}P(a)$ (equivalentemente $P(b|a){=}P(b)$, o $P(a\wedge b){=}P(a)P(b)$): l'indipendenza assoluta riduce drasticamente la dimensione della rappresentazione (es. $n$ lanci di moneta indipendenti: $\mathbf{P}(C_1,\ldots,C_n)=\prod_i\mathbf{P}(C_i)$, da $O(2^n)$ a $O(n)$), ma è rara nei domini reali. Più utile è l'\textbf{indipendenza condizionale}: \emph{toothache} e \emph{catch} non sono indipendenti (entrambi collegati a \emph{Cavity}), ma lo sono \emph{data} \emph{Cavity} -- se lo strumento "prende" è probabile che ci sia carie e quindi che il dente faccia male, ma la relazione passa sempre per la carie:
+\[
+\keyeq{P(X,Y|Z) = P(X|Z)\,P(Y|Z)}
+\]
+Questo riduce
+\[
+P(Cavity|toothache,catch)=\alpha\,P(toothache,catch|Cavity)\,P(Cavity)
+\]
+a
+\[
+\alpha\,P(toothache|Cavity)\,P(catch|Cavity)\,P(Cavity)\text{:}
+\]
+da 7 probabilità indipendenti a 3. Generalizzando a una \emph{Causa} con $n$ \emph{Effetti} condizionalmente indipendenti dati la causa si ottiene il \textbf{modello di Bayes ingenuo} (\emph{naive Bayes}):
+\[
+P(Causa,Effetto_1,\ldots,Effetto_n) = P(Causa)\prod_i P(Effetto_i|Causa),
+\]
+con rappresentazione $O(n)$ anziché $O(2^n)$ -- "ingenuo" perché assume gli effetti indipendenti tra loro, anche quando nella realtà non sempre lo sono.
+
+\subsection{Reti Bayesiane: Sintassi e Semantica}
+
+Una \textbf{rete bayesiana} (\emph{belief network}) è una rappresentazione grafica delle asserzioni di indipendenza condizionale di un dominio, ed è al tempo stesso una specifica concisa della sua intera distribuzione congiunta. È un \textbf{DAG} (grafo diretto aciclico): un nodo per variabile casuale; un arco $X\to Y$ indica che $X$ ha un'influenza diretta su $Y$ ($X$ è \emph{genitore} di $Y$); ogni nodo $X_i$ porta una \textbf{tabella di probabilità condizionata} (CPT) $\mathbf{P}(X_i\mid Parents(X_i))$ -- per una variabile booleana con $k$ genitori booleani, la CPT ha $2^k$ righe.
+
+\textbf{Esempio guida (allarme antifurto)}: John e Mary, vicini, chiamano se sentono l'allarme di casa; l'allarme può scattare per un'intrusione o per un piccolo terremoto (frequenti nella zona). Variabili: $Burglary,Earthquake\to Alarm\to JohnCalls,MaryCalls$ (i vicini non percepiscono direttamente intrusioni/terremoti, solo l'allarme).
+
+\begin{center}
+\small
+\begin{tabular}{lc}
+\toprule
+$P(B)$ & 0.001 \\
+$P(E)$ & 0.002 \\
+\bottomrule
+\end{tabular}
+\quad
+\begin{tabular}{ccc}
+\toprule
+$B$ & $E$ & $P(A|B,E)$ \\
+\midrule
+T & T & .95 \\
+T & F & .94 \\
+F & T & .29 \\
+F & F & .001 \\
+\bottomrule
+\end{tabular}
+\quad
+\begin{tabular}{cc}
+\toprule
+$A$ & $P(J|A)$ \\
+\midrule
+T & .90 \\
+F & .05 \\
+\bottomrule
+\end{tabular}
+\quad
+\begin{tabular}{cc}
+\toprule
+$A$ & $P(M|A)$ \\
+\midrule
+T & .70 \\
+F & .01 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantica Globale e Compattezza}
+
+La \textbf{semantica globale} definisce la congiunta completa come prodotto delle CPT locali:
+\[
+\keyeq{\mathbf{P}(X_1,\ldots,X_n) = \prod_{i=1}^n \mathbf{P}(X_i\mid Parents(X_i))}
+\]
+Per l'esempio dell'allarme, $P(j,m,a,\neg b,\neg e)=P(j|a)P(m|a)P(a|\neg b,\neg e)P(\neg b)P(\neg e)=0.9\times0.7\times0.001\times0.999\times0.998\approx0.00063$. La rete richiede solo $1{+}1{+}4{+}2{+}2=10$ valori, contro i $2^5{-}1=31$ della congiunta completa a 5 variabili booleane: in generale, se ogni variabile ha al più $k$ genitori, la rete richiede $O(n\cdot2^k)$ valori invece di $O(2^n)$ -- una \textbf{compattezza} che cresce solo linearmente in $n$ quando $k\ll n$ (tipico nei domini reali).
+
+\subsection{Semantica Locale e Markov Blanket}
+
+Equivalentemente (\textbf{semantica locale}), ogni nodo è condizionalmente indipendente dai suoi \textbf{non-discendenti} dati i suoi genitori. Più in generale, ogni nodo è condizionalmente indipendente da \emph{tutti} gli altri nodi della rete data la sua \textbf{coperta di Markov} (\emph{Markov blanket}): genitori, figli, e genitori dei figli.
+
+\subsection{Costruire una Rete Bayesiana}
+
+Per costruzione corretta si sceglie un ordinamento $X_n,\ldots,X_1$ e, per ciascun $X_i$ (dal più "vecchio" al più "nuovo"), si selezionano come genitori un sottoinsieme di $\{X_{i+1},\ldots,X_n\}$ tale che $\mathbf{P}(X_i|Parents(X_i))=\mathbf{P}(X_i|X_{i+1},\ldots,X_n)$: questo garantisce la semantica globale, perché la \textbf{chain rule} $\mathbf{P}(X_1,\ldots,X_n)=\prod_i\mathbf{P}(X_i|X_{i+1},\ldots,X_n)$ coincide allora esattamente con il prodotto delle CPT.
+
+L'\textbf{ordine scelto conta}: costruendo l'esempio dell'allarme nell'ordine \emph{non causale} $M,J,A,B,E$ (chiedendosi ad ogni passo se la nuova variabile è indipendente, o condizionalmente indipendente, dalle precedenti) si ottiene una rete valida ma \textbf{più densa e meno intuitiva} ($M\to J$; $M,J\to A$; $A\to B$; $A,B\to E$) rispetto a quella causale ($B,E\to A\to J,M$): entrambe rispettano la semantica globale per costruzione, ma la rete non causale nasconde relazioni che, nella rete causale, sono immediate (es. $B$ ed $E$ indipendenti a priori), e richiede di specificare probabilità concettualmente più difficili da stimare direttamente (es. $P(E|B,A)$, quando causalmente $B$ ed $E$ sono cause indipendenti che convergono solo su $A$). \textbf{Regola pratica}: costruire la rete nell'ordine causale produce quasi sempre la rappresentazione più compatta e intuitiva.
+
+\subsection{Inferenza per Enumerazione}
+
+Per calcolare $P(B|j,m)$ (evidenza $j,m$; variabili nascoste $A,E$):
+\[
+P(B|j,m) = \alpha\sum_e\sum_a P(B)P(e)P(a|B,e)P(j|a)P(m|a) = \alpha\,P(B)\sum_e P(e)\sum_a P(a|B,e)P(j|a)P(m|a),
+\]
+portando fuori dalle sommatorie i fattori che non dipendono dalla variabile sommata. Il numero di fattori nel prodotto cresce solo linearmente in $n$ (grazie all'indipendenza condizionale), ma il numero di \textbf{addendi} nelle sommatorie resta esponenziale nel caso peggiore: \textbf{complessità $O(n\cdot2^n)$}, con inoltre lo svantaggio pratico che \textbf{molti sotto-calcoli vengono ripetuti} più volte lungo rami diversi dell'espressione.
+
+\subsection{Eliminazione delle Variabili}
+
+L'algoritmo di \textbf{eliminazione delle variabili} applica la programmazione dinamica per evitare quella ripetizione: si esplicitano i \textbf{fattori} della formula (matrici indicizzate dalle variabili "libere", cioè non fissate dall'evidenza), e si valuta da destra a sinistra alternando due operazioni.
+
+Le due operazioni fondamentali, con un piccolo esempio numerico di riscaldamento (non legato all'esempio dell'allarme, solo per fissare il meccanismo): il \textbf{prodotto puntuale} tra due fattori $f(X_1,\ldots,X_j,Y_1,\ldots,Y_k)$ e $g(Y_1,\ldots,Y_k,Z_1,\ldots,Z_l)$ produce $h=f\times g$ indicizzato dall'\emph{unione} delle variabili, moltiplicando le celle che condividono gli stessi valori delle variabili in comune -- se tutte booleane, $h$ ha $2^{j+k+l}$ elementi: la dimensione di un fattore è \textbf{esponenziale} nel numero delle sue variabili, la vera fonte di complessità dell'algoritmo. Con $f(X,Y)$: $f(T,T){=}.3$, $f(T,F){=}.7$, $f(F,T){=}.9$, $f(F,F){=}.1$; e $g(Y,Z)$: $g(T,T){=}.2$, $g(T,F){=}.8$, $g(F,T){=}.6$, $g(F,F){=}.4$; il prodotto $h(X,Y,Z)=f(X,Y)\cdot g(Y,Z)$ vale, ad esempio, $h(T,T,T)=f(T,T)\cdot g(T,T)=.3\times.2=.06$ e $h(T,F,T)=f(T,F)\cdot g(F,T)=.7\times.6=.42$ (si noti che $Y$ compare in entrambi i fattori originali e va quindi tenuta allo \emph{stesso} valore in entrambi i fattori quando si moltiplica). Il \textbf{summing out} elimina poi una variabile sommando le sotto-matrici ottenute fissandola a ciascun valore: $\sum_x h(X,Y,Z)=h(x,Y,Z)+h(\neg x,Y,Z)$; ad esempio $h_2(T,T)=\sum_x h(x,T,T)=h(T,T,T)+h(F,T,T)=.06+.18=.24$.
+
+Nell'esempio $P(B|j,m)=\alpha f_1(B)\times\sum_e f_2(E)\times\sum_a f_3(A,B,E)\times f_4(A)\times f_5(A)$, i fattori numerici (dalle CPT già date) sono $f_1(B)=(P(B){=}.001,P(\neg B){=}.999)$, $f_2(E)=(P(E){=}.002,P(\neg E){=}.998)$, $f_4(A)=(P(j|a),P(j|\neg a))=(.90,.05)$, $f_5(A)=(P(m|a),P(m|\neg a))=(.70,.01)$, e $f_3(A,B,E)=P(A|B,E)$ è la tabella $P(A|B,E)$ già vista (8 valori). Si elimina prima $A$: applicando prodotto puntuale e summing out come sopra, $f_6(B,E)=\sum_a f_3(a,B,E)\,f_4(a)\,f_5(a) = P(a|B,E)\times.63 + P(\neg a|B,E)\times.0005$ (poiché $f_4(a)f_5(a)=.9\times.7=.63$ e $f_4(\neg a)f_5(\neg a)=.05\times.01=.0005$); numericamente, per le quattro combinazioni di $B,E$: $f_6(T,T)=.95\times.63+.05\times.0005\approx.5985$, $f_6(T,F)=.94\times.63+.06\times.0005\approx.5922$, $f_6(F,T)=.29\times.63+.71\times.0005\approx.1831$, $f_6(F,F)=.001\times.63+.999\times.0005\approx.0011$. Poi si elimina $E$ da $f_2\times f_6$: $f_7(B)=\sum_e f_2(e)f_6(B,e)$, cioè $f_7(T)=.002\times.5985+.998\times.5922\approx.5922$ e $f_7(F)=.002\times.1831+.998\times.0011\approx.0015$. Infine $P(B|j,m)=\alpha\,f_1(B)\times f_7(B)$: valori non normalizzati $\alpha^{-1}P(T|j,m)=.001\times.5922\approx.00059$ e $\alpha^{-1}P(F|j,m)=.999\times.0015\approx.00149$; normalizzando (dividendo per la somma $\approx.00208$) si ottiene $P(B|j,m)\approx\langle0.284,\,0.716\rangle$ -- coerente con l'intuizione che, avendo osservato entrambe le chiamate, un furto è comunque un evento raro rispetto a un semplice falso allarme (es. da terremoto), ma molto più probabile che a priori ($P(B){=}0.001$).
+
+Due ottimizzazioni pratiche: (1) \textbf{safe pruning} -- ogni fattore che non dipende dalla variabile da eliminare può uscire dalla sommatoria senza essere moltiplicato, e ogni nodo \textbf{foglia} che non è né variabile di query né di evidenza può essere ignorato del tutto (es. calcolando $P(J|b)$, $M$ è un nodo foglia irrilevante: $\sum_m P(m|a)=1$ per definizione, quindi non contribuisce); regola generale (di nuovo dalla semantica locale): \emph{ogni variabile che non è un progenitore di una variabile di query o di evidenza è irrilevante per l'interrogazione}; il procedimento è inoltre \textbf{ricorsivo}, perché rimuovere una foglia irrilevante può a sua volta rendere "foglia" (cioè priva di discendenti rimasti nel grafo) un'altra variabile in precedenza non eliminabile, permettendo di scartare anche quella. (2) l'\textbf{ordine di eliminazione} non cambia il risultato finale ma cambia enormemente la dimensione dei fattori intermedi generati; trovare l'ordine ottimo è intrattabile in generale, e si ricorre a un'euristica greedy (elimina per prima la variabile che minimizza la dimensione del prossimo fattore).
+
+\subsection{MPE e MAP}
+
+Due ulteriori task di inferenza, oltre al semplice calcolo di $P(X|\mathbf{e})$: la \textbf{Most Probable Explanation} (MPE), l'istanza più probabile di \emph{tutte} le variabili del dominio data l'evidenza,
+\[
+MPE(\mathbf{e}) = \arg\max_{\mathbf{x}} P(\mathbf{x},\mathbf{e}),
+\]
+e il \textbf{Maximum a Posteriori} (MAP), l'istanza più probabile di un sottoinsieme $M$ di variabili di query,
+\[
+MAP(\mathbf{e}) = \arg\max_{\mathbf{m}} P(\mathbf{m},\mathbf{e}).
+\]
+
+\end{document}
+
+
