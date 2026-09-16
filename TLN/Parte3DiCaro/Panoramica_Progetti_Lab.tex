@@ -1,0 +1,390 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{parskip}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings,breakable,skins}
+
+\geometry{
+  top=2.3cm, bottom=2.3cm,
+  left=2.3cm, right=2.3cm
+}
+
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{keywordcolor}{RGB}{0,0,180}
+\definecolor{commentcolor}{RGB}{0,128,0}
+\definecolor{stringcolor}{RGB}{163,21,21}
+\definecolor{codeframe}{RGB}{180,180,180}
+\definecolor{accent}{RGB}{25,55,110}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{keywordcolor}\bfseries,
+  commentstyle=\color{commentcolor}\itshape,
+  stringstyle=\color{stringcolor},
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  tabsize=4,
+  xleftmargin=1.5em,
+  keepspaces=true,
+  columns=flexible,
+  frame=none,
+  aboveskip=0pt,
+  belowskip=0pt,
+}
+\lstset{style=python}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+\newtcblisting{pylisting}[1][]{
+  listing only,
+  enhanced,
+  colback=codebg,
+  colframe=codeframe,
+  coltitle=black,
+  fonttitle=\small\itshape,
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=codebg, colframe=codeframe, boxrule=0.5pt},
+  boxrule=0.5pt,
+  arc=2pt,
+  left=4pt, right=4pt, top=8pt, bottom=4pt,
+  listing options={style=python},
+  before upper={\vspace{-2pt}},
+  #1
+}
+
+\newtcolorbox{theorybox}{
+  colback=accent!5, colframe=accent!60!black,
+  boxrule=0.5pt, arc=2pt,
+  left=6pt, right=6pt, top=4pt, bottom=4pt,
+  fonttitle=\bfseries, coltitle=accent,
+  title=Cornice teorica
+}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+\raggedbottom
+
+% ============================================================
+% FRONTESPIZIO
+% ============================================================
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+
+  {\Large\textbf{Università degli Studi di Torino}\\[0.3em]
+  Corso di Laurea Magistrale in Informatica}
+
+  \vspace{1cm}
+  \HRule\\[0.4em]
+  {\LARGE\textbf{Tecnologie del Linguaggio Naturale}}\\[0.3em]
+  {\large Parte 3 -- Prof.\ Luigi Di Caro}\\[0.2em]
+  \HRule
+
+  \vspace{1.2cm}
+  {\huge\textbf{Panoramica dei 6 Progetti di Laboratorio}}\\[0.6em]
+  {\large Dalla semantica lessicale su WordNet ai sistemi RAG ibridi:\\
+  teoria, scelte implementative e risultati principali}
+
+  \vspace{2cm}
+
+  {\large\textbf{Gruppo di lavoro:}}\\[0.8em]
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Studente}    & \textbf{Matricola} \\
+    \midrule
+    Alessandro Olivero   & 915069  \\
+    Samuele Iudice       & 1235245 \\
+    Andrea Franco        & 1226739 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.6cm}
+  {\small (Lab 4 -- Topic Modeling con BERTopic -- svolto individualmente da Alessandro Olivero)}
+
+  \vspace{1.5cm}
+  \begin{tabular}{ll}
+    \textbf{Docente:}          & Prof.\ Luigi Di Caro \\[0.3em]
+    \textbf{Anno Accademico:}  & 2025/2026 \\
+  \end{tabular}
+
+  \vfill
+\end{titlepage}
+
+% ============================================================
+\section{Introduzione}
+% ============================================================
+
+Questo documento riassume, in forma compatta, i sei progetti di laboratorio della Parte~3 del corso. L'obiettivo non è ripetere le relazioni complete (già scritte per ciascun laboratorio), ma offrire un percorso unico e leggibile che mostri per ognuno: \emph{quale problema teorico affronta}, \emph{come è stato implementato} (con un estratto di codice realmente usato) e \emph{cosa hanno mostrato i risultati}.
+
+I sei progetti tracciano un arco coerente: si parte dalla \textbf{semantica lessicale simbolica} basata su WordNet e sulle definizioni (Lab~1--3), si passa alla \textbf{semantica distribuzionale neurale} con gli embedding e il topic modeling (Lab~4), e si arriva ai \textbf{sistemi di generazione aumentata da retrieval} (Lab~5 e il Progetto Esteso), dove semantica simbolica (BM25, matching lessicale) e semantica neurale (embedding densi) tornano a incontrarsi nello stesso sistema.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l l X l@{}}
+\toprule
+\textbf{\#} & \textbf{Progetto} & \textbf{Tecnica centrale} & \textbf{Risultato chiave} \\
+\midrule
+1 & Similarità su definizioni & Jaccard lessicale vs cosine SBERT & $\Delta$(Simsem$-$Simlex)$\approx$0.27 sempre \\
+2 & Content-to-Form (WordNet) & Genus-extraction + iponimi + SBERT & accuracy 1.8\%, ma cond.\ 50\% \\
+3 & Polisemia cross-lingue & WordNet/OMW multilingue + entropia & EN (22.95) $\gg$ ES (9.90) $>$ IT (7.15) sensi medi \\
+4 & Topic Modeling & BERTopic (embed+UMAP+HDBSCAN) & modello $\to$ velocità, clustering $\to$ purezza \\
+5 & RAG semantico & SciBERT + FAISS + Phi-3.5-mini & crolla su corpus grandi (P@5=0.04) \\
+6 & RAG ibrido (esteso) & + BM25 + Reciprocal Rank Fusion & P@5 0.04$\to$0.48 sullo stesso caso \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% ============================================================
+\section{Lab 1 -- Similarità Lessicale e Semantica su Definizioni}
+% ============================================================
+
+\begin{theorybox}
+Due definizioni dello stesso concetto possono condividere \emph{molte parole} (similarità lessicale, o \emph{forma}) oppure \emph{poche parole ma lo stesso significato} (similarità semantica, o \emph{contenuto}) -- è la distinzione content vs.\ form che attraversa tutto il laboratorio successivo (Lab~2). La similarità lessicale si misura con l'indice di \textbf{Jaccard} $J(A,B)=|A\cap B|/|A\cup B|$ su insiemi di lemmi; quella semantica con la \textbf{cosine similarity} tra embedding prodotti da un modello Sentence-BERT, addestrato a mappare frasi semanticamente vicine in vettori vicini indipendentemente dalle parole usate.
+\end{theorybox}
+
+\textbf{Cosa è stato fatto.} Sono state raccolte definizioni in linguaggio naturale per 4 concetti scelti per incrociare due assi: \textbf{astratto/concreto} $\times$ \textbf{generico/specifico} (\textit{Music}, \textit{Ethics}, \textit{Tree}, \textit{Teapot}). Ogni definizione viene ripulita con una pipeline unica (minuscolo, rimozione punteggiatura/stopword, lemmatizzazione POS-aware); su questi lemmi si calcola \textbf{Simlex} come media delle similarità di Jaccard a coppie. Per \textbf{Simsem} si usa invece il testo \emph{grezzo} (non ripulito) codificato con SBERT (\texttt{all-MiniLM-L6-v2}): rimuovere stopword e sintassi danneggerebbe l'input rispetto a come il modello è stato addestrato.
+
+\begin{pylisting}[title={Pipeline di preprocessing e le due metriche di similarità}]
+def preprocess_definition(text):
+    text = text.lower()
+    text = re.sub(f"[{re.escape(string.punctuation)}]", " ", text)
+    tokens = [t for t in text.split() if t.isalpha()
+              and t not in STOP_WORDS and len(t) > 2]
+    tagged = pos_tag(tokens)
+    lemmas = [LEMMATIZER.lemmatize(tok, _wordnet_pos(pos))
+              for tok, pos in tagged]
+    return " ".join(lemmas), set(lemmas)
+
+def jaccard_similarity(set1, set2):
+    if not set1 or not set2:
+        return 0.0
+    return len(set1 & set2) / len(set1 | set2)
+
+# Simsem: cosine similarity su embedding SBERT del testo NON ripulito
+embs = SBERT_MODEL.encode(raw_for_sbert)
+cos_sim_matrix = cosine_similarity(embs)
+\end{pylisting}
+
+\textbf{Risultati.} La similarità semantica supera sempre, e di molto, quella lessicale:
+
+\begin{center}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Aggregazione} & \textbf{Simlex} & \textbf{Simsem} & \textbf{$\Delta$} \\
+\midrule
+Concetti astratti  & 0.046 & 0.314 & 0.267 \\
+Concetti concreti  & 0.074 & 0.330 & 0.256 \\
+Definizioni generiche  & 0.065 & 0.341 & 0.276 \\
+Definizioni specifiche & 0.055 & 0.302 & 0.247 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Il divario ($\Delta\approx0.25$--$0.28$) resta pressoché costante in tutte le suddivisioni: le persone descrivono lo stesso concetto con parole molto diverse (basso overlap lessicale), ma SBERT cattura comunque il significato condiviso. Gli scarti tra le sottocategorie sono invece piccoli: i concetti concreti hanno una similarità leggermente più alta di quelli astratti (definizioni più vincolate a un referente fisico condiviso), e le definizioni generiche leggermente più alte di quelle specifiche.
+
+% ============================================================
+\section{Lab 2 -- Content-to-Form: Ricerca Onomasiologica su WordNet}
+% ============================================================
+
+\begin{theorybox}
+La \textbf{semasiologia} va dalla parola al significato (i laboratori classici di WSD); l'\textbf{onomasiologia} fa il percorso inverso: dato un significato (una definizione), trovare la parola/il synset che lo esprime -- esattamente il compito ``content-to-form''. Il principio lessicografico del \textbf{genus-differentia} (Aristotele) dice che una buona definizione nomina prima il \textbf{genus} (l'iperonimo immediato, es.\ ``a container...'') e poi lo differenzia dagli altri membri della stessa categoria.
+\end{theorybox}
+
+\textbf{Cosa è stato fatto.} \texttt{extract\_genus} individua il genus con una regola sintattica (il nome subito dopo ``is/are'') con fallback sul primo sostantivo della definizione. A partire dal genus si genera l'insieme dei \textbf{candidati} scendendo negli iponimi di WordNet fino a profondità 3 (con un cap di 300, altrimenti un genus troppo generico come ``object'' farebbe esplodere la ricerca). I candidati vengono infine ordinati per similarità (SBERT o TF-IDF) tra la definizione originale e la gloss di ciascun candidato.
+
+\begin{pylisting}[title={Estrazione del genus e generazione dei candidati dagli iponimi}]
+def extract_genus(definition):
+    # Regola 1: il sostantivo subito dopo "is/are"
+    m = re.search(r"\b(?:is|are)\b\s+(?:an?\s+)?([a-zA-Z-]+)",
+                  definition.lower())
+    if m and wn.synsets(m.group(1), pos=wn.NOUN):
+        return m.group(1)
+    # Regola 2 (fallback): primo sostantivo della definizione
+    tagged = pos_tag([t for t in word_tokenize(definition.lower())
+                       if t.isalpha()])
+    for tok, pos in tagged:
+        if pos.startswith("NN") and wn.synsets(tok, pos=wn.NOUN):
+            return tok
+    return None
+
+def get_candidates_from_genus(genus, depth=3, max_candidates=300):
+    unique = []
+    for syn in wn.synsets(genus, pos=wn.NOUN):
+        unique.append(syn)
+        for hypo in syn.closure(lambda s: s.hyponyms(), depth=depth):
+            unique.append(hypo)
+            if len(unique) >= max_candidates:
+                return unique
+    return unique
+\end{pylisting}
+
+\textbf{Risultati.} L'accuracy globale è \textbf{1.8\%} -- un numero che, isolato, sembrerebbe un fallimento. Scomponendolo si trova il risultato più interessante del laboratorio: la \textbf{coverage} (quante volte il synset target è anche solo presente tra i candidati generati) è del \textbf{3.6\%} -- è questo il vero collo di bottiglia, non il ranking. Infatti, condizionando sui soli casi in cui il target \emph{è} raggiungibile, l'accuracy sale al \textbf{50\%}: quando SBERT ha la possibilità di scegliere il synset giusto, lo fa in metà dei casi. Una versione precedente con 5 glosse pre-selezionate a mano (target sempre incluso) otteneva 32--89\% di accuracy: un compito artificialmente facile, perché il retrieval era già risolto in partenza. La ricerca onomasiologica non vincolata su tutto WordNet è quindi un compito genuinamente difficile, e la scomposizione coverage/accuracy-condizionata separa in modo pulito l'errore di \emph{retrieval} da quello di \emph{ranking}.
+
+% ============================================================
+\section{Lab 3 -- Polisemia e Asimmetria Cross-linguistica}
+% ============================================================
+
+\begin{theorybox}
+Non esiste una ``polisemia universale'': la stessa area concettuale può essere lessicalizzata in modo diverso da lingua a lingua (es.\ l'inglese \textit{bank} copre sia ``istituto finanziario'' sia ``sponda del fiume'', l'italiano li separa in \textit{banca}/\textit{banco}, mentre lo spagnolo concentra più sensi in \textit{banco}). Contare i sensi di WordNet non basta a misurare l'ambiguità realmente percepita: due lemmi con lo stesso numero di sensi possono avere un uso concentrato su un solo senso dominante o distribuito uniformemente su tutti -- distinzione che l'\textbf{entropia di Shannon} $H=-\sum_i p_i\log_2 p_i$ sulla distribuzione di frequenza d'uso dei sensi cattura, mentre il semplice conteggio no.
+\end{theorybox}
+
+\textbf{Cosa è stato fatto.} 20 lemmi (nomi, verbi, aggettivi) allineati manualmente tra inglese, italiano e spagnolo (es.\ \textit{bank}/\textit{banca}/\textit{banco}); per ciascuno si contano i sensi con filtro di categoria grammaticale via WordNet (EN) e Open Multilingual WordNet (IT/ES). Per l'inglese l'entropia è calcolata dalle frequenze d'uso reali in SemCor (quante volte ciascun senso compare in un corpus annotato); per italiano e spagnolo, in assenza di dati di frequenza in OMW, si usa una distribuzione uniforme come fallback esplicito (limite dichiarato, non nascosto).
+
+\begin{pylisting}[title={Entropia reale (SemCor) per l'inglese, fallback uniforme per IT/ES}]
+def calcola_metriche(synsets, lemma, lang_code):
+    n = len(synsets)
+    if lang_code == "eng":
+        counts = np.array(english_sense_counts(lemma, synsets))
+        if counts.sum() > 0:
+            dist = counts / counts.sum()          # frequenza reale
+            ent = float(scipy_entropy(dist, base=2))
+            return {"entropia": ent, "metodo_entropia": "real_semcor"}
+    dist = np.ones(n) / n                          # fallback uniforme
+    return {"entropia": float(scipy_entropy(dist, base=2)),
+            "metodo_entropia": "uniform_fallback"}
+\end{pylisting}
+
+\textbf{Risultati.} Gerarchia sistematica e netta: \textbf{22.95} sensi medi in inglese, contro \textbf{9.90} in spagnolo e \textbf{7.15} in italiano, con asimmetrie individuali fino a \textbf{9.83$\times$} (\textit{break}, EN/IT). I verbi mostrano l'asimmetria più marcata (39.33 EN vs 11.83 IT), mentre i sostantivi concreti con referente fisico stabile (\textit{mouth}, \textit{table}, \textit{foot}) mostrano la minore. Un dato che qualifica tutto il resto: la correlazione tra entropia reale e $\log_2(\text{n\_sensi})$ è $r=0.76$, non 1 -- lemmi come \textit{head} (33 sensi, ma 82\% dell'uso concentrato su un solo senso) sono formalmente molto polisemici ma praticamente quasi monosemici in uso, mentre altri (\textit{take}, \textit{break}) sono genuinamente ambigui con uso distribuito. Contare i sensi, da solo, sovrastima l'ambiguità reale.
+
+% ============================================================
+\section{Lab 4 -- Topic Modeling con BERTopic}
+% ============================================================
+
+\begin{theorybox}
+BERTopic scompone il topic modeling in una pipeline modulare a quattro stadi: \textbf{embedding} (ogni documento diventa un vettore denso), \textbf{UMAP} (riduzione dimensionale che preserva la struttura locale dei vicini), \textbf{HDBSCAN} (clustering density-based, che a differenza di K-Means non impone il numero di cluster e produce esplicitamente una classe di \emph{outlier} per i punti in zone a bassa densità), e infine \textbf{c-TF-IDF} (una variante del TF-IDF calcolata per cluster invece che per documento, usata per estrarre le parole più rappresentative di ogni topic).
+\end{theorybox}
+
+\textbf{Cosa è stato fatto.} Su 44\,949 abstract NLP da arXiv sono state confrontate 3 configurazioni cambiando \textbf{un solo parametro alla volta} rispetto alla baseline, per poter attribuire ogni differenza a una causa precisa: Config~1 (baseline, embedding \texttt{gte-small}); Config~2 (solo il modello di embedding cambia, in \texttt{all-MiniLM-L6-v2}); Config~3 (stesso embedding di Config~2, cambiano solo i parametri di UMAP/HDBSCAN verso una granularità più grossolana).
+
+\begin{pylisting}[title={Pipeline BERTopic: embedding + UMAP + HDBSCAN}]
+umap_model = UMAP(**config["umap_params"])
+hdbscan_model = HDBSCAN(**config["hdbscan_params"])
+
+topic_model = BERTopic(
+    embedding_model=emb_model,
+    umap_model=umap_model,
+    hdbscan_model=hdbscan_model,
+)
+topics, probs = topic_model.fit_transform(docs, embeddings)
+\end{pylisting}
+
+\textbf{Risultati.}
+
+\begin{center}
+\small
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Configurazione} & \textbf{\# Topic} & \textbf{\% Outlier} & \textbf{Tempo totale} \\
+\midrule
+Config 1 -- baseline (gte-small)      & 151 & 31.9\% & 7\,417 s ($\approx$2h) \\
+Config 2 -- solo modello (MiniLM)     & 116 & 27.5\% & 513 s \\
+Config 3 -- solo clustering (grossolano) & 46 & 33.5\% & 35 s \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Isolare le due variabili rivela che agiscono su assi indipendenti: cambiare \emph{solo} il modello di embedding (1$\to$2) governa soprattutto \textbf{velocità} ($14.5\times$ più veloce) e in parte granularità ($-23\%$ topic); cambiare \emph{solo} i parametri di clustering (2$\to$3) governa soprattutto \textbf{granularità} ($-60\%$ topic) e \textbf{purezza semantica} -- la Config~3 mostra infatti stopword (\textit{the}, \textit{and}, \textit{to}) che contaminano le parole chiave di più topic, un failure mode assente nelle altre due configurazioni. La Config~2 risulta il miglior compromesso: meno outlier della baseline, tempo pratico su CPU, nessuna contaminazione.
+
+% ============================================================
+\section{Lab 5 -- Sistema RAG su Articoli Scientifici}
+% ============================================================
+
+\begin{theorybox}
+Un LLM ha conoscenza \emph{parametrica}, fissata al training e soggetta ad allucinazioni quando gli si chiede di citare fatti specifici. Il \textbf{Retrieval-Augmented Generation} (RAG) affianca un \textbf{retriever} che recupera documenti rilevanti da una collezione esterna e li inserisce nel prompt, così il generatore condiziona la risposta su testo verificabile invece che sulla sola memoria interna. Il retrieval \textbf{semantico} (denso) codifica query e documenti nello stesso spazio di embedding e cerca per similarità coseno/prodotto scalare -- qui tramite \textbf{FAISS} con ricerca esatta.
+\end{theorybox}
+
+\textbf{Cosa è stato fatto.} Corpus di paper NLP da arXiv (fino a 44\,949 documenti), embedding con \textbf{SciBERT} (pre-addestrato su 1.14M paper scientifici, quindi più adatto di un modello generico a questo dominio), indice FAISS \texttt{IndexFlatIP}, generazione con \textbf{Phi-3.5-mini-instruct} (decoding greedy per risposte riproducibili). L'esperimento fa variare sia la dimensione del corpus $N\_DOCS \in \{1000,\ldots,44949\}$ (sottoinsiemi annidati, per isolare l'effetto della dimensione dal campionamento casuale) sia $k$, misurando Precision@k, Context Relevance, Answer Relevance e una Faithfulness proxy lessicale.
+
+\begin{pylisting}[title={Retrieval semantico: query e corpus nello stesso spazio di embedding}]
+def retrieve(query, faiss_index, documents, metadata, k=5):
+    query_emb = embedding_model.encode(
+        [query], normalize_embeddings=True
+    ).astype(np.float32)
+    similarities, indices = faiss_index.search(query_emb, k)
+    return [{'rank': i + 1, 'similarity': float(sim),
+             'document': documents[idx], 'metadata': metadata[idx]}
+            for i, (sim, idx) in enumerate(zip(similarities[0], indices[0]))]
+\end{pylisting}
+
+\textbf{Risultati.} La Precision@k media resta stabile tra 0.24 e 0.29 su tutte le dimensioni di corpus -- in apparenza un sistema robusto. Ma scomponendo per singola query emerge il limite reale: sulla query ``\textit{What is BERT and how does self-attention work?}'', la Precision@k crolla quasi a \textbf{zero} sui corpus grandi (il paper specifico su BERT viene ``affogato'' fra migliaia di vicini semantici simili -- altri paper su transformer, attention, pre-training). È un limite strutturale del retrieval puramente semantico su corpus ampi, e motiva direttamente l'estensione ibrida del progetto successivo.
+
+% ============================================================
+\section{Progetto Esteso -- Hybrid Search RAG}
+% ============================================================
+
+\begin{theorybox}
+Il retrieval denso è robusto a parafrasi e sinonimi ma può perdere la corrispondenza \emph{esatta} di un termine specifico (un acronimo come ``BERT'') quando il corpus è grande e pieno di vicini semantici. Il retrieval \textbf{lessicale} (\textbf{BM25}, evoluzione probabilistica del TF-IDF) fa l'opposto: preciso sul matching esatto dei termini, cieco alla parafrasi. La \textbf{Reciprocal Rank Fusion} (RRF) combina le due liste ordinate senza dover calibrare punteggi eterogenei (similarità coseno vs.\ score BM25, scale non comparabili): assegna a ogni documento $1/(k_{\text{rrf}}+\text{rank})$ in ciascuna lista in cui compare, e somma i contributi.
+\end{theorybox}
+
+\textbf{Cosa è stato fatto.} Stesso corpus ed embedding SciBERT di Lab~5 (cache condivisa, per evitare di ricodificare 44\,949 abstract due volte), a cui si affianca un indice BM25. \texttt{retrieve\_hybrid} recupera i primi 20 risultati da entrambi i canali (semantico e lessicale) e li fonde con RRF. Il confronto base-vs-ibrido è sistematico: stesse query, stesso $N\_DOCS$, stesse metriche di Lab~5, più una misura di \textbf{robustezza} (overlap tra i risultati di una query e delle sue parafrasi).
+
+\begin{pylisting}[title={Reciprocal Rank Fusion: unire due ranking senza calibrare i punteggi}]
+def reciprocal_rank_fusion(results_list, k=60):
+    rrf_scores, doc_map = {}, {}
+    for results in results_list:
+        for item in results:
+            ix = item['idx']
+            rrf_scores[ix] = rrf_scores.get(ix, 0) + 1 / (k + item['rank'])
+            doc_map[ix] = item
+    sorted_docs = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
+    return [{'rank': i + 1, 'rrf_score': s, 'idx': ix,
+             'document': doc_map[ix]['document']}
+            for i, (ix, s) in enumerate(sorted_docs)]
+
+def retrieve_hybrid(query, faiss_index, bm25, documents, metadata, k=5):
+    sem = retrieve_semantic(query, faiss_index, documents, metadata, k=20)
+    bm  = retrieve_bm25(query, bm25, documents, metadata, k=20)
+    return reciprocal_rank_fusion([sem, bm])[:k]
+\end{pylisting}
+
+\textbf{Risultati.} Il miglioramento è sistematico e in un caso drammatico:
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{N\_DOCS} & \textbf{P@5 base} & \textbf{P@5 ibrido} & \textbf{Faithfulness base} & \textbf{Faithfulness ibrido} \\
+\midrule
+1\,000  & 0.16 & 0.48 & 0.568 & 0.765 \\
+5\,000  & 0.28 & 0.68 & 0.613 & 0.719 \\
+15\,000 & 0.20 & 0.56 & 0.655 & 0.755 \\
+25\,000 & 0.20 & 0.56 & 0.628 & 0.722 \\
+44\,949 & 0.04 & 0.48 & 0.496 & 0.669 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Il caso più importante di tutto l'esperimento è l'ultima riga: sul corpus completo, il sistema base \textbf{crolla} (P@5=0.04, quasi zero) mentre l'ibrido \textbf{tiene} (P@5=0.48, $12\times$ meglio) -- BM25 recupera esattamente il paper su ``BERT'' che il solo retrieval semantico perde tra migliaia di vicini. Anche la Faithfulness migliora in ogni configurazione (+0.09 a +0.20). L'unica metrica che non premia sempre l'ibrido è la robustezza alle parafrasi, migliore solo per il corpus più piccolo -- aggiungere BM25 aiuta la precisione ma non garantisce automaticamente più stabilità a piccole variazioni della query.
+
+% ============================================================
+\section{Conclusioni}
+% ============================================================
+
+I sei progetti, pur indipendenti, condividono un filo metodologico: non fermarsi al numero aggregato, ma \textbf{scomporlo} per capire cosa lo determina davvero. Lab~1 scompone la similarità in lessicale/semantica; Lab~2 scompone l'errore in retrieval (coverage) vs.\ ranking (accuracy condizionata); Lab~3 scompone il conteggio dei sensi in entropia d'uso reale; Lab~4 isola un parametro alla volta per attribuire ogni effetto a una causa precisa; Lab~5 e il Progetto Esteso confrontano sistematicamente base e ibrido sulle stesse query e sullo stesso corpus, invece di riportare solo la configurazione migliore. È questa disciplina di confronto controllato -- più che la scelta di un singolo modello o iperparametro -- il contributo metodologico comune a tutto il lavoro.
+
+\end{document}

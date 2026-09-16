@@ -34,7 +34,8 @@ LEMMATIZER = WordNetLemmatizer()
 SBERT_MODEL = SentenceTransformer("all-MiniLM-L6-v2")
 
 
-def _wordnet_pos(treebank_pos):
+# analisi grammaticale POS-aware per lemmatizzazione, mappando i tag di Treebank convertendoli a quelli di WordNet
+def _wordnet_pos(treebank_pos): 
     if treebank_pos.startswith("J"):
         return "a"
     if treebank_pos.startswith("V"):
@@ -46,8 +47,8 @@ def _wordnet_pos(treebank_pos):
     return "n"
 
 
-# --- 3. PREPROCESSING UNIFICATO ---
-def preprocess_definition(text):
+# --- 3. PREPROCESSING UNIFICATO pulisce testo e restituisce sia la stringa pulita sia il set di token lemmatizzati
+def preprocess_definition(text): 
     """
     Pipeline unica per Simlex e Simsem:
     lowercase, rimozione punteggiatura, stopwords, lemmatizzazione POS-aware.
@@ -74,8 +75,18 @@ def jaccard_similarity(set1, set2):
     if not set1 or not set2:
         return 0.0
 
+    # Elementi (lemmi) presenti in ENTRAMBE le definizioni
+    # es: set1={"tree","plant","grow","leaf"}, set2={"plant","wood","grow"}
+    #     intersezione = {"plant","grow"} -> 2 elementi
     intersection = len(set1.intersection(set2))
+
+    # Elementi (lemmi) presenti in ALMENO UNA delle due definizioni,
+    # senza duplicati (ogni parola contata una sola volta)
+    # es: unione = {"tree","plant","grow","leaf","wood"} -> 5 elementi
     union = len(set1.union(set2))
+        # Jaccard = |A ∩ B| / |A ∪ B|
+    # es: 2 / 5 = 0.4 -> le due definizioni condividono il 40% del vocabolario usato
+    # 1.0 = stessi lemmi identici, 0.0 = nessuna parola in comune
     return intersection / union
 
 
