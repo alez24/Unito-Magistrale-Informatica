@@ -48,7 +48,8 @@ LEMMI = [
     ("right", "giusto", "correcto", "aggettivo"),
     ("open", "aperto", "abierto", "aggettivo"),
     ("deep", "profondo", "profundo", "aggettivo"),
-]
+    ("fsddfewd", "sdffsdf", "fsdsdfvfsd", "aggettivo"),
+    ("hepatitis", "epatite", "hepatitis", "sostantivo"),]
 
 LINGUE = {"eng": "Inglese", "ita": "Italiano", "spa": "Spagnolo"}
 POS_MAP = {
@@ -163,7 +164,7 @@ def stampa_statistiche(df):
             mediana_sensi=("n_sensi", "median"),
             max_sensi=("n_sensi", "max"),
             media_entropia=("entropia", "mean"),
-            media_top1=("top1_share", "mean"),
+            media_top1=("top1_share", "mean"),#il top 1 share medio indica quanto il senso principale domina la distribuzione dei sensi
             # monosemici = esattamente 1 senso; zero_sensi = nessun senso trovato
             # (buco di copertura OMW, non va confuso con la monosemia)
             monosemici=("n_sensi", lambda x: (x == 1).sum()),
