@@ -305,8 +305,8 @@ Per ogni configurazione si ricostruisce il corpus (campionamento casuale con see
     \textbf{Query} & \textbf{Parole chiave rilevanti} \\
     \midrule
     What is BERT and how does self-attention work? & bert, attention, transformer, language model, pre-training \\
-    How does word2vec represent word meaning?       & word2vec, skip-gram, word embedding, word representation \\
-    What are the main challenges in machine translation? & machine translation, neural machine translation, nmt \\
+    How does word2vec represent word meaning?       & word2vec, skip-gram, word embedding, word representation, word vector \\
+    What are the main challenges in machine translation? & machine translation, neural machine translation, translation, nmt \\
     How does topic modeling work?                  & topic model, lda, bertopic, topic, clustering \\
     What is named entity recognition?              & named entity, ner, entity recognition, sequence labeling \\
     \bottomrule
@@ -480,9 +480,9 @@ Le tabelle seguenti riportano i risultati completi per ciascuna configurazione (
     \textbf{Metrica} & \textbf{Base} & \textbf{Ibrido} & \textbf{Delta} \\
     \midrule
     Precision@5        & 0.160 & 0.480 & +0.320 \\
-    Context Relevance  & 0.716 & 0.714 & $-$0.002 \\
+    Context Relevance  & 0.716 & 0.715 & $-$0.002 \\
     Answer Relevance   & 0.676 & 0.657 & $-$0.019 \\
-    Faithfulness       & 0.568 & 0.765 & +0.197 \\
+    Faithfulness       & 0.503 & 0.740 & +0.237 \\
     Robustezza         & 0.233 & 0.267 & +0.033 \\
     \bottomrule
   \end{tabular}
@@ -498,7 +498,7 @@ Le tabelle seguenti riportano i risultati completi per ciascuna configurazione (
     Precision@5        & 0.280 & 0.680 & +0.400 \\
     Context Relevance  & 0.724 & 0.722 & $-$0.002 \\
     Answer Relevance   & 0.676 & 0.659 & $-$0.017 \\
-    Faithfulness       & 0.613 & 0.719 & +0.106 \\
+    Faithfulness       & 0.571 & 0.693 & +0.123 \\
     Robustezza         & 0.167 & 0.100 & $-$0.067 \\
     \bottomrule
   \end{tabular}
@@ -512,9 +512,9 @@ Le tabelle seguenti riportano i risultati completi per ciascuna configurazione (
     \textbf{Metrica} & \textbf{Base} & \textbf{Ibrido} & \textbf{Delta} \\
     \midrule
     Precision@5        & 0.200 & 0.560 & +0.360 \\
-    Context Relevance  & 0.713 & 0.731 & +0.018 \\
+    Context Relevance  & 0.713 & 0.731 & +0.019 \\
     Answer Relevance   & 0.683 & 0.675 & $-$0.008 \\
-    Faithfulness       & 0.655 & 0.755 & +0.100 \\
+    Faithfulness       & 0.604 & 0.727 & +0.123 \\
     Robustezza         & 0.100 & 0.067 & $-$0.033 \\
     \bottomrule
   \end{tabular}
@@ -530,7 +530,7 @@ Le tabelle seguenti riportano i risultati completi per ciascuna configurazione (
     Precision@5        & 0.200 & 0.560 & +0.360 \\
     Context Relevance  & 0.720 & 0.728 & +0.008 \\
     Answer Relevance   & 0.692 & 0.667 & $-$0.025 \\
-    Faithfulness       & 0.628 & 0.722 & +0.094 \\
+    Faithfulness       & 0.599 & 0.702 & +0.103 \\
     Robustezza         & 0.067 & 0.000 & $-$0.067 \\
     \bottomrule
   \end{tabular}
@@ -546,7 +546,7 @@ Le tabelle seguenti riportano i risultati completi per ciascuna configurazione (
     Precision@5        & 0.040 & 0.480 & +0.440 \\
     Context Relevance  & 0.719 & 0.724 & +0.005 \\
     Answer Relevance   & 0.687 & 0.680 & $-$0.007 \\
-    Faithfulness       & 0.496 & 0.669 & +0.173 \\
+    Faithfulness       & 0.438 & 0.635 & +0.197 \\
     Robustezza         & 0.033 & 0.033 & 0.000 \\
     \bottomrule
   \end{tabular}
@@ -575,6 +575,7 @@ Le tabelle seguenti riportano i risultati completi per ciascuna configurazione (
 \begin{table}[H]
   \centering
   \caption{P@5 per singola query al variare di N\_DOCS -- Base / Ibrido}
+  \label{tab:p5-detail}
   \small
   \begin{tabular}{p{6cm}rrrrr}
     \toprule
@@ -596,6 +597,7 @@ Le tabelle seguenti riportano i risultati completi per ciascuna configurazione (
 \begin{table}[H]
   \centering
   \caption{Robustezza (overlap@5 su query parafrasate): base vs.\ ibrido}
+  \label{tab:robustezza}
   \begin{tabular}{rrr}
     \toprule
     \textbf{N\_DOCS} & \textbf{Base} & \textbf{Ibrido} \\
@@ -609,6 +611,68 @@ Le tabelle seguenti riportano i risultati completi per ciascuna configurazione (
   \end{tabular}
 \end{table}
 
+\subsection{Variazione di $k$}
+\label{sec:variazione-k}
+
+Tutti i risultati precedenti sono calcolati a $k=5$ (numero di documenti passati al retriever/LLM). Per verificare se le conclusioni valgono anche per altri valori di $k$, l'esperimento \`e stato esteso a $k \in \{3, 10, 15\}$, in aggiunta al $k=5$ gi\`a discusso. Precision@$k$ e Context Relevance, che richiedono solo retrieval, sono state misurate per \emph{tutte} le configurazioni di N\_DOCS; Answer Relevance e Faithfulness, che richiedono una generazione dell'LLM per ciascuna combinazione (query, $k$), sono state misurate solo a N\_DOCS=1\,000, per contenere i tempi di esecuzione su CPU (il costo della generazione \`e indipendente da N\_DOCS ma cresce linearmente col numero di valori di $k$ testati).
+
+\begin{table}[H]
+  \centering
+  \caption{Precision@$k$ e Context Relevance, base vs.\ ibrido, al variare di $k$ e N\_DOCS}
+  \small
+  \begin{tabular}{rrrrrr}
+    \toprule
+    \textbf{N\_DOCS} & \textbf{$k$} & \textbf{P@$k$ Base} & \textbf{P@$k$ Ibrido} & \textbf{CR Base} & \textbf{CR Ibrido} \\
+    \midrule
+    1\,000  & 3  & 0.200 & 0.533 & 0.722 & 0.720 \\
+    1\,000  & 5  & 0.160 & 0.480 & 0.716 & 0.715 \\
+    1\,000  & 10 & 0.120 & 0.460 & 0.707 & 0.708 \\
+    1\,000  & 15 & 0.093 & 0.413 & 0.703 & 0.707 \\
+    \midrule
+    5\,000  & 3  & 0.267 & 0.733 & 0.725 & 0.733 \\
+    5\,000  & 5  & 0.280 & 0.680 & 0.724 & 0.722 \\
+    5\,000  & 10 & 0.200 & 0.600 & 0.719 & 0.712 \\
+    5\,000  & 15 & 0.200 & 0.560 & 0.714 & 0.714 \\
+    \midrule
+    15\,000 & 3  & 0.067 & 0.533 & 0.711 & 0.730 \\
+    15\,000 & 5  & 0.200 & 0.560 & 0.713 & 0.731 \\
+    15\,000 & 10 & 0.280 & 0.580 & 0.716 & 0.716 \\
+    15\,000 & 15 & 0.267 & 0.573 & 0.715 & 0.714 \\
+    \midrule
+    25\,000 & 3  & 0.133 & 0.600 & 0.721 & 0.731 \\
+    25\,000 & 5  & 0.200 & 0.560 & 0.720 & 0.728 \\
+    25\,000 & 10 & 0.220 & 0.600 & 0.714 & 0.721 \\
+    25\,000 & 15 & 0.240 & 0.560 & 0.716 & 0.718 \\
+    \midrule
+    44\,949 & 3  & 0.067 & 0.467 & 0.723 & 0.721 \\
+    44\,949 & 5  & 0.040 & 0.480 & 0.719 & 0.724 \\
+    44\,949 & 10 & 0.220 & 0.520 & 0.718 & 0.723 \\
+    44\,949 & 15 & 0.187 & 0.547 & 0.715 & 0.720 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{Answer Relevance e Faithfulness al variare di $k$ (N\_DOCS=1\,000)}
+  \begin{tabular}{rrrrr}
+    \toprule
+    \textbf{$k$} & \textbf{AR Base} & \textbf{AR Ibrido} & \textbf{FF Base} & \textbf{FF Ibrido} \\
+    \midrule
+    3  & 0.683 & 0.663 & 0.414 & 0.627 \\
+    5  & 0.676 & 0.657 & 0.503 & 0.740 \\
+    10 & 0.695 & 0.653 & 0.613 & 0.789 \\
+    15 & 0.669 & 0.661 & 0.608 & 0.819 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Il vantaggio dell'ibrido in Precision@$k$ non \`e un artefatto di $k=5$: l'ibrido supera il base in \textbf{tutte le 20 combinazioni} di N\_DOCS e $k$ testate, con margini che vanno da un fattore ${\sim}2\times$ (es.\ N=25\,000, $k=15$: 0.240 vs.\ 0.560) fino a ${\sim}8\times$ (N=15\,000, $k=3$: 0.067 vs.\ 0.533). Il sistema base risulta inoltre pi\`u instabile al variare di $k$ di quanto suggerisse il solo $k=5$: a N=15\,000, ad esempio, P@3 base (0.067) \`e nettamente pi\`u basso di P@5 base (0.200) sullo stesso corpus, segno che i primissimi risultati del retrieval puramente semantico non sono affidabili quanto quelli, gi\`a pochi, recuperati a $k$ pi\`u alto. L'ibrido \`e invece pi\`u stabile: BM25 ancora i primi posti della fusione a documenti che contengono le parole chiave della query, indipendentemente da quanti se ne richiedano.
+
+La Context Relevance resta sostanzialmente piatta ($0.70$--$0.73$) a ogni $k$, N\_DOCS e sistema: conferma, anche nella variazione di $k$, il limite gi\`a discusso in Sezione~\ref{sec:cr-ar-limite} (CR e AR condividono l'embedding SciBERT con il retrieval semantico).
+
+Sulla qualit\`a della generazione (N\_DOCS=1\,000): l'Answer Relevance dell'ibrido resta leggermente sotto quella del base a \emph{ogni} $k$ testato (delta tra $-0.008$ e $-0.042$), confermando che si tratta di un effetto sistematico del retrieval ibrido e non di una particolarit\`a di $k=5$. La Faithfulness cresce con $k$ per entrambi i sistemi (pi\`u contesto offre pi\`u materiale su cui ancorare le parole della risposta), ma l'ibrido mantiene un vantaggio ampio e consistente a ogni $k$ (delta tra $+0.176$ e $+0.237$, media ${\sim}+0.21$, perfino superiore al delta medio gi\`a osservato a $k=5$ sulle cinque configurazioni di N\_DOCS). In sintesi: la risposta alla domanda ``avete provato altri valori di $k$?'' \`e s\`i, e le conclusioni principali dell'esperimento -- l'ibrido recupera pi\`u documenti rilevanti e produce risposte pi\`u fedeli al contesto, a scapito di una Answer Relevance leggermente pi\`u bassa -- si confermano a ogni $k$ testato, non solo a $k=5$.
+
 % ============================================================
 \section{Risultati e Discussione}
 % ============================================================
@@ -620,14 +684,16 @@ Il dato pi\`u netto \`e che il sistema ibrido supera il sistema base in \textit{
 Questo conferma l'ipotesi di partenza: BM25, catturando i termini tecnici esatti (es.\ ``NER'', ``LDA'', ``skip-gram''), recupera documenti che il solo retrieval semantico manca, perch\'e SciBERT tende a generalizzare i termini tecnici verso concetti pi\`u astratti. La fusione RRF bilancia i punti di forza dei due retriever.
 
 \subsection{Il crollo del sistema base sul corpus completo}
+\label{subsec:crollo-base}
 
-Il risultato pi\`u netto di questa esecuzione \`e il crollo della Precision@5 base a \textbf{0.040} sull'intero corpus (44\,949 documenti): guardando il dettaglio per query (Tabella~7), a quella dimensione il retrieval puramente semantico non trova \emph{nessun} documento rilevante nei top-5 per 4 query su 5 (BERT/self-attention, word2vec, machine translation, topic modeling azzerate), e recupera qualcosa solo per ``named entity recognition'' (0.2). Il sistema ibrido, sullo stesso corpus, resta invece a \textbf{0.480} -- pressoch\'e invariato rispetto alle configurazioni pi\`u piccole. Questo \`e ora un confronto pulito: gli stessi 44\,949 documenti, la stessa query, lo stesso gold standard, l'unica differenza \`e la presenza di BM25 nella fusione. Il retrieval solo-embedding, su un corpus molto ampio e con query brevi e generiche, perde quasi completamente la capacit\`a di isolare i pochi documenti realmente pertinenti tra le decine di migliaia disponibili; BM25 mantiene invece il segnale sulle parole chiave indipendentemente da quanti documenti competono nell'indice.
+Il risultato pi\`u netto di questa esecuzione \`e il crollo della Precision@5 base a \textbf{0.040} sull'intero corpus (44\,949 documenti): guardando il dettaglio per query (Tabella~\ref{tab:p5-detail}), a quella dimensione il retrieval puramente semantico non trova \emph{nessun} documento rilevante nei top-5 per 4 query su 5 (BERT/self-attention, word2vec, machine translation, topic modeling azzerate), e recupera qualcosa solo per ``named entity recognition'' (0.2). Il sistema ibrido, sullo stesso corpus, resta invece a \textbf{0.480} -- pressoch\'e invariato rispetto alle configurazioni pi\`u piccole. Questo \`e ora un confronto pulito: gli stessi 44\,949 documenti, la stessa query, lo stesso gold standard, l'unica differenza \`e la presenza di BM25 nella fusione. Il retrieval solo-embedding, su un corpus molto ampio e con query brevi e generiche, perde quasi completamente la capacit\`a di isolare i pochi documenti realmente pertinenti tra le decine di migliaia disponibili; BM25 mantiene invece il segnale sulle parole chiave indipendentemente da quanti documenti competono nell'indice.
 
 \subsection{Andamento non monotono della Precision@5 con N\_DOCS}
 
 Sia la curva base sia quella ibrida hanno un picco a N=5\,000 (0.280 e 0.680) e calano dopo: il corpus a 5\,000 documenti \`e abbastanza grande da contenere paper rilevanti, ma abbastanza piccolo da non essere ``diluito'' da troppi documenti distanti dal tema della query. Il calo successivo \`e per\`o molto pi\`u marcato per il sistema base (fino a 0.040) che per l'ibrido (che si stabilizza a 0.480--0.560): la fusione con BM25 non elimina l'effetto del corpus grande, ma ne assorbe gran parte.
 
 \subsection{Context Relevance e Answer Relevance: differenze minime}
+\label{sec:cr-ar-limite}
 
 La Context Relevance (CR) e l'Answer Relevance (AR) mostrano differenze piccole tra base e ibrido (tipicamente $|\Delta| < 0.02$, tranne un paio di casi fino a $0.025$). Questo \`e atteso: entrambe le metriche sono calcolate con gli stessi embeddings SciBERT usati anche per il retrieval semantico, quindi condividono in parte lo stesso ``punto di vista'' -- non sono una misura indipendente della qualit\`a del sistema, un limite gi\`a dichiarato in partenza e confermato dai dati.
 
@@ -635,11 +701,11 @@ L'AR ibrida \`e quasi sempre leggermente inferiore a quella base: i documenti tr
 
 \subsection{Faithfulness: il sistema ibrido produce risposte pi\`u fedeli}
 
-La Faithfulness \`e sistematicamente pi\`u alta per il sistema ibrido in tutte le configurazioni, con un margine molto pi\`u ampio di quanto misurato in precedenza ($+0.094$ a $+0.197$, contro $+0.027$/$+0.095$ della prima esecuzione). Il salto pi\`u grande \`e proprio a N=1\,000 ($+0.197$) e sul corpus completo ($+0.173$): i documenti trovati dall'ibrido restano pi\`u legati al vocabolario tecnico della domanda, quindi l'LLM usa pi\`u parole che compaiono davvero nei testi forniti, invece di ``riempire i vuoti'' con parole plausibili ma non presenti nel contesto.
+La Faithfulness \`e sistematicamente pi\`u alta per il sistema ibrido in tutte le configurazioni, con un margine che va da $+0.103$ a $+0.237$. Il salto pi\`u grande \`e proprio a N=1\,000 ($+0.237$) e sul corpus completo ($+0.197$): i documenti trovati dall'ibrido restano pi\`u legati al vocabolario tecnico della domanda, quindi l'LLM usa pi\`u parole che compaiono davvero nei testi forniti, invece di ``riempire i vuoti'' con parole plausibili ma non presenti nel contesto. La metrica \`e stata corretta rispetto a una prima versione dell'implementazione (si veda la nota metodologica in Sezione~\ref{sec:nota-metodologica}): i valori assoluti sono pi\`u bassi di quelli inizialmente misurati, ma il pattern -- ibrido sistematicamente pi\`u fedele del base, ad ogni N\_DOCS -- \`e invariato, ed \`e ora confermato anche al variare di $k$ (Sezione~\ref{sec:variazione-k}).
 
 \subsection{Robustezza: non \`e pi\`u una vittoria automatica dell'ibrido}
 
-Con il dato del sistema base ora disponibile per il confronto (Tabella~8), la robustezza racconta una storia pi\`u sfumata di quanto sembrasse: l'ibrido \`e pi\`u robusto del base solo a N=1\,000 (0.267 contro 0.233); a N=5\,000, 15\,000 e 25\,000 \`e il sistema \textbf{base} a risultare pi\`u stabile alle parafrasi (es.\ 0.167 contro 0.100 a N=5\,000), e a N=44\,949 i due sistemi sono pari (0.033). In altre parole, aggiungere BM25 non stabilizza automaticamente il retrieval rispetto a piccole variazioni della formulazione della query -- anzi, introducendo un secondo canale di recupero basato su corrispondenza esatta delle parole, l'ibrido pu\`o diventare pi\`u sensibile a un sinonimo diverso nella parafrasi, che BM25 semplicemente non riconosce come la stessa parola chiave. In entrambi i sistemi, comunque, la robustezza cala con corpus pi\`u grandi: con pi\`u documenti candidati, piccole variazioni lessicali della query spostano pi\`u facilmente quali documenti finiscono nei top-5.
+Con il dato del sistema base ora disponibile per il confronto (Tabella~\ref{tab:robustezza}), la robustezza racconta una storia pi\`u sfumata di quanto sembrasse: l'ibrido \`e pi\`u robusto del base solo a N=1\,000 (0.267 contro 0.233); a N=5\,000, 15\,000 e 25\,000 \`e il sistema \textbf{base} a risultare pi\`u stabile alle parafrasi (es.\ 0.167 contro 0.100 a N=5\,000), e a N=44\,949 i due sistemi sono pari (0.033). In altre parole, aggiungere BM25 non stabilizza automaticamente il retrieval rispetto a piccole variazioni della formulazione della query -- anzi, introducendo un secondo canale di recupero basato su corrispondenza esatta delle parole, l'ibrido pu\`o diventare pi\`u sensibile a un sinonimo diverso nella parafrasi, che BM25 semplicemente non riconosce come la stessa parola chiave. In entrambi i sistemi, comunque, la robustezza cala con corpus pi\`u grandi: con pi\`u documenti candidati, piccole variazioni lessicali della query spostano pi\`u facilmente quali documenti finiscono nei top-5.
 
 \subsection{Query con performance diverse}
 
@@ -669,9 +735,13 @@ Una prima esecuzione di questo esperimento presentava alcuni limiti metodologici
   \item \textbf{Precision@k non uniforme fra i due script}: uno cercava le parole chiave in titolo+abstract, l'altro solo nel titolo. Corretto usando lo stesso criterio in entrambi.
   \item \textbf{Corrispondenza troppo permissiva}: parole chiave come ``ner'' o ``bert'' potevano matchare per errore parole diverse (``corner'', ``RoBERTa''). Corretto cercando la parola (o frase) intera.
   \item \textbf{Generazione non deterministica}: veniva usato il campionamento casuale nella generazione, quindi risposte e metriche potevano cambiare a ogni esecuzione. Corretto con generazione greedy (sempre la parola pi\`u probabile), riproducibile.
+  \item \textbf{Faithfulness proxy calcolata per sottostringa}: il confronto \texttt{parola in contesto} usava un test di sottostringa (\texttt{w in context\_text}), che genera falsi positivi (``that'' risulta ``presente nel contesto'' perch\'e \`e sottostringa di ``mathematical''). Inoltre la parola ``paper'' compare sempre sia nelle intestazioni del contesto (\texttt{[Paper N]}) sia nelle citazioni della risposta, quindi viene sempre contata come supportata a prescindere dal contenuto reale. Corretto confrontando insiemi di parole intere ed escludendo esplicitamente ``paper'' da entrambi i lati del confronto.
+  \item \textbf{Stopword NLTK potenzialmente assenti senza avviso}: se il corpus \texttt{stopwords} di NLTK non era scaricato, il codice originale procedeva silenziosamente con un insieme vuoto, facendo contare alla Faithfulness anche parole funzionali (``that'', ``with'', ``this''). Corretto scaricando il corpus al volo se mancante, con un avviso esplicito se il download stesso fallisce.
 \end{itemize}
 
-Il fix pi\`u importante \`e il primo: senza subset annidati, la curva ``Precision@5 al variare di N\_DOCS'' non era interpretabile, perch\'e un calo poteva dipendere solo da quali paper erano finiti per caso in un campione. Con i subset annidati, il crollo del sistema base a N=44\,949 (Sezione~11.2) \`e ora un risultato solido: lo stesso identico corpus, con e senza BM25, produce una differenza di quasi 12 volte in Precision@5.
+Il fix pi\`u importante per il confronto fra dimensioni del corpus \`e il primo (subset annidati): senza di esso, la curva ``Precision@5 al variare di N\_DOCS'' non era interpretabile, perch\'e un calo poteva dipendere solo da quali paper erano finiti per caso in un campione. Con i subset annidati, il crollo del sistema base a N=44\,949 (Sezione~\ref{subsec:crollo-base}) \`e un risultato solido: lo stesso identico corpus, con e senza BM25, produce una differenza di quasi 12 volte in Precision@5.
+
+Gli ultimi due fix (faithfulness per sottostringa e stopword mancanti) riguardano invece solo la metrica di Faithfulness: i valori assoluti riportati in questo documento sono pi\`u bassi di una prima versione del calcolo (che risultava artificialmente gonfiata dai falsi positivi), ma il confronto fra base e ibrido -- l'unico confronto rilevante per le conclusioni -- non cambia di segno in nessuna configurazione: l'ibrido resta sistematicamente pi\`u fedele del base, con margini in alcuni casi anche pi\`u ampi di quelli misurati prima della correzione.
 
 % ============================================================
 \section{Conclusioni}
@@ -686,9 +756,11 @@ I risultati principali sono:
 
   \item \textbf{Il sistema base crolla su corpus grandi, l'ibrido no}: a 44\,949 documenti la Precision@5 base scende a 0.040 (quasi zero), mentre l'ibrido resta a 0.480 -- la differenza pi\`u importante misurata in tutto l'esperimento, e la ragione pratica per cui BM25 non \`e opzionale su corpus di queste dimensioni.
 
-  \item \textbf{La Faithfulness beneficia chiaramente del retrieval ibrido}: margini fra $+0.094$ e $+0.197$ in tutte le configurazioni, il risultato pi\`u stabile di tutto l'esperimento.
+  \item \textbf{La Faithfulness beneficia chiaramente del retrieval ibrido}: margini fra $+0.103$ e $+0.237$ in tutte le configurazioni, il risultato pi\`u stabile di tutto l'esperimento.
 
   \item \textbf{La robustezza alle parafrasi non premia sempre l'ibrido}: solo a N=1\,000 l'ibrido \`e pi\`u stabile del base; a N=5\,000--25\,000 \`e vero il contrario. Aggiungere BM25 aiuta la precisione ma non garantisce automaticamente pi\`u stabilit\`a a piccole variazioni della query.
+
+  \item \textbf{Le conclusioni non dipendono dalla scelta $k=5$}: ripetendo il confronto a $k \in \{3, 10, 15\}$ (Sezione~\ref{sec:variazione-k}), l'ibrido resta pi\`u preciso del base in tutte le 20 combinazioni di N\_DOCS e $k$ testate, e pi\`u fedele al contesto ad ogni $k$ (delta di Faithfulness tra $+0.176$ e $+0.237$ a N=1\,000). L'unico effetto negativo dell'ibrido -- una Answer Relevance leggermente pi\`u bassa -- \`e anch'esso presente ad ogni $k$, confermando che si tratta di una caratteristica sistematica della fusione RRF e non di un artefatto della scelta di $k=5$.
 \end{enumerate}
 
 I limiti principali riguardano il gold standard (definito manualmente e limitato a 5 query), il costo computazionale su CPU (necessario in assenza di GPU, e rilevante: l'intero esperimento su 5 configurazioni richiede diverse ore di generazione), e la faithfulness proxy che \`e una stima lessicale e non valuta la correttezza logica delle risposte.

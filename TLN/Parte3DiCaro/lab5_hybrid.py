@@ -32,15 +32,25 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 try:
     from nltk.corpus import stopwords as nltk_sw
-    STOPWORDS = set(nltk_sw.words('english'))
-except Exception:
+    try:
+        STOPWORDS = set(nltk_sw.words('english'))
+    except LookupError:
+        import nltk
+        nltk.download('stopwords', quiet=True)
+        STOPWORDS = set(nltk_sw.words('english'))
+except Exception as e:
+    print(f"[WARN] Stopwords NLTK non disponibili ({e}): faithfulness_proxy "
+          "conterà anche le function word (that, with, this, ...).")
     STOPWORDS = set()
 
 # ============================================================
 # CONFIGURAZIONE ESPERIMENTO
 # ============================================================
 
-N_DOCS_LIST   = [1000, 5000, 15000, 25000, 44949]  # valori da testare
+N_DOCS_LIST   = [1000, 5000, 15000, 25000]  # valori da testare; il dataset completo
+                                             # viene aggiunto sotto dopo il caricamento
+K_VALUES      = [3, 10, 15]  # valori di k diversi da 5 (che resta coperto dal confronto
+                              # base/ibrido esistente qui sotto, lasciato invariato)
 RANDOM_STATE  = 42
 PER_DOC_CHARS = 800  # troncamento per singolo paper nel contesto (non sul blocco intero)
 EMBEDDING_MODEL = "allenai/scibert_scivocab_uncased"
@@ -118,6 +128,14 @@ dataset = load_dataset("MaartenGr/arxiv_nlp")
 df_full = pd.DataFrame(dataset['train'])
 print(f"  Documenti totali disponibili: {len(df_full)}")
 
+if len(df_full) not in N_DOCS_LIST:
+    N_DOCS_LIST.append(len(df_full))
+
+# corpora su cui generare risposte per ogni k in K_VALUES (costoso su CPU): solo il
+# piu' piccolo, per contenere i tempi. Per gli altri N_DOCS si misura solo il
+# retrieval (Precision@k, Context Relevance), che non richiede generazione.
+GEN_N_DOCS = {min(N_DOCS_LIST)}
+
 title_col    = next((c for c in df_full.columns if 'title'    in c.lower()), df_full.columns[0])
 abstract_col = next((c for c in df_full.columns if 'abstract' in c.lower()
                      or 'summar' in c.lower()), df_full.columns[1])
@@ -160,11 +178,14 @@ def build_faiss_index(embeddings):
 print(f"  Costruzione corpus completo ({MAX_N_DOCS:,} documenti) ed embeddings...")
 all_documents, all_metadata = build_corpus(df_shuffled, MAX_N_DOCS)
 
-# cache su disco: condivisa con lab5rag.py, che usa stesso shuffle/MAX_N_DOCS/modello e
-# quindi produce lo stesso corpus -- evita di ricodificare 44.949 abstract due volte.
-# La firma verifica che la cache corrisponda davvero a questo corpus prima di riusarla.
-EMB_CACHE_PATH = f"scibert_embeddings_{MAX_N_DOCS}.npy"
-EMB_CACHE_META_PATH = f"scibert_embeddings_{MAX_N_DOCS}.meta.txt"
+# cache su disco: nome file taggato col modello (stessa convenzione di lab5rag.py, che
+# confronta piu' modelli di embedding), cosi' la cache SciBERT resta condivisa fra i due
+# script -- stesso shuffle/MAX_N_DOCS/modello, quindi stesso corpus, senza dover
+# ricodificare gli abstract due volte. La firma verifica che la cache corrisponda
+# davvero a questo corpus prima di riusarla.
+model_tag = EMBEDDING_MODEL.split('/')[-1]
+EMB_CACHE_PATH = f"embeddings_{model_tag}_{MAX_N_DOCS}.npy"
+EMB_CACHE_META_PATH = f"embeddings_{model_tag}_{MAX_N_DOCS}.meta.txt"
 emb_signature = f"{MAX_N_DOCS}|{RANDOM_STATE}|{EMBEDDING_MODEL}|{all_documents[0][:80]}|{all_documents[-1][:80]}"
 
 if (os.path.exists(EMB_CACHE_PATH) and os.path.exists(EMB_CACHE_META_PATH)
@@ -304,13 +325,18 @@ def answer_relevance(query, answer):
 
 def faithfulness_proxy(answer, results):
     # stessa finestra per-documento usata in rag_answer (PER_DOC_CHARS), altrimenti la
-    # faithfulness e' sottostimata per costruzione rispetto al contesto realmente visto dall'LLM
+    # faithfulness e' sottostimata per costruzione rispetto al contesto realmente visto dall'LLM.
+    # Confronto per insieme di parole (non substring: "that" altrimenti matcherebbe dentro
+    # "mathematical"). "paper" è escluso perché compare sempre sia nel contesto (intestazioni
+    # "[Paper N]") sia nelle citazioni della risposta, quindi conterebbe come parola supportata
+    # a prescindere dal contenuto.
     context_text  = ' '.join(r['document'][:PER_DOC_CHARS] for r in results).lower()
+    context_words = set(re.findall(r'\b[a-z]{4,}\b', context_text)) - {'paper'}
     words         = re.findall(r'\b[a-z]{4,}\b', answer.lower())
-    content_words = [w for w in words if w not in STOPWORDS]
+    content_words = [w for w in words if w not in STOPWORDS and w != 'paper']
     if not content_words:
         return 0.0
-    return sum(1 for w in content_words if w in context_text) / len(content_words)
+    return sum(1 for w in content_words if w in context_words) / len(content_words)
 
 
 def robustness_test(query, paraphrases, retrieve_fn, k=5):
@@ -329,8 +355,11 @@ def robustness_test(query, paraphrases, retrieve_fn, k=5):
 # ============================================================
 
 # Struttura per raccogliere tutti i risultati
-all_results = []   # lista di dict, uno per N_DOCS
-qa_rows     = []   # query/risposte base vs ibrido, per esempi qualitativi nel report
+all_results   = []   # lista di dict, uno per N_DOCS (metriche a k=5, invariato)
+qa_rows       = []   # query/risposte base vs ibrido a k=5, per esempi qualitativi nel report
+k_detail_rows = []   # Precision@k e Context Relevance (base/ibrido) per ogni (n_docs, k in K_VALUES)
+k_gen_rows    = []   # Answer Relevance e Faithfulness (base/ibrido) per ogni k, solo per N_DOCS in GEN_N_DOCS
+k_gen_qa_rows = []   # risposte generate per la variazione di k, per esempi qualitativi nel report
 
 for N_DOCS in N_DOCS_LIST:
 
@@ -398,6 +427,66 @@ for N_DOCS in N_DOCS_LIST:
         ))
     avg_rob_base = float(np.mean(rob_base_scores))
     avg_rob_hyb  = float(np.mean(rob_hyb_scores))
+
+    # --- Variazione di k (risposta al prof su valori di k diversi da 5) ---
+    # Precision@k e Context Relevance si misurano per OGNI N_DOCS (solo retrieval,
+    # economico). La generazione (Answer Relevance, Faithfulness), che è la parte
+    # costosa su CPU, si fa solo per i corpus in GEN_N_DOCS.
+    print(f"\n  [4/4] Confronto k={K_VALUES} (base vs ibrido)...")
+    for k in K_VALUES:
+        pk_base_list, pk_hyb_list = [], []
+        crk_base_list, crk_hyb_list = [], []
+        for query, keywords in GOLD_STANDARD.items():
+            base_res_k   = retrieve_semantic(query, faiss_index, documents, metadata, k=k)
+            hybrid_res_k = retrieve_hybrid(query, faiss_index, bm25_index, documents, metadata, k=k)
+            pk_base_list.append(precision_at_k(base_res_k, keywords, k=k))
+            pk_hyb_list.append(precision_at_k(hybrid_res_k, keywords, k=k))
+            crk_base_list.append(context_relevance(query, base_res_k))
+            crk_hyb_list.append(context_relevance(query, hybrid_res_k))
+
+        k_detail_rows.append({
+            'n_docs': N_DOCS, 'k': k,
+            'p_base':  float(np.mean(pk_base_list)),  'p_hyb':  float(np.mean(pk_hyb_list)),
+            'cr_base': float(np.mean(crk_base_list)), 'cr_hyb': float(np.mean(crk_hyb_list)),
+        })
+
+    print(f"\n  {'k':>4} {'P@k Base':>10} {'P@k Hyb':>10} {'CR Base':>10} {'CR Hyb':>10}")
+    print(f"  {'-' * 48}")
+    for row in k_detail_rows:
+        if row['n_docs'] != N_DOCS:
+            continue
+        print(f"  {row['k']:>4} {row['p_base']:>10.3f} {row['p_hyb']:>10.3f} "
+              f"{row['cr_base']:>10.3f} {row['cr_hyb']:>10.3f}")
+
+    if N_DOCS in GEN_N_DOCS:
+        print(f"\n  Generazione risposte per k={K_VALUES} (N_DOCS={N_DOCS:,}, in GEN_N_DOCS)...")
+        for k in K_VALUES:
+            ar_base_k, ar_hyb_k, ff_base_k, ff_hyb_k = [], [], [], []
+            for query in EVAL_QUERIES:
+                base_res_k   = retrieve_semantic(query, faiss_index, documents, metadata, k=k)
+                hybrid_res_k = retrieve_hybrid(query, faiss_index, bm25_index, documents, metadata, k=k)
+                ans_base_k   = rag_answer(query, base_res_k)
+                ans_hybrid_k = rag_answer(query, hybrid_res_k)
+
+                ar_base_k.append(answer_relevance(query, ans_base_k))
+                ar_hyb_k.append(answer_relevance(query, ans_hybrid_k))
+                ff_base_k.append(faithfulness_proxy(ans_base_k, base_res_k))
+                ff_hyb_k.append(faithfulness_proxy(ans_hybrid_k, hybrid_res_k))
+
+                k_gen_qa_rows.append({
+                    'n_docs': N_DOCS, 'k': k, 'query': query,
+                    'answer_base': ans_base_k, 'answer_hybrid': ans_hybrid_k,
+                    'answer_relevance_base': ar_base_k[-1], 'answer_relevance_hybrid': ar_hyb_k[-1],
+                    'faithfulness_base': ff_base_k[-1], 'faithfulness_hybrid': ff_hyb_k[-1],
+                })
+
+            k_gen_rows.append({
+                'n_docs': N_DOCS, 'k': k,
+                'ar_base': float(np.mean(ar_base_k)), 'ar_hyb': float(np.mean(ar_hyb_k)),
+                'ff_base': float(np.mean(ff_base_k)), 'ff_hyb': float(np.mean(ff_hyb_k)),
+            })
+            print(f"    k={k:>2}: AR base={np.mean(ar_base_k):.3f} hyb={np.mean(ar_hyb_k):.3f}  "
+                  f"FF base={np.mean(ff_base_k):.3f} hyb={np.mean(ff_hyb_k):.3f}")
 
     # --- Salva risultati ---
     all_results.append({
@@ -488,6 +577,24 @@ print(f"  {'-'*28}")
 for r in all_results:
     print(f"  {r['n_docs']:<10,} {r['robustness_base']:>8.3f} {r['robustness_hyb']:>8.3f}")
 
+# --- Variazione di k: Precision@k e Context Relevance (tutti gli N_DOCS) ---
+print(f"\n\n  VARIAZIONE DI k (k={K_VALUES}, oltre al k=5 già confrontato sopra) — "
+      "Precision@k e Context Relevance")
+print(f"\n  {'N_DOCS':<10} {'k':>4} {'P@k Base':>10} {'P@k Hyb':>10} {'CR Base':>10} {'CR Hyb':>10}")
+print(f"  {'-'*56}")
+for row in k_detail_rows:
+    print(f"  {row['n_docs']:<10,} {row['k']:>4} {row['p_base']:>10.3f} {row['p_hyb']:>10.3f} "
+          f"{row['cr_base']:>10.3f} {row['cr_hyb']:>10.3f}")
+
+# --- Variazione di k: Answer Relevance e Faithfulness (solo GEN_N_DOCS) ---
+print(f"\n\n  VARIAZIONE DI k — Answer Relevance e Faithfulness "
+      f"(solo N_DOCS in GEN_N_DOCS={sorted(GEN_N_DOCS)}, generazione costosa su CPU)")
+print(f"\n  {'N_DOCS':<10} {'k':>4} {'AR Base':>10} {'AR Hyb':>10} {'FF Base':>10} {'FF Hyb':>10}")
+print(f"  {'-'*56}")
+for row in k_gen_rows:
+    print(f"  {row['n_docs']:<10,} {row['k']:>4} {row['ar_base']:>10.3f} {row['ar_hyb']:>10.3f} "
+          f"{row['ff_base']:>10.3f} {row['ff_hyb']:>10.3f}")
+
 # ============================================================
 # SALVATAGGIO SU DISCO (numeri e risposte generate per la relazione,
 # senza doverli ricopiare a mano dallo stdout o rilanciare il run)
@@ -503,10 +610,14 @@ summary_df = pd.DataFrame([
 ])
 summary_df.to_csv('risultati_hybrid_ndocs.csv', index=False)
 pd.DataFrame(detail_rows).to_csv('risultati_hybrid_p5_detail.csv', index=False)
+pd.DataFrame(k_detail_rows).to_csv('risultati_hybrid_k_detail.csv', index=False)
+pd.DataFrame(k_gen_rows).to_csv('risultati_hybrid_k_gen_detail.csv', index=False)
+pd.DataFrame(k_gen_qa_rows).to_csv('risultati_hybrid_k_gen_risposte.csv', index=False)
 pd.DataFrame(qa_rows).to_csv('risultati_hybrid_risposte.csv', index=False)
 
 print("\n  Salvati: risultati_hybrid_ndocs.csv, risultati_hybrid_p5_detail.csv, "
-      "risultati_hybrid_risposte.csv")
+      "risultati_hybrid_k_detail.csv, risultati_hybrid_k_gen_detail.csv, "
+      "risultati_hybrid_k_gen_risposte.csv, risultati_hybrid_risposte.csv")
 
 sep("=")
 print("  ESPERIMENTO COMPLETATO")

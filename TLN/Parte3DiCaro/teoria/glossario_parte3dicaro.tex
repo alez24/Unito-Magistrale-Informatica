@@ -1,0 +1,175 @@
+\documentclass[10pt,a4paper]{extarticle}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\geometry{top=1.6cm, bottom=1.6cm, left=1.4cm, right=1.4cm}
+
+\setlist[itemize]{leftmargin=12pt, itemsep=2.5pt, topsep=1pt, parsep=0pt, partopsep=0pt}
+
+\titleformat{\subsection}
+  {\normalfont\bfseries\color{blue!45!black}\large}
+  {}{0em}{}
+\titlespacing{\subsection}{0pt}{8pt}{4pt}
+
+\setlength{\columnsep}{22pt}
+\setlength{\columnseprule}{0.3pt}
+
+\pagestyle{plain}
+
+\begin{document}
+\begin{center}
+{\Large\textbf{Glossario -- TLN Parte 3 (Prof. Luigi Di Caro)}}\\[2pt]
+{\small Termini, nomi e definizioni chiave per ripasso rapido -- Universit\`a di Torino, A.A. 2025/2026}
+\end{center}
+\vspace{4pt}
+\hrule
+\vspace{6pt}
+
+\begin{multicols}{2}
+
+\subsection*{1. Semantica Computazionale}
+\subsubsection*{Relazioni semantiche lessicali}
+\begin{itemize}
+\item \textbf{Sinonimia} -- significato uguale o molto simile. Es.: \emph{comprare} / \emph{acquistare}; \emph{grande} / \emph{enorme}.
+\item \textbf{Antonimia} -- significato opposto. Es.: \emph{caldo} / \emph{freddo}; \emph{vivo} / \emph{morto}; \emph{salire} / \emph{scendere}.
+\item \textbf{Iponimia} -- relazione ``\`e un tipo di'' (categoria pi\`u specifica $\to$ pi\`u generale). Es.: \emph{cane} \`e iponimo di \emph{animale}; \emph{rosa} \`e iponimo di \emph{fiore}.
+\item \textbf{Iperonimia} -- l'inverso dell'iponimia (categoria pi\`u generale). Es.: \emph{animale} \`e iperonimo di \emph{cane}; \emph{mobile} \`e iperonimo di \emph{sedia}.
+\item \textbf{Meronimia} -- relazione ``\`e parte di''. Es.: \emph{zampa} \`e meronimo di \emph{cane}; \emph{ruota} \`e meronimo di \emph{auto}; \emph{pagina} \`e meronimo di \emph{libro}.
+\item \textbf{Olonimia} -- l'inverso della meronimia (il tutto rispetto alla parte). Es.: \emph{cane} \`e olonimo di \emph{zampa}; \emph{auto} \`e olonimo di \emph{ruota}.
+\item \textbf{Polisemia} -- una parola con pi\`u sensi \emph{correlati} tra loro. Es.: \emph{libro} = oggetto fisico oppure contenuto testuale; \emph{testa} = parte del corpo oppure ``capo/leader''.
+\item \textbf{Omonimia} -- stessa forma (grafica/fonetica), sensi \emph{non} correlati. Es.: \emph{riso} (cereale) / \emph{riso} (atto del ridere); \emph{banco} (mobile) / \emph{banco} (banco di pesci); ingl. \emph{bank} (istituto finanziario) / \emph{bank} (riva del fiume).
+\end{itemize}
+\begin{itemize}
+\item \textbf{Semantica lessicale} -- il significato come rete di queste relazioni tra parole, organizzate in risorse come WordNet.
+\item \textbf{Semantica formale} -- il significato come condizioni di verit\`a, espresso in logica (Montague).
+\item \textbf{Semantica distribuzionale} -- il significato come distribuzione dei contesti d'uso in un corpus.
+\item \textbf{Ipotesi Distribuzionale} (Firth, 1957) -- ``you shall know a word by the company it keeps''.
+\item \textbf{WordNet} (Miller, 1995) -- rete lessicale organizzata in \emph{synset} (insiemi di sinonimi).
+\item \textbf{BabelNet} -- WordNet multilingue, integrato con Wikipedia.
+\item \textbf{FrameNet} -- organizza il lessico in \emph{frame semantici} (es. COMMERCIAL\_TRANSACTION).
+\item \textbf{ConceptNet} -- knowledge graph di senso comune, crowd-sourced.
+\item \textbf{Similarit\`a coseno} -- $\mathrm{sim}(a,b)=\cos\theta=\dfrac{a\cdot b}{|a||b|}$.
+\item \textbf{WSD} (Word Sense Disambiguation) -- sceglie il senso corretto tra un inventario predefinito (es. WordNet).
+\item \textbf{WSI} (Word Sense Induction) -- scopre i sensi automaticamente via clustering, senza inventario.
+\item \textbf{Granularit\`a dei sensi} (Kilgarriff, 1997) -- il problema di decidere se due usi sono sensi diversi.
+\end{itemize}
+\smallskip\noindent\textbf{\textcolor{blue!45!black}{Spiegazione -- WSD vs WSI.}} La differenza non \`e cosa fanno (entrambi assegnano un senso a una parola in contesto) ma da dove parte il sistema: la WSD presuppone sensi gi\`a noti e catalogati (es. i 4 sensi di \emph{bank} in WordNet) e sceglie quello giusto; la WSI non ha un elenco di partenza e scopre i sensi raggruppando i contesti simili (clustering). Il problema della granularit\`a nasce perch\'e non esiste un confine oggettivo tra ``stesso senso, sfumatura diversa'' e ``senso diverso'': \`e una scelta lessicografica, non un fatto della lingua.
+
+\subsection*{2. Definizioni, Semasiologia, Onomasiologia}
+\begin{itemize}
+\item \textbf{Approccio semasiologico} -- dalla forma al contenuto (dizionari tradizionali).
+\item \textbf{Approccio onomasiologico} -- dal contenuto alla forma (dizionari analogici).
+\item \textbf{Genus-differentia} -- definizione aristotelica: categoria generale (genus) + propriet\`a distintive (differentia).
+\item \textbf{Circolarit\`a definitoria} -- ogni definizione usa altri concetti, senza un punto di arresto naturale.
+\item \textbf{Primitive semantiche} (Wierzbicka) -- ipotetico livello ultimo, non ulteriormente definibile.
+\item \textbf{Valutazione intrinseca} -- qualit\`a della definizione isolata (coerenza, similarit\`a col termine).
+\item \textbf{Valutazione estrinseca} -- qualit\`a misurata sul contributo a un task reale (WSD, QA, IR).
+\item \textbf{SimLex} -- similarit\`a lessicale (overlap/Jaccard tra parole di due definizioni).
+\item \textbf{SimSem} -- similarit\`a semantica (coseno tra embedding delle definizioni).
+\end{itemize}
+\smallskip\noindent\textbf{\textcolor{blue!45!black}{Spiegazione -- perch\'e la circolarit\`a \`e inevitabile.}} Ogni definizione spiega una parola con altre parole (cane $\to$ mammifero $\to$ animale $\to$ essere vivente $\to \ldots$): prima o poi il percorso deve riusare parole gi\`a incontrate, altrimenti proseguirebbe all'infinito. Il problema quindi non \`e ``come evitarla'' (non si pu\`o), ma ``dove fermarsi in modo utile''. Per questo si distingue valutazione intrinseca (la definizione \`e coerente in s\'e?) da estrinseca (funziona in un compito reale, es. ritrovare il synset corretto in WordNet, come nel Lab 2): la seconda \`e pi\`u costosa ma pi\`u informativa sulla reale utilit\`a della definizione.
+
+\subsection*{3. Privacy, Dati, Misinformation}
+\begin{itemize}
+\item \textbf{User empowerment} -- rendere l'utente pi\`u informato e in controllo, non sostituirne il giudizio.
+\item \textbf{Rilascio controllato} -- generalizzare/oscurare parzialmente un contenuto per ridurre il rischio mantenendo utilit\`a.
+\item \textbf{Misinformation} -- contenuto non verificato o fuorviante; distinto dalla rilevanza (un documento pu\`o essere rilevante e falso).
+\item \textbf{Explainability} -- capacit\`a di un sistema di rendere comprensibili le proprie decisioni; condizione per la fiducia.
+\item \textbf{Hallucination} -- generazione da parte di un LLM di contenuti plausibili ma falsi.
+\item \textbf{Annotazione PRE / POST} -- giudizio dato prima e dopo aver visto l'output di un sistema RAG.
+\item \textbf{KURAMi} -- progetto PRIN (UniTo/Bicocca/Statale MI) su privacy release e misinformation: conoscenza + user empowerment.
+\end{itemize}
+\smallskip\noindent\textbf{\textcolor{blue!45!black}{Spiegazione -- perch\'e la privacy \`e un problema semantico.}} Non basta controllare se un testo contiene un dato esplicitamente sensibile (nome, telefono): il rischio nasce anche da ci\`o che si pu\`o \emph{inferire} combinando informazioni apparentemente innocue con la conoscenza del contesto (orari di lavoro, abitudini, relazioni familiari). \`E lo stesso principio dietro l'annotazione PRE/POST: in fase PRE l'annotatore giudica ``a occhio'' sul solo testo; in fase POST il sistema RAG rende esplicite inferenze che il testo permette ma che non erano state notate, spesso cambiando il giudizio finale (es. P8 nel capitolo: da ``nessuna violazione'' a ``violazione s\`i'').
+
+\subsection*{4. Polisemia}
+\begin{itemize}
+\item \textbf{Polisemia} -- una parola con pi\`u sensi correlati (es. \emph{libro} = oggetto/contenuto).
+\item \textbf{Omonimia} -- una parola con sensi non correlati (es. \emph{banco} = pesce/mobile).
+\item \textbf{Entropia dei sensi} -- $H(w)=-\sum_i p(s_i|w)\log p(s_i|w)$; bassa = un senso dominante, alta = sensi bilanciati.
+\item \textbf{Distanza inter-senso} -- $d(s_i,s_j)=1-\cos(s_i,s_j)$; misura quanto due sensi sono separati nello spazio.
+\item \textbf{Embeddings statici} -- un solo vettore per parola, indipendente dal contesto (Word2Vec, GloVe).
+\item \textbf{Embeddings contestuali} -- un vettore diverso per ogni occorrenza (BERT, ELMo); rivelano cluster di senso.
+\item \textbf{Regular polysemy} (Apresjan) -- estensioni di senso regolari via metafora/metonimia, non arbitrarie.
+\end{itemize}
+\smallskip\noindent\textbf{\textcolor{blue!45!black}{Spiegazione -- l'entropia dei sensi.}} L'entropia $H(w)$ non misura \emph{quanti} sensi ha una parola, ma \emph{quanto sono bilanciati}: una parola con due sensi distribuiti 95\%/5\% ha entropia bassa (quasi sempre lo stesso senso, facile da indovinare anche senza contesto); una parola con due sensi 50\%/50\% ha entropia massima (il contesto \`e indispensabile). Questo spiega perch\'e il ``numero di sensi'' da solo \`e una misura insufficiente della difficolt\`a di disambiguazione: contano anche la distribuzione (entropia) e la separabilit\`a geometrica nello spazio degli embeddings, cio\`e quanto i cluster di senso sono lontani tra loro.
+
+\subsection*{5. Basic Level}
+\begin{itemize}
+\item \textbf{Basic Level} -- livello di categorizzazione cognitivamente privilegiato: n\'e troppo generico n\'e troppo specifico (es. \emph{cane}).
+\item \textbf{Roger Brown} (1958) -- ``How shall a thing be called?'': i parlanti convergono naturalmente sul livello base.
+\item \textbf{Eleanor Rosch} -- Basic Level Categories: massimizzano distintivit\`a percettiva tra categorie e similarit\`a intra-categoria.
+\item \textbf{Criteri di Brown} -- brevit\`a, concretezza, facilit\`a di pronuncia, alta frequenza.
+\item \textbf{Basic English} (Ogden, 1930) -- vocabolario ridotto a 850 parole fondamentali.
+\item \textbf{Age of Acquisition (AoA)} -- et\`a media in cui una parola viene appresa.
+\item \textbf{Concreteness} -- grado di tangibilit\`a/percepibilit\`a sensoriale di un concetto.
+\item \textbf{Torrielli, Rapp, Di Caro (2023)} -- studio sulla soggettivit\`a della classificazione basic/advanced.
+\end{itemize}
+\smallskip\noindent\textbf{\textcolor{blue!45!black}{Spiegazione -- il paradosso del Basic Level.}} Il livello base \`e allo stesso tempo oggettivo (correla con misure quantificabili come frequenza ed et\`a di acquisizione) e soggettivo (dipende da chi giudica: un medico considera ``basic'' un termine tecnico come ``ECG'', un non esperto no). Per questo Torrielli, Rapp e Di Caro (2023) trovano solo un accordo moderato tra annotatori ($\kappa$ 0.4--0.6): non esiste un confine netto tra basic e advanced, ma un continuum influenzato da contesto, et\`a ed expertise -- da qui la proposta di modellare la basicness come punteggio continuo $[0,1]$ invece che come dicotomia.
+
+\subsection*{6. Pre-LLM NLP}
+\begin{itemize}
+\item \textbf{Text Mining} -- applicazione di tecniche di data mining al testo non strutturato.
+\item \textbf{TF-IDF} -- peso di un termine in base a frequenza nel documento e rarit\`a nella collezione.
+\item \textbf{BM25} -- evoluzione di TF-IDF con saturazione della frequenza; standard de facto per l'IR.
+\item \textbf{Naive Bayes / SVM} -- classificatori statistici classici (assumono indipendenza / trovano iperpiani ottimali).
+\item \textbf{LDA} (Latent Dirichlet Allocation) -- modello probabilistico di topic modeling su bag-of-words.
+\item \textbf{BERTopic} -- topic modeling neurale: embeddings + UMAP + HDBSCAN + c-TF-IDF.
+\item \textbf{TextRank} -- summarization estrattiva basata su PageRank tra frasi.
+\item \textbf{Stratificazione (non sostituzione)} -- tecniche vecchie e nuove coesistono, ciascuna nella propria nicchia.
+\end{itemize}
+\smallskip\noindent\textbf{\textcolor{blue!45!black}{Spiegazione -- perch\'e ``stratificazione'' e non ``sostituzione''.}} Ogni nuova epoca del NLP (simbolica $\to$ statistica $\to$ neurale $\to$ Transformer) non ha cancellato la precedente, ma le ha aggiunto un nuovo strato di capacit\`a: Google Search usa ancora BM25 (tecnica anni '90) come primo stadio di retrieval prima dei reranker neurali, perch\'e \`e velocissimo, deterministico e poco costoso. La lezione \`e che ogni tecnica resta la scelta migliore nella propria ``nicchia ecologica'' (costo, latenza, interpretabilit\`a) anche quando ne esistono di pi\`u potenti ma pi\`u costose e opache.
+
+\subsection*{7. RAG}
+\begin{itemize}
+\item \textbf{RAG} (Retrieval-Augmented Generation) -- combina retrieval di documenti esterni e generazione LLM.
+\item \textbf{Memoria parametrica} -- conoscenza implicita, compressa nei pesi del modello.
+\item \textbf{Memoria non-parametrica} -- conoscenza esplicita in documenti esterni, aggiornabile.
+\item \textbf{Chunking} -- suddivisione dei documenti in porzioni pi\`u piccole per il retrieval (fisso/strutturale/semantico).
+\item \textbf{Dense retrieval} -- retrieval basato su embeddings semantici (SBERT, DPR, ColBERT).
+\item \textbf{Hybrid search} -- combinazione di retrieval lessicale (BM25) e semantico (embeddings).
+\item \textbf{Vector database / ANN} -- indice per ricerca approssimata del vicino pi\`u prossimo (FAISS, HNSW).
+\item \textbf{Faithfulness} -- quanto la risposta generata \`e supportata dai documenti recuperati (metrica RAGAS).
+\end{itemize}
+\smallskip\noindent\textbf{\textcolor{blue!45!black}{Spiegazione -- perch\'e il chunking \`e difficile.}} Non esiste una dimensione ``giusta'' per un chunk: se troppo piccolo (una singola frase), si perde il contesto necessario per interpretarlo correttamente; se troppo grande (una pagina intera), si introduce rumore che confonde il retrieval e pu\`o superare la finestra di contesto del LLM. Il chunking semantico prova a risolvere il problema spostando il confine solo dove il significato cambia davvero (misurando la distanza coseno tra segmenti di testo vicini), invece di tagliare a un numero fisso di token.
+
+\subsection*{8. LLM, Prompting, Human-AI Interaction}
+\begin{itemize}
+\item \textbf{Base model} -- addestrato solo a predire il token successivo; non segue istruzioni.
+\item \textbf{Instruction-tuned model} -- addestrato con SFT e RLHF/DPO per seguire istruzioni.
+\item \textbf{Chain-of-Thought (CoT)} -- prompting che induce il modello a ragionare passo-passo.
+\item \textbf{Few-shot learning} -- fornire esempi nel prompt per guidare il comportamento del modello.
+\item \textbf{Self-Consistency} -- generare pi\`u risposte e scegliere quella pi\`u frequente.
+\item \textbf{Temperatura} -- parametro che controlla la casualit\`a/creativit\`a dell'output.
+\item \textbf{Allucinazione} -- generazione di contenuti plausibili ma falsi da parte di un LLM.
+\item \textbf{Goal-oriented interaction} -- l'utente esprime obiettivi in linguaggio naturale, non comandi predefiniti.
+\item \textbf{Over-trust / under-trust} -- fidarsi troppo o troppo poco degli output di un LLM.
+\end{itemize}
+\smallskip\noindent\textbf{\textcolor{blue!45!black}{Spiegazione -- perch\'e un LLM allucina (e perch\'e il CoT aiuta).}} Un LLM non ha un meccanismo per distinguere ``vero'' da ``falso'': genera sempre la continuazione statisticamente pi\`u probabile data la sequenza di testo vista finora, indipendentemente dal fatto che corrisponda alla realt\`a. Le allucinazioni non sono quindi un bug occasionale ma una conseguenza diretta del funzionamento del modello. Per lo stesso motivo il Chain-of-Thought migliora il ragionamento: obbligando il modello a scrivere i passaggi intermedi invece di ``saltare'' alla risposta, riduce la probabilit\`a che si fermi su una conclusione plausibile ma sbagliata.
+
+\subsection*{9. Valutazione dell'Esame}
+\begin{itemize}
+\item \textbf{Linguaggio tecnico preciso} -- criterio di valutazione della parte teorica.
+\item \textbf{Pensiero comparativo} -- capacit\`a di confrontare approcci e valutarne i trade-off.
+\item \textbf{Ownership del codice} -- saper spiegare e modificare al volo il proprio codice di laboratorio.
+\end{itemize}
+\smallskip\noindent\textbf{\textcolor{blue!45!black}{Spiegazione -- cosa distingue davvero un voto alto.}} Non basta definire correttamente un termine (``cos'\`e Word2Vec''): serve saperlo confrontare con altri approcci (``quando basta Word2Vec e quando serve BERT contestuale, e perch\'e''). Allo stesso modo in laboratorio non basta dire ``ho ottenuto 15 topic'': bisogna saper argomentare quali sono coerenti, quali rumore, e cosa cambierebbe con un altro parametro. \`E il pensiero comparativo -- non la memorizzazione -- il criterio che pesa di pi\`u.
+
+\subsection*{10. Conclusioni}
+\begin{itemize}
+\item \textbf{Groundedness} -- ancoraggio del linguaggio al mondo fisico/sociale, assente negli LLM addestrati solo su testo.
+\item \textbf{Alignment} -- allineamento di un modello ai valori umani (tipicamente via RLHF).
+\item \textbf{Neuro-symbolic AI} -- integrazione tra rappresentazioni simboliche esplicite e reti neurali.
+\item \textbf{``Il futuro \`e conversazione''} -- l'interfaccia uomo-macchina si sposta dal codice al dialogo.
+\end{itemize}
+\smallskip\noindent\textbf{\textcolor{blue!45!black}{Spiegazione -- perch\'e le tensioni non si ``risolvono'', si integrano.}} Il filo conduttore del capitolo finale \`e che ogni tensione (simbolico/subsimbolico, conoscenza implicita/esplicita) non si chiude scegliendo un polo, ma trovando dove ciascuno funziona meglio. La RAG \`e l'esempio pi\`u chiaro di integrazione neuro-simbolica: combina retrieval esplicito e verificabile con generazione neurale fluida, invece di far vincere l'uno sull'altro -- lo stesso principio che spiega perch\'e tecniche ``vecchie'' come BM25 (Cap.~6) convivono ancora oggi con i Transformer.
+
+\end{multicols}
+\end{document}

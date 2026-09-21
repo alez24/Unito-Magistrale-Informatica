@@ -1,0 +1,286 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{parskip}
+\usepackage{array}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings,breakable,skins}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{keywordcolor}{RGB}{0,0,180}
+\definecolor{commentcolor}{RGB}{0,128,0}
+\definecolor{stringcolor}{RGB}{163,21,21}
+\definecolor{codeframe}{RGB}{180,180,180}
+
+\lstdefinestyle{python}{
+  language=Python, basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{keywordcolor}\bfseries,
+  commentstyle=\color{commentcolor}\itshape,
+  stringstyle=\color{stringcolor},
+  numberstyle=\tiny\color{gray}, numbers=left, stepnumber=1,
+  breaklines=true, breakatwhitespace=false, showstringspaces=false,
+  tabsize=4, xleftmargin=1.5em, keepspaces=true, columns=flexible,
+  frame=none, aboveskip=0pt, belowskip=0pt,
+}
+\lstset{style=python}
+
+\hypersetup{colorlinks=true, linkcolor=blue!60!black, urlcolor=blue!60!black}
+
+\newtcblisting{pylisting}[1][]{
+  listing only, enhanced, colback=codebg, colframe=codeframe, coltitle=black,
+  fonttitle=\small\itshape,
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=codebg, colframe=codeframe, boxrule=0.5pt},
+  boxrule=0.5pt, arc=2pt, left=4pt, right=4pt, top=8pt, bottom=4pt,
+  listing options={style=python}, before upper={\vspace{-2pt}}, #1
+}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+\raggedbottom
+
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+  {\Large\textbf{Universit\`a degli Studi di Torino}\\[0.3em]
+  Corso di Laurea Magistrale in Informatica}
+  \vspace{1cm}
+  \HRule\\[0.4em]
+  {\LARGE\textbf{Tecnologie del Linguaggio Naturale}}\\[0.3em]
+  {\large Parte 3 -- Prof.\ Luigi Di Caro}\\[0.2em]
+  \HRule
+  \vspace{1.2cm}
+  {\huge\textbf{Lab 5}}\\[0.5em]
+  {\LARGE Hybrid Search RAG}\\[0.4em]
+  {\large Retrieval-Augmented Generation con ricerca ibrida semantica e lessicale}
+
+  \vspace{2cm}
+  {\large\textbf{Gruppo di lavoro:}}\\[0.8em]
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Studente}    & \textbf{Matricola} \\
+    \midrule
+    Alessandro Olivero   & 915069  \\
+    Samuele Iudice       & 1235245 \\
+    Andrea Franco        & 1226739 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{1.5cm}
+  \begin{tabular}{ll}
+    \textbf{Docente:}          & Prof.\ Luigi Di Caro \\[0.3em]
+    \textbf{Anno Accademico:}  & 2025/2026 \\
+  \end{tabular}
+  \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introduzione}
+% ============================================================
+
+Un sistema \textbf{Retrieval-Augmented Generation (RAG)} risponde a domande recuperando documenti rilevanti da una knowledge base e condizionando su di essi la generazione di un LLM, riducendo le allucinazioni rispetto a un LLM stand-alone. Questo lavoro confronta due strategie di retrieval su un corpus di paper NLP da arXiv:
+
+\begin{itemize}
+  \item \textbf{RAG base}: retrieval puramente semantico (embeddings + FAISS).
+  \item \textbf{RAG ibrido}: fusione del retrieval semantico con BM25 lessicale tramite Reciprocal Rank Fusion (RRF).
+\end{itemize}
+
+L'obiettivo \`e capire se e quanto l'aggiunta di BM25 migliori il sistema, e se le conclusioni reggono al variare della dimensione del corpus (1\,000--44\,949 documenti) e del numero di documenti recuperati ($k$). Nelle pagine seguenti ci concentriamo soprattutto sui risultati e su cosa ci dicono; il codice completo, commentato, si trova nei file \texttt{lab5\_hybrid.py} (l'esperimento) e \texttt{lab5\_hybrid\_consegna.py} (una pipeline dimostrativa che risponde citando le fonti).
+
+% ============================================================
+\section{Cosa abbiamo usato}
+% ============================================================
+
+\begin{table}[H]
+  \centering
+  \caption{Componenti del sistema}
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Componente}    & \textbf{Scelta}                                & \textbf{Ruolo} \\
+    \midrule
+    Dataset                & \texttt{MaartenGr/arxiv\_nlp} (44\,949 paper)  & Corpus (titolo + abstract) \\
+    Embedding              & SciBERT (\texttt{allenai/scibert\_scivocab\_uncased}) & Retrieval semantico \\
+    Indice vettoriale      & FAISS \texttt{IndexFlatIP}                     & ANN search (coseno) \\
+    Retrieval lessicale    & BM25Okapi (\texttt{rank\_bm25})                & Keyword search \\
+    Fusione                & Reciprocal Rank Fusion ($k=60$)                & Re-ranking ibrido \\
+    Generazione            & Phi-3.5-mini-instruct (3.8B, greedy)           & Risposta con citazioni \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Il dataset \texttt{arxiv\_nlp} \`e stato scelto perch\'e offre un corpus di dimensioni realistiche e testi gi\`a puliti (titolo e abstract), utile per isolare l'effetto della dimensione del corpus senza doversi preoccupare di rumore nei dati. SciBERT \`e scelto per il vocabolario specializzato sul dominio scientifico; non essendo per\`o un modello fine-tuned per sentence similarity, le sue similarit\`a coseno restano compresse verso l'alto -- un limite di cui si tiene conto nell'interpretare Context/Answer Relevance. BM25 recupera invece per corrispondenza esatta dei termini: complementare a SciBERT sui termini tecnici (``NER'', ``LDA'', acronimi) che il retrieval denso tende a generalizzare. Per fondere i due ranking si \`e scelto RRF invece di sommare direttamente gli score di FAISS (similarit\`a coseno) e BM25 (punteggio TF-IDF-like), che vivono su scale non comparabili: RRF aggira il problema usando solo la posizione di ciascun documento nelle due liste, con $k=60$ (valore standard in letteratura, che pesa in modo simile i primi risultati anche quando le due liste hanno scale di punteggio molto diverse). Phi-3.5-mini-instruct \`e stato scelto come compromesso fra capacit\`a di seguire istruzioni (citare le fonti, dichiarare quando il contesto \`e insufficiente) e costo computazionale: gira interamente su CPU, a differenza di modelli pi\`u grandi che avrebbero richiesto una GPU non disponibile.
+
+\begin{pylisting}[title={Fusione ibrida: retrieval semantico + BM25 via RRF}]
+def retrieve_hybrid(query, k=5):
+    sem = retrieve_semantic(query, k=20)   # top-20 per retriever prima
+    bm  = retrieve_bm25(query, k=20)       # della fusione: pool ampio per RRF
+    return reciprocal_rank_fusion([sem, bm])[:k]
+
+def reciprocal_rank_fusion(results_list, k=60):
+    rrf_scores, doc_map = {}, {}
+    for results in results_list:
+        for item in results:
+            ix = item['idx']
+            rrf_scores[ix] = rrf_scores.get(ix, 0) + 1 / (k + item['rank'])
+            doc_map[ix] = item
+    ranked = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
+    return [{'rank': i+1, 'idx': ix, **doc_map[ix]}
+            for i, (ix, _) in enumerate(ranked)]
+\end{pylisting}
+
+\textbf{Metriche} (ispirate a RAGAS): \emph{Precision@k} (frazione dei top-$k$ che contiene una keyword del gold standard), \emph{Context Relevance} (coseno query--snippet recuperati), \emph{Answer Relevance} (coseno query--risposta), \emph{Faithfulness proxy} (frazione di parole di contenuto della risposta che compaiono nel contesto recuperato) e \emph{Robustezza} (overlap@5 fra una query e le sue parafrasi). Tutte lessicali o basate su embedding -- nessuna richiede giudizio umano, il che le rende economiche ma approssimate.
+
+\textbf{Esperimento}: corpus annidati a $N_{\text{DOCS}} \in \{1\,000,\,5\,000,\,15\,000,\,25\,000,\,44\,949\}$ (mischiati una sola volta, cos\`i che i corpus piccoli siano sottoinsiemi di quelli grandi e un calo di prestazioni non dipenda dal campionamento casuale), scelti per coprire un ordine di grandezza dal corpus pi\`u piccolo a quello completo; gold standard di 5 query NLP eterogenee; confronto su $k \in \{3, 5, 10, 15\}$, con valori sia sotto sia sopra 5, per verificare che le conclusioni non dipendano dalla scelta $k=5$ in particolare.
+
+% ============================================================
+\section{Risultati e Analisi}
+\label{sec:risultati}
+% ============================================================
+
+\subsection{Precision@5 al variare di N\_DOCS}
+
+\begin{table}[H]
+  \centering
+  \caption{Precision@5, base vs.\ ibrido}
+  \begin{tabular}{rrrrr}
+    \toprule
+    \textbf{N\_DOCS} & \textbf{Base} & \textbf{Ibrido} & \textbf{Delta} & \textbf{Miglioramento} \\
+    \midrule
+    1\,000  & 0.160 & 0.480 & +0.320 & +200.0\% \\
+    5\,000  & 0.280 & 0.680 & +0.400 & +142.9\% \\
+    15\,000 & 0.200 & 0.560 & +0.360 & +180.0\% \\
+    25\,000 & 0.200 & 0.560 & +0.360 & +180.0\% \\
+    44\,949 & 0.040 & 0.480 & +0.440 & +1100.0\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Delta indica la differenza Ibrido $-$ Base: un valore positivo significa che l'ibrido fa meglio del base su quella metrica. L'ibrido supera il base in \textbf{tutte} le configurazioni (delta medio +0.376). Il dato pi\`u rilevante \`e il crollo del base a \textbf{0.040} sull'intero corpus: guardando il dettaglio per query, il retrieval solo-semantico non trova alcun documento rilevante nei top-5 per 4 query su 5 (BERT/self-attention, word2vec, machine translation, topic modeling), recuperando qualcosa solo per ``named entity recognition''. L'ibrido, sullo stesso identico corpus, resta a 0.480 -- una differenza di 12 volte a parit\`a di dati, imputabile solo alla presenza di BM25. Su un corpus ampio e con query brevi e generiche, il retrieval solo-embedding perde la capacit\`a di isolare i pochi documenti pertinenti fra decine di migliaia; BM25 mantiene il segnale sulle parole chiave indipendentemente da quanti documenti competono nell'indice. Entrambe le curve hanno inoltre un picco a N=5\,000, con un calo pi\`u marcato per il base che per l'ibrido dopo quel punto.
+
+\begin{table}[H]
+  \centering
+  \caption{Metriche complete per N\_DOCS (base / ibrido)}
+  \small
+  \begin{tabular}{rrrrrrrrrr}
+    \toprule
+    \textbf{N\_DOCS} & \multicolumn{2}{c}{\textbf{CR}} & \multicolumn{2}{c}{\textbf{AR}} & \multicolumn{2}{c}{\textbf{FF}} & \multicolumn{2}{c}{\textbf{Robustezza}} \\
+     & Base & Ibr. & Base & Ibr. & Base & Ibr. & Base & Ibr. \\
+    \midrule
+    1\,000  & 0.716 & 0.715 & 0.676 & 0.657 & 0.503 & 0.740 & 0.233 & 0.267 \\
+    5\,000  & 0.724 & 0.722 & 0.676 & 0.659 & 0.571 & 0.693 & 0.167 & 0.100 \\
+    15\,000 & 0.713 & 0.731 & 0.683 & 0.675 & 0.604 & 0.727 & 0.100 & 0.067 \\
+    25\,000 & 0.720 & 0.728 & 0.692 & 0.667 & 0.599 & 0.702 & 0.067 & 0.000 \\
+    44\,949 & 0.719 & 0.724 & 0.687 & 0.680 & 0.438 & 0.635 & 0.033 & 0.033 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Context Relevance e Answer Relevance: differenze minime}
+\label{sec:cr-ar}
+
+CR e AR differiscono poco fra base e ibrido ($|\Delta| < 0.02$ quasi ovunque): sono calcolate con gli stessi embedding SciBERT usati dal retrieval semantico, quindi non sono una misura indipendente della qualit\`a del sistema -- un limite gi\`a atteso, non un risultato. L'AR ibrida \`e quasi sempre leggermente inferiore alla base: i documenti trovati da BM25 sono pi\`u lontani dalla query nello spazio degli embedding (li trova per parola chiave, non per significato), e questo si riflette leggermente anche sulla risposta generata.
+
+\subsection{Faithfulness: vantaggio sistematico dell'ibrido}
+
+La Faithfulness \`e pi\`u alta per l'ibrido in \textbf{tutte} le configurazioni, con margini fra $+0.103$ e $+0.237$ (il salto pi\`u grande a N=1\,000 e sul corpus completo). I documenti trovati dall'ibrido restano pi\`u legati al vocabolario tecnico della domanda: l'LLM usa quindi pi\`u parole realmente presenti nei testi forniti, invece di ``riempire i vuoti'' con parole plausibili ma non presenti nel contesto.
+
+\subsection{Robustezza: non \`e una vittoria automatica dell'ibrido}
+
+\begin{table}[H]
+  \centering
+  \caption{Robustezza (overlap@5 su query parafrasate)}
+  \begin{tabular}{rrr}
+    \toprule
+    \textbf{N\_DOCS} & \textbf{Base} & \textbf{Ibrido} \\
+    \midrule
+    1\,000  & 0.233 & 0.267 \\
+    5\,000  & 0.167 & 0.100 \\
+    15\,000 & 0.100 & 0.067 \\
+    25\,000 & 0.067 & 0.000 \\
+    44\,949 & 0.033 & 0.033 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+L'ibrido \`e pi\`u robusto solo a N=1\,000; a N=5\,000--25\,000 \`e il \textbf{base} a essere pi\`u stabile alle parafrasi. Aggiungere BM25 aiuta la precisione ma non garantisce automaticamente pi\`u stabilit\`a: un secondo canale basato su corrispondenza esatta delle parole pu\`o essere pi\`u sensibile a un sinonimo diverso nella parafrasi, che BM25 non riconosce come la stessa keyword. In entrambi i sistemi la robustezza cala comunque con corpus pi\`u grandi (pi\`u documenti candidati, pi\`u facile che piccole variazioni lessicali spostino i top-5).
+
+\subsection{Un esempio qualitativo}
+
+\begin{table}[H]
+  \centering
+  \caption{Esempio di risposta -- query BERT, corpus completo (44\,949 doc.)}
+  \begin{tabular}{p{14.5cm}}
+    \toprule
+    \textbf{Base}: ``\ldots there is no direct information or discussion about BERT \ldots or self-attention mechanisms. The papers focus on various aspects of Natural Language Processing (NLP)\ldots'' \\[0.5em]
+    \textbf{Ibrido}: ``\ldots there is no direct explanation of BERT or self-attention mechanisms. The papers discuss \ldots attention in neural machine translation (Paper 2), cross-lingual syntactic ability of multilingual BERT (Paper 4)\ldots'' \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Entrambi i sistemi dichiarano correttamente l'assenza di un paper specificamente dedicato a BERT, invece di inventare una risposta -- comportamento corretto, ma che conferma il limite: nemmeno l'ibrido recupera un paper che spieghi BERT direttamente su questo corpus/gold standard. L'ibrido arriva per\`o pi\`u vicino al tema, citando esplicitamente un paper su BERT multilingue.
+
+\subsection{Le conclusioni non dipendono da $k=5$}
+\label{sec:variazione-k}
+
+Ripetendo il confronto Precision@$k$/Context Relevance per \emph{tutte} le configurazioni di N\_DOCS a $k \in \{3, 10, 15\}$ (oltre al $k=5$ gi\`a discusso), e Answer Relevance/Faithfulness a $k \in \{3,5,10,15\}$ sul corpus pi\`u piccolo (N=1\,000, per contenere i tempi di generazione su CPU):
+
+\begin{table}[H]
+  \centering
+  \caption{Answer Relevance e Faithfulness al variare di $k$ (N\_DOCS=1\,000)}
+  \begin{tabular}{rrrrr}
+    \toprule
+    \textbf{$k$} & \textbf{AR Base} & \textbf{AR Ibrido} & \textbf{FF Base} & \textbf{FF Ibrido} \\
+    \midrule
+    3  & 0.683 & 0.663 & 0.414 & 0.627 \\
+    5  & 0.676 & 0.657 & 0.503 & 0.740 \\
+    10 & 0.695 & 0.653 & 0.613 & 0.789 \\
+    15 & 0.669 & 0.661 & 0.608 & 0.819 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+L'ibrido supera il base in Precision@$k$ in \textbf{tutte le 20 combinazioni} di N\_DOCS e $k$ testate (margini da ${\sim}2\times$ a ${\sim}8\times$), e resta pi\`u fedele al contesto a ogni $k$ (delta di Faithfulness $+0.176$ a $+0.237$, in linea o superiore al delta medio gi\`a visto a $k=5$). L'unico effetto negativo dell'ibrido -- Answer Relevance leggermente pi\`u bassa -- \`e anch'esso presente a ogni $k$. Le conclusioni non sono quindi un artefatto della scelta $k=5$, ma una caratteristica sistematica della fusione RRF.
+
+% ============================================================
+\section{Limiti}
+\label{sec:limiti}
+% ============================================================
+
+\begin{itemize}
+  \item \textbf{Gold standard lessicale}: la rilevanza \`e definita da parole chiave, non da giudizio umano; alcune keyword sono ampie (``topic'', ``clustering''), il che favorisce strutturalmente un sistema che usa anche il matching lessicale (l'ibrido).
+  \item \textbf{Faithfulness proxy}: stima lessicale (parole di contenuto della risposta presenti nel contesto), non verifica la correttezza logica delle affermazioni.
+  \item \textbf{Context/Answer Relevance non indipendenti dal retrieval}: condividono l'embedding SciBERT usato per il retrieval semantico.
+  \item \textbf{Costo computazionale}: intera pipeline eseguita su CPU (Phi-3.5-mini in float32, ${\sim}$1.5 token/s); l'esperimento completo su 5 configurazioni di N\_DOCS e 4 valori di $k$ richiede diverse ore.
+  \item \textbf{Campione ridotto}: 5 query per il gold standard e 3 per la robustezza; conclusioni da leggere come tendenze, non differenze puntualmente significative.
+\end{itemize}
+
+% ============================================================
+\section{Conclusioni}
+% ============================================================
+
+\begin{enumerate}
+  \item Il retrieval ibrido migliora la Precision@5 in modo sistematico su tutte le dimensioni di corpus testate (delta medio +0.376), e questo si conferma per ogni valore di $k$ testato ($k=3,5,10,15$), non solo per $k=5$.
+  \item Il sistema base \textbf{crolla} su corpus grandi (P@5 $0.040$ a 44\,949 documenti), mentre l'ibrido resta stabile ($0.480$): la ragione pratica per cui BM25 non \`e opzionale su corpus di queste dimensioni.
+  \item La Faithfulness beneficia chiaramente e sistematicamente del retrieval ibrido (margini $+0.103$ a $+0.237$), il risultato pi\`u stabile di tutto l'esperimento.
+  \item La robustezza alle parafrasi \emph{non} premia sempre l'ibrido: aggiungere BM25 migliora la precisione ma non garantisce automaticamente pi\`u stabilit\`a a piccole variazioni della query.
+  \item Context Relevance e Answer Relevance mostrano differenze minime fra i due sistemi, per un limite noto della metrica (stesso embedding del retrieval), non per assenza di differenze reali fra base e ibrido.
+\end{enumerate}
+
+\end{document}

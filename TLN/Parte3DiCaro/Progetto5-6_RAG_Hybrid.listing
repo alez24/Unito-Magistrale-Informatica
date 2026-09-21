@@ -1,0 +1,20 @@
+def faithfulness_proxy(answer, results):
+    context_text  = ' '.join(r['document'][:500] for r in results).lower()
+    words         = re.findall(r'\b[a-z]{4,}\b', answer.lower())
+    content_words = [w for w in words if w not in sw]  # sw = stopwords NLTK
+    if not content_words:
+        return 0.0
+    return sum(1 for w in content_words if w in context_text) / len(content_words)
+
+def robustness_test(query, paraphrases, faiss_index, bm25,
+                    documents, metadata, k=5):
+    base_titles = {r['metadata']['title']
+                   for r in retrieve_hybrid(
+                       query, faiss_index, bm25, documents, metadata, k)}
+    overlaps = []
+    for para in paraphrases:
+        para_titles = {r['metadata']['title']
+                       for r in retrieve_hybrid(
+                           para, faiss_index, bm25, documents, metadata, k)}
+        overlaps.append(len(base_titles & para_titles) / k)
+    return float(np.mean(overlaps))

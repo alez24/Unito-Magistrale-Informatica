@@ -1,0 +1,15 @@
+def retrieve_hybrid(query, k=5):
+    sem = retrieve_semantic(query, k=20)   # top-20 per retriever prima
+    bm  = retrieve_bm25(query, k=20)       # della fusione: pool ampio per RRF
+    return reciprocal_rank_fusion([sem, bm])[:k]
+
+def reciprocal_rank_fusion(results_list, k=60):
+    rrf_scores, doc_map = {}, {}
+    for results in results_list:
+        for item in results:
+            ix = item['idx']
+            rrf_scores[ix] = rrf_scores.get(ix, 0) + 1 / (k + item['rank'])
+            doc_map[ix] = item
+    ranked = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
+    return [{'rank': i+1, 'idx': ix, **doc_map[ix]}
+            for i, (ix, _) in enumerate(ranked)]
